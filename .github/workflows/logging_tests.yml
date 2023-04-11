@@ -1,0 +1,88 @@
+name: Logging Tests
+
+on:
+  push:
+    paths:
+      - "logging/**"
+      - ".github/workflows/logging_tests.yml"
+  pull_request:
+    branches:
+      - "master"
+    paths:
+      - "logging/**"
+      - ".github/workflows/logging_tests.yml"
+      
+defaults:
+  run:
+    working-directory: './logging'
+    
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        name: [
+          "ubuntu-py39-outviewintegrationtests",
+          "windows-py310",
+          "ubuntu-py311",
+        ]
+        
+        include:
+          - name: "ubuntu-py39-outviewintegrationtests"
+            python: "3.9"
+            os: ubuntu-latest
+          - name: "windows-py310"
+            python: "3.10"
+            os: windows-latest
+          - name: "ubuntu-py311"
+            python: "3.11"
+            os: ubuntu-latest
+
+
+    steps:
+    - name: Checkout repository and submodules
+      uses: actions/checkout@v3
+        
+    - name: Install poetry
+      run: pipx install poetry
+      
+    - name: Set up Python ${{ matrix.python }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python }}
+        cache: 'poetry'
+
+    - name: Setup node
+      uses: actions/setup-node@v3
+      with:
+        node-version: 16.x
+        
+    - name: Install project
+      run: poetry install
+      
+    - name: Embed output view in index.py
+      run: poetry run python -m dev build-output-view
+      
+    - name: Build output view
+      if: contains(matrix.name, '-outviewintegrationtests')
+      working-directory: ./logging/output-webview
+      run: |
+        yarn install
+        yarn build-test
+
+    - name: Test
+      working-directory: ./logging/tests
+      env:
+        PYTHONPATH: .
+        RUN_TESTS_TIMEOUT: 10000
+        GITHUB_ACTIONS_MATRIX_NAME: ${{ matrix.name }}
+      run: poetry run pytest -rfE -vv .
+      
+    - uses: actions/upload-artifact@v3
+      if: always() && contains(matrix.name, '-outviewintegrationtests')
+      with:
+        name: robotlog.${{ matrix.name }}.html
+        path: logging/output-webview/tests/output/log.html
+
