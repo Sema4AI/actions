@@ -1,22 +1,22 @@
-name: Core Tests
+name: tasks Tests
 
 on:
   push:
     paths:
-      - "core/**"
+      - "tasks/**"
       - "robolog/**"
-      - ".github/workflows/core_tests.yml"
+      - ".github/workflows/tasks_tests.yml"
   pull_request:
     branches:
       - "master"
     paths:
-      - "core/**"
+      - "tasks/**"
       - "robolog/**"
-      - ".github/workflows/core_tests.yml"
+      - ".github/workflows/tasks_tests.yml"
 
 defaults:
   run:
-    working-directory: './core'
+    working-directory: './tasks'
 
 jobs:
   build:
@@ -75,11 +75,11 @@ jobs:
       env:
         PYTHONPATH: ./src${{ matrix.PATH_SEPARATOR }}../robolog/src
         GITHUB_ACTIONS_MATRIX_NAME: ${{ matrix.name }}
-      run: poetry run pytest -rfE -vv tests/robo_tests
+      run: poetry run pytest -rfE -vv tests/tasks_tests
 
     - name: Test (robolog from pypi)
       env:
         GITHUB_ACTIONS_MATRIX_NAME: ${{ matrix.name }}
       if: contains(matrix.name, '-logindev') == false
-      run: poetry run pytest -rfE -vv tests/robo_tests
+      run: poetry run pytest -rfE -vv tests/tasks_tests
 

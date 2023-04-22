@@ -1,0 +1,12 @@
+- docs: "\n    main method docstring\n    "
+  file: tasks.py
+  line: 8
+  name: main
+- docs: ''
+  file: tasks.py
+  line: 20
+  name: main_errors
+- docs: ''
+  file: sub_task.py
+  line: 8
+  name: sub
