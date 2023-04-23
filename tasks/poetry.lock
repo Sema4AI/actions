@@ -365,7 +365,7 @@ files = [
 ]
 
 [[package]]
-name = "robocorp-robolog"
+name = "robocorp-log"
 version = "0.0.10"
 description = "Automatic trace logging for Python"
 category = "main"
