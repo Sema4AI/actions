@@ -435,35 +435,6 @@ files = [
 ]
 
 [[package]]
-name = "robocorp-devutils"
-version = "0.0.1"
-description = "Utilities for development in monorepo."
-category = "main"
-optional = false
-python-versions = "^3.9"
-files = []
-develop = true
-
-[package.source]
-type = "directory"
-url = "../devutils"
-
-[[package]]
-name = "robocorp-log"
-version = "0.1.0"
-description = "Automatic trace logging for Python"
-category = "main"
-optional = false
-python-versions = ">=3.9,<4.0"
-files = [
-    {file = "robocorp_log-0.1.0-py3-none-any.whl", hash = "sha256:28034291955a402d52111c4e79bf91c545080498ca2b58769d0554a531d35fdb"},
-    {file = "robocorp_log-0.1.0.tar.gz", hash = "sha256:592295015831c4168876ddb40e0ef94ba0cc8a7812ce0da41ddf1603d4724ec5"},
-]
-
-[package.dependencies]
-tomli = {version = ">=2.0.1,<3.0.0", markers = "python_version < \"3.11\""}
-
-[[package]]
 name = "ruff"
 version = "0.0.255"
 description = "An extremely fast Python linter, written in Rust."
@@ -518,7 +489,7 @@ files = [
 name = "tomli"
 version = "2.0.1"
 description = "A lil' TOML parser"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -575,4 +546,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "2273f0acf3717b36710c9beb7b9b32baf80c3e45418990aa2a841fbbdae304c3"
+content-hash = "6dc76f85ce9ecd1841cb810f9a5739cd890be44b9f9ad8ebf083f4a9d63ba4b7"
