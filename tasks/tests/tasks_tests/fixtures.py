@@ -216,6 +216,14 @@ class StrRegression:
             force_regen=self.force_regen,
         )
 
+    def check_until_header(self, found: str):
+        header_end = "=" * 80
+        header_end_i = found.rfind(header_end)
+        assert header_end_i > 0
+        found = found[: header_end_i + len(header_end)]
+
+        self.check(found)
+
 
 @pytest.fixture
 def str_regression(datadir, original_datadir, request):
