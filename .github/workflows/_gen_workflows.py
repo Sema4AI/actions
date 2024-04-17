@@ -20,8 +20,8 @@ def collect_deps_pyprojects(root_pyproject: Path, found=None) -> Iterator[Path]:
     except Exception:
         pass  # Ignore if it's not there.
     for key in dependencies:
-        if key.startswith("robocorp-"):
-            dep_name = key[len("robocorp-") :].replace("-", "_")
+        if key.startswith("sema4ai-"):
+            dep_name = key[len("sema4ai-") :].replace("-", "_")
             dep_pyproject = root_pyproject.parent.parent / dep_name / "pyproject.toml"
             assert dep_pyproject.exists(), f"Expected {dep_pyproject} to exist."
             if dep_pyproject not in found:
@@ -49,7 +49,6 @@ def get_python_version(pyproject):
 
 class BaseTests:
     require_node = False
-    require_log_built = False
     require_build_frontend = False
     validate_docstrings = False
     before_run_custom_additional_steps = ()
@@ -105,8 +104,6 @@ class BaseTests:
             f".github/workflows/{self.target}",
             "devutils/**",
         ]
-        if self.require_log_built:
-            paths.append("log/**")
 
         pyproject_toml_file = project_dir / "pyproject.toml"
         self.pyproject_toml_file = pyproject_toml_file
@@ -275,13 +272,8 @@ inv docs --validate
             setup_python,
             install_devutils,
         ]
-        if self.require_node or self.require_log_built:
-            steps.append(setup_node)
 
         steps.extend([install, devinstall])
-
-        if self.require_log_built:
-            steps.extend(build_log_react_view_steps)
 
         if self.require_build_frontend:
             steps.append(build_frontend)
@@ -312,7 +304,6 @@ class ActionServerTests(BaseTests):
     target = "action_server_tests.yml"
     project_name = "action_server"
     require_node = True
-    require_log_built = True
     require_build_frontend = True
 
 
@@ -321,198 +312,11 @@ class ActionsTests(BaseTests):
     target = "actions_tests.yml"
     project_name = "actions"
     require_node = True
-    require_log_built = True
-
-
-class BrowserTests(BaseTests):
-    name = "Browser Tests"
-    target = "browser_tests.yml"
-    project_name = "browser"
-    require_node = True
-    require_log_built = True
-    validate_docstrings = True
-
-
-class ExcelTests(BaseTests):
-    name = "Excel Tests"
-    target = "excel_tests.yml"
-    project_name = "excel"
-
-
-class IntegrationTests(BaseTests):
-    name = "Integration Tests"
-    target = "integration_tests.yml"
-    project_name = "integration_tests"
-    require_node = True
-    require_log_built = True
-
-
-class LogPyTestTests(BaseTests):
-    name = "Log PyTest Tests"
-    target = "log_pytest_tests.yml"
-    project_name = "log_pytest"
-    require_node = True
-    require_log_built = True
-
-    run_tests = {
-        "name": "Test",
-        "env": {
-            "GITHUB_ACTIONS_MATRIX_NAME": "${{ matrix.name }}",
-            "CI_CREDENTIALS": "${{ secrets.CI_CREDENTIALS }}",
-            "CI_ENDPOINT": "${{ secrets.CI_ENDPOINT }}",
-            # Must be customized to include the PYTHONPATH for the log tests.
-            "PYTHONPATH": "../log/tests",
-        },
-        "run": "inv test",
-    }
-
-
-class LogTests(BaseTests):
-    name = "Log Tests"
-    target = "log_tests.yml"
-    project_name = "log"
-    require_node = True
-    require_log_built = True
-
-    @property
-    def matrix(self):
-        pyversion = self.minimum_python_version
-        matrix = {
-            "name": [
-                f"ubuntu-py{pyversion}-devmode-outviewintegrationtests",
-                f"windows-py{pyversion}-devmode",
-                f"macos-py{pyversion}-devmode",
-            ],
-            "include": [
-                {
-                    "name": f"ubuntu-py{pyversion}-devmode-outviewintegrationtests",
-                    "python": pyversion,
-                    "os": "ubuntu-latest",
-                },
-                {
-                    "name": f"windows-py{pyversion}-devmode",
-                    "python": pyversion,
-                    "os": "windows-latest",
-                },
-                {
-                    "name": f"macos-py{pyversion}-devmode",
-                    "os": "macos-latest",
-                    "python": pyversion,
-                },
-            ],
-        }
-        return matrix
-
-    before_run_custom_additional_steps = [
-        {"name": "Install prettier", "run": "npm install -g prettier@2.4.1\n"},
-        {
-            "name": "Test React log",
-            "working-directory": "./log/output-react/",
-            "run": "npm ci\nnpm run test:prettier\nnpm run test:types\n",
-            "env": {"CI": True, "NODE_AUTH_TOKEN": "${{ secrets.CI_GITHUB_TOKEN }}"},
-        },
-    ]
-
-    after_run_custom_additional_steps = [
-        {
-            "uses": "actions/upload-artifact@v3",
-            "if": "always() && contains(matrix.name, '-outviewintegrationtests')",
-            "with": {
-                "name": "robo_log_react.${{ matrix.name }}.html",
-                "path": "log/output-react/tests_robo/output/log.html",
-            },
-        },
-    ]
-
-
-class StorageTests(BaseTests):
-    name = "Asset Storage Tests"
-    target = "storage_tests.yml"
-    project_name = "storage"
-
-
-class TasksTests(BaseTests):
-    name = "Tasks Tests"
-    target = "tasks_tests.yml"
-    project_name = "tasks"
-    require_node = True
-    require_log_built = True
-
-
-class VaultTests(BaseTests):
-    name = "Vault Tests"
-    target = "vault_tests.yml"
-    project_name = "vault"
-
-
-class WindowsTests(BaseTests):
-    name = "Windows Tests"
-    target = "windows_tests.yml"
-    project_name = "windows"
-
-    @property
-    def matrix(self):
-        pyversion = self.minimum_python_version
-        matrix = {
-            "name": [
-                f"windows-py{pyversion}-devmode",
-            ],
-            "include": [
-                {
-                    "name": f"windows-py{pyversion}-devmode",
-                    "python": pyversion,
-                    "os": "windows-latest",
-                },
-            ],
-        }
-        return matrix
-
-    before_run_custom_additional_steps = [
-        {
-            "name": "Set up chrome for tests",
-            "run": "choco install googlechrome --ignore-checksums",
-        }
-    ]
-
-    after_run_custom_additional_steps = [
-        {
-            "uses": "actions/upload-artifact@v1",
-            "if": "always()",
-            "with": {
-                "name": "log.${{ matrix.name }}.html",
-                "path": "windows/output/log.html",
-            },
-        },
-        {
-            "uses": "actions/upload-artifact@v1",
-            "if": "always()",
-            "with": {
-                "name": "log.${{ matrix.name }}.robolog",
-                "path": "windows/output/output.robolog",
-            },
-        },
-    ]
-
-
-class WorkItemsTests(BaseTests):
-    name = "Work Items Tests"
-    target = "workitems_tests.yml"
-    project_name = "workitems"
 
 
 TEST_TARGETS = [
     ActionServerTests(),
     ActionsTests(),
-    BrowserTests(),
-    ExcelTests(),
-    IntegrationTests(),
-    LogPyTestTests(),
-    LogTests(),
-    StorageTests(),
-    TasksTests(),
-    VaultTests(),
-    WindowsTests(),
-    WorkItemsTests(),
 ]
 
 

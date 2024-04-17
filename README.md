@@ -1,18 +1,19 @@
-![Robocorp](./docs/include/robocorp-header.svg)
+![Sema4ai](./docs/include/header.svg)
 
 <samp>[Docs](https://robocorp.com/docs) | [Blog](https://robocorp.com/blog) | [Examples](https://github.com/robocorp/actions-cookbook) | [ReMark](https://chat.robocorp.com) | [Courses](https://robocorp.com/docs/courses) | [Slack](https://robocorp-developers.slack.com/) | [Youtube](https://www.youtube.com/@Robocorp) | [𝕏](https://twitter.com/RobocorpInc)</samp>
 
-[![PyPI - Version](https://img.shields.io/pypi/v/robocorp?label=robocorp&color=%23733CFF)](https://pypi.org/project/robocorp)
-[![PyPI - Version](https://img.shields.io/pypi/v/robocorp-action-server?label=action-server&color=%23733CFF)](https://pypi.org/project/robocorp-action-server)
-[![Downloads](https://static.pepy.tech/badge/robocorp/month)](https://pepy.tech/project/robocorp)
-[![GitHub issues](https://img.shields.io/github/issues/robocorp/robocorp?color=%232080C0)](https://github.com/robocorp/robocorp/issues)
+[![PyPI - Version](https://img.shields.io/pypi/v/sema4ai-actions?label=sema4ai-actions&color=%23733CFF)](https://pypi.org/project/sema4ai-actions)
+[![PyPI - Version](https://img.shields.io/pypi/v/sema4ai-action-server?label=sema4ai-action-server&color=%23733CFF)](https://pypi.org/project/sema4ai-action-server)
+[![GitHub issues](https://img.shields.io/github/issues/sema4ai/actions?color=%232080C0)](https://github.com/sema4ai/actions/issues)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 # Create, deploy and operate 🐍 Python Automations and AI Actions anywhere.
 
-Robocorp is the easiest way to extend the capabilities of AI agents, assistants and copilots with custom actions, written in Python. Create and deploy tools, skills, loaders and plugins that securely connect any AI Assistant platform to your data and applications.
+Sema4.ai is the easiest way to extend the capabilities of AI agents, assistants and copilots with custom actions, written in Python. 
+Create and deploy tools, skills, loaders and plugins that securely connect any AI Assistant platform to your data and applications.
 
-Robocorp Action Server makes your Python scripts compatible with ChatGPT and LangChain by automatically creating and exposing an API based on function declaration, type hints and docstrings. Just add `@action` and start!
+Sema4.ai Action Server makes your Python scripts compatible with ChatGPT and LangChain by automatically creating and exposing an API 
+based on function declaration, type hints and docstrings. Just add `@action` and start!
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="./docs/include/robocorp-flow-dark.webp">
@@ -27,7 +28,7 @@ Looking for a replacement to RPA? Head over to our [Enterprise Python Automation
 
 # 🏃‍♂️ Quickstart
 
-There are two main ways using the Action Server: use with our Robocorp Code extension for VS Code, or DIY from the command line. This section gets you going!
+There are two main ways using the Action Server: use with our VSCode extension, or DIY from the command line. This section gets you going!
 
 <details open>
 <summary><b>Robocorp Code extension for VS Code</b></summary>

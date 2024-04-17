@@ -1,6 +1,6 @@
 # Contributing
 
-This is a contribution guide for the Robocorp project and its associated libraries.
+This is a contribution guide for the Sema4ai actions and action server projects and its associated libraries.
 
 ## Libraries
 
@@ -79,10 +79,6 @@ inv install
 💡 This will create/set up an environment for that project, either in a new local _.venv_ dir (Pyenv approach), or in the
 currently active virtual environment (RCC/Conda approach).
 
-If other dependent libraries also need to be changed (for instance, when changes in [_tasks_](tasks) require changes in
-[_log_](log) as well to work end-to-end), it's possible to use `inv devinstall`. This will install all the `robocorp-*`
-libraries in development mode right in the same Python virtual environment.
-
 ### Calling Invoke tasks
 
 To see all the available tasks, run `invoke --list` (`inv -l` for short).
@@ -136,38 +132,12 @@ To make a new release for a library, ensure the following steps are accomplished
    _docs/CHANGELOG.md_ describing the changes.
 3. The changes above are already committed/integrated into `master`, the test workflows in GitHub Actions are passing,
    and you're operating on the `master` branch locally.
-5. You run `inv make-release` to create and push the release tag which will trigger the GitHub workflow that makes the
+4. You run `inv make-release` to create and push the release tag which will trigger the GitHub workflow that makes the
    release.
 
 > To trigger a release, a commit should be tagged with the name and version of the library. The tag can be generated
 > and pushed automatically with `inv make-release`. After the tag has been pushed, a corresponding GitHub Actions 
 > workflow will be triggered that builds the library and publishes it to PyPI.
-
-### The meta-package
-
-In the [_meta_](meta) folder is a meta-package for the core features of the `robocorp` framework, i.e. logging, tasks,
-and Control Room libraries. It is used in templates and examples as a quick way to get the essential features into
-the automation code.
-
-The package is available in PyPI as [**robocorp**](https://pypi.org/project/robocorp/) and bundles a couple of frequent
-vital `robocorp-*` libraries.
-
-After a new release has been made to one of the contained libraries, the meta-package should be updated with the
-correct dependencies. To see if the current configuration matches what is available in PyPI, run the following:
-
-```
-inv outdated
-```
-
-If it warns about outdated packages, they can be updated with:
-
-```
-inv update
-```
-
-The `update` task also automatically bumps the version of the meta-package based on the changed versions of the
-dependencies. Releasing it, is done similarly as with the other libraries, ending by running the very same
-`inv make-release` command.
 
 
 [requirements]: <devutils/requirements.txt>
