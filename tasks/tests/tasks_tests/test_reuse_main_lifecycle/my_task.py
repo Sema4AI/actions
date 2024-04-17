@@ -1,6 +1,6 @@
 from typing import Sequence
 
-from robocorp.tasks import ITask, setup, task, teardown
+from sema4ai.tasks import ITask, setup, task, teardown
 
 session_setup = 0
 task_setup = 0

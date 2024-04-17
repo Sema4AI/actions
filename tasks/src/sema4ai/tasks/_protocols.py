@@ -255,7 +255,7 @@ class IAfterTaskRunCallback(ICallback, typing.Protocol):
 
 class TasksListTaskTypedDict(TypedDict):
     """
-    When python -m robocorp.tasks list is run, the output is a
+    When python -m sema4ai.tasks list is run, the output is a
     list[TasksListTaskTypedDict].
     """
 

@@ -10,7 +10,7 @@ def test_force_early_exit_cmdline(pyfile, kill):
 
     @pyfile
     def check():
-        from robocorp.tasks import session_cache, task
+        from sema4ai.tasks import session_cache, task
 
         @task
         def my_task():
@@ -58,7 +58,7 @@ def test_force_early_exit(pyfile, kill):
 
     @pyfile
     def check():
-        from robocorp.tasks import session_cache, task
+        from sema4ai.tasks import session_cache, task
 
         @task
         def my_task():
@@ -116,7 +116,7 @@ def test_force_early_exit_with_error(pyfile, kill):
 
     @pyfile
     def check():
-        from robocorp.tasks import task
+        from sema4ai.tasks import task
 
         @task
         def my_task():
@@ -161,7 +161,7 @@ def test_force_early_exit_kills_subprocesses(pyfile, kill):
 
     @pyfile
     def check():
-        from robocorp.tasks import task
+        from sema4ai.tasks import task
 
         @task
         def my_task():

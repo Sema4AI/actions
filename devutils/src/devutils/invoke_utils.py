@@ -153,7 +153,7 @@ def build_common_tasks(
 
     Args:
         root: The path to the package root. (i.e.: ./tasks in the repo)
-        package_name: The name of the python package. (i.e.: "robocorp.tasks")
+        package_name: The name of the python package. (i.e.: "sema4ai.tasks")
         tag_prefix: Optional prefix for tags / PyPI package name.
         ruff_format_arguments: Pass extra options to the ruff formatting commands.
         parallel_tests: Runs tests in parallels. (enabled by default)

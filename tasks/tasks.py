@@ -12,4 +12,4 @@ except ImportError:
 
 from devutils.invoke_utils import build_common_tasks
 
-globals().update(build_common_tasks(ROOT, "robocorp.tasks"))
+globals().update(build_common_tasks(ROOT, "sema4ai.tasks"))

@@ -148,7 +148,7 @@ def collect_tasks(
     """
     Note: collecting tasks is not thread-safe.
     """
-    from robocorp.tasks import _constants, _hooks
+    from sema4ai.tasks import _constants, _hooks
 
     path = path.absolute()
     task_names_as_set = set(task_names)
@@ -162,7 +162,7 @@ def collect_tasks(
         return task.name in task_names
 
     def on_func_found(func, options: Dict):
-        from robocorp.tasks._exceptions import RobocorpTasksError
+        from sema4ai.tasks._exceptions import RobocorpTasksError
 
         key = (func.__code__.co_name, func.__code__.co_filename)
         if key in _found_as_set:
@@ -223,7 +223,7 @@ def collect_tasks(
                 f"Expected {path} to map to a directory or file."
             )
 
-    from robocorp.tasks._task import Task
+    from sema4ai.tasks._task import Task
 
     for method, options in _methods_marked_as_tasks_found:
         module_name = method.__module__

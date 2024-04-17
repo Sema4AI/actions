@@ -5,7 +5,7 @@ import pytest
 
 
 def test_argparse():
-    from robocorp.tasks._argdispatch import arg_dispatch
+    from sema4ai.tasks._argdispatch import arg_dispatch
 
     parser = arg_dispatch._create_argparser()
 
@@ -56,7 +56,7 @@ def test_argparse():
 
 
 def test_argparse_command_invalid():
-    from robocorp.tasks.cli import main
+    from sema4ai.tasks.cli import main
 
     s = io.StringIO()
     with redirect_stdout(s):

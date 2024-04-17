@@ -33,7 +33,7 @@ def setup(
     Can be used as a decorator without arguments:
 
     ```python
-    from robocorp.tasks import setup
+    from sema4ai.tasks import setup
 
     @setup
     def my_fixture(task):
@@ -44,7 +44,7 @@ def setup(
     the fixture is run:
 
     ```python
-    from robocorp.tasks import setup
+    from sema4ai.tasks import setup
 
     @setup(scope="task")
     def before_each(task):
@@ -62,7 +62,7 @@ def setup(
 
     ```python
     import time
-    from robocorp.tasks import setup
+    from sema4ai.tasks import setup
 
     @setup
     def measure_time(task):
@@ -156,7 +156,7 @@ def teardown(
     Can be used as a decorator without arguments:
 
     ```python
-    from robocorp.tasks import teardown
+    from sema4ai.tasks import teardown
 
     @teardown
     def my_fixture(task):
@@ -167,7 +167,7 @@ def teardown(
     the fixture is run:
 
     ```python
-    from robocorp.tasks import teardown
+    from sema4ai.tasks import teardown
 
     @teardown(scope="task")
     def after_each(task):

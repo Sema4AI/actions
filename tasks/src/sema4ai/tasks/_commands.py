@@ -12,8 +12,8 @@ from io import StringIO
 from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional, Sequence, Union, overload
 
-from robocorp.tasks._customization._extension_points import EPManagedParameters
-from robocorp.tasks._protocols import ITask
+from sema4ai.tasks._customization._extension_points import EPManagedParameters
+from sema4ai.tasks._protocols import ITask
 
 from . import _constants
 from ._argdispatch import arg_dispatch as _arg_dispatch
@@ -48,9 +48,9 @@ def list_tasks(
     """
     from contextlib import redirect_stdout
 
-    from robocorp.tasks._collect_tasks import collect_tasks
-    from robocorp.tasks._protocols import TasksListTaskTypedDict
-    from robocorp.tasks._task import Context
+    from sema4ai.tasks._collect_tasks import collect_tasks
+    from sema4ai.tasks._protocols import TasksListTaskTypedDict
+    from sema4ai.tasks._task import Context
 
     p = Path(path)
     context = Context()
@@ -223,7 +223,7 @@ def run(
         read_robocorp_auto_log_config,
     )
 
-    from robocorp.tasks._interrupts import interrupt_on_timeout
+    from sema4ai.tasks._interrupts import interrupt_on_timeout
 
     from ._collect_tasks import collect_tasks
     from ._config import RunConfig, set_config
@@ -540,7 +540,7 @@ def run(
                 )
                 timeout = 40
 
-            from robocorp.tasks._interrupts import dump_threads
+            from sema4ai.tasks._interrupts import dump_threads
 
             def on_timeout():
                 dump_threads(
@@ -579,7 +579,7 @@ def _validate_and_convert_kwargs(
 ) -> Dict[str, Any]:
     from typing import get_type_hints
 
-    from robocorp.tasks._exceptions import InvalidArgumentsError
+    from sema4ai.tasks._exceptions import InvalidArgumentsError
 
     target_method = task.method
     sig = inspect.signature(target_method)
@@ -740,7 +740,7 @@ def _normalize_arguments(
 ) -> Dict[str, Any]:
     from typing import get_type_hints
 
-    from robocorp.tasks._exceptions import InvalidArgumentsError
+    from sema4ai.tasks._exceptions import InvalidArgumentsError
 
     target_method = task.method
     sig = inspect.signature(target_method)

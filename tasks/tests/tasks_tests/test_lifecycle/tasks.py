@@ -1,6 +1,6 @@
 import itertools
 
-from robocorp.tasks import task, task_cache
+from sema4ai.tasks import task, task_cache
 
 _counter = itertools.count()
 

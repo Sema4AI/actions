@@ -5,7 +5,7 @@ To use:
 Mark entry points with:
 
 ```
-from robocorp.tasks import task
+from sema4ai.tasks import task
 
 @task
 def my_method():
@@ -16,15 +16,15 @@ Running options:
 
 Runs all the tasks in a .py file:
 
-  `python -m robocorp.tasks run <path_to_file>`
+  `python -m sema4ai.tasks run <path_to_file>`
 
 Run all the tasks in files named *task*.py:
 
-  `python -m robocorp.tasks run <directory>`
+  `python -m sema4ai.tasks run <directory>`
 
 Run only tasks with a given name:
 
-  `python -m robocorp.tasks run <directory or file> -t <task_name>`
+  `python -m sema4ai.tasks run <directory or file> -t <task_name>`
 
 
 Note: Using the `cli.main(args)` is possible to run tasks programmatically, but
@@ -44,14 +44,14 @@ version_info = [int(x) for x in __version__.split(".")]
 
 def task(*args, **kwargs):
     """
-    Decorator for tasks (entry points) which can be executed by `robocorp.tasks`.
+    Decorator for tasks (entry points) which can be executed by `sema4ai.tasks`.
 
     i.e.:
 
     If a file such as tasks.py has the contents below:
 
     ```python
-    from robocorp.tasks import task
+    from sema4ai.tasks import task
 
     @task
     def enter_user():
@@ -61,7 +61,7 @@ def task(*args, **kwargs):
     It's also possible to pass options to the task decorator that can then be introspected by `task.options`:
 
     ```python
-    from robocorp.tasks import task
+    from sema4ai.tasks import task
 
     @task(this_is_option="option")
     def enter_user():
@@ -70,10 +70,10 @@ def task(*args, **kwargs):
 
     It'll be executable by robocorp tasks as:
 
-    python -m robocorp.tasks run tasks.py -t enter_user
+    python -m sema4ai.tasks run tasks.py -t enter_user
 
     Args:
-        func: A function which is a task to `robocorp.tasks`.
+        func: A function which is a task to `sema4ai.tasks`.
         **kwargs: Options to be introspected by `task.options`.
     """
 

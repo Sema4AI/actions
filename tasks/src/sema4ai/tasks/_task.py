@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Literal, Optional, Tuple, get_type_hints
 from robocorp.log import ConsoleMessageKind, console_message
 from robocorp.log.protocols import OptExcInfo
 
-from robocorp.tasks._customization._plugin_manager import PluginManager
+from sema4ai.tasks._customization._plugin_manager import PluginManager
 
 from ._constants import SUPPORTED_TYPES_IN_SCHEMA
 from ._protocols import IContext, ITask, Status
@@ -78,7 +78,7 @@ class Task:
             if param_type not in SUPPORTED_TYPES_IN_SCHEMA:
                 if hasattr(param_type, "model_json_schema"):
                     # Support for pydantic
-                    from robocorp.tasks._remove_refs import replace_refs
+                    from sema4ai.tasks._remove_refs import replace_refs
 
                     # Note: we inline the references and remove the definitions
                     # because this schema can be added as a part of a larger schema
@@ -109,7 +109,7 @@ class Task:
 
     @property
     def managed_params_schema(self) -> Dict[str, Any]:
-        from robocorp.tasks._commands import _get_managed_param_type, _is_managed_param
+        from sema4ai.tasks._commands import _get_managed_param_type, _is_managed_param
 
         managed_params_schema: Dict[str, Any] = {}
         sig = inspect.signature(self.method)
@@ -125,7 +125,7 @@ class Task:
     def input_schema(self) -> Dict[str, Any]:
         import docstring_parser
 
-        from robocorp.tasks._commands import _is_managed_param
+        from sema4ai.tasks._commands import _is_managed_param
 
         sig = inspect.signature(self.method)
         method_name = self.method.__code__.co_name
@@ -201,7 +201,7 @@ class Task:
         return self._status == Status.FAIL
 
     def __typecheckself__(self) -> None:
-        from robocorp.tasks._protocols import check_implements
+        from sema4ai.tasks._protocols import check_implements
 
         _: ITask = check_implements(self)
 
@@ -353,6 +353,6 @@ class Context:
             yield
 
     def __typecheckself__(self) -> None:
-        from robocorp.tasks._protocols import check_implements
+        from sema4ai.tasks._protocols import check_implements
 
         _: IContext = check_implements(self)

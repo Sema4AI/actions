@@ -1,4 +1,4 @@
-from robocorp.tasks import task
+from sema4ai.tasks import task
 
 print("some message while collecting.")
 

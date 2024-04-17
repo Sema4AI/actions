@@ -19,8 +19,9 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.10"
 robocorp-log = ">=2.4,<3"
+robocorp-truststore= ">=0.8.0"
 psutil = "^5.0"
 docstring_parser_fork = "^0.0.5"
 packaging = "^24.0"

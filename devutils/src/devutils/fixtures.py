@@ -273,7 +273,7 @@ def robocorp_tasks_run(
     timeout=None,
 ) -> CompletedProcess:
     return python_run(
-        ["-m", "robocorp.tasks"] + cmdline, returncode, cwd, additional_env, timeout
+        ["-m", "sema4ai.tasks"] + cmdline, returncode, cwd, additional_env, timeout
     )
 
 
@@ -285,7 +285,7 @@ def robocorp_actions_run(
     timeout=None,
 ) -> CompletedProcess:
     return python_run(
-        ["-m", "robocorp.actions"] + cmdline, returncode, cwd, additional_env, timeout
+        ["-m", "sema4ai.actions"] + cmdline, returncode, cwd, additional_env, timeout
     )
 
 

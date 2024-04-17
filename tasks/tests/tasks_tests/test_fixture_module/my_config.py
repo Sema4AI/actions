@@ -1,4 +1,4 @@
-from robocorp.tasks import setup
+from sema4ai.tasks import setup
 
 print("In my_config 1")
 

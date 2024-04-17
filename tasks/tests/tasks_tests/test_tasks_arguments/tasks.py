@@ -2,7 +2,7 @@ from typing import Annotated, Tuple, Union
 
 from pydantic import BaseModel, Field
 
-from robocorp.tasks import task
+from sema4ai.tasks import task
 
 
 @task

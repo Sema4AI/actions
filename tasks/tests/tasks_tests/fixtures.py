@@ -28,7 +28,7 @@ def _fix_pythonpath() -> Iterator[None]:
         # remove it.
         del sys.modules["tasks"]
 
-    from robocorp.tasks._collect_tasks import clear_previously_collected_tasks
+    from sema4ai.tasks._collect_tasks import clear_previously_collected_tasks
 
     clear_previously_collected_tasks()
 

@@ -1,6 +1,6 @@
 import os
 
-from robocorp.tasks.cli import main
+from sema4ai.tasks.cli import main
 
 if __name__ == "__main__":
     os.environ["RC_TASKS_SKIP_SESSION_TEARDOWN"] = "1"

@@ -5,8 +5,8 @@ from devutils.fixtures import robocorp_tasks_run
 
 
 def test_colect_tasks(datadir) -> None:
-    from robocorp.tasks._collect_tasks import collect_tasks
-    from robocorp.tasks._customization._plugin_manager import PluginManager
+    from sema4ai.tasks._collect_tasks import collect_tasks
+    from sema4ai.tasks._customization._plugin_manager import PluginManager
 
     tasks = tuple(collect_tasks(PluginManager(), datadir, "main"))
     assert len(tasks) == 1
@@ -27,11 +27,11 @@ def test_colect_tasks(datadir) -> None:
 
 
 def test_colect_tasks_from_package(datadir) -> None:
-    from robocorp.tasks._collect_tasks import collect_tasks
-    from robocorp.tasks._customization._plugin_manager import PluginManager
+    from sema4ai.tasks._collect_tasks import collect_tasks
+    from sema4ai.tasks._customization._plugin_manager import PluginManager
 
     tasks = tuple(collect_tasks(PluginManager(), datadir / "in_init"))
-    assert len(tasks) == 1
+    assert len(tasks) == 1, f"Found: {tasks}"
 
 
 def test_collect_tasks_integrated_error(tmpdir) -> None:

@@ -1,6 +1,6 @@
 import time
 
-from robocorp.tasks import task, task_cache
+from sema4ai.tasks import task, task_cache
 
 
 @task_cache

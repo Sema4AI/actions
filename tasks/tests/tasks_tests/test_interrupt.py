@@ -1,7 +1,7 @@
 import threading
 import time
 
-from robocorp.tasks._interrupts import (
+from sema4ai.tasks._interrupts import (
     create_interrupt_this_thread_callback,
     interrupt_main_thread,
 )

@@ -2,9 +2,9 @@ from collections.abc import Iterable
 
 import pytest
 
-from robocorp.tasks import setup as tasks_setup
-from robocorp.tasks import teardown as tasks_teardown
-from robocorp.tasks._hooks import (
+from sema4ai.tasks import setup as tasks_setup
+from sema4ai.tasks import teardown as tasks_teardown
+from sema4ai.tasks._hooks import (
     after_all_tasks_run,
     after_task_run,
     before_all_tasks_run,
