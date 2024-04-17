@@ -35,7 +35,7 @@ class _ArgDispatcher:
         return do_register
 
     def _get_description(self):
-        return "Robocorp framework for Python automations."
+        return "Sema4.ai framework for AI actions."
 
     def _add_task_argument(self, run_parser):
         run_parser.add_argument(
@@ -184,7 +184,7 @@ class _ArgDispatcher:
         parser = cls(
             prog=_constants.MODULE_ENTRY_POINT,
             description=self._get_description(),
-            epilog="View https://github.com/robocorp/robo for more information",
+            epilog="View https://github.com/sema4ai/actionsfor more information",
         )
 
         subparsers = parser.add_subparsers(dest="command")
