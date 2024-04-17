@@ -175,33 +175,6 @@ class BaseTests:
             },
         }
 
-        build_log_react_view_steps = [
-            {
-                "name": "npm ci",
-                "working-directory": "./log/output-react/",
-                "if": "contains(matrix.name, '-devmode')",
-                "run": "npm ci",
-                "env": {
-                    "CI": True,
-                    "NODE_AUTH_TOKEN": "${{ secrets.CI_GITHUB_TOKEN }}",
-                },
-            },
-            {
-                "name": "Print robocorp-log info and build the output view.",
-                "if": "contains(matrix.name, '-devmode')",
-                "run": r"""
-poetry run python -c "import sys;print('\n'.join(str(x) for x in sys.path))"
-poetry run python -c "from robocorp import log;print(log.__file__)"
-cd ../log
-inv build-output-view-react
-""",
-                "env": {
-                    "CI": True,
-                    "NODE_AUTH_TOKEN": "${{ secrets.CI_GITHUB_TOKEN }}",
-                },
-            },
-        ]
-
         build_frontend = {
             "name": "Build frontend",
             "run": "inv build-frontend",
@@ -276,6 +249,7 @@ inv docs --validate
         steps.extend([install, devinstall])
 
         if self.require_build_frontend:
+            steps.append(setup_node)
             steps.append(build_frontend)
 
         steps.extend(self.before_run_custom_additional_steps)
