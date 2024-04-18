@@ -9,6 +9,26 @@ if typing.TYPE_CHECKING:
     )
 
 
+def _inject_truststore():
+    # Use certificates from the native storage.
+    try:
+        import truststore  # type: ignore
+    except ModuleNotFoundError:
+        pass
+    else:
+        truststore.inject_into_ssl()
+
+
+_inject_truststore()
+
+if sys.platform == "win32":
+    # Apply workaround where `asyncio` would halt forever when windows UIAutomation.dll
+    # is used with comtypes.
+    # see: https://github.com/python/cpython/issues/111604
+    _COINIT_MULTITHREADED = 0x0
+    sys.coinit_flags = _COINIT_MULTITHREADED  # type:ignore
+
+
 def main(
     args=None, exit: bool = True, plugin_manager: Optional["_PluginManager"] = None
 ) -> int:
@@ -27,19 +47,8 @@ def main(
     Returns:
         The exit code for the process.
     """
-    from sema4ai.actions._args_dispatcher import _ActionsArgDispatcher
-
-    # Note: sema4ai-actions is almost only sema4ai-tasks but with a few
-    # different APIs.
-    #
-    # As both are under our control, we rely on internal APIs to make
-    # it seem to the external world as everything is action-based (and not
-    # task-based).
-
     if args is None:
         args = sys.argv[1:]
-
-    from sema4ai.tasks.cli import main
 
     if plugin_manager is None:
         # If not provided, let's still add the 'request' as a managed parameter
@@ -55,9 +64,14 @@ def main(
             ManagedParameters({"request": Request.model_validate({})}),
         )
 
-    return main(
-        args,
-        exit,
-        argument_dispatcher=_ActionsArgDispatcher(),
-        plugin_manager=plugin_manager,
-    )
+    from sema4ai.actions._args_dispatcher import _ActionsArgDispatcher
+
+    if args is None:
+        args = sys.argv[1:]
+
+    dispatcher = _ActionsArgDispatcher()
+
+    returncode = dispatcher.process_args(args, pm=plugin_manager)
+    if exit:
+        sys.exit(returncode)
+    return returncode

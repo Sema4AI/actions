@@ -51,6 +51,16 @@ class _ArgDispatcher:
 
         return argparse.ArgumentParser
 
+    def _add_lint_argument(self, parser):
+        parser.add_argument(
+            "--skip-lint",
+            dest="skip_lint",
+            action="store_true",
+            default=False,
+            help="Skip `@action` linting when an action is found (by default any "
+            "`@action` is linted for errors when found).",
+        )
+
     def _create_run_parser(self, main_parser):
         # Run
         run_parser = main_parser.add_parser(
@@ -176,6 +186,8 @@ class _ArgDispatcher:
                 f"May be used to specify a glob to select from which files tasks should be searched (default '{_constants.DEFAULT_TASK_SEARCH_GLOB}')"
             ),
         )
+
+        self._add_lint_argument(list_parser)
 
         return list_parser
 

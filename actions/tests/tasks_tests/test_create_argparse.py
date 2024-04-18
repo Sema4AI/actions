@@ -56,7 +56,7 @@ def test_argparse():
 
 
 def test_argparse_command_invalid():
-    from sema4ai.tasks.cli import main
+    from sema4ai.actions.cli import main
 
     s = io.StringIO()
     with redirect_stdout(s):

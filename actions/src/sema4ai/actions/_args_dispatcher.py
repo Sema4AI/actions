@@ -99,27 +99,6 @@ class _ActionsArgDispatcher(_ArgDispatcher):
 
         return _commands.run(*args, **kwargs)
 
-    def _add_lint_argument(self, parser):
-        parser.add_argument(
-            "--skip-lint",
-            dest="skip_lint",
-            action="store_true",
-            default=False,
-            help="Skip `@action` linting when an action is found (by default any "
-            "`@action` is linted for errors when found).",
-        )
-
-    def _create_run_parser(self, main_parser):
-        parser = super()._create_run_parser(main_parser)
-        # Not adding to run at this point.
-        # self._add_lint_argument(parser)
-        return parser
-
-    def _create_list_tasks_parser(self, main_parser):
-        parser = super()._create_list_tasks_parser(main_parser)
-        self._add_lint_argument(parser)
-        return parser
-
     def _get_argument_parser_class(self):
         import argparse
 
