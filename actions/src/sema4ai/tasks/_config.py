@@ -19,7 +19,7 @@ class RunConfig:
         Args:
             output_dir: The directory where output should be put.
             path: The path (file or directory where the tasks should be collected from.
-            task_name: The name(s) of the task(s) to run.
+            action_name: The name(s) of the task(s) to run.
             max_log_files: The maximum number of log files to be created (if more would
                 be needed the oldest one is deleted).
             max_log_file_size: The maximum size for the created log files.

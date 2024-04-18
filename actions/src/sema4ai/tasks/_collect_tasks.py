@@ -189,7 +189,7 @@ def collect_tasks(
                 if package_init.exists():
                     lst.append(package_init)
 
-                use_glob = glob or _constants.DEFAULT_TASK_SEARCH_GLOB
+                use_glob = glob or _constants.DEFAULT_ACTION_SEARCH_GLOB
 
                 # We want to accept '|' in glob.
                 globs = use_glob.split("|")

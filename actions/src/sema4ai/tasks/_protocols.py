@@ -253,10 +253,10 @@ class IAfterTaskRunCallback(ICallback, typing.Protocol):
         pass
 
 
-class TasksListTaskTypedDict(TypedDict):
+class ActionsListActionTypedDict(TypedDict):
     """
     When python -m sema4ai.tasks list is run, the output is a
-    list[TasksListTaskTypedDict].
+    list[ActionsListActionTypedDict].
     """
 
     name: str

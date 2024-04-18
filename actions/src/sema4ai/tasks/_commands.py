@@ -16,14 +16,11 @@ from sema4ai.tasks._customization._extension_points import EPManagedParameters
 from sema4ai.tasks._protocols import IAction
 
 from . import _constants
-from ._argdispatch import arg_dispatch as _arg_dispatch
 from ._constants import SUPPORTED_TYPES_IN_SCHEMA
 from ._customization._plugin_manager import PluginManager
 
 
-# Note: the args must match the 'dest' on the configured argparser.
-@_arg_dispatch.register(name="list")
-def list_tasks(
+def list_actions(
     *,
     path: str,
     glob: Optional[str] = None,
@@ -31,25 +28,25 @@ def list_tasks(
     pm: Optional[PluginManager] = None,
 ) -> int:
     """
-    Prints the tasks available at a given path to the stdout in json format.
+    Prints the actions available at a given path to the stdout in json format.
 
     [
         {
-            "name": "task_name",
+            "name": "action_name",
             "line": 10,
-            "file": "/usr/code/projects/tasks.py",
+            "file": "/usr/code/projects/actions.py",
             "docs": "Action docstring",
         },
         ...
     ]
 
     Args:
-        path: The path (file or directory) from where tasks should be collected.
+        path: The path (file or directory) from where actions should be collected.
     """
     from contextlib import redirect_stdout
 
     from sema4ai.tasks._collect_tasks import collect_tasks
-    from sema4ai.tasks._protocols import TasksListTaskTypedDict
+    from sema4ai.tasks._protocols import ActionsListActionTypedDict
     from sema4ai.tasks._task import Context
 
     p = Path(path)
@@ -69,9 +66,9 @@ def list_tasks(
 
     with redirect_stdout(sys.stderr):
         task: IAction
-        tasks_found: List[TasksListTaskTypedDict] = []
+        actions_found: List[ActionsListActionTypedDict] = []
         for task in collect_tasks(pm, p, glob=glob):
-            entry: TasksListTaskTypedDict = {
+            entry: ActionsListActionTypedDict = {
                 "name": task.name,
                 "line": task.lineno,
                 "file": task.filename,
@@ -81,9 +78,9 @@ def list_tasks(
                 "managed_params_schema": task.managed_params_schema,
                 "options": task.options,
             }
-            tasks_found.append(entry)
+            actions_found.append(entry)
 
-        write_to.write(json.dumps(tasks_found))
+        write_to.write(json.dumps(actions_found))
         write_to.flush()
     return 0
 
@@ -141,13 +138,11 @@ class _OsExit(enum.Enum):
     AFTER_TEARDOWN = 2
 
 
-# Note: the args must match the 'dest' on the configured argparser.
-@_arg_dispatch.register()
 def run(
     *,
     output_dir: str,
     path: str,
-    task_name: Union[Sequence[str], str, None],
+    action_name: Union[Sequence[str], str, None],
     max_log_files: int = 5,
     max_log_file_size: str = "1MB",
     console_colors: str = "auto",
@@ -168,7 +163,7 @@ def run(
     Args:
         output_dir: The directory where output should be put.
         path: The path (file or directory where the tasks should be collected from.
-        task_name: The name(s) of the task to run.
+        action_name: The name(s) of the task to run.
         max_log_files: The maximum number of log files to be created (if more would
             be needed the oldest one is deleted).
         max_log_file_size: The maximum size for the created log files.
@@ -312,15 +307,15 @@ def run(
     from robocorp import log
 
     task_names: Sequence[str]
-    if not task_name:
+    if not action_name:
         task_names = []
         task_or_tasks = "tasks"
-    elif isinstance(task_name, str):
-        task_names = [task_name]
+    elif isinstance(action_name, str):
+        task_names = [action_name]
         task_or_tasks = "task"
     else:
-        task_names = task_name
-        task_name = ", ".join(str(x) for x in task_names)
+        task_names = action_name
+        action_name = ", ".join(str(x) for x in task_names)
         task_or_tasks = "task" if len(task_names) == 1 else "tasks"
 
     config: log.AutoLogConfigBase
@@ -390,8 +385,8 @@ def run(
             max_file_size=max_log_file_size,
         ), setup_log_output_to_port(), context.register_lifecycle_prints():
             run_name = os.path.basename(p)
-            if task_name:
-                run_name += f" - {task_name}"
+            if action_name:
+                run_name += f" - {action_name}"
 
             run_status: Union[Literal["PASS"], Literal["ERROR"]] = "PASS"
             log.start_run(run_name)
@@ -406,11 +401,11 @@ def run(
                             context.show(f"\nPre-loading module: {module}")
                             importlib.import_module(module)
 
-                    if not task_name:
+                    if not action_name:
                         context.show(f"\nCollecting tasks from: {path}")
                     else:
                         context.show(
-                            f"\nCollecting {task_or_tasks} {task_name} from: {path}"
+                            f"\nCollecting {task_or_tasks} {action_name} from: {path}"
                         )
 
                     tasks: List[IAction] = list(collect_tasks(pm, p, task_names, glob))

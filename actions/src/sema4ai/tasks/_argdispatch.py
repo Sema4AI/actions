@@ -37,19 +37,14 @@ class _ArgDispatcher:
     def _get_description(self):
         return "Sema4.ai framework for AI actions."
 
-    def _add_task_argument(self, run_parser):
+    def _add_action_argument(self, run_parser):
         run_parser.add_argument(
             "-a",
             "--action",
-            dest="task_name",
+            dest="action_name",
             help="The name of the action that should be run.",
             action="append",
         )
-
-    def _get_argument_parser_class(self):
-        import argparse
-
-        return argparse.ArgumentParser
 
     def _add_lint_argument(self, parser):
         parser.add_argument(
@@ -65,19 +60,19 @@ class _ArgDispatcher:
         # Run
         run_parser = main_parser.add_parser(
             "run",
-            help="Collects tasks with the @task decorator and all tasks that matches based on the task name filter.",
+            help="Collects actions with the @action decorator and all actions that matches based on the action name filter.",
         )
         run_parser.add_argument(
             dest="path",
-            help="The directory or file with the tasks to run.",
+            help="The directory or file with the actions to run.",
             nargs="?",
             default=".",
         )
         run_parser.add_argument(
             "--glob",
-            help=f"May be used to specify a glob to select from which files tasks should be searched (default '{_constants.DEFAULT_TASK_SEARCH_GLOB}')",
+            help=f"May be used to specify a glob to select from which files actions should be searched (default '{_constants.DEFAULT_ACTION_SEARCH_GLOB}')",
         )
-        self._add_task_argument(run_parser)
+        self._add_action_argument(run_parser)
         run_parser.add_argument(
             "-o",
             "--output-dir",
@@ -127,19 +122,19 @@ class _ArgDispatcher:
 
         run_parser.add_argument(
             "--json-input",
-            help="May be used to pass the arguments to the task by loading the arguments from a file (defined as a json object, where keys are the arguments names and the values are the values to be set to the arguments).",
+            help="May be used to pass the arguments to the action by loading the arguments from a file (defined as a json object, where keys are the arguments names and the values are the values to be set to the arguments).",
             dest="json_input",
         )
         run_parser.add_argument(
             "--preload-module",
             action="append",
-            help="May be used to load a module(s) as the first step when collecting tasks.",
+            help="May be used to load a module(s) as the first step when collecting actions.",
             dest="preload_module",
         )
 
         run_parser.add_argument(
             "--no-status-rc",
-            help="When set, if running tasks has an error inside the task the return code of the process is 0.",
+            help="When set, if running actions has an error inside the action the return code of the process is 0.",
             dest="no_status_rc",
             action="store_true",
         )
@@ -163,27 +158,27 @@ class _ArgDispatcher:
             dest="os_exit",
             type=str,
             choices=["no", "before-teardown", "after-teardown"],
-            help="Can be used to do an early os._exit to avoid the tasks session teardown or the interpreter teardown. Not recommended in general.",
+            help="Can be used to do an early os._exit to avoid the actions session teardown or the interpreter teardown. Not recommended in general.",
         )
 
         return run_parser
 
-    def _create_list_tasks_parser(self, main_parser):
-        # List tasks
+    def _create_list_actions_parser(self, main_parser):
+        # List actions
         list_parser = main_parser.add_parser(
             "list",
-            help="Provides output to stdout with json contents of the tasks available.",
+            help="Provides output to stdout with json contents of the actions available.",
         )
         list_parser.add_argument(
             dest="path",
-            help="The directory or file from where the tasks should be listed (default is the current directory).",
+            help="The directory or file from where the actions should be listed (default is the current directory).",
             nargs="?",
             default=".",
         )
         list_parser.add_argument(
             "--glob",
             help=(
-                f"May be used to specify a glob to select from which files tasks should be searched (default '{_constants.DEFAULT_TASK_SEARCH_GLOB}')"
+                f"May be used to specify a glob to select from which files actions should be searched (default '{_constants.DEFAULT_ACTION_SEARCH_GLOB}')"
             ),
         )
 
@@ -192,16 +187,17 @@ class _ArgDispatcher:
         return list_parser
 
     def _create_argparser(self):
-        cls = self._get_argument_parser_class()
-        parser = cls(
+        import argparse
+
+        parser = argparse.ArgumentParser(
             prog=_constants.MODULE_ENTRY_POINT,
             description=self._get_description(),
-            epilog="View https://github.com/sema4ai/actionsfor more information",
+            epilog="View https://github.com/sema4ai/actions for more information",
         )
 
         subparsers = parser.add_subparsers(dest="command")
         self._create_run_parser(subparsers)
-        self._create_list_tasks_parser(subparsers)
+        self._create_list_actions_parser(subparsers)
         return parser
 
     def parse_args(self, args: List[str]):
@@ -240,6 +236,3 @@ class _ArgDispatcher:
             return int(code)
 
         return self._dispatch(parsed, pm)
-
-
-arg_dispatch = _ArgDispatcher()

@@ -24,7 +24,7 @@ Run all the tasks in files named *task*.py:
 
 Run only tasks with a given name:
 
-  `python -m sema4ai.tasks run <directory or file> -t <task_name>`
+  `python -m sema4ai.tasks run <directory or file> -t <action_name>`
 
 
 Note: Using the `cli.main(args)` is possible to run tasks programmatically, but

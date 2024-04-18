@@ -92,24 +92,12 @@ class _ActionsArgDispatcher(_ArgDispatcher):
                 self._register_lint(original_stdout) if not skip_lint else nullcontext()
             )
             with ctx:
-                return _commands.list_tasks(*args, __stream__=original_stdout, **kwargs)
+                return _commands.list_actions(*args, __stream__=original_stdout, **kwargs)
 
     def _run(self, *args, **kwargs):
         from sema4ai.tasks import _commands
 
         return _commands.run(*args, **kwargs)
-
-    def _get_argument_parser_class(self):
-        import argparse
-
-        class ArgumentParserTranslated(argparse.ArgumentParser):
-            def format_usage(self):
-                return _translate(argparse.ArgumentParser.format_usage(self))
-
-            def format_help(self):
-                return _translate(argparse.ArgumentParser.format_help(self))
-
-        return ArgumentParserTranslated
 
     def _dispatch(self, parsed, pm: Optional[PluginManager] = None) -> int:
         # Custom dispatch as we need to account for custom flags.

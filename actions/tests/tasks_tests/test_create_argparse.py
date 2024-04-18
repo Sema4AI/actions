@@ -5,8 +5,9 @@ import pytest
 
 
 def test_argparse():
-    from sema4ai.tasks._argdispatch import arg_dispatch
+    from sema4ai.actions._args_dispatcher import _ActionsArgDispatcher
 
+    arg_dispatch = _ActionsArgDispatcher()
     parser = arg_dispatch._create_argparser()
 
     s = io.StringIO()
@@ -27,7 +28,7 @@ def test_argparse():
     assert parsed.command == "run"
     assert parsed.path == "target_dir"
     assert parsed.output_dir == "./out"
-    assert parsed.task_name == ["task-name"]
+    assert parsed.action_name == ["task-name"]
 
     parsed = parser.parse_args(
         ["run", "target_dir", "--max-log-files=5", "--max-log-file-size=2MB"]
