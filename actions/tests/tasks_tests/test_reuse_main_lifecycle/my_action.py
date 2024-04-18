@@ -19,7 +19,7 @@ def my_task_setup(task: IAction):
 
 
 @setup(scope="session")
-def my_session_setup(tasks: Sequence[IAction]):
+def my_session_setup(actions: Sequence[IAction]):
     global session_setup
     session_setup += 1
     print("session setup", session_setup)
@@ -33,7 +33,7 @@ def my_task_teardown(task: IAction):
 
 
 @teardown(scope="session")
-def my_session_teardown(tasks: Sequence[IAction]):
+def my_session_teardown(actions: Sequence[IAction]):
     global session_teardown
     session_teardown += 1
     print("session teardown", session_setup)

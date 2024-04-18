@@ -3,12 +3,12 @@ from logging import getLogger
 
 from ._callback import Callback
 from ._protocols import (
-    IAfterAllTasksRunCallback,
-    IAfterTaskRunCallback,
-    IBeforeAllTasksRunCallback,
-    IBeforeCollectTasksCallback,
-    IBeforeTaskRunCallback,
-    IOnTaskFuncFoundCallback,
+    IAfterAllActionsRunCallback,
+    IAfterActionRunCallback,
+    IBeforeAllActionsRunCallback,
+    IBeforeCollectActionsCallback,
+    IBeforeActionRunCallback,
+    IOnActionFuncFoundCallback,
 )
 
 logger = getLogger(__name__)
@@ -50,27 +50,27 @@ class SessionCallback(Callback):
 
 
 # Called as on_action_func_found(task: ITask)
-on_action_func_found: IOnTaskFuncFoundCallback = Callback(raise_exceptions=True)
+on_action_func_found: IOnActionFuncFoundCallback = Callback(raise_exceptions=True)
 
 # Called as before_collect_actions(path: Path, task_names: Set[str])
-before_collect_actions: IBeforeCollectTasksCallback = Callback()
+before_collect_actions: IBeforeCollectActionsCallback = Callback()
 
 # Called as before_all_tasks_run(tasks: List[ITask])
-before_all_tasks_run: IBeforeAllTasksRunCallback = SessionCallback(
+before_all_tasks_run: IBeforeAllActionsRunCallback = SessionCallback(
     "RC_TASKS_SKIP_SESSION_SETUP", False, raise_exceptions=True
 )
 
 # Called as before_task_run(task: ITask)
-before_task_run: IBeforeTaskRunCallback = Callback(raise_exceptions=True)
+before_task_run: IBeforeActionRunCallback = Callback(raise_exceptions=True)
 
 # Called as after_task_run(task: ITask)
 # Note that this one is done in reversed registry order (as is usually
 # expected from tear-downs).
-after_task_run: IAfterTaskRunCallback = Callback(reversed=True)
+after_task_run: IAfterActionRunCallback = Callback(reversed=True)
 
 # Called as after_all_tasks_run(tasks: List[ITask])
 # Note that this one is done in reversed registry order (as is usually
 # expected from tear-downs).
-after_all_tasks_run: IAfterAllTasksRunCallback = SessionCallback(
+after_all_tasks_run: IAfterAllActionsRunCallback = SessionCallback(
     "RC_TASKS_SKIP_SESSION_TEARDOWN", True, reversed=True
 )

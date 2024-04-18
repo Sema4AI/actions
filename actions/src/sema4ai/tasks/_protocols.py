@@ -125,24 +125,24 @@ class IAction(typing.Protocol):
     @property
     def name(self) -> str:
         """
-        The name of the task.
+        The name of the action.
         """
 
     @property
     def lineno(self) -> int:
         """
-        The line where the task is declared.
+        The line where the action is declared.
         """
 
     def run(self) -> Any:
         """
-        Runs the task and returns its result.
+        Runs the action and returns its result.
         """
 
     @property
     def failed(self) -> bool:
         """
-        Returns true if the task failed.
+        Returns true if the action failed.
         (in which case usually exc_info is not None).
         """
 
@@ -181,7 +181,7 @@ class IAutoUnregisterContextManager(typing.Protocol):
         pass
 
 
-class IOnTaskFuncFoundCallback(ICallback, typing.Protocol):
+class IOnActionFuncFoundCallback(ICallback, typing.Protocol):
     def __call__(self, func: Callable, *args, **kwargs):
         pass
 
@@ -192,7 +192,7 @@ class IOnTaskFuncFoundCallback(ICallback, typing.Protocol):
         pass
 
 
-class IBeforeCollectTasksCallback(ICallback, typing.Protocol):
+class IBeforeCollectActionsCallback(ICallback, typing.Protocol):
     def __call__(self, path: Path, task_names: Set[str]):
         pass
 
@@ -205,57 +205,57 @@ class IBeforeCollectTasksCallback(ICallback, typing.Protocol):
         pass
 
 
-ITaskCallback = Callable[[IAction], Any]
-ITasksCallback = Callable[[Sequence[IAction]], Any]
+IActionCallback = Callable[[IAction], Any]
+IActionsCallback = Callable[[Sequence[IAction]], Any]
 
 
-class IBeforeTaskRunCallback(ICallback, typing.Protocol):
+class IBeforeActionRunCallback(ICallback, typing.Protocol):
     def __call__(self, task: IAction):
         pass
 
-    def register(self, callback: ITaskCallback) -> IAutoUnregisterContextManager:
+    def register(self, callback: IActionCallback) -> IAutoUnregisterContextManager:
         pass
 
-    def unregister(self, callback: ITaskCallback) -> None:
+    def unregister(self, callback: IActionCallback) -> None:
         pass
 
 
-class IBeforeAllTasksRunCallback(ICallback, typing.Protocol):
-    def __call__(self, tasks: Sequence[IAction]):
+class IBeforeAllActionsRunCallback(ICallback, typing.Protocol):
+    def __call__(self, actions: Sequence[IAction]):
         pass
 
-    def register(self, callback: ITasksCallback) -> IAutoUnregisterContextManager:
+    def register(self, callback: IActionsCallback) -> IAutoUnregisterContextManager:
         pass
 
     def unregister(self, callback: Callable[[Sequence[IAction]], Any]) -> None:
         pass
 
 
-class IAfterAllTasksRunCallback(ICallback, typing.Protocol):
-    def __call__(self, tasks: Sequence[IAction]):
+class IAfterAllActionsRunCallback(ICallback, typing.Protocol):
+    def __call__(self, actions: Sequence[IAction]):
         pass
 
-    def register(self, callback: ITasksCallback) -> IAutoUnregisterContextManager:
+    def register(self, callback: IActionsCallback) -> IAutoUnregisterContextManager:
         pass
 
-    def unregister(self, callback: ITasksCallback) -> None:
+    def unregister(self, callback: IActionsCallback) -> None:
         pass
 
 
-class IAfterTaskRunCallback(ICallback, typing.Protocol):
+class IAfterActionRunCallback(ICallback, typing.Protocol):
     def __call__(self, task: IAction):
         pass
 
-    def register(self, callback: ITaskCallback) -> IAutoUnregisterContextManager:
+    def register(self, callback: IActionCallback) -> IAutoUnregisterContextManager:
         pass
 
-    def unregister(self, callback: ITaskCallback) -> None:
+    def unregister(self, callback: IActionCallback) -> None:
         pass
 
 
 class ActionsListActionTypedDict(TypedDict):
     """
-    When python -m sema4ai.tasks list is run, the output is a
+    When python -m sema4ai.actions list is run, the output is a
     list[ActionsListActionTypedDict].
     """
 

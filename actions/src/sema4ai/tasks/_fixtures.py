@@ -2,30 +2,30 @@ import inspect
 from functools import wraps
 from typing import Callable, Literal, TypeVar, Union, overload
 
-from ._protocols import ITaskCallback, ITasksCallback
+from ._protocols import IActionCallback, IActionsCallback
 
 T = TypeVar("T")
 Decorator = Callable[[T], T]
 
 
 @overload
-def setup(func: ITaskCallback) -> ITaskCallback:
+def setup(func: IActionCallback) -> IActionCallback:
     ...
 
 
 @overload
-def setup(*, scope: Literal["task"] = "task") -> Decorator[ITaskCallback]:
+def setup(*, scope: Literal["task"] = "task") -> Decorator[IActionCallback]:
     ...
 
 
 @overload
-def setup(*, scope: Literal["session"]) -> Decorator[ITasksCallback]:
+def setup(*, scope: Literal["session"]) -> Decorator[IActionsCallback]:
     ...
 
 
 def setup(
     *args, **kwargs
-) -> Union[ITaskCallback, Decorator[ITaskCallback], Decorator[ITasksCallback]]:
+) -> Union[IActionCallback, Decorator[IActionCallback], Decorator[IActionsCallback]]:
     """Run code before any tasks start, or before each separate task.
 
     Receives as an argument the task or tasks that will be run.
@@ -131,23 +131,23 @@ def setup(
 
 
 @overload
-def teardown(func: ITaskCallback) -> ITaskCallback:
+def teardown(func: IActionCallback) -> IActionCallback:
     ...
 
 
 @overload
-def teardown(*, scope: Literal["task"] = "task") -> Decorator[ITaskCallback]:
+def teardown(*, scope: Literal["task"] = "task") -> Decorator[IActionCallback]:
     ...
 
 
 @overload
-def teardown(*, scope: Literal["session"]) -> Decorator[ITasksCallback]:
+def teardown(*, scope: Literal["session"]) -> Decorator[IActionsCallback]:
     ...
 
 
 def teardown(
     *args, **kwargs
-) -> Union[ITaskCallback, Decorator[ITaskCallback], Decorator[ITasksCallback]]:
+) -> Union[IActionCallback, Decorator[IActionCallback], Decorator[IActionsCallback]]:
     """Run code after tasks have been run, or after each separate task.
 
     Receives as an argument the task or tasks that were executed, which
@@ -186,21 +186,21 @@ def teardown(
     from ._hooks import after_all_tasks_run, after_task_run
 
     if len(args) == 1 and len(kwargs) == 0 and callable(args[0]):
-        func: ITaskCallback = args[0]
+        func: IActionCallback = args[0]
         after_task_run.register(func)
         return func
 
     scope = kwargs.get("scope", "task")
     if scope == "task":
 
-        def wrapped_task(func: ITaskCallback):
+        def wrapped_task(func: IActionCallback):
             after_task_run.register(func)
             return func
 
         return wrapped_task
     elif scope == "session":
 
-        def wrapped_session(func: ITasksCallback):
+        def wrapped_session(func: IActionsCallback):
             after_all_tasks_run.register(func)
             return func
 
