@@ -1,7 +1,7 @@
 def test_fixture_module(datadir, str_regression):
-    from devutils.fixtures import robocorp_tasks_run
+    from devutils.fixtures import sema4ai_tasks_run
 
-    result = robocorp_tasks_run(
+    result = sema4ai_tasks_run(
         [
             "run",
             "--console-colors=plain",

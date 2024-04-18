@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## 0.3.0 - 2024-04-18
+
+- Branding change: `robocorp-actions` is now `sema4ai-actions`.
+    - The namespace changed from `robocorp.actions` to `sema4ai.actions`.
+    - The public API remains the same (so, the only change needed should be a rename of `from robocorp.actions import ...` to `from sema4ai.actions import ...`.
+    - `robocorp.tasks` is no longer a dependency (rather, the needed code is now incorporated into `sema4ai-actions`).
+
 ## 0.2.1 - 2024-04-17
 
 - Accepts `auth-tag` when using `aes256-gcm` for encrypting the `x-action-context` contents

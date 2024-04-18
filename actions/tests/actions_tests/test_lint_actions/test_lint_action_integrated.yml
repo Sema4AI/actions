@@ -9,7 +9,7 @@ errors:
       character: 4
       line: 5
   severity: 2
-  source: robocorp.actions
+  source: sema4ai.actions
 - message: '@action without a `return` (an `@action` must have a return value).'
   range:
     end:
@@ -19,7 +19,7 @@ errors:
       character: 4
       line: 5
   severity: 1
-  source: robocorp.actions
+  source: sema4ai.actions
 - message: '@action docstring not found. Please define it as this is what an LLM would
     use to decide whether to call this action.'
   range:
@@ -30,5 +30,5 @@ errors:
       character: 4
       line: 12
   severity: 1
-  source: robocorp.actions
+  source: sema4ai.actions
 file: bad_actions.py

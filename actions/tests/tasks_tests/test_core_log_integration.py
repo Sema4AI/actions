@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Dict
 
 import pytest
-from devutils.fixtures import robocorp_tasks_run
+from devutils.fixtures import sema4ai_tasks_run
 
 
 def test_core_log_integration_error_in_import(datadir, str_regression):
@@ -11,7 +11,7 @@ def test_core_log_integration_error_in_import(datadir, str_regression):
 
     from robocorp.log._log_formatting import pretty_format_logs_from_log_html
 
-    result = robocorp_tasks_run(
+    result = sema4ai_tasks_run(
         ["run", "main_with_error_in_import.py"], returncode=1, cwd=str(datadir)
     )
 
@@ -44,7 +44,7 @@ def test_core_log_integration_config_log(datadir, str_regression):
     from robocorp.log import verify_log_messages_from_log_html
     from robocorp.log._log_formatting import pretty_format_logs_from_log_html
 
-    result = robocorp_tasks_run(["run", "simple.py"], returncode=0, cwd=str(datadir))
+    result = sema4ai_tasks_run(["run", "simple.py"], returncode=0, cwd=str(datadir))
 
     decoded = result.stderr.decode("utf-8", "replace")
     assert not decoded.strip()
@@ -80,7 +80,7 @@ default_library_filter_kind = "exclude"
     )
     from robocorp.log import verify_log_messages_from_log_html
 
-    result = robocorp_tasks_run(["run", "simple.py"], returncode=0, cwd=str(datadir))
+    result = sema4ai_tasks_run(["run", "simple.py"], returncode=0, cwd=str(datadir))
 
     decoded = result.stderr.decode("utf-8", "replace")
     assert not decoded.strip()
@@ -100,7 +100,7 @@ default_library_filter_kind = "exclude"
 def test_core_log_integration_lines(datadir, str_regression) -> None:
     from robocorp.log._log_formatting import pretty_format_logs_from_log_html
 
-    result = robocorp_tasks_run(
+    result = sema4ai_tasks_run(
         ["run", "main_check_lines.py"], returncode=0, cwd=str(datadir)
     )
 
@@ -129,7 +129,7 @@ def test_core_log_integration_console_messages(datadir, str_regression, mode) ->
     pyproject.write_text("")
     from robocorp.log import verify_log_messages_from_log_html
 
-    result = robocorp_tasks_run(
+    result = sema4ai_tasks_run(
         ["run", f"--console-colors={mode}", "simple.py"], returncode=0, cwd=str(datadir)
     )
 
@@ -166,7 +166,7 @@ def test_no_status_rc(datadir, no_error_rc) -> None:
     pyproject.write_text("")
     from robocorp.log import verify_log_messages_from_log_html
 
-    result = robocorp_tasks_run(
+    result = sema4ai_tasks_run(
         ["run"]
         + (["--no-status-rc"] if no_error_rc else [])
         + ["--console-color=plain", "expected_error_in_task.py"],
@@ -238,7 +238,7 @@ def test_receive_at_socket(datadir, server_socket) -> None:
     port = server_socket.port
 
     additional_env: Dict[str, str] = {"ROBOCORP_TASKS_LOG_LISTENER_PORT": str(port)}
-    robocorp_tasks_run(
+    sema4ai_tasks_run(
         ["run", "--console-color=plain", "simple.py"],
         returncode=0,
         cwd=str(datadir),
@@ -269,7 +269,7 @@ def test_output_on_change_cwd(datadir) -> None:
     pyproject: Path = datadir / "pyproject.toml"
     pyproject.write_text("")
 
-    result = robocorp_tasks_run(
+    result = sema4ai_tasks_run(
         ["run", "--console-color=plain", "change_cwd.py"],
         returncode=0,
         cwd=str(datadir),
@@ -287,7 +287,7 @@ def test_use_robot_artifacts_env_var_for_output(datadir, tmpdir) -> None:
     pyproject: Path = datadir / "pyproject.toml"
     pyproject.write_text("")
 
-    result = robocorp_tasks_run(
+    result = sema4ai_tasks_run(
         ["run", "--console-color=plain", "simple.py"],
         returncode=0,
         cwd=str(datadir),

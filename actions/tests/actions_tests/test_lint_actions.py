@@ -3,7 +3,7 @@ from pathlib import Path
 
 
 def test_lint_action_no_docstring(data_regression):
-    from robocorp.actions._lint_action import iter_lint_errors
+    from sema4ai.actions._lint_action import iter_lint_errors
 
     contents = """
 @action
@@ -15,7 +15,7 @@ def my_action():
 
 
 def test_lint_action_docstring_not_matching(data_regression):
-    from robocorp.actions._lint_action import iter_lint_errors
+    from sema4ai.actions._lint_action import iter_lint_errors
 
     contents = """
 @action
@@ -30,7 +30,7 @@ def my_action(param1: str) -> str:
 
 
 def test_lint_action_no_description(data_regression):
-    from robocorp.actions._lint_action import iter_lint_errors
+    from sema4ai.actions._lint_action import iter_lint_errors
 
     contents = """
 @action
@@ -46,7 +46,7 @@ def my_action(param1) -> str:
 
 
 def test_lint_action_argument_untyped(data_regression):
-    from robocorp.actions._lint_action import iter_lint_errors
+    from sema4ai.actions._lint_action import iter_lint_errors
 
     contents = """
 @action
@@ -64,7 +64,7 @@ def my_action(param1) -> str:
 
 
 def test_lint_action_big_description(data_regression):
-    from robocorp.actions._lint_action import iter_lint_errors
+    from sema4ai.actions._lint_action import iter_lint_errors
 
     contents = """
 @action
@@ -85,14 +85,14 @@ def my_action() -> str:
 def find_issues_in_actions_list(datadir: Path, contents: str) -> list:
     import json
 
-    from devutils.fixtures import robocorp_actions_run
+    from devutils.fixtures import sema4ai_actions_run
 
     cwd = datadir / "cwd"
     os.makedirs(cwd)
     act = cwd / "act.py"
     act.write_text(contents)
 
-    result = robocorp_actions_run(["list"], returncode="any", cwd=str(cwd))
+    result = sema4ai_actions_run(["list"], returncode="any", cwd=str(cwd))
     try:
         found = json.loads(result.stdout)
     except Exception:
@@ -109,9 +109,9 @@ def find_issues_in_actions_list(datadir: Path, contents: str) -> list:
 def test_lint_action_integrated(datadir, data_regression):
     import json
 
-    from devutils.fixtures import robocorp_actions_run
+    from devutils.fixtures import sema4ai_actions_run
 
-    result = robocorp_actions_run(["list"], returncode="error", cwd=str(datadir))
+    result = sema4ai_actions_run(["list"], returncode="error", cwd=str(datadir))
     try:
         found = json.loads(result.stdout)
     except Exception:
@@ -131,15 +131,15 @@ def test_lint_action_integrated(datadir, data_regression):
 
 
 def test_lint_action_secret(data_regression, datadir):
-    from robocorp.tasks._customization._extension_points import EPManagedParameters
-    from robocorp.tasks._customization._plugin_manager import PluginManager
+    from sema4ai.tasks._customization._extension_points import EPManagedParameters
+    from sema4ai.tasks._customization._plugin_manager import PluginManager
 
-    from robocorp.actions._lint_action import iter_lint_errors
-    from robocorp.actions._managed_parameters import ManagedParameters
+    from sema4ai.actions._lint_action import iter_lint_errors
+    from sema4ai.actions._managed_parameters import ManagedParameters
 
     contents = """
-from robocorp.actions import Secret
-from robocorp import actions
+from sema4ai.actions import Secret
+from sema4ai import actions
 
 @action
 def my_action(my_password: Secret, another: actions.Secret) -> str:

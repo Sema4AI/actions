@@ -22,7 +22,7 @@ def test_action_context() -> None:
 
     from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
-    from robocorp.actions._action_context import ActionContext
+    from sema4ai.actions._action_context import ActionContext
 
     keys = [AESGCM.generate_key(bit_length=256), AESGCM.generate_key(bit_length=256)]
     if USE_STATIC_INFO:
@@ -66,7 +66,7 @@ def test_action_context_auth_tag() -> None:
 
     from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
-    from robocorp.actions._action_context import ActionContext
+    from sema4ai.actions._action_context import ActionContext
 
     keys = [AESGCM.generate_key(bit_length=256), AESGCM.generate_key(bit_length=256)]
     if USE_STATIC_INFO:

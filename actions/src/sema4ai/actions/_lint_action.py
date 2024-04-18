@@ -2,7 +2,7 @@ import ast as ast_module
 from dataclasses import dataclass
 from typing import Any, Iterator, List, Optional, Tuple, TypedDict, Union, overload
 
-from robocorp.tasks._customization._plugin_manager import PluginManager
+from sema4ai.tasks._customization._plugin_manager import PluginManager
 
 
 def _iter_nodes(
@@ -162,7 +162,7 @@ class Error(object):
                 "end": {"line": self.end[0], "character": self.end[1]},
             },
             "severity": self.severity,
-            "source": "robocorp.actions",
+            "source": "sema4ai.actions",
             "message": self.msg,
         }
         if tags:
@@ -223,7 +223,7 @@ def _check_docstring_contents(
     pm: Optional[PluginManager], node: ast_module.FunctionDef, docstring: str
 ) -> Iterator[Error]:
     import docstring_parser
-    from robocorp.tasks._commands import _is_managed_param
+    from sema4ai.tasks._commands import _is_managed_param
 
     assert docstring, "Expected docstring to be given."
 

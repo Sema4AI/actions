@@ -4,9 +4,9 @@ from pathlib import Path
 
 
 def test_actions_secret_list(datadir, data_regression):
-    from devutils.fixtures import robocorp_actions_run
+    from devutils.fixtures import sema4ai_actions_run
 
-    result = robocorp_actions_run(
+    result = sema4ai_actions_run(
         ["list", "--skip-lint"], returncode=0, cwd=str(datadir)
     )
     found = json.loads(result.stdout)
@@ -20,7 +20,7 @@ def test_actions_secret_list(datadir, data_regression):
 
 
 def test_actions_secret_run_just_secret(datadir: Path):
-    from devutils.fixtures import robocorp_actions_run
+    from devutils.fixtures import sema4ai_actions_run
 
     # Specifies the request in the json input.
     json_output = datadir / "json.output"
@@ -39,12 +39,12 @@ def test_actions_secret_run_just_secret(datadir: Path):
         f"--json-input={input_json}",
     ]
 
-    robocorp_actions_run(args, returncode=0, cwd=str(datadir))
+    sema4ai_actions_run(args, returncode=0, cwd=str(datadir))
     assert json_output.read_text() == "this-is-the-secret"
 
 
 def test_actions_secret_run_with_request(datadir: Path):
-    from devutils.fixtures import robocorp_actions_run
+    from devutils.fixtures import sema4ai_actions_run
 
     # Specifies the request in the json input.
     json_output = datadir / "json.output"
@@ -71,5 +71,5 @@ def test_actions_secret_run_with_request(datadir: Path):
         f"--json-input={input_json}",
     ]
 
-    robocorp_actions_run(args, returncode=0, cwd=str(datadir))
+    sema4ai_actions_run(args, returncode=0, cwd=str(datadir))
     assert json_output.read_text() == "this-is-the-secret"

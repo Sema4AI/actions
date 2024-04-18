@@ -31,7 +31,7 @@ def setup(
     Can be used as a decorator without arguments:
 
     ```python
-    from robocorp.actions import setup
+    from sema4ai.actions import setup
 
     @setup
     def my_fixture(action):
@@ -42,7 +42,7 @@ def setup(
     the fixture is run:
 
     ```python
-    from robocorp.actions import setup
+    from sema4ai.actions import setup
 
     @setup(scope="action")
     def before_each(action):
@@ -60,7 +60,7 @@ def setup(
 
     ```python
     import time
-    from robocorp.actions import setup
+    from sema4ai.actions import setup
 
     @setup
     def measure_time(action):
@@ -77,7 +77,7 @@ def setup(
     **Note:** If fixtures are defined in another file, they need to be imported
      in the main actions file to be taken into use
     """
-    from robocorp.tasks import setup as _setup
+    from sema4ai.tasks import setup as _setup
 
     if len(args) == 1 and len(kwargs) == 0 and callable(args[0]):
         return _setup(*args, **kwargs)
@@ -122,7 +122,7 @@ def teardown(
     Can be used as a decorator without arguments:
 
     ```python
-    from robocorp.actions import teardown
+    from sema4ai.actions import teardown
 
     @teardown
     def my_fixture(action):
@@ -133,7 +133,7 @@ def teardown(
     the fixture is run:
 
     ```python
-    from robocorp.actions import teardown
+    from sema4ai.actions import teardown
 
     @teardown(scope="action")
     def after_each(action):
@@ -149,7 +149,7 @@ def teardown(
     **Note:** If fixtures are defined in another file, they need to be imported
      in the main actions file to be taken into use
     """
-    from robocorp.tasks import teardown as _teardown
+    from sema4ai.tasks import teardown as _teardown
 
     if len(args) == 1 and len(kwargs) == 0 and callable(args[0]):
         return _teardown(*args, **kwargs)

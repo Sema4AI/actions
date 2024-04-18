@@ -2,7 +2,7 @@ import inspect
 from ast import FunctionDef
 from typing import Any, Dict, Optional, overload
 
-from robocorp.tasks._customization._extension_points import EPManagedParameters
+from sema4ai.tasks._customization._extension_points import EPManagedParameters
 
 
 class ManagedParameters:
@@ -33,7 +33,7 @@ class ManagedParameters:
     ) -> bool:
         import ast
 
-        from robocorp.actions._secret import Secret
+        from sema4ai.actions._secret import Secret
 
         if param_name in self._param_name_to_instance:
             return True
@@ -51,7 +51,7 @@ class ManagedParameters:
                         if unparsed in (
                             "Secret",
                             "actions.Secret",
-                            "robocorp.actions.Secret",
+                            "sema4ai.actions.Secret",
                         ):
                             is_managed = True
 
@@ -74,8 +74,8 @@ class ManagedParameters:
         new_kwargs: Dict[str, Any],
         original_kwargs: Dict[str, Any],
     ) -> Dict[str, Any]:
-        from robocorp.actions._action_context import ActionContext
-        from robocorp.actions._secret import Secret
+        from sema4ai.actions._action_context import ActionContext
+        from sema4ai.actions._secret import Secret
 
         use_kwargs = new_kwargs.copy()
 
@@ -112,8 +112,8 @@ class ManagedParameters:
         self,
         param: inspect.Parameter,
     ) -> type:
-        from robocorp.actions._request import Request
-        from robocorp.actions._secret import Secret
+        from sema4ai.actions._request import Request
+        from sema4ai.actions._secret import Secret
 
         if param.name == "request":
             return Request
@@ -126,7 +126,7 @@ class ManagedParameters:
         )
 
     def __typecheckself__(self) -> None:
-        from robocorp.tasks._protocols import check_implements
+        from sema4ai.tasks._protocols import check_implements
 
         _: EPManagedParameters = check_implements(self)
 

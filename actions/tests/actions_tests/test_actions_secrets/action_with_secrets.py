@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from robocorp.actions import Request, Secret, action
+from sema4ai.actions import Request, Secret, action
 
 
 @action

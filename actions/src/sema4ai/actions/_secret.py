@@ -1,7 +1,7 @@
 import typing
 
 if typing.TYPE_CHECKING:
-    from robocorp.actions._action_context import ActionContext
+    from sema4ai.actions._action_context import ActionContext
 
 
 class Secret:
@@ -14,7 +14,7 @@ class Secret:
     Example:
 
         ```
-        from robocorp.actions import action, Secret
+        from sema4ai.actions import action, Secret
 
         @action
         def my_action(password: Secret):

@@ -1,4 +1,4 @@
 if __name__ == "__main__":
-    from robocorp.actions.cli import main
+    from sema4ai.actions.cli import main
 
     main()

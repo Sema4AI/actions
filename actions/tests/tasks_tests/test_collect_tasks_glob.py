@@ -20,13 +20,13 @@ def _fix_file(entry):
     ],
 )
 def test_collect_tasks_glob(datadir, data_regression, glob_pattern):
-    from devutils.fixtures import robocorp_tasks_run
+    from devutils.fixtures import sema4ai_tasks_run
 
     cmdline = ["list", str(datadir)]
     if glob_pattern:
         cmdline.extend(("--glob", glob_pattern))
 
-    result = robocorp_tasks_run(cmdline, returncode=0, cwd=datadir)
+    result = sema4ai_tasks_run(cmdline, returncode=0, cwd=datadir)
     found = json.loads(result.stdout)
     for entry in found:
         _fix_file(entry)
@@ -35,7 +35,7 @@ def test_collect_tasks_glob(datadir, data_regression, glob_pattern):
 
 
 def test_run_tasks_glob(datadir, data_regression):
-    from devutils.fixtures import robocorp_tasks_run
+    from devutils.fixtures import sema4ai_tasks_run
 
     cmdline = [
         "run",
@@ -45,7 +45,7 @@ def test_run_tasks_glob(datadir, data_regression):
         "--console-colors=plain",
     ]
 
-    result = robocorp_tasks_run(cmdline, returncode=0, cwd=datadir)
+    result = sema4ai_tasks_run(cmdline, returncode=0, cwd=datadir)
     output = result.stdout.decode("utf-8")
     assert output.count("status: PASS") == 2
     assert output.count("task_on_my_task status: PASS") == 1
@@ -53,7 +53,7 @@ def test_run_tasks_glob(datadir, data_regression):
 
 
 def test_run_tasks_glob_multiple_matches(datadir, data_regression):
-    from devutils.fixtures import robocorp_tasks_run
+    from devutils.fixtures import sema4ai_tasks_run
 
     cmdline = [
         "run",
@@ -63,7 +63,7 @@ def test_run_tasks_glob_multiple_matches(datadir, data_regression):
         "--console-colors=plain",
     ]
 
-    result = robocorp_tasks_run(cmdline, returncode=0, cwd=datadir)
+    result = sema4ai_tasks_run(cmdline, returncode=0, cwd=datadir)
     output = result.stdout.decode("utf-8")
     assert output.count("status: PASS") == 3
     assert output.count("task_on_my_module status: PASS") == 1

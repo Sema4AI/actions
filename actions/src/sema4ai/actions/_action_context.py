@@ -3,8 +3,8 @@ import json
 import os
 from typing import Dict, List, Optional
 
-from robocorp.actions._protocols import JSONValue
-from robocorp.actions._request import Request
+from sema4ai.actions._protocols import JSONValue
+from sema4ai.actions._request import Request
 
 
 def _get_str_list_from_env(env_name: str, env) -> List[str]:

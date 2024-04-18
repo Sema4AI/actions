@@ -30,7 +30,7 @@ def rcc_loc(tmpdir_factory):
     from devutils._system_mutex_in_tests import timed_acquire_mutex
 
     with timed_acquire_mutex("download_rcc_in_tests"):
-        tests_rcc_dir = os.path.expanduser("~/.robocorp_tests_rcc")
+        tests_rcc_dir = os.path.expanduser("~/.sema4ai_tests_rcc")
         os.makedirs(tests_rcc_dir, exist_ok=True)
 
         # tests_rcc_dir = tmpdir_factory.mktemp("rcc_dir")
@@ -265,7 +265,7 @@ def str_regression(datadir, original_datadir, request):
     return StrRegression(datadir, original_datadir, request)
 
 
-def robocorp_tasks_run(
+def sema4ai_tasks_run(
     cmdline,
     returncode: Union[Literal["error"], int],
     cwd=None,
@@ -277,7 +277,7 @@ def robocorp_tasks_run(
     )
 
 
-def robocorp_actions_run(
+def sema4ai_actions_run(
     cmdline,
     returncode: Union[Literal["error"], Literal["any"], int],
     cwd=None,
@@ -330,7 +330,7 @@ def python_run(
     )
 
 
-class RobocorpTaskRunner:
+class Sema4AITaskRunner:
     def __init__(self) -> None:
         self.log_html: Optional[Path] = None
 
@@ -349,7 +349,7 @@ class RobocorpTaskRunner:
         cwd=None,
         additional_env: Optional[Dict[str, str]] = None,
     ) -> None:
-        result = robocorp_tasks_run(cmdline, returncode, cwd, additional_env)
+        result = sema4ai_tasks_run(cmdline, returncode, cwd, additional_env)
         decoded = result.stdout.decode("utf-8", "replace")
 
         if not cwd:
@@ -381,8 +381,8 @@ class RobocorpTaskRunner:
 
 
 @pytest.fixture
-def robocorp_task_runner():
-    return RobocorpTaskRunner()
+def sema4ai_task_runner():
+    return Sema4AITaskRunner()
 
 
 @pytest.fixture
