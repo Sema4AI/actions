@@ -3,6 +3,15 @@ SR: simple.py
     ST: Collect tasks
     ET: PASS
     ST: check_difflib_log
+        SE: METHOD: ActionContext.from_request
+            EA: type: cls: <class 'sema4ai.actions._action_context.ActionContext'>
+            EA: _RequestImpl: request: <sema4ai.actions._request_impl._RequestImpl object at 0xXXXXXXXXX>
+            AS: data: None
+            SE: IF_SCOPE: if data is None
+                EA: NoneType: data: None
+                R: NoneType: None
+            EE: IF_SCOPE: PASS
+        EE: METHOD: PASS
         SE: METHOD: check_difflib_log
             SE: METHOD: ndiff
                 EA: list: a: ['aaaa', 'bbb', 'ccc', 'ddd']

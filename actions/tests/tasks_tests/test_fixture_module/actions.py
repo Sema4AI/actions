@@ -1,6 +1,6 @@
-from sema4ai.tasks import task
+from sema4ai.actions import action
 
 
-@task
+@action
 def my_task() -> str:
     return "my_task_ran"

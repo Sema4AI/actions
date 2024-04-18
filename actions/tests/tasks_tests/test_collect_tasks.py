@@ -9,18 +9,18 @@ def test_colect_tasks(datadir) -> None:
     from sema4ai.tasks._customization._plugin_manager import PluginManager
 
     tasks = tuple(collect_tasks(PluginManager(), datadir, "main"))
-    assert len(tasks) == 1
+    assert len(tasks) == 1, f"Found: {tasks}"
 
     tasks = tuple(collect_tasks(PluginManager(), datadir, ""))
     assert len(tasks) == 4
     assert {t.name for t in tasks} == {"main", "sub", "main_errors", "task_with_args"}
     name_to_task = dict((t.name, f"{t.module_name}.{t.name}") for t in tasks)
     assert name_to_task == {
-        "main": "tasks.main",
-        "sub": "sub.sub_task.sub",
-        "main_errors": "tasks.main_errors",
-        "task_with_args": "tasks.task_with_args",
-    }
+        "main": "actions.main",
+        "sub": "sub.sub_action.sub",
+        "main_errors": "actions.main_errors",
+        "task_with_args": "actions.task_with_args",
+    }, f"Found: {name_to_task}"
 
     tasks = tuple(collect_tasks(PluginManager(), datadir, "not_there"))
     assert len(tasks) == 0
@@ -79,11 +79,13 @@ def test_list_tasks_api(datadir, tmpdir, data_regression) -> None:
         data_regression.check(loaded)
 
     # List with the dir as a target
-    result = sema4ai_tasks_run(["list", str(datadir)], returncode=0, cwd=str(tmpdir))
+    result = sema4ai_tasks_run(
+        ["list", str(datadir), "--skip-lint"], returncode=0, cwd=str(tmpdir)
+    )
     check(result)
 
     # List without the dir as a target (must have the same output).
-    result = sema4ai_tasks_run(["list"], returncode=0, cwd=datadir)
+    result = sema4ai_tasks_run(["list", "--skip-lint"], returncode=0, cwd=datadir)
     check(result)
 
 

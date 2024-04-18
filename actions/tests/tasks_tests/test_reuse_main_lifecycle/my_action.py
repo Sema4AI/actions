@@ -1,6 +1,6 @@
 from typing import Sequence
 
-from sema4ai.tasks import IAction, setup, task, teardown
+from sema4ai.actions import IAction, action, setup, teardown
 
 session_setup = 0
 task_setup = 0
@@ -39,7 +39,7 @@ def my_session_teardown(tasks: Sequence[IAction]):
     print("session teardown", session_setup)
 
 
-@task
+@action
 def reuse_task():
     global task_executed
     task_executed += 1

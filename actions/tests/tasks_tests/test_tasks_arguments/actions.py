@@ -2,40 +2,40 @@ from typing import Annotated, Tuple, Union
 
 from pydantic import BaseModel, Field
 
-from sema4ai.tasks import task
+from sema4ai.actions import action
 
 
-@task
+@action
 def return_tuple(a: str, b: int, c: str = "") -> Tuple[str, int]:
     assert isinstance(a, str)
     assert isinstance(b, int)
     return a, b
 
 
-@task
+@action
 def something_else(f: list) -> None:
     # We can't actually handle this at this point...
     assert isinstance(f, list)
 
 
-@task
+@action
 def bool_true(b: bool) -> None:
     assert isinstance(b, bool)
     assert b
 
 
-@task
+@action
 def bool_false(b: bool) -> None:
     assert isinstance(b, bool)
     assert not b
 
 
-@task
+@action
 def accept_str(s) -> None:
     assert isinstance(s, str)
 
 
-@task
+@action
 def unicode_ação_Σ(ação: str) -> None:
     assert isinstance(ação, str)
 
@@ -46,6 +46,6 @@ class MyCustomData(BaseModel):
     is_offer: Union[bool, None] = None
 
 
-@task
+@action
 def custom_data(data: MyCustomData) -> None:
     assert isinstance(data, MyCustomData)

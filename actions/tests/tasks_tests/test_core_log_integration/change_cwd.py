@@ -1,9 +1,9 @@
 import os
 
-from sema4ai.tasks import task
+from sema4ai.actions import action
 
 
-@task
+@action
 def main_task():
     from tempfile import gettempdir
 

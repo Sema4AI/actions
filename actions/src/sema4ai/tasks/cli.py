@@ -89,7 +89,3 @@ def main(
     if exit:
         sys.exit(returncode)
     return returncode
-
-
-if __name__ == "__main__":
-    main()

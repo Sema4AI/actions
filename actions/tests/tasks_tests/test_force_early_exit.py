@@ -10,9 +10,9 @@ def test_force_early_exit_cmdline(pyfile, kill):
 
     @pyfile
     def check():
-        from sema4ai.tasks import session_cache, task
+        from sema4ai.actions import action, session_cache
 
-        @task
+        @action
         def my_task():
             import sys
 
@@ -58,10 +58,10 @@ def test_force_early_exit(pyfile, kill):
 
     @pyfile
     def check():
-        from sema4ai.tasks import session_cache, task
+        from sema4ai.actions import action, session_cache
 
-        @task
-        def my_task():
+        @action
+        def my_action():
             import sys
 
             sys.stderr.write("Executed\n")
@@ -107,7 +107,7 @@ def test_force_early_exit(pyfile, kill):
             assert "my_cache_teardown" in stderr
     else:
         assert stderr.count("atexit_executed") == 1
-    assert "my_task status: PASS" in stdout
+    assert "my_action status: PASS" in stdout, f"Found: {stdout}"
 
 
 @pytest.mark.parametrize("kill", ["after-teardown"])
@@ -116,9 +116,9 @@ def test_force_early_exit_with_error(pyfile, kill):
 
     @pyfile
     def check():
-        from sema4ai.tasks import task
+        from sema4ai.actions import action
 
-        @task
+        @action
         def my_task():
             import sys
 
@@ -161,9 +161,9 @@ def test_force_early_exit_kills_subprocesses(pyfile, kill):
 
     @pyfile
     def check():
-        from sema4ai.tasks import task
+        from sema4ai.actions import action
 
-        @task
+        @action
         def my_task():
             import subprocess
             import sys

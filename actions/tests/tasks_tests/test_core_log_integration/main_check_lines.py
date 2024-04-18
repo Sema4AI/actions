@@ -1,12 +1,12 @@
 from robocorp import log
-from sema4ai.tasks import task
+from sema4ai.actions import action
 
 
 def another_method_at_line_5(a):
     pass
 
 
-@task
+@action
 def entry_at_line_10():
     log.debug("debug at line 11")
     a = "at line 12"

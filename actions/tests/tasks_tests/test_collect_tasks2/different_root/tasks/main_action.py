@@ -1,8 +1,8 @@
-from sema4ai.tasks import task
+from sema4ai.actions import action
 
 from . import module  # noqa
 
 
-@task
+@action
 def something():
     print("worked")

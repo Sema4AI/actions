@@ -1,29 +1,31 @@
 - docs: "\n    main method docstring\n    "
-  file: tasks.py
+  file: actions.py
   input_schema:
     properties: {}
     type: object
   line: 10
   managed_params_schema: {}
   name: main
-  options: null
+  options:
+    is_consequential: null
   output_schema:
     description: ''
     type: string
 - docs: ''
-  file: tasks.py
+  file: actions.py
   input_schema:
     properties: {}
     type: object
   line: 22
   managed_params_schema: {}
   name: main_errors
-  options: null
+  options:
+    is_consequential: null
   output_schema:
     description: ''
     type: string
 - docs: ''
-  file: tasks.py
+  file: actions.py
   input_schema:
     properties:
       multiplier:
@@ -41,19 +43,21 @@
   line: 27
   managed_params_schema: {}
   name: task_with_args
-  options: null
+  options:
+    is_consequential: null
   output_schema:
     description: ''
     type: string
 - docs: ''
-  file: sub_task.py
+  file: sub_action.py
   input_schema:
     properties: {}
     type: object
   line: 8
   managed_params_schema: {}
   name: sub
-  options: null
+  options:
+    is_consequential: null
   output_schema:
     description: ''
     type: string

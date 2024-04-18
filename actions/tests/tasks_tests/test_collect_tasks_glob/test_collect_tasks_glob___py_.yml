@@ -6,7 +6,8 @@
   line: 4
   managed_params_schema: {}
   name: task_on_another_module
-  options: null
+  options:
+    is_consequential: null
   output_schema:
     description: ''
     type: string
@@ -18,19 +19,21 @@
   line: 4
   managed_params_schema: {}
   name: task_on_my_module
-  options: null
+  options:
+    is_consequential: null
   output_schema:
     description: ''
     type: string
 - docs: ''
-  file: my_task.py
+  file: my_action.py
   input_schema:
     properties: {}
     type: object
   line: 4
   managed_params_schema: {}
   name: task_on_my_task
-  options: null
+  options:
+    is_consequential: null
   output_schema:
     description: ''
     type: string

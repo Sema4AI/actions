@@ -6,7 +6,8 @@
   line: 4
   managed_params_schema: {}
   name: task_on_my_module
-  options: null
+  options:
+    is_consequential: null
   output_schema:
     description: ''
     type: string

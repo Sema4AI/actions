@@ -1,11 +1,11 @@
-from sema4ai.tasks import task
+from sema4ai.actions import action
 
 
-@task
+@action
 def main():
     pass
 
 
-@task  # type: ignore # noqa
+@action  # type: ignore # noqa
 def main():  # type: ignore # noqa
     pass

@@ -6,6 +6,6 @@
 # `obj.model_dump_json()`
 SUPPORTED_TYPES_IN_SCHEMA = (str, int, float, bool)
 
-DEFAULT_TASK_SEARCH_GLOB = "*task*.py"
+DEFAULT_TASK_SEARCH_GLOB = "*action*.py"
 
-MODULE_ENTRY_POINT = "sema4ai.tasks"
+MODULE_ENTRY_POINT = "sema4ai.actions"

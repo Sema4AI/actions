@@ -169,7 +169,7 @@ def test_no_status_rc(datadir, no_error_rc) -> None:
     result = sema4ai_tasks_run(
         ["run"]
         + (["--no-status-rc"] if no_error_rc else [])
-        + ["--console-color=plain", "expected_error_in_task.py"],
+        + ["--console-color=plain", "expected_error_in_action.py"],
         returncode=0 if no_error_rc else 1,
         cwd=str(datadir),
     )

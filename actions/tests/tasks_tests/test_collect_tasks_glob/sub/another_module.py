@@ -1,6 +1,6 @@
-from sema4ai.tasks import task
+from sema4ai.actions import action
 
 
-@task
+@action
 def task_on_another_module():
     pass

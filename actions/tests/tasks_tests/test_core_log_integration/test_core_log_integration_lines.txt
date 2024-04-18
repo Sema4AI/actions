@@ -3,6 +3,15 @@ SR: main_check_lines.py
     ST: Collect tasks (line: 0)
     ET: PASS
     ST: entry_at_line_10 (line: 10)
+        SE: METHOD: ActionContext.from_request (line: 211)
+            EA: type: cls: <class 'sema4ai.actions._action_context.ActionContext'>
+            EA: _RequestImpl: request: <sema4ai.actions._request_impl._RequestImpl object at 0xXXXXXXXXX>
+            AS: data: None (line: 214)
+            SE: IF_SCOPE: if data is None (line: 215)
+                EA: NoneType: data: None
+                R: NoneType: None (line: 216)
+            EE: IF_SCOPE: PASS
+        EE: METHOD: PASS
         SE: METHOD: entry_at_line_10 (line: 10)
             L: D: 'debug at line 11' (line: 11)
             AS: a: 'at line 12' (line: 12)

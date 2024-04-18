@@ -23,10 +23,10 @@ def disable_truststore_injection(monkeypatch):
 def _fix_pythonpath() -> Iterator[None]:
     import sys
 
-    if "tasks" in sys.modules:
-        # We have tasks.py and tasks/__init__.py in different tests, so, proactively
+    if "actions" in sys.modules:
+        # We have actions.py and actions/__init__.py in different tests, so, proactively
         # remove it.
-        del sys.modules["tasks"]
+        del sys.modules["actions"]
 
     from sema4ai.tasks._collect_tasks import clear_previously_collected_tasks
 
@@ -35,7 +35,7 @@ def _fix_pythonpath() -> Iterator[None]:
     yield
 
     clear_previously_collected_tasks()
-    if "tasks" in sys.modules:
-        # We have tasks.py and tasks/__init__.py in different tests, so, proactively
+    if "actions" in sys.modules:
+        # We have actions.py and actions/__init__.py in different tests, so, proactively
         # remove it.
-        del sys.modules["tasks"]
+        del sys.modules["actions"]

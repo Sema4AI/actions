@@ -39,20 +39,15 @@ def main(
     if args is None:
         args = sys.argv[1:]
 
-    from sema4ai.tasks import _constants
     from sema4ai.tasks.cli import main
-
-    _constants.DEFAULT_TASK_SEARCH_GLOB = "*action*.py"
-    _constants.MODULE_ENTRY_POINT = "sema4ai.actions"
 
     if plugin_manager is None:
         # If not provided, let's still add the 'request' as a managed parameter
         # (without any actual data).
-        from sema4ai.tasks._customization._extension_points import EPManagedParameters
-        from sema4ai.tasks._customization._plugin_manager import PluginManager
-
         from sema4ai.actions._managed_parameters import ManagedParameters
         from sema4ai.actions._request import Request
+        from sema4ai.tasks._customization._extension_points import EPManagedParameters
+        from sema4ai.tasks._customization._plugin_manager import PluginManager
 
         plugin_manager = PluginManager()
         plugin_manager.set_instance(
