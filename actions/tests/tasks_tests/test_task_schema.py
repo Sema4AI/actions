@@ -2,7 +2,7 @@ from typing import Union
 
 from pydantic import BaseModel
 
-from sema4ai.tasks._customization._plugin_manager import PluginManager
+from sema4ai.actions._customization._plugin_manager import PluginManager
 
 
 def methoda(a: str) -> int:

@@ -5,7 +5,7 @@ from logging import getLogger
 from typing import List, Optional
 
 from sema4ai.tasks import _constants
-from sema4ai.tasks._customization._plugin_manager import PluginManager
+from sema4ai.actions._customization._plugin_manager import PluginManager
 
 log = getLogger(__name__)
 

@@ -4,7 +4,7 @@ from typing import Optional
 
 if typing.TYPE_CHECKING:
     # Don't add to public API here.
-    from sema4ai.tasks._customization._plugin_manager import (
+    from sema4ai.actions._customization._plugin_manager import (
         PluginManager as _PluginManager,
     )
 
@@ -55,8 +55,8 @@ def main(
         # (without any actual data).
         from sema4ai.actions._managed_parameters import ManagedParameters
         from sema4ai.actions._request import Request
-        from sema4ai.tasks._customization._extension_points import EPManagedParameters
-        from sema4ai.tasks._customization._plugin_manager import PluginManager
+        from sema4ai.actions._customization._extension_points import EPManagedParameters
+        from sema4ai.actions._customization._plugin_manager import PluginManager
 
         plugin_manager = PluginManager()
         plugin_manager.set_instance(

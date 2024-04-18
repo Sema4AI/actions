@@ -12,12 +12,12 @@ from io import StringIO
 from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional, Sequence, Union, overload
 
-from sema4ai.tasks._customization._extension_points import EPManagedParameters
+from sema4ai.actions._customization._extension_points import EPManagedParameters
+from sema4ai.actions._customization._plugin_manager import PluginManager
 from sema4ai.tasks._protocols import IAction
 
 from . import _constants
 from ._constants import SUPPORTED_TYPES_IN_SCHEMA
-from ._customization._plugin_manager import PluginManager
 
 
 def list_actions(
@@ -408,7 +408,9 @@ def run(
                             f"\nCollecting {task_or_tasks} {action_name} from: {path}"
                         )
 
-                    tasks: List[IAction] = list(collect_actions(pm, p, task_names, glob))
+                    tasks: List[IAction] = list(
+                        collect_actions(pm, p, task_names, glob)
+                    )
 
                     if not tasks:
                         raise RobocorpTasksCollectError(

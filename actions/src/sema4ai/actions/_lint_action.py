@@ -2,7 +2,7 @@ import ast as ast_module
 from dataclasses import dataclass
 from typing import Any, Iterator, List, Optional, Tuple, TypedDict, Union, overload
 
-from sema4ai.tasks._customization._plugin_manager import PluginManager
+from sema4ai.actions._customization._plugin_manager import PluginManager
 
 
 def _iter_nodes(

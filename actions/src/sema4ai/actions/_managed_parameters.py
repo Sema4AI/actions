@@ -2,7 +2,7 @@ import inspect
 from ast import FunctionDef
 from typing import Any, Dict, Optional, overload
 
-from sema4ai.tasks._customization._extension_points import EPManagedParameters
+from sema4ai.actions._customization._extension_points import EPManagedParameters
 
 
 class ManagedParameters:

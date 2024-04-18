@@ -8,7 +8,8 @@ from typing import Callable, Dict, Iterator, List, Optional, Sequence, Set, Tupl
 
 from robocorp import log
 
-from ._customization._plugin_manager import PluginManager
+from sema4ai.actions._customization._plugin_manager import PluginManager
+
 from ._protocols import IAction
 
 
