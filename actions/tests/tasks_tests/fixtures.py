@@ -28,13 +28,13 @@ def _fix_pythonpath() -> Iterator[None]:
         # remove it.
         del sys.modules["actions"]
 
-    from sema4ai.tasks._collect_tasks import clear_previously_collected_tasks
+    from sema4ai.tasks._collect_actions import clear_previously_collected_actions
 
-    clear_previously_collected_tasks()
+    clear_previously_collected_actions()
 
     yield
 
-    clear_previously_collected_tasks()
+    clear_previously_collected_actions()
     if "actions" in sys.modules:
         # We have actions.py and actions/__init__.py in different tests, so, proactively
         # remove it.

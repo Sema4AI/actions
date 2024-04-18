@@ -152,14 +152,14 @@ def get_output_dir() -> Optional[Path]:
     return config.output_dir
 
 
-def get_current_task() -> Optional[IAction]:
+def get_current_action() -> Optional[IAction]:
     """
     Provides the task which is being currently run or None if not currently
     running a task.
     """
     from . import _task
 
-    return _task.get_current_task()
+    return _task.get_current_action()
 
 
 __all__ = [
@@ -169,7 +169,7 @@ __all__ = [
     "session_cache",
     "task_cache",
     "get_output_dir",
-    "get_current_task",
+    "get_current_action",
     "IAction",
     "Status",
 ]

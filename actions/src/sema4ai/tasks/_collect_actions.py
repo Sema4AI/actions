@@ -134,12 +134,12 @@ _methods_marked_as_tasks_found: List[Tuple[Callable, Dict]] = []
 _found_as_set: Set[Tuple[str, str]] = set()
 
 
-def clear_previously_collected_tasks():
+def clear_previously_collected_actions():
     _methods_marked_as_tasks_found.clear()
     _found_as_set.clear()
 
 
-def collect_tasks(
+def collect_actions(
     pm: PluginManager,
     path: Path,
     task_names: Sequence[str] = (),
@@ -153,7 +153,7 @@ def collect_tasks(
     path = path.absolute()
     task_names_as_set = set(task_names)
 
-    _hooks.before_collect_tasks(path, task_names_as_set)
+    _hooks.before_collect_actions(path, task_names_as_set)
 
     def accept_task(task: IAction):
         if not task_names:
@@ -162,11 +162,11 @@ def collect_tasks(
         return task.name in task_names
 
     def on_func_found(func, options: Dict):
-        from sema4ai.tasks._exceptions import RobocorpTasksError
+        from sema4ai.tasks._exceptions import RobocorpActionsError
 
         key = (func.__code__.co_name, func.__code__.co_filename)
         if key in _found_as_set:
-            raise RobocorpTasksError(
+            raise RobocorpActionsError(
                 f"Error: a task with the name '{func.__code__.co_name}' was "
                 + f"already found in: {func.__code__.co_filename}."
             )

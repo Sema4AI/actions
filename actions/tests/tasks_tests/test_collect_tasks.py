@@ -5,32 +5,32 @@ from devutils.fixtures import sema4ai_tasks_run
 
 
 def test_colect_tasks(datadir) -> None:
-    from sema4ai.tasks._collect_tasks import collect_tasks
+    from sema4ai.tasks._collect_actions import collect_actions
     from sema4ai.tasks._customization._plugin_manager import PluginManager
 
-    tasks = tuple(collect_tasks(PluginManager(), datadir, "main"))
+    tasks = tuple(collect_actions(PluginManager(), datadir, "main"))
     assert len(tasks) == 1, f"Found: {tasks}"
 
-    tasks = tuple(collect_tasks(PluginManager(), datadir, ""))
+    tasks = tuple(collect_actions(PluginManager(), datadir, ""))
     assert len(tasks) == 4
     assert {t.name for t in tasks} == {"main", "sub", "main_errors", "task_with_args"}
-    name_to_task = dict((t.name, f"{t.module_name}.{t.name}") for t in tasks)
-    assert name_to_task == {
+    name_to_action = dict((t.name, f"{t.module_name}.{t.name}") for t in tasks)
+    assert name_to_action == {
         "main": "actions.main",
         "sub": "sub.sub_action.sub",
         "main_errors": "actions.main_errors",
         "task_with_args": "actions.task_with_args",
-    }, f"Found: {name_to_task}"
+    }, f"Found: {name_to_action}"
 
-    tasks = tuple(collect_tasks(PluginManager(), datadir, "not_there"))
+    tasks = tuple(collect_actions(PluginManager(), datadir, "not_there"))
     assert len(tasks) == 0
 
 
 def test_colect_tasks_from_package(datadir) -> None:
-    from sema4ai.tasks._collect_tasks import collect_tasks
+    from sema4ai.tasks._collect_actions import collect_actions
     from sema4ai.tasks._customization._plugin_manager import PluginManager
 
-    tasks = tuple(collect_tasks(PluginManager(), datadir / "in_init"))
+    tasks = tuple(collect_actions(PluginManager(), datadir / "in_init"))
     assert len(tasks) == 1, f"Found: {tasks}"
 
 

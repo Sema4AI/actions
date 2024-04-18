@@ -9,7 +9,7 @@ from robocorp.log.protocols import OptExcInfo
 from sema4ai.tasks._customization._plugin_manager import PluginManager
 
 from ._constants import SUPPORTED_TYPES_IN_SCHEMA
-from ._protocols import IContext, IAction, Status
+from ._protocols import IAction, IContext, Status
 
 _map_python_type_to_user_type = {
     str: "string",
@@ -211,16 +211,16 @@ class Action:
     __repr__ = __str__
 
 
-class _TaskContext:
-    _current_task: Optional[IAction] = None
+class _ActionContext:
+    _current_action: Optional[IAction] = None
 
 
-def set_current_task(task: Optional[IAction]):
-    _TaskContext._current_task = task
+def set_current_action(task: Optional[IAction]):
+    _ActionContext._current_action = task
 
 
-def get_current_task() -> Optional[IAction]:
-    return _TaskContext._current_task
+def get_current_action() -> Optional[IAction]:
+    return _ActionContext._current_action
 
 
 class Context:
@@ -303,13 +303,13 @@ class Context:
     def show_error(self, msg: str, flush: Optional[bool] = None):
         self.show(msg, kind=self.KIND_ERROR, flush=flush)
 
-    def _before_task_run(self, task: IAction):
+    def _before_action_run(self, action: IAction):
         self._msg_len_target = 80
         self._msg_len_target = self._show_header(
-            [("Running: ", self.KIND_REGULAR), (task.name, self.KIND_TASK_NAME)]
+            [("Running: ", self.KIND_REGULAR), (action.name, self.KIND_TASK_NAME)]
         )
 
-    def _after_task_run(self, task: IAction):
+    def _after_action_run(self, task: IAction):
         import traceback
 
         msg = ""
@@ -347,8 +347,8 @@ class Context:
     def register_lifecycle_prints(self):
         from ._hooks import after_task_run, before_task_run
 
-        with before_task_run.register(self._before_task_run), after_task_run.register(
-            self._after_task_run
+        with before_task_run.register(self._before_action_run), after_task_run.register(
+            self._after_action_run
         ):
             yield
 

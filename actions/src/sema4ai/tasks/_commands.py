@@ -45,7 +45,7 @@ def list_actions(
     """
     from contextlib import redirect_stdout
 
-    from sema4ai.tasks._collect_tasks import collect_tasks
+    from sema4ai.tasks._collect_actions import collect_actions
     from sema4ai.tasks._protocols import ActionsListActionTypedDict
     from sema4ai.tasks._task import Context
 
@@ -65,18 +65,18 @@ def list_actions(
         write_to = original_stdout
 
     with redirect_stdout(sys.stderr):
-        task: IAction
+        action: IAction
         actions_found: List[ActionsListActionTypedDict] = []
-        for task in collect_tasks(pm, p, glob=glob):
+        for action in collect_actions(pm, p, glob=glob):
             entry: ActionsListActionTypedDict = {
-                "name": task.name,
-                "line": task.lineno,
-                "file": task.filename,
-                "docs": getattr(task.method, "__doc__") or "",
-                "input_schema": task.input_schema,
-                "output_schema": task.output_schema,
-                "managed_params_schema": task.managed_params_schema,
-                "options": task.options,
+                "name": action.name,
+                "line": action.lineno,
+                "file": action.filename,
+                "docs": getattr(action.method, "__doc__") or "",
+                "input_schema": action.input_schema,
+                "output_schema": action.output_schema,
+                "managed_params_schema": action.managed_params_schema,
+                "options": action.options,
             }
             actions_found.append(entry)
 
@@ -220,7 +220,7 @@ def run(
 
     from sema4ai.tasks._interrupts import interrupt_on_timeout
 
-    from ._collect_tasks import collect_tasks
+    from ._collect_actions import collect_actions
     from ._config import RunConfig, set_config
     from ._exceptions import RobocorpTasksCollectError
     from ._hooks import (
@@ -232,7 +232,7 @@ def run(
     from ._log_auto_setup import setup_cli_auto_logging
     from ._log_output_setup import setup_log_output, setup_log_output_to_port
     from ._protocols import Status
-    from ._task import Context, set_current_task
+    from ._task import Context, set_current_action
 
     if not output_dir:
         output_dir = os.environ.get("ROBOT_ARTIFACTS", "")
@@ -408,7 +408,7 @@ def run(
                             f"\nCollecting {task_or_tasks} {action_name} from: {path}"
                         )
 
-                    tasks: List[IAction] = list(collect_tasks(pm, p, task_names, glob))
+                    tasks: List[IAction] = list(collect_actions(pm, p, task_names, glob))
 
                     if not tasks:
                         raise RobocorpTasksCollectError(
@@ -433,7 +433,7 @@ def run(
 
                 try:
                     for task in tasks:
-                        set_current_task(task)
+                        set_current_action(task)
                         before_task_run(task)
                         try:
                             if json_loaded_arguments is not None:
@@ -464,7 +464,7 @@ def run(
                                 "RC_TEARDOWN_INTERRUPT_TIMEOUT",
                             ):
                                 after_task_run(task)
-                            set_current_task(None)
+                            set_current_action(None)
                             if task.failed:
                                 run_status = "ERROR"
                 finally:
