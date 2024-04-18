@@ -44,14 +44,14 @@ def check_implements(x: T) -> T:
 
 
 class Status(str, Enum):
-    """Task state"""
+    """Action state"""
 
     NOT_RUN = "NOT_RUN"
     PASS = "PASS"
     FAIL = "FAIL"
 
 
-class ITask(typing.Protocol):
+class IAction(typing.Protocol):
     module_name: str
     filename: str
     method: typing.Callable
@@ -205,12 +205,12 @@ class IBeforeCollectTasksCallback(ICallback, typing.Protocol):
         pass
 
 
-ITaskCallback = Callable[[ITask], Any]
-ITasksCallback = Callable[[Sequence[ITask]], Any]
+ITaskCallback = Callable[[IAction], Any]
+ITasksCallback = Callable[[Sequence[IAction]], Any]
 
 
 class IBeforeTaskRunCallback(ICallback, typing.Protocol):
-    def __call__(self, task: ITask):
+    def __call__(self, task: IAction):
         pass
 
     def register(self, callback: ITaskCallback) -> IAutoUnregisterContextManager:
@@ -221,18 +221,18 @@ class IBeforeTaskRunCallback(ICallback, typing.Protocol):
 
 
 class IBeforeAllTasksRunCallback(ICallback, typing.Protocol):
-    def __call__(self, tasks: Sequence[ITask]):
+    def __call__(self, tasks: Sequence[IAction]):
         pass
 
     def register(self, callback: ITasksCallback) -> IAutoUnregisterContextManager:
         pass
 
-    def unregister(self, callback: Callable[[Sequence[ITask]], Any]) -> None:
+    def unregister(self, callback: Callable[[Sequence[IAction]], Any]) -> None:
         pass
 
 
 class IAfterAllTasksRunCallback(ICallback, typing.Protocol):
-    def __call__(self, tasks: Sequence[ITask]):
+    def __call__(self, tasks: Sequence[IAction]):
         pass
 
     def register(self, callback: ITasksCallback) -> IAutoUnregisterContextManager:
@@ -243,7 +243,7 @@ class IAfterAllTasksRunCallback(ICallback, typing.Protocol):
 
 
 class IAfterTaskRunCallback(ICallback, typing.Protocol):
-    def __call__(self, task: ITask):
+    def __call__(self, task: IAction):
         pass
 
     def register(self, callback: ITaskCallback) -> IAutoUnregisterContextManager:

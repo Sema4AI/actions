@@ -67,9 +67,9 @@ def setup(
     @setup
     def measure_time(task):
         start = time.time()
-        yield  # Task executes here
+        yield  # Action executes here
         duration = time.time() - start
-        print(f"Task took {duration} seconds")
+        print(f"Action took {duration} seconds")
 
     @task
     def my_long_task():
@@ -171,7 +171,7 @@ def teardown(
 
     @teardown(scope="task")
     def after_each(task):
-        print(f"Task '{task.name}' status is '{task.status}'")
+        print(f"Action '{task.name}' status is '{task.status}'")
 
     @teardown(scope="session")
     def after_all(tasks):

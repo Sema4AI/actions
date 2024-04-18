@@ -9,7 +9,7 @@ from typing import Callable, Dict, Iterator, List, Optional, Sequence, Set, Tupl
 from robocorp import log
 
 from ._customization._plugin_manager import PluginManager
-from ._protocols import ITask
+from ._protocols import IAction
 
 
 def module_name_from_path(path: Path, root: Path) -> str:
@@ -144,7 +144,7 @@ def collect_tasks(
     path: Path,
     task_names: Sequence[str] = (),
     glob: Optional[str] = None,
-) -> Iterator[ITask]:
+) -> Iterator[IAction]:
     """
     Note: collecting tasks is not thread-safe.
     """
@@ -155,7 +155,7 @@ def collect_tasks(
 
     _hooks.before_collect_tasks(path, task_names_as_set)
 
-    def accept_task(task: ITask):
+    def accept_task(task: IAction):
         if not task_names:
             return True
 
@@ -179,7 +179,7 @@ def collect_tasks(
             )
         )
 
-    with _hooks.on_task_func_found.register(on_func_found):
+    with _hooks.on_action_func_found.register(on_func_found):
         if path.is_dir():
             root = _get_root(path, is_dir=True)
             sys.path.insert(0, str(root))
@@ -223,13 +223,13 @@ def collect_tasks(
                 f"Expected {path} to map to a directory or file."
             )
 
-    from sema4ai.tasks._task import Task
+    from sema4ai.tasks._task import Action
 
     for method, options in _methods_marked_as_tasks_found:
         module_name = method.__module__
         module_file = method.__code__.co_filename
 
-        task = Task(pm, module_name, module_file, method, options=options)
+        task = Action(pm, module_name, module_file, method, options=options)
 
         if accept_task(task):
             yield task

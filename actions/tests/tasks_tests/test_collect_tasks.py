@@ -36,7 +36,7 @@ def test_colect_tasks_from_package(datadir) -> None:
 
 def test_collect_tasks_integrated_error(tmpdir) -> None:
     result = sema4ai_tasks_run(
-        ["run", "dir_not_there", "-t=main"], returncode=1, cwd=str(tmpdir)
+        ["run", "dir_not_there", "-a=main"], returncode=1, cwd=str(tmpdir)
     )
 
     decoded = result.stdout.decode("utf-8", "replace")
@@ -48,7 +48,7 @@ def test_collect_tasks_integrated(datadir) -> None:
     from robocorp.log import verify_log_messages_from_log_html
 
     result = sema4ai_tasks_run(
-        ["run", str(datadir), "-t", "main"], returncode=0, cwd=datadir
+        ["run", str(datadir), "-a", "main"], returncode=0, cwd=datadir
     )
 
     assert not result.stderr, f"Error with command line: {result.args}: {result.stderr.decode('utf-8', 'replace')}"
@@ -91,7 +91,7 @@ def test_provide_output_in_stdout(datadir, tmpdir) -> None:
     from robocorp.log import verify_log_messages_from_decoded_str
 
     result = sema4ai_tasks_run(
-        ["run", "-t=main", str(datadir), "--output", str(tmpdir)],
+        ["run", "-a=main", str(datadir), "--output", str(tmpdir)],
         returncode=0,
         additional_env={"RC_LOG_OUTPUT_STDOUT": "1"},
     )
@@ -112,7 +112,7 @@ def test_error_in_stdout(datadir, tmpdir) -> None:
     from robocorp.log import verify_log_messages_from_decoded_str
 
     result = sema4ai_tasks_run(
-        ["run", "-t=main_errors", str(datadir), "--output", str(tmpdir)],
+        ["run", "-a=main_errors", str(datadir), "--output", str(tmpdir)],
         returncode=1,
         additional_env={"RC_LOG_OUTPUT_STDOUT": "1"},
     )

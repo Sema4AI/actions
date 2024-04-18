@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional, Sequence, Union, overload
 
 from sema4ai.tasks._customization._extension_points import EPManagedParameters
-from sema4ai.tasks._protocols import ITask
+from sema4ai.tasks._protocols import IAction
 
 from . import _constants
 from ._argdispatch import arg_dispatch as _arg_dispatch
@@ -38,7 +38,7 @@ def list_tasks(
             "name": "task_name",
             "line": 10,
             "file": "/usr/code/projects/tasks.py",
-            "docs": "Task docstring",
+            "docs": "Action docstring",
         },
         ...
     ]
@@ -68,7 +68,7 @@ def list_tasks(
         write_to = original_stdout
 
     with redirect_stdout(sys.stderr):
-        task: ITask
+        task: IAction
         tasks_found: List[TasksListTaskTypedDict] = []
         for task in collect_tasks(pm, p, glob=glob):
             entry: TasksListTaskTypedDict = {
@@ -413,7 +413,7 @@ def run(
                             f"\nCollecting {task_or_tasks} {task_name} from: {path}"
                         )
 
-                    tasks: List[ITask] = list(collect_tasks(pm, p, task_names, glob))
+                    tasks: List[IAction] = list(collect_tasks(pm, p, task_names, glob))
 
                     if not tasks:
                         raise RobocorpTasksCollectError(
@@ -575,7 +575,7 @@ def check_boolean(value):
 
 
 def _validate_and_convert_kwargs(
-    pm: PluginManager, task: ITask, kwargs: Dict[str, Any]
+    pm: PluginManager, task: IAction, kwargs: Dict[str, Any]
 ) -> Dict[str, Any]:
     from typing import get_type_hints
 
@@ -736,7 +736,7 @@ def _get_managed_param_type(pm: PluginManager, param: inspect.Parameter) -> type
 
 
 def _normalize_arguments(
-    pm: PluginManager, task: ITask, args: list[str]
+    pm: PluginManager, task: IAction, args: list[str]
 ) -> Dict[str, Any]:
     from typing import get_type_hints
 

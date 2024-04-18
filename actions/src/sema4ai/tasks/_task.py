@@ -9,7 +9,7 @@ from robocorp.log.protocols import OptExcInfo
 from sema4ai.tasks._customization._plugin_manager import PluginManager
 
 from ._constants import SUPPORTED_TYPES_IN_SCHEMA
-from ._protocols import IContext, ITask, Status
+from ._protocols import IContext, IAction, Status
 
 _map_python_type_to_user_type = {
     str: "string",
@@ -19,7 +19,7 @@ _map_python_type_to_user_type = {
 }
 
 
-class Task:
+class Action:
     def __init__(
         self,
         pm: PluginManager,
@@ -203,23 +203,23 @@ class Task:
     def __typecheckself__(self) -> None:
         from sema4ai.tasks._protocols import check_implements
 
-        _: ITask = check_implements(self)
+        _: IAction = check_implements(self)
 
     def __str__(self):
-        return f"Task({self.name}, status: {self.status})"
+        return f"Action({self.name}, status: {self.status})"
 
     __repr__ = __str__
 
 
 class _TaskContext:
-    _current_task: Optional[ITask] = None
+    _current_task: Optional[IAction] = None
 
 
-def set_current_task(task: Optional[ITask]):
+def set_current_task(task: Optional[IAction]):
     _TaskContext._current_task = task
 
 
-def get_current_task() -> Optional[ITask]:
+def get_current_task() -> Optional[IAction]:
     return _TaskContext._current_task
 
 
@@ -303,13 +303,13 @@ class Context:
     def show_error(self, msg: str, flush: Optional[bool] = None):
         self.show(msg, kind=self.KIND_ERROR, flush=flush)
 
-    def _before_task_run(self, task: ITask):
+    def _before_task_run(self, task: IAction):
         self._msg_len_target = 80
         self._msg_len_target = self._show_header(
             [("Running: ", self.KIND_REGULAR), (task.name, self.KIND_TASK_NAME)]
         )
 
-    def _after_task_run(self, task: ITask):
+    def _after_task_run(self, task: IAction):
         import traceback
 
         msg = ""

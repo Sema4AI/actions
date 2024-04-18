@@ -4,7 +4,7 @@ from sema4ai.tasks.cli import main
 
 if __name__ == "__main__":
     os.environ["RC_TASKS_SKIP_SESSION_TEARDOWN"] = "1"
-    returncode = main(["run", "-t", "reuse_task", "--console-colors=plain"], exit=False)
+    returncode = main(["run", "-a", "reuse_task", "--console-colors=plain"], exit=False)
     assert returncode == 0
 
     import my_task  # type: ignore # @UnresolvedImport
@@ -17,7 +17,7 @@ if __name__ == "__main__":
     assert my_task.task_teardown == 1
 
     os.environ["RC_TASKS_SKIP_SESSION_SETUP"] = "1"
-    returncode = main(["run", "-t", "reuse_task", "--console-colors=plain"], exit=False)
+    returncode = main(["run", "-a", "reuse_task", "--console-colors=plain"], exit=False)
     assert returncode == 0
 
     assert my_task.session_setup == 1
@@ -28,7 +28,7 @@ if __name__ == "__main__":
     assert my_task.task_teardown == 2
 
     os.environ["RC_TASKS_SKIP_SESSION_TEARDOWN"] = "0"
-    returncode = main(["run", "-t", "reuse_task", "--console-colors=plain"], exit=False)
+    returncode = main(["run", "-a", "reuse_task", "--console-colors=plain"], exit=False)
     assert returncode == 0
 
     assert my_task.session_setup == 1

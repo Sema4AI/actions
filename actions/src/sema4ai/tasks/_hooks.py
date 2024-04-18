@@ -49,8 +49,8 @@ class SessionCallback(Callback):
                     raise
 
 
-# Called as on_task_func_found(task: ITask)
-on_task_func_found: IOnTaskFuncFoundCallback = Callback(raise_exceptions=True)
+# Called as on_action_func_found(task: ITask)
+on_action_func_found: IOnTaskFuncFoundCallback = Callback(raise_exceptions=True)
 
 # Called as before_collect_tasks(path: Path, task_names: Set[str])
 before_collect_tasks: IBeforeCollectTasksCallback = Callback()

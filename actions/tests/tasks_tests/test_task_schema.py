@@ -42,9 +42,9 @@ def methodc(a: int = 1) -> int:
 
 
 def test_task_schema():
-    from sema4ai.tasks._task import Task
+    from sema4ai.tasks._task import Action
 
-    task = Task(PluginManager(), __name__, __file__, methoda)
+    task = Action(PluginManager(), __name__, __file__, methoda)
     input_schema = task.input_schema
     assert input_schema == {
         "properties": {
@@ -54,7 +54,7 @@ def test_task_schema():
         "type": "object",
     }
 
-    task = Task(PluginManager(), __name__, __file__, methodb)
+    task = Action(PluginManager(), __name__, __file__, methodb)
     input_schema = task.input_schema
     assert input_schema == {
         "properties": {
@@ -68,11 +68,11 @@ def test_task_schema():
         "type": "object",
     }
 
-    task = Task(PluginManager(), __name__, __file__, methodb)
+    task = Action(PluginManager(), __name__, __file__, methodb)
     output_schema = task.output_schema
     assert output_schema == {"type": "integer", "description": "The number 1."}
 
-    task = Task(
+    task = Action(
         PluginManager(),
         __name__,
         __file__,
@@ -84,9 +84,9 @@ def test_task_schema():
 
 
 def test_task_schema_default_value_type():
-    from sema4ai.tasks._task import Task
+    from sema4ai.tasks._task import Action
 
-    task = Task(PluginManager(), __name__, __file__, methodc)
+    task = Action(PluginManager(), __name__, __file__, methodc)
     input_schema = task.input_schema
     assert input_schema == {
         "properties": {
@@ -118,9 +118,9 @@ def unicode_ação_Σ(ação: int = 1) -> int:
 
 
 def test_task_unicode():
-    from sema4ai.tasks._task import Task
+    from sema4ai.tasks._task import Action
 
-    task = Task(PluginManager(), __name__, __file__, unicode_ação_Σ)
+    task = Action(PluginManager(), __name__, __file__, unicode_ação_Σ)
     input_schema = task.input_schema
     assert input_schema == {
         "properties": {
@@ -146,9 +146,9 @@ def method_custom_type(a: MyCustomData) -> MyCustomData:
 
 
 def test_task_schema_custom_type():
-    from sema4ai.tasks._task import Task
+    from sema4ai.tasks._task import Action
 
-    task = Task(PluginManager(), __name__, __file__, method_custom_type)
+    task = Action(PluginManager(), __name__, __file__, method_custom_type)
     input_schema = task.input_schema
     assert input_schema == {
         "properties": {
@@ -202,9 +202,9 @@ def method_custom_dependent_type(a: MyDataWithDependent) -> MyDataWithDependent:
 
 
 def test_task_schema_dependent_type():
-    from sema4ai.tasks._task import Task
+    from sema4ai.tasks._task import Action
 
-    task = Task(PluginManager(), __name__, __file__, method_custom_dependent_type)
+    task = Action(PluginManager(), __name__, __file__, method_custom_dependent_type)
     input_schema = task.input_schema
     assert input_schema == {
         "properties": {

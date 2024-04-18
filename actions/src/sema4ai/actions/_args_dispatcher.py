@@ -10,7 +10,7 @@ from sema4ai.tasks._customization._plugin_manager import PluginManager
 def _translate(msg):
     return (
         msg.replace("task", "action")
-        .replace("Task", "Action")
+        .replace("Action", "Action")
         .replace("TASK", "ACTION")
     )
 
@@ -75,7 +75,7 @@ class _ActionsArgDispatcher(_ArgDispatcher):
                         sys.stderr.write(formatted.message)
                         sys.stderr.flush()
 
-        with _hooks.on_task_func_found.register(on_func_found):
+        with _hooks.on_action_func_found.register(on_func_found):
             yield
 
     def _list(self, *args, **kwargs):
@@ -98,18 +98,6 @@ class _ActionsArgDispatcher(_ArgDispatcher):
         from sema4ai.tasks import _commands
 
         return _commands.run(*args, **kwargs)
-
-    def _get_description(self):
-        return "Sema4AI Actions library"
-
-    def _add_task_argument(self, run_parser):
-        run_parser.add_argument(
-            "-a",
-            "--action",
-            dest="task_name",
-            help="The name of the action that should be run.",
-            action="append",
-        )
 
     def _add_lint_argument(self, parser):
         parser.add_argument(

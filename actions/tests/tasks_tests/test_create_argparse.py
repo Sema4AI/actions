@@ -23,7 +23,7 @@ def test_argparse():
         assert e.value.code == 0
     assert "show this help message and exit" in s.getvalue()
 
-    parsed = parser.parse_args(["run", "target_dir", "-o=./out", "-t=task-name"])
+    parsed = parser.parse_args(["run", "target_dir", "-o=./out", "-a=task-name"])
     assert parsed.command == "run"
     assert parsed.path == "target_dir"
     assert parsed.output_dir == "./out"

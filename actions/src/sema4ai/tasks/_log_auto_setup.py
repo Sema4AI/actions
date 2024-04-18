@@ -3,10 +3,10 @@ from typing import Optional
 
 from robocorp import log
 
-from ._protocols import ITask
+from ._protocols import IAction
 
 
-def _log_before_task_run(task: ITask):
+def _log_before_task_run(task: IAction):
     log.start_task(
         task.name,
         task.module_name,
@@ -16,7 +16,7 @@ def _log_before_task_run(task: ITask):
     )
 
 
-def _log_after_task_run(task: ITask):
+def _log_after_task_run(task: IAction):
     status = task.status
     log.end_task(task.name, task.module_name, status, task.message)
 

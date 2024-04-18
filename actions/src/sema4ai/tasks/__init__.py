@@ -36,7 +36,7 @@ from pathlib import Path
 from typing import Dict, Optional
 
 from ._fixtures import setup, teardown
-from ._protocols import ITask, Status
+from ._protocols import IAction, Status
 
 __version__ = "3.1.1"
 version_info = [int(x) for x in __version__.split(".")]
@@ -81,7 +81,7 @@ def task(*args, **kwargs):
         from . import _hooks
 
         # When a task is found, register it in the framework as a target for execution.
-        _hooks.on_task_func_found(func, options=options)
+        _hooks.on_action_func_found(func, options=options)
 
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -152,7 +152,7 @@ def get_output_dir() -> Optional[Path]:
     return config.output_dir
 
 
-def get_current_task() -> Optional[ITask]:
+def get_current_task() -> Optional[IAction]:
     """
     Provides the task which is being currently run or None if not currently
     running a task.
@@ -170,6 +170,6 @@ __all__ = [
     "task_cache",
     "get_output_dir",
     "get_current_task",
-    "ITask",
+    "IAction",
     "Status",
 ]

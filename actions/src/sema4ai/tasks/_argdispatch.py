@@ -39,10 +39,10 @@ class _ArgDispatcher:
 
     def _add_task_argument(self, run_parser):
         run_parser.add_argument(
-            "-t",
-            "--task",
+            "-a",
+            "--action",
             dest="task_name",
-            help="The name of the task that should be run.",
+            help="The name of the action that should be run.",
             action="append",
         )
 
