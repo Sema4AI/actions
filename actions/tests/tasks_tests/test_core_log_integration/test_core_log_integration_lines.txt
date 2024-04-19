@@ -1,6 +1,6 @@
 
 SR: main_check_lines.py
-    ST: Collect tasks (line: 0)
+    ST: Collect actions (line: 0)
     ET: PASS
     ST: entry_at_line_10 (line: 10)
         SE: METHOD: ActionContext.from_request (line: 211)
@@ -51,7 +51,7 @@ SR: main_check_lines.py
             EE: FOR: PASS
         EE: METHOD: PASS
     ET: PASS
-    ST: Teardown tasks (line: 0)
+    ST: Teardown actions (line: 0)
         L: I: 'System information:\nMemory: (line: 0)
         L: I: 'Current Process: (line: 0)
     ET: PASS

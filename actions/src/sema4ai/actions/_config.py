@@ -18,7 +18,7 @@ class RunConfig:
         """
         Args:
             output_dir: The directory where output should be put.
-            path: The path (file or directory where the tasks should be collected from.
+            path: The path (file or directory where the actions should be collected from.
             action_name: The name(s) of the action(s) to run.
             max_log_files: The maximum number of log files to be created (if more would
                 be needed the oldest one is deleted).
@@ -32,7 +32,7 @@ class RunConfig:
                 "no": don't provide log output to the stdout.
                 "json": provide json output to the stdout.
             no_status_rc:
-                Set to True so that if running tasks has an error inside the action
+                Set to True so that if running actions has an error inside the action
                 the return code of the process is 0.
             pyproject_contents:
                 The contents loaded from pyproject.toml.

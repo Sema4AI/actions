@@ -1,6 +1,6 @@
 
 SR: simple.py
-    ST: Collect tasks
+    ST: Collect actions
     ET: PASS
     ST: check_difflib_log
         SE: METHOD: ActionContext.from_request
@@ -27,6 +27,6 @@ SR: simple.py
         EE: UNTRACKED_GENERATOR: PASS
     EE: METHOD: PASS
 ET: PASS
-ST: Teardown tasks
+ST: Teardown actions
 ET: PASS
 ER: PASS

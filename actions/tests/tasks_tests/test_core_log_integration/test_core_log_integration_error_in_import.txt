@@ -1,6 +1,6 @@
 
 SR: main_with_error_in_import.py
-    ST: Collect tasks (line: <line>.)
+    ST: Collect actions (line: <line>.)
         L: E: "Error when importing module 'main_with_error_in_import'\n  at location <path>." (line: <line>.)
         STB: ModuleNotFoundError: No module named 'module_that_does_not_exist'
     ET: ERROR

@@ -125,10 +125,10 @@ def session_cache(func):
     Args:
         func: wrapped function.
     """
-    from sema4ai.actions._hooks import after_all_tasks_run
+    from sema4ai.actions._hooks import after_all_actions_run
     from sema4ai.actions._lifecycle import _cache
 
-    return _cache(after_all_tasks_run, func)
+    return _cache(after_all_actions_run, func)
 
 
 def action_cache(func):
@@ -147,10 +147,10 @@ def action_cache(func):
     Args:
         func: wrapped function.
     """
-    from sema4ai.actions._hooks import after_task_run
+    from sema4ai.actions._hooks import after_action_run
     from sema4ai.actions._lifecycle import _cache
 
-    return _cache(after_task_run, func)
+    return _cache(after_action_run, func)
 
 
 def get_output_dir() -> Optional[Path]:

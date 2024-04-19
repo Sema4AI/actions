@@ -59,7 +59,7 @@ def insert_missing_modules(modules: Dict[str, ModuleType], module_name: str) -> 
             except ModuleNotFoundError:
                 module = ModuleType(
                     module_name,
-                    doc="Empty module created by robocorp-tasks.",
+                    doc="Empty module created by sema4ai-actions.",
                 )
                 modules[module_name] = module
         module_parts.pop(-1)
@@ -128,14 +128,14 @@ def _add_to_sys_path_0(root: Path):
             pass
 
 
-# These are the tasks found. They're kept in a global variable because when
+# These are the actions found. They're kept in a global variable because when
 # doing multiple invocations of the main we want to consider those properly.
-_methods_marked_as_tasks_found: List[Tuple[Callable, Dict]] = []
+_methods_marked_as_actions_found: List[Tuple[Callable, Dict]] = []
 _found_as_set: Set[Tuple[str, str]] = set()
 
 
 def clear_previously_collected_actions():
-    _methods_marked_as_tasks_found.clear()
+    _methods_marked_as_actions_found.clear()
     _found_as_set.clear()
 
 
@@ -146,14 +146,14 @@ def collect_actions(
     glob: Optional[str] = None,
 ) -> Iterator[IAction]:
     """
-    Note: collecting tasks is not thread-safe.
+    Note: collecting actions is not thread-safe.
     """
     from sema4ai.actions import _constants, _hooks
 
     path = path.absolute()
-    task_names_as_set = set(action_names)
+    action_names_as_set = set(action_names)
 
-    _hooks.before_collect_actions(path, task_names_as_set)
+    _hooks.before_collect_actions(path, action_names_as_set)
 
     def accept_task(action: IAction):
         if not action_names:
@@ -172,7 +172,7 @@ def collect_actions(
             )
         _found_as_set.add(key)
 
-        _methods_marked_as_tasks_found.append(
+        _methods_marked_as_actions_found.append(
             (
                 func,
                 options,
@@ -214,18 +214,18 @@ def collect_actions(
                 import_path(path, root=root)
 
         else:
-            from ._exceptions import RobocorpTasksCollectError
+            from ._exceptions import RobocorpActionsCollectError
 
             if not path.exists():
-                raise RobocorpTasksCollectError(f"Path: {path} does not exist")
+                raise RobocorpActionsCollectError(f"Path: {path} does not exist")
 
-            raise RobocorpTasksCollectError(
+            raise RobocorpActionsCollectError(
                 f"Expected {path} to map to a directory or file."
             )
 
     from sema4ai.actions._action import Action
 
-    for method, options in _methods_marked_as_tasks_found:
+    for method, options in _methods_marked_as_actions_found:
         module_name = method.__module__
         module_file = method.__code__.co_filename
 

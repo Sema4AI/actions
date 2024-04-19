@@ -2,7 +2,7 @@ class RobocorpActionsError(RuntimeError):
     pass
 
 
-class RobocorpTasksCollectError(RobocorpActionsError):
+class RobocorpActionsCollectError(RobocorpActionsError):
     """
     Exception given if there was some issue collecting actions.
     """

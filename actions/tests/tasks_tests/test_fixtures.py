@@ -5,18 +5,18 @@ import pytest
 from sema4ai.actions import setup as actions_setup
 from sema4ai.actions import teardown as actions_teardown
 from sema4ai.actions._hooks import (
-    after_all_tasks_run,
-    after_task_run,
-    before_all_tasks_run,
-    before_task_run,
+    after_all_actions_run,
+    after_action_run,
+    before_all_actions_run,
+    before_action_run,
 )
 
 
 def _clear_callbacks():
-    before_task_run._callbacks = ()
-    before_all_tasks_run._callbacks = ()
-    after_task_run._callbacks = ()
-    after_all_tasks_run._callbacks = ()
+    before_action_run._callbacks = ()
+    before_all_actions_run._callbacks = ()
+    after_action_run._callbacks = ()
+    after_all_actions_run._callbacks = ()
 
 
 @pytest.fixture(autouse=True)
@@ -27,8 +27,8 @@ def clear_callbacks():
 
 
 def test_setup_default():
-    assert len(before_task_run) == 0
-    assert len(before_all_tasks_run) == 0
+    assert len(before_action_run) == 0
+    assert len(before_all_actions_run) == 0
 
     is_called = False
 
@@ -39,16 +39,16 @@ def test_setup_default():
         is_called = True
 
     assert not is_called
-    assert len(before_task_run) == 1
-    assert len(before_all_tasks_run) == 0
+    assert len(before_action_run) == 1
+    assert len(before_all_actions_run) == 0
 
-    before_task_run("placeholder")
+    before_action_run("placeholder")
     assert is_called
 
 
 def test_setup_all():
-    assert len(before_task_run) == 0
-    assert len(before_all_tasks_run) == 0
+    assert len(before_action_run) == 0
+    assert len(before_all_actions_run) == 0
 
     is_called = False
 
@@ -59,16 +59,16 @@ def test_setup_all():
         is_called = True
 
     assert not is_called
-    assert len(before_task_run) == 0
-    assert len(before_all_tasks_run) == 1
+    assert len(before_action_run) == 0
+    assert len(before_all_actions_run) == 1
 
-    before_all_tasks_run([])
+    before_all_actions_run([])
     assert is_called
 
 
 def test_setup_task():
-    assert len(before_task_run) == 0
-    assert len(before_all_tasks_run) == 0
+    assert len(before_action_run) == 0
+    assert len(before_all_actions_run) == 0
 
     is_called = False
 
@@ -79,16 +79,16 @@ def test_setup_task():
         is_called = True
 
     assert not is_called
-    assert len(before_task_run) == 1
-    assert len(before_all_tasks_run) == 0
+    assert len(before_action_run) == 1
+    assert len(before_all_actions_run) == 0
 
-    before_task_run("placeholder")
+    before_action_run("placeholder")
     assert is_called
 
 
 def test_teardown_default():
-    assert len(after_task_run) == 0
-    assert len(after_all_tasks_run) == 0
+    assert len(after_action_run) == 0
+    assert len(after_all_actions_run) == 0
 
     is_called = False
 
@@ -99,16 +99,16 @@ def test_teardown_default():
         is_called = True
 
     assert not is_called
-    assert len(after_task_run) == 1
-    assert len(after_all_tasks_run) == 0
+    assert len(after_action_run) == 1
+    assert len(after_all_actions_run) == 0
 
-    after_task_run("placeholder")
+    after_action_run("placeholder")
     assert is_called
 
 
 def test_teardown_all():
-    assert len(after_task_run) == 0
-    assert len(after_all_tasks_run) == 0
+    assert len(after_action_run) == 0
+    assert len(after_all_actions_run) == 0
 
     is_called = False
 
@@ -119,16 +119,16 @@ def test_teardown_all():
         is_called = True
 
     assert not is_called
-    assert len(after_task_run) == 0
-    assert len(after_all_tasks_run) == 1
+    assert len(after_action_run) == 0
+    assert len(after_all_actions_run) == 1
 
-    after_all_tasks_run([])
+    after_all_actions_run([])
     assert is_called
 
 
 def test_teardown_task():
-    assert len(after_task_run) == 0
-    assert len(after_all_tasks_run) == 0
+    assert len(after_action_run) == 0
+    assert len(after_all_actions_run) == 0
 
     is_called = False
 
@@ -139,10 +139,10 @@ def test_teardown_task():
         is_called = True
 
     assert not is_called
-    assert len(after_task_run) == 1
-    assert len(after_all_tasks_run) == 0
+    assert len(after_action_run) == 1
+    assert len(after_all_actions_run) == 0
 
-    after_task_run("placeholder")
+    after_action_run("placeholder")
     assert is_called
 
 
@@ -155,18 +155,18 @@ def test_raises():
     def raises_teardown(_):
         raise RuntimeError("Oopsie #2")
 
-    assert len(before_task_run) == 1
-    assert len(after_task_run) == 1
+    assert len(before_action_run) == 1
+    assert len(after_action_run) == 1
 
     with pytest.raises(RuntimeError):
-        before_task_run(None)
+        before_action_run(None)
 
-    after_task_run(None)
+    after_action_run(None)
 
 
 def test_setup_generator():
-    assert len(before_task_run) == 0
-    assert len(after_task_run) == 0
+    assert len(before_action_run) == 0
+    assert len(after_action_run) == 0
 
     is_called = False
 
@@ -178,17 +178,17 @@ def test_setup_generator():
         is_called = True
 
     assert not is_called
-    assert len(before_task_run) == 1
-    assert len(after_task_run) == 0
+    assert len(before_action_run) == 1
+    assert len(after_action_run) == 0
 
-    before_task_run("task")
+    before_action_run("task")
 
     assert not is_called
-    assert len(before_task_run) == 1
-    assert len(after_task_run) == 1
+    assert len(before_action_run) == 1
+    assert len(after_action_run) == 1
 
-    after_task_run("task")
+    after_action_run("task")
 
     assert is_called
-    assert len(before_task_run) == 1
-    assert len(after_task_run) == 0
+    assert len(before_action_run) == 1
+    assert len(after_action_run) == 0

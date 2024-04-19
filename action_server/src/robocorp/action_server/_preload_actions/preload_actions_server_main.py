@@ -173,10 +173,15 @@ class MessagesHandler:
         # Some things must be set in the environment for the run:
         #
         # env["ROBOT_ARTIFACTS"] = robot_artifacts
-        # env["RC_ACTION_RESULT_LOCATION"] = result_json
+        # env["S4_ACTION_RESULT_LOCATION"] = result_json
         command = message.get("command")
         if command == "run_action":
-            from robocorp.actions import cli
+            try:
+                # new
+                from sema4ai.actions import cli
+            except ImportError:
+                # old (deprecated)
+                from robocorp.actions import cli  # type: ignore
 
             returncode = 1
             try:
@@ -190,18 +195,24 @@ class MessagesHandler:
                 reuse_process = message["reuse_process"]
 
                 os.environ["ROBOT_ARTIFACTS"] = robot_artifacts
-                os.environ["RC_ACTION_RESULT_LOCATION"] = result_json
+                os.environ["S4_ACTION_RESULT_LOCATION"] = result_json
 
                 if reuse_process:
                     # Setup is skipped (for callbacks which still haven't been
                     # executed)
                     os.environ["RC_TASKS_SKIP_SESSION_SETUP"] = "1"
+                    os.environ["S4_ACTIONS_SKIP_SESSION_SETUP"] = "1"
 
                     # Teardown is skipped (for all callbacks).
                     os.environ["RC_TASKS_SKIP_SESSION_TEARDOWN"] = "1"
+                    os.environ["S4_ACTIONS_SKIP_SESSION_TEARDOWN"] = "1"
                 else:
+                    # old
                     os.environ.pop("RC_TASKS_SKIP_SESSION_TEARDOWN", None)
                     os.environ.pop("RC_TASKS_SKIP_SESSION_SETUP", None)
+                    # new
+                    os.environ.pop("S4_ACTIONS_SKIP_SESSION_TEARDOWN", None)
+                    os.environ.pop("S4_ACTIONS_SKIP_SESSION_SETUP", None)
 
                 if headers:
                     for key, value in headers.items():
@@ -235,15 +246,26 @@ class MessagesHandler:
 
     def _plugin_manager_kwargs(self, managed_parameters) -> Dict[str, Any]:
         try:
-            from robocorp.actions._managed_parameters import ManagedParameters
-            from robocorp.actions._request import Request
-            from robocorp.tasks._customization._extension_points import (
+            # new
+            from sema4ai.actions._customization._extension_points import (
                 EPManagedParameters,
             )
-            from robocorp.tasks._customization._plugin_manager import PluginManager
+            from sema4ai.actions._customization._plugin_manager import PluginManager
+            from sema4ai.actions._managed_parameters import ManagedParameters
+            from sema4ai.actions._request import Request
 
         except ImportError:
-            return {}
+            # old (deprecated: using robocorp-actions).
+            try:
+                from robocorp.actions._managed_parameters import ManagedParameters
+                from robocorp.actions._request import Request
+                from robocorp.tasks._customization._extension_points import (
+                    EPManagedParameters,
+                )
+                from robocorp.tasks._customization._plugin_manager import PluginManager
+
+            except ImportError:
+                return {}
 
         # Ok, we're dealing with a newer version of robocorp.actions and
         # robocorp.tasks, so add the customization of parameters to

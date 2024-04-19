@@ -66,3 +66,13 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry.build]
 script = "build.py"
 generate-setup-file = true
+
+
+
+[[tool.mypy.overrides]]
+module = "robocorp.actions.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "robocorp.tasks.*"
+ignore_missing_imports = true

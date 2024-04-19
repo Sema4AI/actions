@@ -26,10 +26,10 @@ def setup_cli_auto_logging(config: Optional[log.AutoLogConfigBase]):
     # This needs to be called before importing code which needs to show in the log
     # (user or library).
 
-    from sema4ai.actions._hooks import after_task_run, before_task_run
+    from sema4ai.actions._hooks import after_action_run, before_action_run
 
     with log.setup_auto_logging(config):
-        with before_task_run.register(_log_before_action_run), after_task_run.register(
+        with before_action_run.register(_log_before_action_run), after_action_run.register(
             _log_after_action_run
         ):
             try:

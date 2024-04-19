@@ -56,22 +56,22 @@ on_action_func_found: IOnActionFuncFoundCallback = Callback(raise_exceptions=Tru
 # Called as before_collect_actions(path: Path, action_names: Set[str])
 before_collect_actions: IBeforeCollectActionsCallback = Callback()
 
-# Called as before_all_tasks_run(actions: List[IAction])
-before_all_tasks_run: IBeforeAllActionsRunCallback = SessionCallback(
-    "RC_TASKS_SKIP_SESSION_SETUP", False, raise_exceptions=True
+# Called as before_all_actions_run(actions: List[IAction])
+before_all_actions_run: IBeforeAllActionsRunCallback = SessionCallback(
+    "S4_ACTIONS_SKIP_SESSION_SETUP", False, raise_exceptions=True
 )
 
-# Called as before_task_run(action: IAction)
-before_task_run: IBeforeActionRunCallback = Callback(raise_exceptions=True)
+# Called as before_action_run(action: IAction)
+before_action_run: IBeforeActionRunCallback = Callback(raise_exceptions=True)
 
-# Called as after_task_run(action: IAction)
+# Called as after_action_run(action: IAction)
 # Note that this one is done in reversed registry order (as is usually
 # expected from tear-downs).
-after_task_run: IAfterActionRunCallback = Callback(reversed=True)
+after_action_run: IAfterActionRunCallback = Callback(reversed=True)
 
-# Called as after_all_tasks_run(actions: List[IAction])
+# Called as after_all_actions_run(actions: List[IAction])
 # Note that this one is done in reversed registry order (as is usually
 # expected from tear-downs).
-after_all_tasks_run: IAfterAllActionsRunCallback = SessionCallback(
-    "RC_TASKS_SKIP_SESSION_TEARDOWN", True, reversed=True
+after_all_actions_run: IAfterAllActionsRunCallback = SessionCallback(
+    "S4_ACTIONS_SKIP_SESSION_TEARDOWN", True, reversed=True
 )

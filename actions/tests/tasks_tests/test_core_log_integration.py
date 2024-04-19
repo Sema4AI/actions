@@ -147,7 +147,7 @@ def test_core_log_integration_console_messages(datadir, str_regression, mode) ->
         [
             {
                 "message_type": "C",
-                "message": "\nCollecting tasks from: simple.py\n",
+                "message": "\nCollecting actions from: simple.py\n",
                 "kind": "regular",
             },
             {
@@ -254,7 +254,7 @@ def test_receive_at_socket(datadir, server_socket) -> None:
         [
             {
                 "message_type": "C",
-                "message": "\nCollecting tasks from: simple.py\n",
+                "message": "\nCollecting actions from: simple.py\n",
                 "kind": "regular",
             },
             {

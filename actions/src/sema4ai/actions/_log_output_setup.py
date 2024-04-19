@@ -107,7 +107,7 @@ def setup_log_output_to_port() -> Iterator[None]:
     # Give up to 10 seconds for it to finish.
     t.join(10)
     if t.is_alive():
-        log.info("robocorp-tasks: OutputToPortThread did not finish.")
+        log.info("sema4ai-actions: OutputToPortThread did not finish.")
 
     try:
         client_socket.close()

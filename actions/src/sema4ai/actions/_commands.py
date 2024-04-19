@@ -101,9 +101,13 @@ def _os_exit(retcode: int):
                 # Retry once
                 children_processes = list(curr_process.children(recursive=True))
 
-            log.info(
-                f"robocorp-tasks killing processes after run: {children_processes}"
-            )
+            try:
+                names = ",".join(f"{x.name()} (x.pid)" for x in children_processes)
+            except Exception as e:
+                log.debug(f"Exception when collecting process names: {e}")
+                names = "<unable to get>"
+
+            log.info(f"sema4ai-actions killing processes after run: {names}")
             for p in children_processes:
                 try:
                     p.kill()
@@ -161,7 +165,7 @@ def run(
 
     Args:
         output_dir: The directory where output should be put.
-        path: The path (file or directory where the tasks should be collected from.
+        path: The path (file or directory where the actions should be collected from.
         action_name: The name(s) of the action to run.
         max_log_files: The maximum number of log files to be created (if more would
             be needed the oldest one is deleted).
@@ -175,7 +179,7 @@ def run(
             "no": don't provide log output to the stdout.
             "json": provide json output to the stdout.
         no_status_rc:
-            Set to True so that if running tasks has an error inside the action
+            Set to True so that if running actions has an error inside the action
             the return code of the process is 0.
         teardown_dump_threads_timeout: Can be used to customize the time
             to dump threads in the teardown process if it doesn't complete
@@ -191,18 +195,18 @@ def run(
         os_exit: Can be used to exit the process early, without going through
             the regular process teardown. In general it's not recommended, but
             it can be used as a workaround to avoid crashes or deadlocks under
-            specific situations found either during the tasks session teardown
+            specific situations found either during the actions session teardown
             or during the interpreter exit.
             Note that subprocesses will be force-killed before exiting.
             Accepted values: 'before-teardown', 'after-teardown'.
             'before-teardown' means that the process will exit without running
-                the tasks session teardown.
+                the actions session teardown.
             'after-teardown' means that the process will exit right after the
-                tasks session teardown takes place.
+                actions session teardown takes place.
         additional_arguments: The arguments passed to the action.
         preload_module: The modules which should be pre-loaded (i.e.: loaded
             after the logging is in place but before any other action is collected).
-        glob: A glob to define from which module names the tasks should be loaded.
+        glob: A glob to define from which module names the actions should be loaded.
         json_input: The path to a json file to be loaded to get the arguments.
 
     Returns:
@@ -220,12 +224,12 @@ def run(
     from sema4ai.actions._action import Context, set_current_action
     from sema4ai.actions._collect_actions import collect_actions
     from sema4ai.actions._config import RunConfig, set_config
-    from sema4ai.actions._exceptions import RobocorpTasksCollectError
+    from sema4ai.actions._exceptions import RobocorpActionsCollectError
     from sema4ai.actions._hooks import (
-        after_all_tasks_run,
-        after_task_run,
-        before_all_tasks_run,
-        before_task_run,
+        after_all_actions_run,
+        after_action_run,
+        before_all_actions_run,
+        before_action_run,
     )
     from sema4ai.actions._interrupts import interrupt_on_timeout
     from sema4ai.actions._log_auto_setup import setup_cli_auto_logging
@@ -393,7 +397,7 @@ def run(
             log.start_run(run_name)
             try:
                 setup_message = ""
-                log.start_task("Collect tasks", "setup", "", 0)
+                log.start_task("Collect actions", "setup", "", 0)
                 try:
                     if preload_module:
                         import importlib
@@ -403,26 +407,26 @@ def run(
                             importlib.import_module(module)
 
                     if not action_name:
-                        context.show(f"\nCollecting tasks from: {path}")
+                        context.show(f"\nCollecting actions from: {path}")
                     else:
                         context.show(
                             f"\nCollecting {action_or_actions} {action_name} from: {path}"
                         )
 
-                    tasks: List[IAction] = list(
+                    actions: List[IAction] = list(
                         collect_actions(pm, p, action_names, glob)
                     )
 
-                    if not tasks:
-                        raise RobocorpTasksCollectError(
-                            f"Did not find any tasks in: {path}"
+                    if not actions:
+                        raise RobocorpActionsCollectError(
+                            f"Did not find any actions in: {path}"
                         )
                 except Exception as e:
                     run_status = "ERROR"
                     setup_message = str(e)
 
                     log.exception()
-                    if not isinstance(e, RobocorpTasksCollectError):
+                    if not isinstance(e, RobocorpActionsCollectError):
                         traceback.print_exc()
                     else:
                         context.show_error(setup_message)
@@ -430,18 +434,20 @@ def run(
                     retcode = 1
                     return retcode
                 finally:
-                    log.end_task("Collect tasks", "setup", run_status, setup_message)
+                    log.end_task("Collect actions", "setup", run_status, setup_message)
 
-                before_all_tasks_run(tasks)
+                before_all_actions_run(actions)
 
                 try:
-                    for action in tasks:
+                    for action in actions:
                         set_current_action(action)
-                        before_task_run(action)
+                        before_action_run(action)
                         try:
                             if json_loaded_arguments is not None:
                                 kwargs = copy.deepcopy(json_loaded_arguments)
-                                kwargs = _validate_and_convert_kwargs(pm, action, kwargs)
+                                kwargs = _validate_and_convert_kwargs(
+                                    pm, action, kwargs
+                                )
 
                             else:
                                 kwargs = _normalize_arguments(
@@ -466,12 +472,12 @@ def run(
                                 "--teardown-interrupt-timeout",
                                 "RC_TEARDOWN_INTERRUPT_TIMEOUT",
                             ):
-                                after_task_run(action)
+                                after_action_run(action)
                             set_current_action(None)
                             if action.failed:
                                 run_status = "ERROR"
                 finally:
-                    log.start_task("Teardown tasks", "teardown", "", 0)
+                    log.start_task("Teardown actions", "teardown", "", 0)
                     try:
                         with interrupt_on_timeout(
                             teardown_dump_threads_timeout,
@@ -484,20 +490,20 @@ def run(
                         ):
                             if os_exit_enum == _OsExit.BEFORE_TEARDOWN:
                                 log.info(
-                                    "The tasks teardown was skipped due to option to os._exit before teardown."
+                                    "The actions teardown was skipped due to option to os._exit before teardown."
                                 )
                             else:
-                                after_all_tasks_run(tasks)
+                                after_all_actions_run(actions)
                         # Always do a process snapshot as the process is about to finish.
                         log.process_snapshot()
                     finally:
-                        log.end_task("Teardown tasks", "teardown", Status.PASS, "")
+                        log.end_task("Teardown actions", "teardown", Status.PASS, "")
 
                 if no_status_rc:
                     retcode = 0
                     return retcode
                 else:
-                    retcode = int(any(action.failed for action in tasks))
+                    retcode = int(any(action.failed for action in actions))
                     return retcode
             finally:
                 log.end_run(run_name, run_status)
@@ -514,7 +520,7 @@ def run(
         if os_exit_enum != _OsExit.NO:
             # Either before or after will exit here (the difference is that
             # if before teardown was requested the teardown is skipped).
-            log.info(f"robocorp-tasks: os._exit option: {os_exit}")
+            log.info(f"sema4ai.actions: os._exit option: {os_exit}")
             _os_exit(retcode)
 
         # After the run is finished, start a timer which will print the
@@ -543,7 +549,7 @@ def run(
             def on_timeout():
                 dump_threads(
                     message=(
-                        f"All tasks have run but the process still hasn't exited "
+                        f"All actions have run but the process still hasn't exited "
                         f"elapsed {time.monotonic() - teardown_time:.2f} seconds after teardown end. Showing threads found:"
                     )
                 )
