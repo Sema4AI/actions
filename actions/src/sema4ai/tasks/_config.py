@@ -53,7 +53,7 @@ class _GlobalConfig:
 
 
 def set_config(config: Optional[RunConfig]):
-    from ._callback import OnExitContextManager
+    from sema4ai.actions._callback import OnExitContextManager
 
     _GlobalConfig.instance = config
 

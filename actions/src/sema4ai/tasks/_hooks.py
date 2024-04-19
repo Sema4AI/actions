@@ -10,7 +10,7 @@ from sema4ai.actions._protocols import (
     IOnActionFuncFoundCallback,
 )
 
-from ._callback import Callback
+from sema4ai.actions._callback import Callback
 
 logger = getLogger(__name__)
 

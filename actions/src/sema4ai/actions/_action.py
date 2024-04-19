@@ -8,8 +8,7 @@ from robocorp.log.protocols import OptExcInfo
 
 from sema4ai.actions._customization._plugin_manager import PluginManager
 from sema4ai.actions._protocols import IAction, IContext, Status
-
-from ._constants import SUPPORTED_TYPES_IN_SCHEMA
+from sema4ai.tasks._constants import SUPPORTED_TYPES_IN_SCHEMA
 
 _map_python_type_to_user_type = {
     str: "string",
@@ -78,7 +77,7 @@ class Action:
             if param_type not in SUPPORTED_TYPES_IN_SCHEMA:
                 if hasattr(param_type, "model_json_schema"):
                     # Support for pydantic
-                    from sema4ai.tasks._remove_refs import replace_refs
+                    from sema4ai.actions._remove_refs import replace_refs
 
                     # Note: we inline the references and remove the definitions
                     # because this schema can be added as a part of a larger schema
@@ -109,7 +108,7 @@ class Action:
 
     @property
     def managed_params_schema(self) -> Dict[str, Any]:
-        from sema4ai.tasks._commands import _get_managed_param_type, _is_managed_param
+        from sema4ai.actions._commands import _get_managed_param_type, _is_managed_param
 
         managed_params_schema: Dict[str, Any] = {}
         sig = inspect.signature(self.method)
@@ -125,7 +124,7 @@ class Action:
     def input_schema(self) -> Dict[str, Any]:
         import docstring_parser
 
-        from sema4ai.tasks._commands import _is_managed_param
+        from sema4ai.actions._commands import _is_managed_param
 
         sig = inspect.signature(self.method)
         method_name = self.method.__code__.co_name
@@ -345,7 +344,7 @@ class Context:
 
     @contextmanager
     def register_lifecycle_prints(self):
-        from ._hooks import after_task_run, before_task_run
+        from sema4ai.tasks._hooks import after_task_run, before_task_run
 
         with before_task_run.register(self._before_action_run), after_task_run.register(
             self._after_action_run

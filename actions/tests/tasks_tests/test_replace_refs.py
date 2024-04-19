@@ -2,7 +2,7 @@ import pytest
 
 
 def test_replace_refs():
-    from sema4ai.tasks._remove_refs import replace_refs
+    from sema4ai.actions._remove_refs import replace_refs
 
     json = {
         "a": ["foobar"],
@@ -20,7 +20,7 @@ def test_replace_refs():
 
 
 def test_replace_refs_later_ref():
-    from sema4ai.tasks._remove_refs import replace_refs
+    from sema4ai.actions._remove_refs import replace_refs
 
     json = {
         "b": {"$ref": "#/a"},
@@ -38,7 +38,7 @@ def test_replace_refs_later_ref():
 
 
 def test_circular_ref():
-    from sema4ai.tasks._remove_refs import JsonRefError, replace_refs
+    from sema4ai.actions._remove_refs import JsonRefError, replace_refs
 
     json = {
         "b": {"$ref": "#/c"},
@@ -49,7 +49,7 @@ def test_circular_ref():
 
 
 def test_list_ref():
-    from sema4ai.tasks._remove_refs import replace_refs
+    from sema4ai.actions._remove_refs import replace_refs
 
     json = {
         "a": [1],
@@ -59,7 +59,7 @@ def test_list_ref():
 
 
 def test_deep_ref():
-    from sema4ai.tasks._remove_refs import replace_refs
+    from sema4ai.actions._remove_refs import replace_refs
 
     json = {
         "a": "string",
@@ -80,7 +80,7 @@ def test_deep_ref():
 
 
 def test_bad_ref():
-    from sema4ai.tasks._remove_refs import JsonRefError, replace_refs
+    from sema4ai.actions._remove_refs import JsonRefError, replace_refs
 
     json = {
         "a": ["foobar"],

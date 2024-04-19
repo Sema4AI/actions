@@ -173,9 +173,9 @@ def get_current_action() -> Optional[IAction]:
     Provides the action which is being currently run or None if not currently
     running an action.
     """
-    from sema4ai.tasks import _task
+    from sema4ai.actions import _action
 
-    return _task.get_current_action()
+    return _action.get_current_action()
 
 
 __all__ = [

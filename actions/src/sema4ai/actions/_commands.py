@@ -15,9 +15,8 @@ from typing import Any, Dict, List, Literal, Optional, Sequence, Union, overload
 from sema4ai.actions._customization._extension_points import EPManagedParameters
 from sema4ai.actions._customization._plugin_manager import PluginManager
 from sema4ai.actions._protocols import IAction
-
-from . import _constants
-from ._constants import SUPPORTED_TYPES_IN_SCHEMA
+from sema4ai.tasks import _constants
+from sema4ai.tasks._constants import SUPPORTED_TYPES_IN_SCHEMA
 
 
 def list_actions(
@@ -45,9 +44,9 @@ def list_actions(
     """
     from contextlib import redirect_stdout
 
+    from sema4ai.actions._action import Context
+    from sema4ai.actions._collect_actions import collect_actions
     from sema4ai.actions._protocols import ActionsListActionTypedDict
-    from sema4ai.tasks._collect_actions import collect_actions
-    from sema4ai.tasks._task import Context
 
     p = Path(path)
     context = Context()
@@ -218,21 +217,23 @@ def run(
         read_robocorp_auto_log_config,
     )
 
+    from sema4ai.actions._action import Context, set_current_action
+    from sema4ai.actions._collect_actions import collect_actions
     from sema4ai.actions._protocols import Status
-    from sema4ai.tasks._interrupts import interrupt_on_timeout
-
-    from ._collect_actions import collect_actions
-    from ._config import RunConfig, set_config
-    from ._exceptions import RobocorpTasksCollectError
-    from ._hooks import (
+    from sema4ai.tasks._config import RunConfig, set_config
+    from sema4ai.tasks._exceptions import RobocorpTasksCollectError
+    from sema4ai.tasks._hooks import (
         after_all_tasks_run,
         after_task_run,
         before_all_tasks_run,
         before_task_run,
     )
-    from ._log_auto_setup import setup_cli_auto_logging
-    from ._log_output_setup import setup_log_output, setup_log_output_to_port
-    from ._task import Context, set_current_action
+    from sema4ai.tasks._interrupts import interrupt_on_timeout
+    from sema4ai.tasks._log_auto_setup import setup_cli_auto_logging
+    from sema4ai.tasks._log_output_setup import (
+        setup_log_output,
+        setup_log_output_to_port,
+    )
 
     if not output_dir:
         output_dir = os.environ.get("ROBOT_ARTIFACTS", "")

@@ -271,7 +271,7 @@ class _ActionsArgDispatcher(_ArgDispatcher):
     def _list(self, *args, **kwargs):
         from contextlib import nullcontext, redirect_stdout
 
-        from sema4ai.tasks import _commands
+        from sema4ai.actions import _commands
 
         skip_lint = kwargs.pop("skip_lint", True)
 
@@ -287,7 +287,7 @@ class _ActionsArgDispatcher(_ArgDispatcher):
                 )
 
     def _run(self, *args, **kwargs):
-        from sema4ai.tasks import _commands
+        from sema4ai.actions import _commands
 
         return _commands.run(*args, **kwargs)
 

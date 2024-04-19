@@ -5,7 +5,7 @@ from devutils.fixtures import sema4ai_actions_run
 
 
 def test_colect_tasks(datadir) -> None:
-    from sema4ai.tasks._collect_actions import collect_actions
+    from sema4ai.actions._collect_actions import collect_actions
     from sema4ai.actions._customization._plugin_manager import PluginManager
 
     tasks = tuple(collect_actions(PluginManager(), datadir, "main"))
@@ -27,7 +27,7 @@ def test_colect_tasks(datadir) -> None:
 
 
 def test_colect_tasks_from_package(datadir) -> None:
-    from sema4ai.tasks._collect_actions import collect_actions
+    from sema4ai.actions._collect_actions import collect_actions
     from sema4ai.actions._customization._plugin_manager import PluginManager
 
     tasks = tuple(collect_actions(PluginManager(), datadir / "in_init"))

@@ -223,7 +223,7 @@ def collect_actions(
                 f"Expected {path} to map to a directory or file."
             )
 
-    from sema4ai.tasks._task import Action
+    from sema4ai.actions._action import Action
 
     for method, options in _methods_marked_as_tasks_found:
         module_name = method.__module__
