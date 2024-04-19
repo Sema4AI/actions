@@ -3,9 +3,9 @@ from pathlib import Path
 
 
 def check(datadir, args, msg="", returncode=1):
-    from devutils.fixtures import sema4ai_tasks_run
+    from devutils.fixtures import sema4ai_actions_run
 
-    result = sema4ai_tasks_run(
+    result = sema4ai_actions_run(
         ["run", "--console-colors=plain"] + args,
         returncode=returncode,
         cwd=str(datadir),

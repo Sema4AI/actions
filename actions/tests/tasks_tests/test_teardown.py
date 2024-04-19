@@ -7,7 +7,7 @@ import pytest
 
 @pytest.mark.parametrize("arg", ["argument", "environment_var"])
 def test_neverending_teardown(datadir, arg) -> None:
-    from devutils.fixtures import sema4ai_tasks_run
+    from devutils.fixtures import sema4ai_actions_run
 
     cmdline = [
         "run",
@@ -27,7 +27,7 @@ def test_neverending_teardown(datadir, arg) -> None:
             "RC_TEARDOWN_DUMP_THREADS_TIMEOUT": "0.5",
             "RC_TEARDOWN_INTERRUPT_TIMEOUT": "1",
         }
-    result = sema4ai_tasks_run(
+    result = sema4ai_actions_run(
         cmdline,
         returncode="error",
         cwd=str(datadir / "neverending"),
@@ -40,7 +40,7 @@ def test_neverending_teardown(datadir, arg) -> None:
 
 @pytest.mark.parametrize("arg", ["argument", "environment_var"])
 def test_neverending_teardown_just_interrupt(datadir, arg) -> None:
-    from devutils.fixtures import sema4ai_tasks_run
+    from devutils.fixtures import sema4ai_actions_run
 
     cmdline = [
         "run",
@@ -60,7 +60,7 @@ def test_neverending_teardown_just_interrupt(datadir, arg) -> None:
             "RC_TEARDOWN_DUMP_THREADS_TIMEOUT": "0",
             "RC_TEARDOWN_INTERRUPT_TIMEOUT": "1",
         }
-    result = sema4ai_tasks_run(
+    result = sema4ai_actions_run(
         cmdline,
         returncode="error",
         cwd=str(datadir / "neverending"),
@@ -73,7 +73,7 @@ def test_neverending_teardown_just_interrupt(datadir, arg) -> None:
 
 @pytest.mark.parametrize("arg", ["argument", "environment_var"])
 def test_neverending_teardown_just_dump_threads(datadir, arg) -> None:
-    from devutils.fixtures import sema4ai_tasks_run
+    from devutils.fixtures import sema4ai_actions_run
 
     cmdline = [
         "run",
@@ -89,7 +89,7 @@ def test_neverending_teardown_just_dump_threads(datadir, arg) -> None:
             "RC_TEARDOWN_DUMP_THREADS_TIMEOUT": "0.5",
         }
     with pytest.raises(subprocess.TimeoutExpired) as e:
-        sema4ai_tasks_run(
+        sema4ai_actions_run(
             cmdline,
             returncode="error",
             cwd=str(datadir / "neverending"),

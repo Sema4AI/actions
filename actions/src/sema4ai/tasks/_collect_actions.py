@@ -143,7 +143,7 @@ def clear_previously_collected_actions():
 def collect_actions(
     pm: PluginManager,
     path: Path,
-    task_names: Sequence[str] = (),
+    action_names: Sequence[str] = (),
     glob: Optional[str] = None,
 ) -> Iterator[IAction]:
     """
@@ -152,15 +152,15 @@ def collect_actions(
     from sema4ai.tasks import _constants, _hooks
 
     path = path.absolute()
-    task_names_as_set = set(task_names)
+    task_names_as_set = set(action_names)
 
     _hooks.before_collect_actions(path, task_names_as_set)
 
-    def accept_task(task: IAction):
-        if not task_names:
+    def accept_task(action: IAction):
+        if not action_names:
             return True
 
-        return task.name in task_names
+        return action.name in action_names
 
     def on_func_found(func, options: Dict):
         from sema4ai.tasks._exceptions import RobocorpActionsError

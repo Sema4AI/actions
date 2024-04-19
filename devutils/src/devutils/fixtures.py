@@ -265,21 +265,9 @@ def str_regression(datadir, original_datadir, request):
     return StrRegression(datadir, original_datadir, request)
 
 
-def sema4ai_tasks_run(
-    cmdline,
-    returncode: Union[Literal["error"], int],
-    cwd=None,
-    additional_env: Optional[Dict[str, str]] = None,
-    timeout=None,
-) -> CompletedProcess:
-    return python_run(
-        ["-m", "sema4ai.actions"] + cmdline, returncode, cwd, additional_env, timeout
-    )
-
-
 def sema4ai_actions_run(
     cmdline,
-    returncode: Union[Literal["error"], Literal["any"], int],
+    returncode: Union[Literal["error"], int],
     cwd=None,
     additional_env: Optional[Dict[str, str]] = None,
     timeout=None,
@@ -349,7 +337,7 @@ class Sema4AITaskRunner:
         cwd=None,
         additional_env: Optional[Dict[str, str]] = None,
     ) -> None:
-        result = sema4ai_tasks_run(cmdline, returncode, cwd, additional_env)
+        result = sema4ai_actions_run(cmdline, returncode, cwd, additional_env)
         decoded = result.stdout.decode("utf-8", "replace")
 
         if not cwd:

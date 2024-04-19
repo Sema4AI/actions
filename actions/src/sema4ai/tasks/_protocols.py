@@ -193,7 +193,7 @@ class IOnActionFuncFoundCallback(ICallback, typing.Protocol):
 
 
 class IBeforeCollectActionsCallback(ICallback, typing.Protocol):
-    def __call__(self, path: Path, task_names: Set[str]):
+    def __call__(self, path: Path, action_names: Set[str]):
         pass
 
     def register(

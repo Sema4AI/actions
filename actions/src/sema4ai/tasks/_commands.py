@@ -306,17 +306,17 @@ def run(
 
     from robocorp import log
 
-    task_names: Sequence[str]
+    action_names: Sequence[str]
     if not action_name:
-        task_names = []
+        action_names = []
         task_or_tasks = "tasks"
     elif isinstance(action_name, str):
-        task_names = [action_name]
+        action_names = [action_name]
         task_or_tasks = "task"
     else:
-        task_names = action_name
-        action_name = ", ".join(str(x) for x in task_names)
-        task_or_tasks = "task" if len(task_names) == 1 else "tasks"
+        action_names = action_name
+        action_name = ", ".join(str(x) for x in action_names)
+        task_or_tasks = "task" if len(action_names) == 1 else "tasks"
 
     config: log.AutoLogConfigBase
     pyproject_path_and_contents = read_pyproject_toml(p)
@@ -334,7 +334,7 @@ def run(
     run_config = RunConfig(
         output_dir_path,
         p,
-        task_names,
+        action_names,
         max_log_files,
         max_log_file_size,
         console_colors,
@@ -409,7 +409,7 @@ def run(
                         )
 
                     tasks: List[IAction] = list(
-                        collect_actions(pm, p, task_names, glob)
+                        collect_actions(pm, p, action_names, glob)
                     )
 
                     if not tasks:

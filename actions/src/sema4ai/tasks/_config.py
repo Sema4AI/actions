@@ -7,7 +7,7 @@ class RunConfig:
         self,
         output_dir: Path,
         path: Path,
-        task_names: Sequence[str],
+        action_names: Sequence[str],
         max_log_files: int,
         max_log_file_size: str,
         console_colors: str,
@@ -39,7 +39,7 @@ class RunConfig:
         """
         self.output_dir = output_dir
         self.path = path
-        self.task_names = task_names
+        self.action_names = action_names
         self.max_log_files = max_log_files
         self.max_log_file_size = max_log_file_size
         self.console_colors = console_colors

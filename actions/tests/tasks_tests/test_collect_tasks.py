@@ -1,7 +1,7 @@
 import json
 import os
 
-from devutils.fixtures import sema4ai_tasks_run
+from devutils.fixtures import sema4ai_actions_run
 
 
 def test_colect_tasks(datadir) -> None:
@@ -35,7 +35,7 @@ def test_colect_tasks_from_package(datadir) -> None:
 
 
 def test_collect_tasks_integrated_error(tmpdir) -> None:
-    result = sema4ai_tasks_run(
+    result = sema4ai_actions_run(
         ["run", "dir_not_there", "-a=main"], returncode=1, cwd=str(tmpdir)
     )
 
@@ -47,7 +47,7 @@ def test_collect_tasks_integrated_error(tmpdir) -> None:
 def test_collect_tasks_integrated(datadir) -> None:
     from robocorp.log import verify_log_messages_from_log_html
 
-    result = sema4ai_tasks_run(
+    result = sema4ai_actions_run(
         ["run", str(datadir), "-a", "main"], returncode=0, cwd=datadir
     )
 
@@ -79,20 +79,20 @@ def test_list_tasks_api(datadir, tmpdir, data_regression) -> None:
         data_regression.check(loaded)
 
     # List with the dir as a target
-    result = sema4ai_tasks_run(
+    result = sema4ai_actions_run(
         ["list", str(datadir), "--skip-lint"], returncode=0, cwd=str(tmpdir)
     )
     check(result)
 
     # List without the dir as a target (must have the same output).
-    result = sema4ai_tasks_run(["list", "--skip-lint"], returncode=0, cwd=datadir)
+    result = sema4ai_actions_run(["list", "--skip-lint"], returncode=0, cwd=datadir)
     check(result)
 
 
 def test_provide_output_in_stdout(datadir, tmpdir) -> None:
     from robocorp.log import verify_log_messages_from_decoded_str
 
-    result = sema4ai_tasks_run(
+    result = sema4ai_actions_run(
         ["run", "-a=main", str(datadir), "--output", str(tmpdir)],
         returncode=0,
         additional_env={"RC_LOG_OUTPUT_STDOUT": "1"},
@@ -113,7 +113,7 @@ def test_provide_output_in_stdout(datadir, tmpdir) -> None:
 def test_error_in_stdout(datadir, tmpdir) -> None:
     from robocorp.log import verify_log_messages_from_decoded_str
 
-    result = sema4ai_tasks_run(
+    result = sema4ai_actions_run(
         ["run", "-a=main_errors", str(datadir), "--output", str(tmpdir)],
         returncode=1,
         additional_env={"RC_LOG_OUTPUT_STDOUT": "1"},
@@ -139,7 +139,7 @@ def test_error_in_stdout(datadir, tmpdir) -> None:
 
 
 def test_collect_duplicated_tasks(datadir, tmpdir) -> None:
-    result = sema4ai_tasks_run(
+    result = sema4ai_actions_run(
         ["run", str(datadir / "dupe" / "dupe.py")],
         returncode=1,
         additional_env={"RC_LOG_OUTPUT_STDOUT": "1"},
