@@ -6,19 +6,19 @@ from robocorp import log
 from sema4ai.actions._protocols import IAction
 
 
-def _log_before_action_run(task: IAction):
+def _log_before_action_run(action: IAction):
     log.start_task(
-        task.name,
-        task.module_name,
-        task.filename,
-        task.method.__code__.co_firstlineno + 1,
-        getattr(task.method, "__doc__", ""),
+        action.name,
+        action.module_name,
+        action.filename,
+        action.method.__code__.co_firstlineno + 1,
+        getattr(action.method, "__doc__", ""),
     )
 
 
-def _log_after_action_run(task: IAction):
-    status = task.status
-    log.end_task(task.name, task.module_name, status, task.message)
+def _log_after_action_run(action: IAction):
+    status = action.status
+    log.end_task(action.name, action.module_name, status, action.message)
 
 
 @contextmanager

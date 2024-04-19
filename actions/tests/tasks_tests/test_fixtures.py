@@ -72,7 +72,7 @@ def test_setup_task():
 
     is_called = False
 
-    @actions_setup(scope="task")
+    @actions_setup(scope="action")
     def fixture(task):
         assert task == "placeholder"
         nonlocal is_called

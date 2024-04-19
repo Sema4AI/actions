@@ -75,7 +75,7 @@ def action(*args, **kwargs):
     python -m sema4ai.actions run actions.py -a enter_user
 
     Args:
-        func: A function which is a action to `sema4ai.actions`.
+        func: A function which is an action to `sema4ai.actions`.
         is_consequential: Whether the action is consequential or not.
             This will add `x-openai-isConsequential: true` to the action
             metadata and shown in OpenApi spec.

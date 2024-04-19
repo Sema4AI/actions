@@ -144,6 +144,6 @@ def test_collect_duplicated_tasks(datadir, tmpdir) -> None:
         returncode=1,
         additional_env={"RC_LOG_OUTPUT_STDOUT": "1"},
     )
-    assert "a task with the name 'main' was already found" in str(
+    assert "an action with the name 'main' was already found" in str(
         result.stdout.decode("utf-8")
     )

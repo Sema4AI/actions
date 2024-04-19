@@ -12,11 +12,11 @@ from io import StringIO
 from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional, Sequence, Union, overload
 
+from sema4ai.actions import _constants
+from sema4ai.actions._constants import SUPPORTED_TYPES_IN_SCHEMA
 from sema4ai.actions._customization._extension_points import EPManagedParameters
 from sema4ai.actions._customization._plugin_manager import PluginManager
 from sema4ai.actions._protocols import IAction
-from sema4ai.actions import _constants
-from sema4ai.actions._constants import SUPPORTED_TYPES_IN_SCHEMA
 
 
 def list_actions(
@@ -157,12 +157,12 @@ def run(
     pm: Optional[PluginManager] = None,
 ) -> int:
     """
-    Runs a task.
+    Runs an action.
 
     Args:
         output_dir: The directory where output should be put.
         path: The path (file or directory where the tasks should be collected from.
-        action_name: The name(s) of the task to run.
+        action_name: The name(s) of the action to run.
         max_log_files: The maximum number of log files to be created (if more would
             be needed the oldest one is deleted).
         max_log_file_size: The maximum size for the created log files.
@@ -175,7 +175,7 @@ def run(
             "no": don't provide log output to the stdout.
             "json": provide json output to the stdout.
         no_status_rc:
-            Set to True so that if running tasks has an error inside the task
+            Set to True so that if running tasks has an error inside the action
             the return code of the process is 0.
         teardown_dump_threads_timeout: Can be used to customize the time
             to dump threads in the teardown process if it doesn't complete
@@ -199,15 +199,15 @@ def run(
                 the tasks session teardown.
             'after-teardown' means that the process will exit right after the
                 tasks session teardown takes place.
-        additional_arguments: The arguments passed to the task.
+        additional_arguments: The arguments passed to the action.
         preload_module: The modules which should be pre-loaded (i.e.: loaded
-            after the logging is in place but before any other task is collected).
+            after the logging is in place but before any other action is collected).
         glob: A glob to define from which module names the tasks should be loaded.
         json_input: The path to a json file to be loaded to get the arguments.
 
     Returns:
         0 if everything went well.
-        1 if there was some error running the task.
+        1 if there was some error running the action.
     """
     import copy
 
@@ -219,7 +219,6 @@ def run(
 
     from sema4ai.actions._action import Context, set_current_action
     from sema4ai.actions._collect_actions import collect_actions
-    from sema4ai.actions._protocols import Status
     from sema4ai.actions._config import RunConfig, set_config
     from sema4ai.actions._exceptions import RobocorpTasksCollectError
     from sema4ai.actions._hooks import (
@@ -234,6 +233,7 @@ def run(
         setup_log_output,
         setup_log_output_to_port,
     )
+    from sema4ai.actions._protocols import Status
 
     if not output_dir:
         output_dir = os.environ.get("ROBOT_ARTIFACTS", "")
@@ -300,7 +300,7 @@ def run(
             sys.exit(1)
 
     # Enable faulthandler (writing to sys.stderr) early on in the
-    # task execution process.
+    # action execution process.
     import faulthandler
 
     faulthandler.enable()
@@ -310,14 +310,14 @@ def run(
     action_names: Sequence[str]
     if not action_name:
         action_names = []
-        task_or_tasks = "tasks"
+        action_or_actions = "actions"
     elif isinstance(action_name, str):
         action_names = [action_name]
-        task_or_tasks = "task"
+        action_or_actions = "action"
     else:
         action_names = action_name
         action_name = ", ".join(str(x) for x in action_names)
-        task_or_tasks = "task" if len(action_names) == 1 else "tasks"
+        action_or_actions = "action" if len(action_names) == 1 else "actions"
 
     config: log.AutoLogConfigBase
     pyproject_path_and_contents = read_pyproject_toml(p)
@@ -406,7 +406,7 @@ def run(
                         context.show(f"\nCollecting tasks from: {path}")
                     else:
                         context.show(
-                            f"\nCollecting {task_or_tasks} {action_name} from: {path}"
+                            f"\nCollecting {action_or_actions} {action_name} from: {path}"
                         )
 
                     tasks: List[IAction] = list(
@@ -435,27 +435,27 @@ def run(
                 before_all_tasks_run(tasks)
 
                 try:
-                    for task in tasks:
-                        set_current_action(task)
-                        before_task_run(task)
+                    for action in tasks:
+                        set_current_action(action)
+                        before_task_run(action)
                         try:
                             if json_loaded_arguments is not None:
                                 kwargs = copy.deepcopy(json_loaded_arguments)
-                                kwargs = _validate_and_convert_kwargs(pm, task, kwargs)
+                                kwargs = _validate_and_convert_kwargs(pm, action, kwargs)
 
                             else:
                                 kwargs = _normalize_arguments(
-                                    pm, task, additional_arguments or []
+                                    pm, action, additional_arguments or []
                                 )
 
-                            result = task.run(**kwargs)
-                            task.result = result
-                            task.status = Status.PASS
+                            result = action.run(**kwargs)
+                            action.result = result
+                            action.status = Status.PASS
                         except Exception as e:
-                            task.status = Status.FAIL
+                            action.status = Status.FAIL
                             # Make sure we put some message even if str(e) is empty.
-                            task.message = str(e) or f"{e.__class__}"
-                            task.exc_info = sys.exc_info()
+                            action.message = str(e) or f"{e.__class__}"
+                            action.exc_info = sys.exc_info()
                         finally:
                             with interrupt_on_timeout(
                                 teardown_dump_threads_timeout,
@@ -466,9 +466,9 @@ def run(
                                 "--teardown-interrupt-timeout",
                                 "RC_TEARDOWN_INTERRUPT_TIMEOUT",
                             ):
-                                after_task_run(task)
+                                after_task_run(action)
                             set_current_action(None)
-                            if task.failed:
+                            if action.failed:
                                 run_status = "ERROR"
                 finally:
                     log.start_task("Teardown tasks", "teardown", "", 0)
@@ -497,7 +497,7 @@ def run(
                     retcode = 0
                     return retcode
                 else:
-                    retcode = int(any(task.failed for task in tasks))
+                    retcode = int(any(action.failed for action in tasks))
                     return retcode
             finally:
                 log.end_run(run_name, run_status)
@@ -573,13 +573,13 @@ def check_boolean(value):
 
 
 def _validate_and_convert_kwargs(
-    pm: PluginManager, task: IAction, kwargs: Dict[str, Any]
+    pm: PluginManager, action: IAction, kwargs: Dict[str, Any]
 ) -> Dict[str, Any]:
     from typing import get_type_hints
 
     from sema4ai.actions._exceptions import InvalidArgumentsError
 
-    target_method = task.method
+    target_method = action.method
     sig = inspect.signature(target_method)
     type_hints = get_type_hints(target_method)
     method_name = target_method.__code__.co_name
@@ -734,13 +734,13 @@ def _get_managed_param_type(pm: PluginManager, param: inspect.Parameter) -> type
 
 
 def _normalize_arguments(
-    pm: PluginManager, task: IAction, args: list[str]
+    pm: PluginManager, action: IAction, args: list[str]
 ) -> Dict[str, Any]:
     from typing import get_type_hints
 
     from sema4ai.actions._exceptions import InvalidArgumentsError
 
-    target_method = task.method
+    target_method = action.method
     sig = inspect.signature(target_method)
     type_hints = get_type_hints(target_method)
     method_name = target_method.__code__.co_name
@@ -748,7 +748,7 @@ def _normalize_arguments(
     # Prepare the argument parser
     parser = _CustomArgumentParser(
         prog=f"python -m {_constants.MODULE_ENTRY_POINT} {method_name} --",
-        description=f"{method_name} task.",
+        description=f"{method_name} action.",
         add_help=False,
     )
 
@@ -814,7 +814,7 @@ def _normalize_arguments(
 
         kwargs[param_name] = param_value
 
-    kwargs = _validate_and_convert_kwargs(pm, task, kwargs)
+    kwargs = _validate_and_convert_kwargs(pm, action, kwargs)
     return kwargs
 
 

@@ -113,8 +113,8 @@ def setup(
     if len(args) == 1 and len(kwargs) == 0 and callable(args[0]):
         return _register_callback(before_task_run, after_task_run, args[0])
 
-    scope = kwargs.get("scope", "task")
-    if scope == "task":
+    scope = kwargs.get("scope", "action")
+    if scope == "action":
 
         def wrapped_task(func):
             return _register_callback(before_task_run, after_task_run, func)
@@ -127,7 +127,7 @@ def setup(
 
         return wrapped_session
     else:
-        raise ValueError(f"Unknown scope '{scope}', expected 'task' or 'session'")
+        raise ValueError(f"Unknown scope '{scope}', expected 'action' or 'session'")
 
 
 @overload

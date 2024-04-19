@@ -167,7 +167,7 @@ def collect_actions(
         key = (func.__code__.co_name, func.__code__.co_filename)
         if key in _found_as_set:
             raise RobocorpActionsError(
-                f"Error: a task with the name '{func.__code__.co_name}' was "
+                f"Error: an action with the name '{func.__code__.co_name}' was "
                 + f"already found in: {func.__code__.co_filename}."
             )
         _found_as_set.add(key)
@@ -229,10 +229,10 @@ def collect_actions(
         module_name = method.__module__
         module_file = method.__code__.co_filename
 
-        task = Action(pm, module_name, module_file, method, options=options)
+        action = Action(pm, module_name, module_file, method, options=options)
 
-        if accept_task(task):
-            yield task
+        if accept_task(action):
+            yield action
 
 
 def _get_root(path: Path, is_dir: bool) -> Path:

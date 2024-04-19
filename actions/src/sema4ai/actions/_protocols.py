@@ -61,8 +61,8 @@ class IAction(typing.Protocol):
     message: str
     exc_info: Optional[OptExcInfo]
 
-    # If the task completed successfully, this will be
-    # the value returned by the task.
+    # If the action completed successfully, this will be
+    # the value returned by the action.
     result: Any
 
     options: Optional[Dict]
@@ -211,7 +211,7 @@ IActionsCallback = Callable[[Sequence[IAction]], Any]
 
 
 class IBeforeActionRunCallback(ICallback, typing.Protocol):
-    def __call__(self, task: IAction):
+    def __call__(self, action: IAction):
         pass
 
     def register(self, callback: IActionCallback) -> IAutoUnregisterContextManager:
@@ -244,7 +244,7 @@ class IAfterAllActionsRunCallback(ICallback, typing.Protocol):
 
 
 class IAfterActionRunCallback(ICallback, typing.Protocol):
-    def __call__(self, task: IAction):
+    def __call__(self, action: IAction):
         pass
 
     def register(self, callback: IActionCallback) -> IAutoUnregisterContextManager:
