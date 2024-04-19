@@ -3,7 +3,7 @@ from typing import Optional
 
 from robocorp import log
 
-from ._protocols import IAction
+from sema4ai.actions._protocols import IAction
 
 
 def _log_before_action_run(task: IAction):

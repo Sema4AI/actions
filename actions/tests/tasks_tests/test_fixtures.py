@@ -2,8 +2,8 @@ from collections.abc import Iterable
 
 import pytest
 
-from sema4ai.tasks import setup as tasks_setup
-from sema4ai.tasks import teardown as tasks_teardown
+from sema4ai.actions import setup as actions_setup
+from sema4ai.actions import teardown as actions_teardown
 from sema4ai.tasks._hooks import (
     after_all_tasks_run,
     after_task_run,
@@ -32,7 +32,7 @@ def test_setup_default():
 
     is_called = False
 
-    @tasks_setup
+    @actions_setup
     def fixture(task):
         assert task == "placeholder"
         nonlocal is_called
@@ -52,7 +52,7 @@ def test_setup_all():
 
     is_called = False
 
-    @tasks_setup(scope="session")
+    @actions_setup(scope="session")
     def fixture(tasks):
         assert isinstance(tasks, Iterable)
         nonlocal is_called
@@ -72,7 +72,7 @@ def test_setup_task():
 
     is_called = False
 
-    @tasks_setup(scope="task")
+    @actions_setup(scope="task")
     def fixture(task):
         assert task == "placeholder"
         nonlocal is_called
@@ -92,7 +92,7 @@ def test_teardown_default():
 
     is_called = False
 
-    @tasks_teardown
+    @actions_teardown
     def fixture(task):
         assert task == "placeholder"
         nonlocal is_called
@@ -112,7 +112,7 @@ def test_teardown_all():
 
     is_called = False
 
-    @tasks_teardown(scope="session")
+    @actions_teardown(scope="session")
     def fixture(tasks):
         assert isinstance(tasks, Iterable)
         nonlocal is_called
@@ -132,7 +132,7 @@ def test_teardown_task():
 
     is_called = False
 
-    @tasks_teardown(scope="task")
+    @actions_teardown(scope="action")
     def fixture(task):
         assert task == "placeholder"
         nonlocal is_called
@@ -147,11 +147,11 @@ def test_teardown_task():
 
 
 def test_raises():
-    @tasks_setup
+    @actions_setup
     def raises_setup(_):
         raise RuntimeError("Oopsie")
 
-    @tasks_teardown
+    @actions_teardown
     def raises_teardown(_):
         raise RuntimeError("Oopsie #2")
 
@@ -170,7 +170,7 @@ def test_setup_generator():
 
     is_called = False
 
-    @tasks_setup
+    @actions_setup
     def fixture_gen(task):
         assert task == "task"
         yield

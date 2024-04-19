@@ -2,7 +2,7 @@ import itertools
 
 import pytest
 
-from sema4ai.tasks import session_cache
+from sema4ai.actions import session_cache
 from sema4ai.tasks._hooks import (
     after_all_tasks_run,
     after_task_run,

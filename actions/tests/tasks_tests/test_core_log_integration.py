@@ -31,8 +31,8 @@ def test_core_log_integration_error_in_import(datadir, str_regression):
     s = pretty_format_logs_from_log_html(
         log_target, show_log_messages=True, show_lines=True
     )
-    s = re.sub("""at location(.*)\\.""", "at location <path>.", s)
-    s = re.sub("""(line: (%d)+)""", "(line: <line>).", s)
+    s = re.sub("at location(.*)\\.", "at location <path>.", s)
+    s = re.sub("line: (\\d)+", "line: <line>.", s)
     str_regression.check(s)
 
     if False:  # Manually debugging

@@ -14,7 +14,7 @@ from typing import Any, Dict, List, Literal, Optional, Sequence, Union, overload
 
 from sema4ai.actions._customization._extension_points import EPManagedParameters
 from sema4ai.actions._customization._plugin_manager import PluginManager
-from sema4ai.tasks._protocols import IAction
+from sema4ai.actions._protocols import IAction
 
 from . import _constants
 from ._constants import SUPPORTED_TYPES_IN_SCHEMA
@@ -45,8 +45,8 @@ def list_actions(
     """
     from contextlib import redirect_stdout
 
+    from sema4ai.actions._protocols import ActionsListActionTypedDict
     from sema4ai.tasks._collect_actions import collect_actions
-    from sema4ai.tasks._protocols import ActionsListActionTypedDict
     from sema4ai.tasks._task import Context
 
     p = Path(path)
@@ -218,6 +218,7 @@ def run(
         read_robocorp_auto_log_config,
     )
 
+    from sema4ai.actions._protocols import Status
     from sema4ai.tasks._interrupts import interrupt_on_timeout
 
     from ._collect_actions import collect_actions
@@ -231,7 +232,6 @@ def run(
     )
     from ._log_auto_setup import setup_cli_auto_logging
     from ._log_output_setup import setup_log_output, setup_log_output_to_port
-    from ._protocols import Status
     from ._task import Context, set_current_action
 
     if not output_dir:

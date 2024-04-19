@@ -7,9 +7,9 @@ from robocorp.log import ConsoleMessageKind, console_message
 from robocorp.log.protocols import OptExcInfo
 
 from sema4ai.actions._customization._plugin_manager import PluginManager
+from sema4ai.actions._protocols import IAction, IContext, Status
 
 from ._constants import SUPPORTED_TYPES_IN_SCHEMA
-from ._protocols import IAction, IContext, Status
 
 _map_python_type_to_user_type = {
     str: "string",
@@ -201,7 +201,7 @@ class Action:
         return self._status == Status.FAIL
 
     def __typecheckself__(self) -> None:
-        from sema4ai.tasks._protocols import check_implements
+        from sema4ai.actions._protocols import check_implements
 
         _: IAction = check_implements(self)
 
@@ -353,6 +353,6 @@ class Context:
             yield
 
     def __typecheckself__(self) -> None:
-        from sema4ai.tasks._protocols import check_implements
+        from sema4ai.actions._protocols import check_implements
 
         _: IContext = check_implements(self)

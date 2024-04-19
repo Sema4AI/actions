@@ -9,8 +9,7 @@ from typing import Callable, Dict, Iterator, List, Optional, Sequence, Set, Tupl
 from robocorp import log
 
 from sema4ai.actions._customization._plugin_manager import PluginManager
-
-from ._protocols import IAction
+from sema4ai.actions._protocols import IAction
 
 
 def module_name_from_path(path: Path, root: Path) -> str:

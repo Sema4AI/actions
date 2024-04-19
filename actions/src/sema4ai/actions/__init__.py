@@ -1,8 +1,40 @@
-from dataclasses import asdict
+"""Sema4AI Actions enables running your AI actions in the Sema4AI Action Server.
+
+To use:
+
+Mark actions with:
+
+```
+from sema4ai.actions import action
+
+@action
+def my_action():
+    ...
+```
+
+And then go to a parent folder containing the action and serve them by 
+running `action-server start`.
+
+Note that it's also possible to programmatically run actions (without the Action
+Server) with:
+
+Run all the actions in a .py file:
+
+  `python -m sema4ai.actions run <path_to_file>`
+
+Run all the actions in files named *action*.py:
+
+  `python -m sema4ai.actions run <directory>`
+
+Run only actions with a given name:
+
+  `python -m sema4ai.actions run <directory or file> -t <action_name>`
+
+"""
+
 from pathlib import Path
 from typing import Callable, Optional, overload
 
-from ._action_options import ActionOptions
 from ._fixtures import setup, teardown
 from ._protocols import IAction, Status
 from ._request import Request
@@ -18,7 +50,7 @@ def action(func: Callable) -> Callable:
 
 
 @overload
-def action(func: Callable, **kwargs: Optional[ActionOptions]) -> Callable:
+def action(*, is_consequential: Optional[bool] = None) -> Callable:
     ...
 
 
@@ -44,17 +76,34 @@ def action(*args, **kwargs):
 
     Args:
         func: A function which is a action to `sema4ai.actions`.
-        is_consequential: Whether the action is consequential or not. This will add `x-openai-isConsequential: true` to the action metadata and shown in OpenApi spec.
+        is_consequential: Whether the action is consequential or not.
+            This will add `x-openai-isConsequential: true` to the action
+            metadata and shown in OpenApi spec.
     """
 
-    def decorator(*args, **kwargs):
+    def decorator(func, **kwargs):
         # i.e.: This is just a thin layer for the task decorator at this point
         # (it may be extended in the future...).
-        from sema4ai.tasks import task
+        from sema4ai.tasks import _hooks
 
-        options = ActionOptions(**kwargs)
+        is_consequential = kwargs.pop("is_consequential", None)
+        if is_consequential is not None:
+            if not isinstance(is_consequential, bool):
+                raise ValueError(
+                    "Expected 'is_consequential' argument to be a boolean."
+                )
 
-        return task(*args, **asdict(options))
+        if kwargs:
+            raise ValueError(
+                f"Arguments accepted by @action: ['is_consequential']. Received arguments: {list(kwargs.keys())}"
+            )
+
+        # When a task is found, register it in the framework as a target for execution.
+        _hooks.on_action_func_found(
+            func, options={"is_consequential": is_consequential}
+        )
+
+        return func
 
     if args and callable(args[0]):
         return decorator(args[0], **kwargs)
@@ -78,9 +127,10 @@ def session_cache(func):
     Args:
         func: wrapped function.
     """
-    from sema4ai.tasks import session_cache
+    from sema4ai.tasks._hooks import after_all_tasks_run
+    from sema4ai.tasks._lifecycle import _cache
 
-    return session_cache(func)
+    return _cache(after_all_tasks_run, func)
 
 
 def action_cache(func):
@@ -99,9 +149,10 @@ def action_cache(func):
     Args:
         func: wrapped function.
     """
-    from sema4ai.tasks import task_cache
+    from sema4ai.tasks._hooks import after_task_run
+    from sema4ai.tasks._lifecycle import _cache
 
-    return task_cache(func)
+    return _cache(after_task_run, func)
 
 
 def get_output_dir() -> Optional[Path]:
@@ -109,9 +160,12 @@ def get_output_dir() -> Optional[Path]:
     Provide the output directory being used for the run or None if there's no
     output dir configured.
     """
-    from sema4ai.tasks import get_output_dir
+    from sema4ai.tasks._config import get_config
 
-    return get_output_dir()
+    config = get_config()
+    if config is None:
+        return None
+    return config.output_dir
 
 
 def get_current_action() -> Optional[IAction]:
@@ -119,9 +173,9 @@ def get_current_action() -> Optional[IAction]:
     Provides the action which is being currently run or None if not currently
     running an action.
     """
-    from sema4ai.tasks import get_current_action
+    from sema4ai.tasks import _task
 
-    return get_current_action()
+    return _task.get_current_action()
 
 
 __all__ = [
