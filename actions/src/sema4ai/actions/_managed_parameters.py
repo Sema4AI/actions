@@ -126,7 +126,7 @@ class ManagedParameters:
         )
 
     def __typecheckself__(self) -> None:
-        from sema4ai.tasks._protocols import check_implements
+        from sema4ai.actions._protocols import check_implements
 
         _: EPManagedParameters = check_implements(self)
 

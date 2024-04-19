@@ -79,7 +79,7 @@ def setup(
     **Note:** If fixtures are defined in another file, they need to be imported
      in the main actions file to be taken into use
     """
-    from sema4ai.tasks._hooks import (
+    from sema4ai.actions._hooks import (
         after_all_tasks_run,
         after_task_run,
         before_all_tasks_run,
@@ -183,7 +183,7 @@ def teardown(
     **Note:** If fixtures are defined in another file, they need to be imported
      in the main actions file to be taken into use
     """
-    from sema4ai.tasks._hooks import after_all_tasks_run, after_task_run
+    from sema4ai.actions._hooks import after_all_tasks_run, after_task_run
 
     if len(args) == 1 and len(kwargs) == 0 and callable(args[0]):
         func: IActionCallback = args[0]

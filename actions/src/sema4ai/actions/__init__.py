@@ -82,9 +82,7 @@ def action(*args, **kwargs):
     """
 
     def decorator(func, **kwargs):
-        # i.e.: This is just a thin layer for the task decorator at this point
-        # (it may be extended in the future...).
-        from sema4ai.tasks import _hooks
+        from sema4ai.actions import _hooks
 
         is_consequential = kwargs.pop("is_consequential", None)
         if is_consequential is not None:
@@ -98,7 +96,7 @@ def action(*args, **kwargs):
                 f"Arguments accepted by @action: ['is_consequential']. Received arguments: {list(kwargs.keys())}"
             )
 
-        # When a task is found, register it in the framework as a target for execution.
+        # When an action is found, register it in the framework as a target for execution.
         _hooks.on_action_func_found(
             func, options={"is_consequential": is_consequential}
         )
@@ -127,8 +125,8 @@ def session_cache(func):
     Args:
         func: wrapped function.
     """
-    from sema4ai.tasks._hooks import after_all_tasks_run
-    from sema4ai.tasks._lifecycle import _cache
+    from sema4ai.actions._hooks import after_all_tasks_run
+    from sema4ai.actions._lifecycle import _cache
 
     return _cache(after_all_tasks_run, func)
 
@@ -149,8 +147,8 @@ def action_cache(func):
     Args:
         func: wrapped function.
     """
-    from sema4ai.tasks._hooks import after_task_run
-    from sema4ai.tasks._lifecycle import _cache
+    from sema4ai.actions._hooks import after_task_run
+    from sema4ai.actions._lifecycle import _cache
 
     return _cache(after_task_run, func)
 
@@ -160,7 +158,7 @@ def get_output_dir() -> Optional[Path]:
     Provide the output directory being used for the run or None if there's no
     output dir configured.
     """
-    from sema4ai.tasks._config import get_config
+    from sema4ai.actions._config import get_config
 
     config = get_config()
     if config is None:

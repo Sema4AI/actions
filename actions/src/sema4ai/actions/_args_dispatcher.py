@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from logging import getLogger
 from typing import List, Optional
 
-from sema4ai.tasks import _constants
+from sema4ai.actions import _constants
 from sema4ai.actions._customization._plugin_manager import PluginManager
 
 log = getLogger(__name__)
@@ -218,7 +218,7 @@ class _ActionsArgDispatcher(_ArgDispatcher):
 
         from sema4ai.actions import _lint_action
         from sema4ai.actions._lint_action import format_lint_results
-        from sema4ai.tasks import _hooks
+        from sema4ai.actions import _hooks
 
         files_found = set()
 

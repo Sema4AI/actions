@@ -148,7 +148,7 @@ def collect_actions(
     """
     Note: collecting tasks is not thread-safe.
     """
-    from sema4ai.tasks import _constants, _hooks
+    from sema4ai.actions import _constants, _hooks
 
     path = path.absolute()
     task_names_as_set = set(action_names)
@@ -162,7 +162,7 @@ def collect_actions(
         return action.name in action_names
 
     def on_func_found(func, options: Dict):
-        from sema4ai.tasks._exceptions import RobocorpActionsError
+        from sema4ai.actions._exceptions import RobocorpActionsError
 
         key = (func.__code__.co_name, func.__code__.co_filename)
         if key in _found_as_set:

@@ -6,7 +6,7 @@ from typing import Any, Dict, Protocol, overload
 class EPManagedParameters(Protocol):
     """
     The protocol for a class that describes the managed parameters when
-    calling a task.
+    calling an action.
     """
 
     @overload
@@ -44,7 +44,7 @@ class EPManagedParameters(Protocol):
         original_kwargs: Dict[str, Any],
     ) -> Dict[str, Any]:
         """
-        This enables the addition of managed parameters into a call to the task.
+        This enables the addition of managed parameters into a call to the action.
 
         Args:
             sig: The signature of the function being called.

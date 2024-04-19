@@ -4,7 +4,7 @@ import pytest
 
 from sema4ai.actions import setup as actions_setup
 from sema4ai.actions import teardown as actions_teardown
-from sema4ai.tasks._hooks import (
+from sema4ai.actions._hooks import (
     after_all_tasks_run,
     after_task_run,
     before_all_tasks_run,
