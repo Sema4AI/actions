@@ -1,4 +1,4 @@
 pytest_plugins = [
     "devutils.fixtures",
-    "tasks_tests.fixtures",
+    "actions_core_tests.fixtures",
 ]
