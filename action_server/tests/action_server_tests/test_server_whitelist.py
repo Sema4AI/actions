@@ -1,8 +1,8 @@
 import json
 from pathlib import Path
 
-from robocorp.action_server._selftest import ActionServerClient, ActionServerProcess
-from robocorp.action_server._whitelist import accept_action
+from sema4ai.action_server._selftest import ActionServerClient, ActionServerProcess
+from sema4ai.action_server._whitelist import accept_action
 
 
 def test_whitelist_exact_match():
@@ -45,8 +45,8 @@ def test_whitelist_on_import(
 ) -> None:
     from action_server_tests.fixtures import robocorp_action_server_run
 
-    from robocorp.action_server._database import Database
-    from robocorp.action_server._models import Action, load_db
+    from sema4ai.action_server._database import Database
+    from sema4ai.action_server._models import Action, load_db
 
     action_server_datadir.mkdir(parents=True, exist_ok=True)
     db_path = action_server_datadir / "server.db"
@@ -132,7 +132,7 @@ def test_whitelist_on_start_run(
     client: ActionServerClient,
     action_server_datadir: Path,
 ) -> None:
-    from robocorp.action_server._selftest import robocorp_action_server_run
+    from sema4ai.action_server._selftest import robocorp_action_server_run
 
     calculator = Path(tmpdir) / "v1" / "calculator" / "action_calculator.py"
     calculator.parent.mkdir(parents=True, exist_ok=True)

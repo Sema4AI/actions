@@ -1,4 +1,4 @@
-from robocorp.action_server._database import Database
+from sema4ai.action_server._database import Database
 
 
 def migrate(db: Database) -> None:

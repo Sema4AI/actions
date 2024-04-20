@@ -4,12 +4,12 @@ from pathlib import Path
 from typing import Dict
 
 if typing.TYPE_CHECKING:
-    from robocorp.action_server._models import ActionPackage
-    from robocorp.action_server._settings import Settings
+    from sema4ai.action_server._models import ActionPackage
+    from sema4ai.action_server._settings import Settings
 
 
 def _add_preload_actions_dir_to_env_pythonpath(env: Dict[str, str]) -> None:
-    from robocorp.action_server import _preload_actions
+    from sema4ai.action_server import _preload_actions
 
     p = Path(_preload_actions.__file__)
     if "__init__" in p.name:

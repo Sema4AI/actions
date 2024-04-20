@@ -15,10 +15,10 @@ def collect_package_metadata(package_dir: Path, datadir: str) -> str | int:
     from fastapi.applications import FastAPI
     from robocorp.actions._protocols import ActionsListActionTypedDict
 
-    from robocorp.action_server._actions_import import hook_on_actions_list
-    from robocorp.action_server._errors_action_server import ActionServerValidationError
-    from robocorp.action_server._models import Action, ActionPackage, create_db
-    from robocorp.action_server.cli import _main_retcode
+    from sema4ai.action_server._actions_import import hook_on_actions_list
+    from sema4ai.action_server._errors_action_server import ActionServerValidationError
+    from sema4ai.action_server._models import Action, ActionPackage, create_db
+    from sema4ai.action_server.cli import _main_retcode
 
     args = ["start", "--db-file", ":memory:"]
     if datadir:
@@ -31,7 +31,7 @@ def collect_package_metadata(package_dir: Path, datadir: str) -> str | int:
         action_package: "ActionPackage",
         actions_list_result: list[ActionsListActionTypedDict],
     ):
-        from robocorp.action_server._server import build_url_api_run
+        from sema4ai.action_server._server import build_url_api_run
 
         action_info: ActionsListActionTypedDict
         for action_info in actions_list_result:

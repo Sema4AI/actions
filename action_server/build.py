@@ -6,7 +6,7 @@ from typing import Optional
 
 # No real build, just download RCC at this point.
 
-# Note: referenced here and in robocorp.action_server._download_rcc
+# Note: referenced here and in sema4ai.action_server._download_rcc
 RCC_VERSION = "17.23.2"
 
 RCC_URLS = {

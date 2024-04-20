@@ -10,17 +10,17 @@ from typing import Iterator
 
 import pytest
 
-from robocorp.action_server._actions_process_pool import (
+from sema4ai.action_server._actions_process_pool import (
     ActionsProcessPool,
     ProcessHandle,
 )
-from robocorp.action_server._robo_utils.run_in_thread import run_in_thread
+from sema4ai.action_server._robo_utils.run_in_thread import run_in_thread
 
 
 @pytest.fixture
 def actions_process_pool(tmpdir):
-    from robocorp.action_server._models import Action, ActionPackage
-    from robocorp.action_server._settings import Settings
+    from sema4ai.action_server._models import Action, ActionPackage
+    from sema4ai.action_server._settings import Settings
 
     datadir = Path(tmpdir / "datadir")
     artifacts_dir = datadir / "artifacts"

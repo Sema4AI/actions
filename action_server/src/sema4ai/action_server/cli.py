@@ -1,7 +1,7 @@
 """
 Important: 
 
-robocorp.action_server.cli.main() 
+sema4ai.action_server.cli.main() 
 
 is the only public API supported from the action-server.
 
@@ -22,7 +22,7 @@ from typing import Literal, Optional, Sequence, Union
 
 from termcolor import colored
 
-from robocorp.action_server._protocols import IBeforeStartCallback
+from sema4ai.action_server._protocols import IBeforeStartCallback
 
 from . import __version__
 from ._errors_action_server import ActionServerValidationError
@@ -37,8 +37,8 @@ from ._protocols import (
 )
 
 if typing.TYPE_CHECKING:
-    from robocorp.action_server._database import Database
-    from robocorp.action_server._rcc import Rcc
+    from sema4ai.action_server._database import Database
+    from sema4ai.action_server._rcc import Rcc
 
     from ._settings import Settings
 
@@ -80,7 +80,7 @@ def str2bool(v):
 
 
 def _add_start_server_command(command_parser, defaults):
-    from robocorp.action_server._cli_helpers import add_data_args, add_verbose_args
+    from sema4ai.action_server._cli_helpers import add_data_args, add_verbose_args
 
     start_parser = command_parser.add_parser(
         "start",
@@ -195,7 +195,7 @@ def _add_start_server_command(command_parser, defaults):
 
 
 def _add_migrate_command(command_subparser, defaults):
-    from robocorp.action_server._cli_helpers import add_data_args, add_verbose_args
+    from sema4ai.action_server._cli_helpers import add_data_args, add_verbose_args
 
     migration_parser = command_subparser.add_parser(
         "migrate",
@@ -206,7 +206,7 @@ def _add_migrate_command(command_subparser, defaults):
 
 
 def _add_import_command(command_subparser, defaults):
-    from robocorp.action_server._cli_helpers import add_data_args, add_verbose_args
+    from sema4ai.action_server._cli_helpers import add_data_args, add_verbose_args
 
     import_parser = command_subparser.add_parser(
         "import",
@@ -226,8 +226,8 @@ def _add_import_command(command_subparser, defaults):
 
 
 def _create_parser():
-    from robocorp.action_server._cli_helpers import add_verbose_args
-    from robocorp.action_server.package._package_build_cli import add_package_command
+    from sema4ai.action_server._cli_helpers import add_verbose_args
+    from sema4ai.action_server.package._package_build_cli import add_package_command
 
     from ._settings import Settings
 
@@ -318,7 +318,7 @@ def main(args: Optional[list[str]] = None, *, exit=True) -> int:  # noqa
                 "passed, rcc will be downloaded."
             )
 
-            from robocorp.action_server._download_rcc import download_rcc
+            from sema4ai.action_server._download_rcc import download_rcc
 
             download_rcc(force=True)
 
@@ -397,7 +397,7 @@ def _import_actions(
     Returns: 0 if everything is correct and some other number if some error happened
         while importing the actions.
     """
-    from robocorp.action_server.vendored_deps.termcolors import bold_red
+    from sema4ai.action_server.vendored_deps.termcolors import bold_red
 
     from . import _actions_import
 
@@ -527,7 +527,7 @@ def _main_retcode(
         return 0
 
     if command == "package":
-        from robocorp.action_server.package._package_build_cli import (
+        from sema4ai.action_server.package._package_build_cli import (
             handle_package_command,
         )
 
@@ -597,7 +597,7 @@ def _make_import_migrate_or_start(
     use_db: Optional["Database"] = None,
     before_start: Sequence[IBeforeStartCallback] = (),
 ) -> int:
-    from robocorp.action_server._settings import is_frozen
+    from sema4ai.action_server._settings import is_frozen
 
     from ._robo_utils.system_mutex import SystemMutex
     from ._runs_state_cache import use_runs_state_ctx
@@ -651,8 +651,8 @@ def _make_import_migrate_or_start(
         else:
             db_path = settings.db_file
 
-        from robocorp.action_server._models import create_db, load_db
-        from robocorp.action_server.migrations import db_migration_pending, migrate_db
+        from sema4ai.action_server._models import create_db, load_db
+        from sema4ai.action_server.migrations import db_migration_pending, migrate_db
 
         is_new = db_path == ":memory:" or not os.path.exists(db_path)
 
@@ -683,7 +683,7 @@ def _make_import_migrate_or_start(
             if is_frozen():
                 cmdline = "action-server"
             else:
-                cmdline = "python -m robocorp.action_server"
+                cmdline = "python -m sema4ai.action_server"
 
             if not is_new and db_migration_pending(db_path):
                 log.critical(

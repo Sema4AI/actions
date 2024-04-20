@@ -1,7 +1,7 @@
 import json
 import os
 
-from robocorp.action_server._selftest import ActionServerClient, ActionServerProcess
+from sema4ai.action_server._selftest import ActionServerClient, ActionServerProcess
 
 
 def test_action_unicode(
@@ -29,7 +29,7 @@ def test_action_unicode(
 
 
 def test_slugify():
-    from robocorp.action_server._slugify import slugify
+    from sema4ai.action_server._slugify import slugify
 
     assert slugify("ação", allow_unicode=True) == "ação"
     assert slugify("ação", allow_unicode=False) == "acao"

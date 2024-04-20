@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from robocorp.action_server._selftest import ActionServerClient, ActionServerProcess
+from sema4ai.action_server._selftest import ActionServerClient, ActionServerProcess
 
 
 @pytest.fixture
@@ -35,7 +35,7 @@ def test_create_conda_from_package_yaml(
     """
     import yaml
 
-    from robocorp.action_server.vendored_deps.action_package_handling import (
+    from sema4ai.action_server.vendored_deps.action_package_handling import (
         create_conda_from_package_yaml,
     )
 
@@ -138,7 +138,7 @@ def test_package_update(tmpdir, data_regression):
 
     import yaml
 
-    from robocorp.action_server.vendored_deps.action_package_handling import (
+    from sema4ai.action_server.vendored_deps.action_package_handling import (
         update_package,
     )
 

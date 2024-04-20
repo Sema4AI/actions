@@ -4,7 +4,7 @@ import typing
 from logging import getLogger
 from pathlib import Path
 
-from robocorp.action_server._protocols import (
+from sema4ai.action_server._protocols import (
     ArgumentsNamespace,
     ArgumentsNamespacePackage,
     ArgumentsNamespacePackageBuild,
@@ -17,7 +17,7 @@ log = getLogger(__name__)
 
 
 def add_package_command(command_subparser, defaults):
-    from robocorp.action_server._cli_helpers import add_data_args, add_verbose_args
+    from sema4ai.action_server._cli_helpers import add_data_args, add_verbose_args
 
     # Package handling
     package_parser = command_subparser.add_parser(
@@ -102,9 +102,9 @@ def add_package_command(command_subparser, defaults):
 
 
 def handle_package_command(base_args: ArgumentsNamespace):
-    from robocorp.action_server._errors_action_server import ActionServerValidationError
-    from robocorp.action_server.package._ask_user import ask_user_input_to_proceed
-    from robocorp.action_server.vendored_deps.termcolors import bold_red
+    from sema4ai.action_server._errors_action_server import ActionServerValidationError
+    from sema4ai.action_server.package._ask_user import ask_user_input_to_proceed
+    from sema4ai.action_server.vendored_deps.termcolors import bold_red
 
     package_args: ArgumentsNamespacePackage = typing.cast(
         ArgumentsNamespacePackage, base_args
@@ -119,7 +119,7 @@ def handle_package_command(base_args: ArgumentsNamespace):
             ArgumentsNamespacePackageUpdate, base_args
         )
 
-        from robocorp.action_server.vendored_deps.action_package_handling import (
+        from sema4ai.action_server.vendored_deps.action_package_handling import (
             update_package,
         )
 
@@ -131,7 +131,7 @@ def handle_package_command(base_args: ArgumentsNamespace):
         return 0
 
     elif package_command == "build":
-        from robocorp.action_server.package._package_build import build_package
+        from sema4ai.action_server.package._package_build import build_package
 
         package_build_args: ArgumentsNamespacePackageBuild = typing.cast(
             ArgumentsNamespacePackageBuild, base_args
@@ -188,7 +188,7 @@ def handle_package_command(base_args: ArgumentsNamespace):
         return 0
 
     elif package_command == "metadata":
-        from robocorp.action_server.package._package_metadata import (
+        from sema4ai.action_server.package._package_metadata import (
             collect_package_metadata,
         )
 

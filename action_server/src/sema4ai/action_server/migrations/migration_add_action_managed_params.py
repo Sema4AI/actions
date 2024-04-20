@@ -1,9 +1,9 @@
-from robocorp.action_server._database import Database
-from robocorp.action_server.migrations import Migration
+from sema4ai.action_server._database import Database
+from sema4ai.action_server.migrations import Migration
 
 
 def migrate(db: Database) -> None:
-    from robocorp.action_server.migrations import MIGRATION_ID_TO_NAME
+    from sema4ai.action_server.migrations import MIGRATION_ID_TO_NAME
 
     db.execute(
         """

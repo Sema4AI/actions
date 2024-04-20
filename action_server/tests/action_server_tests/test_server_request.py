@@ -1,6 +1,6 @@
 import json
 
-from robocorp.action_server._selftest import ActionServerClient, ActionServerProcess
+from sema4ai.action_server._selftest import ActionServerClient, ActionServerProcess
 
 
 def test_issue_167_access_headers(

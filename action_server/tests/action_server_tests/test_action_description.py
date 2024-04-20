@@ -1,5 +1,5 @@
 def test_action_description_from_docs():
-    from robocorp.action_server._server import get_action_description_from_docs
+    from sema4ai.action_server._server import get_action_description_from_docs
 
     docs = """This is my docstring
     
@@ -12,7 +12,7 @@ Args:
 
 
 def test_action_description_from_docs_multiline():
-    from robocorp.action_server._server import get_action_description_from_docs
+    from sema4ai.action_server._server import get_action_description_from_docs
 
     docs = """This is my docstring
 It contains

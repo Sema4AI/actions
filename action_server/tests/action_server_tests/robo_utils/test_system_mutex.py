@@ -11,7 +11,7 @@ def test_system_mutex():
     import pytest
     from _pytest.outcomes import Failed
 
-    from robocorp.action_server._robo_utils.system_mutex import (
+    from sema4ai.action_server._robo_utils.system_mutex import (
         SystemMutex,
         _mutex_name_to_info,
         timed_acquire_mutex,
@@ -106,7 +106,7 @@ def test_system_mutex():
 
         # Must also fail from another process.
         code = """
-from robocorp.action_server._robo_utils.system_mutex import timed_acquire_mutex
+from sema4ai.action_server._robo_utils.system_mutex import timed_acquire_mutex
 mutex_name = "mutex_name_test_system_mutex"
 with timed_acquire_mutex(mutex_name, timeout=1, raise_error_on_timeout=True):
     pass
@@ -118,7 +118,7 @@ with timed_acquire_mutex(mutex_name, timeout=1, raise_error_on_timeout=True):
 
 
 def test_gen_mutex_name_from_path():
-    from robocorp.action_server._robo_utils.system_mutex import generate_mutex_name
+    from sema4ai.action_server._robo_utils.system_mutex import generate_mutex_name
 
     mutex_name = "my/snth\\nsth"
     mutex_name = generate_mutex_name(mutex_name, prefix="my_")
@@ -129,7 +129,7 @@ def test_system_mutex_error_on_timeout():
     import os
     import threading
 
-    from robocorp.action_server._robo_utils.system_mutex import SystemMutex
+    from sema4ai.action_server._robo_utils.system_mutex import SystemMutex
 
     mutex = SystemMutex("test_system_mutex_error_on_timeout")
     assert mutex.get_mutex_aquired()
@@ -151,8 +151,8 @@ def test_system_mutex_error_on_timeout():
 def test_system_mutex_timed_acquire_no_error_on_timeout():
     import threading
 
-    from robocorp.action_server._robo_utils import log_custom_handler, system_mutex
-    from robocorp.action_server._robo_utils.system_mutex import (
+    from sema4ai.action_server._robo_utils import log_custom_handler, system_mutex
+    from sema4ai.action_server._robo_utils.system_mutex import (
         SystemMutex,
         timed_acquire_mutex,
     )
@@ -195,14 +195,14 @@ def test_system_mutex_locked_on_subprocess():
 
     from devutils.fixtures import wait_for_condition
 
-    from robocorp.action_server._robo_utils.process import kill_process_and_subprocesses
-    from robocorp.action_server._robo_utils.system_mutex import SystemMutex
+    from sema4ai.action_server._robo_utils.process import kill_process_and_subprocesses
+    from sema4ai.action_server._robo_utils.system_mutex import SystemMutex
 
     code = """
 import sys
 import time
 print('initialized')
-from robocorp.action_server._robo_utils.system_mutex import SystemMutex
+from sema4ai.action_server._robo_utils.system_mutex import SystemMutex
 mutex = SystemMutex('test_system_mutex_locked_on_subprocess')
 assert mutex.get_mutex_aquired()
 print('acquired mutex')

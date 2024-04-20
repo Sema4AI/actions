@@ -22,7 +22,7 @@ def check_regexp_in_lines(text, regexp):
 
 
 def test_package_zip(datadir):
-    from robocorp.action_server._selftest import robocorp_action_server_run
+    from sema4ai.action_server._selftest import robocorp_action_server_run
 
     output = robocorp_action_server_run(
         [
@@ -86,7 +86,7 @@ def test_package_zip(datadir):
 
 
 def test_package_zip_no_actions(datadir):
-    from robocorp.action_server._selftest import robocorp_action_server_run
+    from sema4ai.action_server._selftest import robocorp_action_server_run
 
     output = robocorp_action_server_run(
         [
@@ -106,7 +106,7 @@ def test_package_zip_no_actions(datadir):
 def test_package_metadata(datadir, data_regression):
     import json
 
-    from robocorp.action_server._selftest import robocorp_action_server_run
+    from sema4ai.action_server._selftest import robocorp_action_server_run
 
     output = robocorp_action_server_run(
         [
@@ -124,7 +124,7 @@ def test_package_metadata(datadir, data_regression):
 def test_package_metadata_secrets(datadir, data_regression):
     import json
 
-    from robocorp.action_server._selftest import robocorp_action_server_run
+    from sema4ai.action_server._selftest import robocorp_action_server_run
 
     output = robocorp_action_server_run(
         [

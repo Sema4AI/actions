@@ -8,7 +8,7 @@ from action_server_tests.fixtures import ActionServerClient, ActionServerProcess
 def test_version() -> None:
     from action_server_tests.fixtures import robocorp_action_server_run
 
-    from robocorp.action_server import __version__
+    from sema4ai.action_server import __version__
 
     result = robocorp_action_server_run(["version"], returncode=0)
     assert result.stdout.strip() == __version__
@@ -25,7 +25,7 @@ def test_download_rcc(tmpdir) -> None:
 def test_new(
     tmpdir, action_server_process: ActionServerProcess, client: ActionServerClient
 ) -> None:
-    from robocorp.action_server._selftest import check_new_template
+    from sema4ai.action_server._selftest import check_new_template
 
     check_new_template(tmpdir, action_server_process, client)
 
@@ -40,7 +40,7 @@ def test_help(str_regression):
 def test_migrate(database_v0):
     from action_server_tests.fixtures import robocorp_action_server_run
 
-    from robocorp.action_server.migrations import db_migration_pending
+    from sema4ai.action_server.migrations import db_migration_pending
 
     db_path = database_v0
     if db_migration_pending(db_path):
@@ -61,8 +61,8 @@ def test_migrate(database_v0):
 def test_default_datadir(tmpdir):
     from pathlib import Path
 
-    from robocorp.action_server._settings import setup_settings
-    from robocorp.action_server.cli import _create_parser
+    from sema4ai.action_server._settings import setup_settings
+    from sema4ai.action_server.cli import _create_parser
 
     use_dir = Path(tmpdir) / "foobar"
     curdir = Path(".").absolute()
@@ -82,8 +82,8 @@ def test_default_datadir(tmpdir):
 def test_datadir_user_specified(tmpdir):
     from pathlib import Path
 
-    from robocorp.action_server._settings import setup_settings
-    from robocorp.action_server.cli import _create_parser
+    from sema4ai.action_server._settings import setup_settings
+    from sema4ai.action_server.cli import _create_parser
 
     use_dir = Path(tmpdir) / "foobar"
 

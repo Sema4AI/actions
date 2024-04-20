@@ -8,16 +8,16 @@ from typing import Literal
 
 from termcolor import colored
 
-from robocorp.action_server._robo_utils.callback import Callback, OnExitContextManager
-from robocorp.action_server.vendored_deps.action_package_handling.cli_errors import (
+from sema4ai.action_server._robo_utils.callback import Callback, OnExitContextManager
+from sema4ai.action_server.vendored_deps.action_package_handling.cli_errors import (
     ActionPackageError,
 )
-from robocorp.action_server.vendored_deps.termcolors import bold_red, bold_yellow
+from sema4ai.action_server.vendored_deps.termcolors import bold_red, bold_yellow
 
 if typing.TYPE_CHECKING:
     from sema4ai.actions._protocols import ActionsListActionTypedDict
 
-    from robocorp.action_server._models import ActionPackage
+    from sema4ai.action_server._models import ActionPackage
 
 log = logging.getLogger(__name__)
 
@@ -51,12 +51,12 @@ hook_on_actions_list: IHookOnActionsList = Callback(raise_exceptions=True)
 
 
 def _log_deprecated_conda():
-    from robocorp.action_server._settings import is_frozen
+    from sema4ai.action_server._settings import is_frozen
 
     if is_frozen():
         cmd = "action-server"
     else:
-        cmd = "python -m robocorp.action_server"
+        cmd = "python -m sema4ai.action_server"
     log.critical(
         bold_red(
             "Deprecated: The file for defining the environment is now `package.yaml`.\n"
@@ -91,8 +91,8 @@ def import_action_package(
         environment.
     """
 
-    from robocorp.action_server._whitelist import accept_action_package
-    from robocorp.action_server.vendored_deps.action_package_handling import (
+    from sema4ai.action_server._whitelist import accept_action_package
+    from sema4ai.action_server.vendored_deps.action_package_handling import (
         create_conda_from_package_yaml,
     )
 
@@ -311,7 +311,7 @@ Note: no virtual environment will be used for the imported actions, they'll be r
 def _get_actions_version(
     env, cwd, libname: Literal["robocorp.actions"] | Literal["sema4ai.actions"]
 ) -> tuple[int, ...]:
-    from robocorp.action_server._settings import get_python_exe_from_env
+    from sema4ai.action_server._settings import get_python_exe_from_env
 
     python = get_python_exe_from_env(env)
     cmdline: list[str] = [
@@ -357,11 +357,11 @@ def _add_actions_to_db(
 
     from sema4ai.actions._lint_action import format_lint_results
 
-    from robocorp.action_server._errors_action_server import ActionServerValidationError
-    from robocorp.action_server._gen_ids import gen_uuid
-    from robocorp.action_server._models import Action, ActionPackage, get_db
-    from robocorp.action_server._settings import get_python_exe_from_env
-    from robocorp.action_server._whitelist import accept_action
+    from sema4ai.action_server._errors_action_server import ActionServerValidationError
+    from sema4ai.action_server._gen_ids import gen_uuid
+    from sema4ai.action_server._models import Action, ActionPackage, get_db
+    from sema4ai.action_server._settings import get_python_exe_from_env
+    from sema4ai.action_server._whitelist import accept_action
 
     python = get_python_exe_from_env(env)
 

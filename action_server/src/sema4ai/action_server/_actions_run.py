@@ -50,7 +50,7 @@ def _create_run_artifacts_dir(action: "Action", run_id: str) -> str:
 def _create_run(
     action: "Action", run_id: str, inputs: dict, relative_artifacts_dir: str
 ) -> "Run":
-    from robocorp.action_server._models import RUN_ID_COUNTER, Counter
+    from sema4ai.action_server._models import RUN_ID_COUNTER, Counter
 
     from ._database import datetime_to_str
     from ._models import Run, RunStatus, get_db
@@ -149,8 +149,8 @@ def _run_action_in_thread(
     We have to take care of making a run with the proper environment,
     creating the run, collecting output info, etc.
     """
-    from robocorp.action_server._gen_ids import gen_uuid
-    from robocorp.action_server._settings import get_settings
+    from sema4ai.action_server._gen_ids import gen_uuid
+    from sema4ai.action_server._settings import get_settings
 
     from ._actions_process_pool import get_actions_process_pool
     from ._models import Run, get_db

@@ -18,7 +18,7 @@ from devutils.invoke_utils import build_common_tasks
 globals().update(
     build_common_tasks(
         ROOT,
-        "robocorp.action_server",
+        "sema4ai.action_server",
         ruff_format_arguments=r"--exclude=_static_contents.py",
     )
 )
@@ -137,7 +137,7 @@ def download_rcc(ctx: Context, system: Optional[str] = None) -> None:
     env = os.environ.copy()
     curr_pythonpath = env.get("PYTHONPATH", "")
     env["PYTHONPATH"] = curr_pythonpath + os.pathsep + str(CURDIR / "src")
-    run(ctx, "python -m robocorp.action_server download-rcc", env=env)
+    run(ctx, "python -m sema4ai.action_server download-rcc", env=env)
 
 
 def _replace_deps(content, new_deps):

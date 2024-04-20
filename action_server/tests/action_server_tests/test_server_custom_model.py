@@ -1,6 +1,6 @@
 import json
 
-from robocorp.action_server._selftest import ActionServerClient, ActionServerProcess
+from sema4ai.action_server._selftest import ActionServerClient, ActionServerProcess
 
 
 def test_server_custom_model_argument(

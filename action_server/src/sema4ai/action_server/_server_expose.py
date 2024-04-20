@@ -495,7 +495,7 @@ def main(
             The api key that should be passed to the action server along with
             the forwarded messages so that the action server accepts it.
     """
-    from robocorp.action_server._robo_utils.process import exit_when_pid_exists
+    from sema4ai.action_server._robo_utils.process import exit_when_pid_exists
 
     if config_logging:
         _setup_logging(verbose)

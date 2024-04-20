@@ -9,8 +9,8 @@ from pathlib import Path
 from subprocess import CalledProcessError, TimeoutExpired
 from typing import Dict, Iterator, List, Optional, Tuple
 
-from robocorp.action_server._protocols import ActionResult, RCCActionResult, Sentinel
-from robocorp.action_server._robo_utils.constants import NULL
+from sema4ai.action_server._protocols import ActionResult, RCCActionResult, Sentinel
+from sema4ai.action_server._robo_utils.constants import NULL
 
 log = logging.getLogger(__name__)
 
@@ -60,7 +60,7 @@ class Rcc(object):
     def _compute_launch_args_and_kwargs(
         self, cwd, env, args, stderr=Sentinel.SENTINEL
     ) -> Tuple[list, dict]:
-        from robocorp.action_server._robo_utils.process import build_subprocess_kwargs
+        from sema4ai.action_server._robo_utils.process import build_subprocess_kwargs
 
         if stderr is Sentinel.SENTINEL:
             stderr = subprocess.PIPE
@@ -95,7 +95,7 @@ class Rcc(object):
         """
         from subprocess import check_output, list2cmdline
 
-        from robocorp.action_server._robo_utils.process import check_output_interactive
+        from sema4ai.action_server._robo_utils.process import check_output_interactive
 
         env = self._compute_env()
         robocorp_home = env["ROBOCORP_HOME"]

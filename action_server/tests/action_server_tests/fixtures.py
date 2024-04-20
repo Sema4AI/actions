@@ -6,7 +6,7 @@ from typing import Iterator
 
 import pytest
 
-from robocorp.action_server._selftest import (
+from sema4ai.action_server._selftest import (
     ActionServerClient,
     ActionServerProcess,
     robocorp_action_server_run,
@@ -29,8 +29,8 @@ def rcc_config_location(temp_directory_session) -> Path:
 
 @pytest.fixture(scope="session", autouse=True)
 def disable_feedback(temp_directory_session, rcc_config_location) -> None:
-    from robocorp.action_server._download_rcc import get_default_rcc_location
-    from robocorp.action_server._rcc import Rcc
+    from sema4ai.action_server._download_rcc import get_default_rcc_location
+    from sema4ai.action_server._rcc import Rcc
 
     robocorp_home = temp_directory_session / ".robocorp_home"
     robocorp_home.mkdir(parents=True, exist_ok=True)
@@ -96,8 +96,8 @@ def temp_directory_session(tmp_path_factory):
 def base_case(
     action_server_process: ActionServerProcess, tmpdir, temp_directory_session
 ) -> Iterator[CaseInfo]:
-    from robocorp.action_server._database import Database
-    from robocorp.action_server._models import (
+    from sema4ai.action_server._database import Database
+    from sema4ai.action_server._models import (
         Action,
         ActionPackage,
         get_all_model_classes,
@@ -155,7 +155,7 @@ def client(action_server_process: ActionServerProcess) -> Iterator[ActionServerC
 
 @pytest.fixture
 def database_v0(tmpdir):
-    from robocorp.action_server._database import Database
+    from sema4ai.action_server._database import Database
 
     db_path = Path(tmpdir) / "temp.db"
     initial_sql = [

@@ -8,20 +8,20 @@ authors = [
 readme = "README.md"
 repository = "https://github.com/sema4ai/actions/"
 license = "Apache-2.0"
-packages = [{ include = "robocorp", from = "src" }]
+packages = [{ include = "sema4ai", from = "src" }]
 include = [
-	"src/robocorp/action_server/_static_contents.py",
-	"src/robocorp/action_server/bin/rcc*",
+	"src/sema4ai/action_server/_static_contents.py",
+	"src/sema4ai/action_server/bin/rcc*",
 ]
 
 [tool.poetry.scripts]
-action-server = "robocorp.action_server.cli:main"
+action-server = "sema4ai.action_server.cli:main"
 
 
 [tool.poetry.dependencies]
 # Important: when these versions change, pyoxidizer.bzl needs
 # to be updated too for the binary build.
-# This should be updated. See: https://github.com/robocorp/robocorp/issues/173
+# Use 'inv update-pyoxidizer-versions'.
 aiohttp = "^3.9.3"
 fastapi = "^0.110.0"
 fastjsonschema = "^2.19.1"

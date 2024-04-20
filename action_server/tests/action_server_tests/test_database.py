@@ -10,7 +10,7 @@ from typing import Optional
 import pytest
 from pydantic.dataclasses import dataclass
 
-from robocorp.action_server._database import Database, DBRules, datetime_to_str
+from sema4ai.action_server._database import Database, DBRules, datetime_to_str
 
 _db_rules = DBRules()
 
@@ -55,7 +55,7 @@ class SomeRun:
 
 
 def test_foreign_keys_validation(tmpdir) -> None:
-    from robocorp.action_server._database import DBError
+    from sema4ai.action_server._database import DBError
 
     db = Database(tmpdir / "test_foreign_keys_validation.db")
     with db.connect():
@@ -77,7 +77,7 @@ def test_foreign_keys_validation(tmpdir) -> None:
 
 
 def test_database_schema_evolution(str_regression) -> None:
-    from robocorp.action_server._models import get_all_model_classes, get_model_db_rules
+    from sema4ai.action_server._models import get_all_model_classes, get_model_db_rules
 
     db = Database(":memory:")
     all_model_classes = get_all_model_classes()
@@ -99,7 +99,7 @@ def test_database_schema_evolution(str_regression) -> None:
 
 
 def test_counters(tmpdir) -> None:
-    from robocorp.action_server._database import DBError
+    from sema4ai.action_server._database import DBError
 
     @dataclass
     class Counter:
@@ -177,8 +177,8 @@ def test_counters(tmpdir) -> None:
 
 
 def test_migrate(database_v0: Path, tmpdir) -> None:
-    from robocorp.action_server._models import Action, create_db
-    from robocorp.action_server.migrations import (
+    from sema4ai.action_server._models import Action, create_db
+    from sema4ai.action_server.migrations import (
         CURRENT_VERSION,
         MIGRATION_ID_TO_NAME,
         Migration,

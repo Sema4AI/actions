@@ -17,7 +17,7 @@ from subprocess import CompletedProcess
 from typing import Dict, Iterator, Literal, Optional, Tuple, Union
 
 if typing.TYPE_CHECKING:
-    from robocorp.action_server._robo_utils.process import Process
+    from sema4ai.action_server._robo_utils.process import Process
 
 
 def is_debugger_active() -> bool:
@@ -85,8 +85,8 @@ class ActionServerProcess:
         additional_args: Optional[list[str]] = None,
         env: Optional[Dict[str, str]] = None,
     ) -> None:
-        from robocorp.action_server._robo_utils.process import Process
-        from robocorp.action_server._settings import is_frozen
+        from sema4ai.action_server._robo_utils.process import Process
+        from sema4ai.action_server._settings import is_frozen
 
         if self.started:
             raise RuntimeError("The action process was already started.")
@@ -103,7 +103,7 @@ class ActionServerProcess:
             base_args = [
                 sys.executable,
                 "-m",
-                "robocorp.action_server",
+                "sema4ai.action_server",
             ]
         new_args = base_args + [
             "start",
@@ -295,7 +295,7 @@ def robocorp_action_server_run(
     timeout=None,
     capture_output=True,
 ) -> CompletedProcess:
-    from robocorp.action_server._settings import is_frozen
+    from sema4ai.action_server._settings import is_frozen
 
     if is_frozen():
         # i.e.: The entry point is our own executable.
@@ -309,7 +309,7 @@ def robocorp_action_server_run(
         )
     else:
         return run_python_module(
-            "robocorp.action_server",
+            "sema4ai.action_server",
             cmdline,
             returncode,
             cwd,
@@ -393,7 +393,7 @@ def check_new_template(
     client: ActionServerClient,
     verbose: bool = False,
 ) -> None:
-    from robocorp.action_server._settings import is_frozen
+    from sema4ai.action_server._settings import is_frozen
 
     curdir = os.path.abspath(".")
     try:
@@ -506,7 +506,7 @@ def do_selftest():
     print("Running selftest...")
     retcode = 0
 
-    from robocorp.action_server._download_rcc import get_default_rcc_location
+    from sema4ai.action_server._download_rcc import get_default_rcc_location
 
     rcc_location = get_default_rcc_location()
     assert rcc_location.exists(), f"Expected rcc to be available in: {rcc_location}."

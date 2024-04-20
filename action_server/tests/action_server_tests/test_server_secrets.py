@@ -1,4 +1,4 @@
-from robocorp.action_server._selftest import ActionServerClient, ActionServerProcess
+from sema4ai.action_server._selftest import ActionServerClient, ActionServerProcess
 
 # Used in test so that the information is static (no random key or iv).
 USE_STATIC_INFO = False

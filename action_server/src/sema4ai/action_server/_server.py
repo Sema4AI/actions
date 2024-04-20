@@ -19,7 +19,7 @@ def _name_as_summary(name):
 
 
 def _name_to_url(name):
-    from robocorp.action_server._slugify import slugify
+    from sema4ai.action_server._slugify import slugify
 
     return slugify(name.replace("_", "-"))
 
@@ -159,7 +159,7 @@ def start_server(
             import _thread
             import time
 
-            from robocorp.action_server._robo_utils.run_in_thread import run_in_thread
+            from sema4ai.action_server._robo_utils.run_in_thread import run_in_thread
 
             _thread.interrupt_main()
 
@@ -250,7 +250,7 @@ def start_server(
         return (host, port)
 
     def expose_later(loop):
-        from robocorp.action_server._settings import is_frozen
+        from sema4ai.action_server._settings import is_frozen
 
         nonlocal expose_subprocess
 
@@ -270,7 +270,7 @@ def start_server(
             args = [
                 sys.executable,
                 "-m",
-                "robocorp.action_server",
+                "sema4ai.action_server",
             ]
 
         args += [
@@ -316,7 +316,7 @@ def start_server(
         import psutil
 
         log.info("Stopping action server...")
-        from robocorp.action_server._robo_utils.process import (
+        from sema4ai.action_server._robo_utils.process import (
             kill_process_and_subprocesses,
         )
 

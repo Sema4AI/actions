@@ -160,7 +160,7 @@ def test_import_action_server_strategies(
         robocorp_action_server_run,
     )
 
-    from robocorp.action_server._models import Action, ActionPackage, load_db
+    from sema4ai.action_server._models import Action, ActionPackage, load_db
 
     if strategy == "conda.yaml":
         root_dir = get_in_resources("calculator")
@@ -235,8 +235,8 @@ def test_import_default_value(
 ) -> None:
     from action_server_tests.fixtures import robocorp_action_server_run
 
-    from robocorp.action_server._database import Database
-    from robocorp.action_server._models import Action, load_db
+    from sema4ai.action_server._database import Database
+    from sema4ai.action_server._models import Action, load_db
 
     action_server_datadir.mkdir(parents=True, exist_ok=True)
     db_path = action_server_datadir / "server.db"
@@ -324,8 +324,8 @@ def test_import_no_conda(
 ) -> None:
     from action_server_tests.fixtures import robocorp_action_server_run
 
-    from robocorp.action_server._database import Database
-    from robocorp.action_server._models import Action, load_db
+    from sema4ai.action_server._database import Database
+    from sema4ai.action_server._models import Action, load_db
 
     action_server_datadir.mkdir(parents=True, exist_ok=True)
     db_path = action_server_datadir / "server.db"
@@ -440,8 +440,8 @@ def test_import(
     base_case,
     client: ActionServerClient,
 ) -> None:
-    from robocorp.action_server._database import Database, str_to_datetime
-    from robocorp.action_server._models import Run, RunStatus, load_db
+    from sema4ai.action_server._database import Database, str_to_datetime
+    from sema4ai.action_server._models import Run, RunStatus, load_db
 
     openapi_json = client.get_openapi_json()
     data_regression.check(json.loads(openapi_json))
@@ -530,8 +530,8 @@ def test_import(
 def test_routes(action_server_process: ActionServerProcess, data_regression):
     from action_server_tests.sample_data import ACTION, ACTION_PACKAGE, RUN, RUN2
 
-    from robocorp.action_server._database import Database
-    from robocorp.action_server._models import create_db
+    from sema4ai.action_server._database import Database
+    from sema4ai.action_server._models import create_db
 
     action_server_process.datadir.mkdir(parents=True, exist_ok=True)
     db_path = action_server_process.datadir / "server.db"
@@ -630,7 +630,7 @@ def test_subprocesses_killed(
     import requests
     from action_server_tests.fixtures import get_in_resources
 
-    from robocorp.action_server._robo_utils.run_in_thread import run_in_thread
+    from sema4ai.action_server._robo_utils.run_in_thread import run_in_thread
 
     no_conda_dir = get_in_resources("no_conda")
     action_server_process.start(
@@ -696,8 +696,8 @@ def test_import_task_options(
 ) -> None:
     from action_server_tests.fixtures import robocorp_action_server_run
 
-    from robocorp.action_server._database import Database
-    from robocorp.action_server._models import Action, load_db
+    from sema4ai.action_server._database import Database
+    from sema4ai.action_server._models import Action, load_db
 
     action_server_datadir.mkdir(parents=True, exist_ok=True)
     db_path = action_server_datadir / "server.db"

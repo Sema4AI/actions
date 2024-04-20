@@ -9,7 +9,7 @@ from fastapi.params import Param
 from fastapi.routing import APIRouter
 from starlette.responses import FileResponse
 
-from robocorp.action_server._models import Run
+from sema4ai.action_server._models import Run
 
 log = logging.getLogger(__name__)
 run_api_router = APIRouter(prefix="/api/runs")
@@ -86,7 +86,7 @@ for a given run (i.e.: [{'name': '__action_server_output.txt', 'size_in_bytes': 
 """
     ),
 ]:
-    from robocorp.action_server._settings import get_settings
+    from sema4ai.action_server._settings import get_settings
 
     settings = get_settings()
     run = get_run_by_id(run_id)
@@ -127,7 +127,7 @@ def get_run_log_html(run_id: str = fastapi.Path(title="ID for run")):
 
 
 def _get_artifacts_dir_for_run_id(run_id: str) -> Optional[Path]:
-    from robocorp.action_server._settings import get_settings
+    from sema4ai.action_server._settings import get_settings
 
     settings = get_settings()
     run = get_run_by_id(run_id)
@@ -219,7 +219,7 @@ def get_run_artifact_binary(
         title="Artifact name for which the content should be gotten."
     ),
 ):
-    from robocorp.action_server._settings import get_settings
+    from sema4ai.action_server._settings import get_settings
 
     settings = get_settings()
     run = get_run_by_id(run_id)
