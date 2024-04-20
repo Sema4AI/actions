@@ -80,10 +80,10 @@ def setup(
      in the main actions file to be taken into use
     """
     from sema4ai.actions._hooks import (
-        after_all_actions_run,
         after_action_run,
-        before_all_actions_run,
+        after_all_actions_run,
         before_action_run,
+        before_all_actions_run,
     )
 
     def _register_callback(before, after, func):
@@ -116,14 +116,16 @@ def setup(
     scope = kwargs.get("scope", "action")
     if scope == "action":
 
-        def wrapped_task(func):
+        def wrapped_action(func):
             return _register_callback(before_action_run, after_action_run, func)
 
-        return wrapped_task
+        return wrapped_action
     elif scope == "session":
 
         def wrapped_session(func):
-            return _register_callback(before_all_actions_run, after_all_actions_run, func)
+            return _register_callback(
+                before_all_actions_run, after_all_actions_run, func
+            )
 
         return wrapped_session
     else:
@@ -183,7 +185,7 @@ def teardown(
     **Note:** If fixtures are defined in another file, they need to be imported
      in the main actions file to be taken into use
     """
-    from sema4ai.actions._hooks import after_all_actions_run, after_action_run
+    from sema4ai.actions._hooks import after_action_run, after_all_actions_run
 
     if len(args) == 1 and len(kwargs) == 0 and callable(args[0]):
         func: IActionCallback = args[0]
@@ -193,11 +195,11 @@ def teardown(
     scope = kwargs.get("scope", "action")
     if scope == "action":
 
-        def wrapped_task(func: IActionCallback):
+        def wrapped_action(func: IActionCallback):
             after_action_run.register(func)
             return func
 
-        return wrapped_task
+        return wrapped_action
     elif scope == "session":
 
         def wrapped_session(func: IActionsCallback):

@@ -230,7 +230,10 @@ def server_socket():
     yield facade
 
 
-def test_receive_at_socket(datadir, server_socket) -> None:
+@pytest.mark.parametrize(
+    "env_name", ["ROBOCORP_TASKS_LOG_LISTENER_PORT", "S4_ACTIONS_LOG_LISTENER_PORT"]
+)
+def test_receive_at_socket(datadir, server_socket, env_name) -> None:
     from robocorp.log import verify_log_messages_from_stream
 
     pyproject: Path = datadir / "pyproject.toml"
@@ -238,7 +241,7 @@ def test_receive_at_socket(datadir, server_socket) -> None:
 
     port = server_socket.port
 
-    additional_env: Dict[str, str] = {"ROBOCORP_TASKS_LOG_LISTENER_PORT": str(port)}
+    additional_env: Dict[str, str] = {env_name: str(port)}
     sema4ai_actions_run(
         ["run", "--console-color=plain", "simple.py"],
         returncode=0,

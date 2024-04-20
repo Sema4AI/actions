@@ -155,7 +155,7 @@ def collect_actions(
 
     _hooks.before_collect_actions(path, action_names_as_set)
 
-    def accept_task(action: IAction):
+    def accept_action(action: IAction):
         if not action_names:
             return True
 
@@ -200,13 +200,13 @@ def collect_actions(
                     for p in path.rglob(g):
                         glob_paths[p] = 1
 
-                for path_with_task in itertools.chain(lst, tuple(glob_paths.keys())):
-                    if path_with_task.is_dir() or not path_with_task.name.endswith(
+                for path_with_action in itertools.chain(lst, tuple(glob_paths.keys())):
+                    if path_with_action.is_dir() or not path_with_action.name.endswith(
                         ".py"
                     ):
                         continue
 
-                    import_path(path_with_task, root=root)
+                    import_path(path_with_action, root=root)
 
         elif path.is_file():
             root = _get_root(path, is_dir=False)
@@ -231,7 +231,7 @@ def collect_actions(
 
         action = Action(pm, module_name, module_file, method, options=options)
 
-        if accept_task(action):
+        if accept_action(action):
             yield action
 
 

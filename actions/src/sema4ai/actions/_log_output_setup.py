@@ -35,10 +35,12 @@ class _Finish:
 def setup_log_output_to_port() -> Iterator[None]:
     import queue
 
-    port_in_env: Optional[str] = os.environ.get("ROBOCORP_TASKS_LOG_LISTENER_PORT")
+    port_in_env: Optional[str] = os.environ.get("S4_ACTIONS_LOG_LISTENER_PORT")
     if not port_in_env:
-        yield
-        return
+        port_in_env = os.environ.get("ROBOCORP_TASKS_LOG_LISTENER_PORT")
+        if not port_in_env:
+            yield
+            return
 
     from robocorp import log
 
@@ -46,7 +48,7 @@ def setup_log_output_to_port() -> Iterator[None]:
         port = int(port_in_env)
     except Exception:
         log.critical(
-            f"ROBOCORP_TASKS_LOG_LISTENER_PORT set to a non-int value: {port_in_env}"
+            f"ROBOCORP_TASKS_LOG_LISTENER_PORT/S4_ACTIONS_LOG_LISTENER_PORT set to a non-int value: {port_in_env}"
         )
         yield
         return
@@ -58,7 +60,7 @@ def setup_log_output_to_port() -> Iterator[None]:
         client_socket.connect(("localhost", port))
     except Exception:
         log.exception(
-            f"Error connecting to ROBOCORP_TASKS_LOG_LISTENER_PORT ({port_in_env})."
+            f"Error connecting to ROBOCORP_TASKS_LOG_LISTENER_PORT/S4_ACTIONS_LOG_LISTENER_PORT ({port_in_env})."
         )
         yield
         return
@@ -89,7 +91,7 @@ def setup_log_output_to_port() -> Iterator[None]:
                 _LogErrorLock.tlocal._writing = True
                 try:
                     log.exception(
-                        "Error sending data to ROBOCORP_TASKS_LOG_LISTENER_PORT"
+                        "Error sending data to ROBOCORP_TASKS_LOG_LISTENER_PORT/S4_ACTIONS_LOG_LISTENER_PORT"
                         + f" ({port_in_env})."
                     )
                 finally:
