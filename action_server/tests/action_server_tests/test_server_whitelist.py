@@ -56,7 +56,7 @@ def test_whitelist_on_import(
     calculator.parent.mkdir(parents=True, exist_ok=True)
     calculator.write_text(
         """
-from robocorp.actions import action
+from sema4ai.actions import action
 
 @action
 def calculator_sum(v1: float, v2: float) -> float:
@@ -100,7 +100,7 @@ def test_whitelist_on_start(
     calculator.parent.mkdir(parents=True, exist_ok=True)
     calculator.write_text(
         """
-from robocorp.actions import action
+from sema4ai.actions import action
 
 @action
 def calculator_sum(v1: float, v2: float) -> float:
@@ -138,7 +138,7 @@ def test_whitelist_on_start_run(
     calculator.parent.mkdir(parents=True, exist_ok=True)
     calculator.write_text(
         """
-from robocorp.actions import action
+from sema4ai.actions import action
 
 @action
 def calculator_sum(v1: float, v2: float) -> float:

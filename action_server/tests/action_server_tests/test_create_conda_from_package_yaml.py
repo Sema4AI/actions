@@ -111,7 +111,7 @@ with open({str(create_in_postinstall)!r}, 'w') as stream:
 
     (tmppath / "my_action.py").write_text(
         """
-from robocorp.actions import action
+from sema4ai.actions import action
 
 @action
 def my_action() -> str:

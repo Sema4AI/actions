@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from robocorp.actions import action
+from sema4ai.actions import action
 
 
 @action

@@ -246,7 +246,7 @@ def test_import_default_value(
     calculator.parent.mkdir(parents=True, exist_ok=True)
     calculator.write_text(
         """
-from robocorp.actions import action
+from sema4ai.actions import action
 
 @action
 def calculator_sum(v1: int = 5) -> float:
@@ -300,7 +300,7 @@ def test_is_consequential_openapi_spec(
     calculator.parent.mkdir(parents=True, exist_ok=True)
     calculator.write_text(
         """
-from robocorp.actions import action
+from sema4ai.actions import action
 
 @action(is_consequential=False)
 def calculator_sum(v1: float, v2: float) -> float:
@@ -335,7 +335,7 @@ def test_import_no_conda(
     calculator.parent.mkdir(parents=True, exist_ok=True)
     calculator.write_text(
         """
-from robocorp.actions import action
+from sema4ai.actions import action
 
 @action
 def calculator_sum(v1: float, v2: float) -> float:
@@ -364,7 +364,7 @@ def calculator_sum(v1: float, v2: float) -> float:
 
     calculator.write_text(
         """
-from robocorp.actions import action
+from sema4ai.actions import action
 
 @action
 def calculator_sum(v1: str, v2: str) -> str:
@@ -404,7 +404,7 @@ def another_action(a1: str, a2: str) -> str:
 
     calculator.write_text(
         """
-from robocorp.actions import action
+from sema4ai.actions import action
 
 @action
 def calculator_sum(v1: float, v2: float) -> float:
@@ -707,7 +707,7 @@ def test_import_task_options(
     calculator.parent.mkdir(parents=True, exist_ok=True)
     calculator.write_text(
         """
-from robocorp.actions import action
+from sema4ai.actions import action
 
 @action
 def calculator_sum(v1: float, v2: float) -> float:
@@ -737,7 +737,7 @@ def calculator_sum(v1: float, v2: float) -> float:
 
     calculator.write_text(
         """
-from robocorp.actions import action
+from sema4ai.actions import action
 
 @action(is_consequential=True)
 def calculator_sum(v1: str, v2: str) -> str:
@@ -766,7 +766,7 @@ def calculator_sum(v1: str, v2: str) -> str:
 
     calculator.write_text(
         """
-from robocorp.actions import action
+from sema4ai.actions import action
 
 @action(is_consequential=False)
 def calculator_sum(v1: str, v2: str) -> str:

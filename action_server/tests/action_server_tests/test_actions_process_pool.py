@@ -37,7 +37,7 @@ def actions_process_pool(tmpdir):
     action_file = action_package_dir / "action.py"
     action_file.write_text(
         """
-from robocorp.actions import action
+from sema4ai.actions import action
 
 @action
 def greet(name: str, title="Mr.") -> str:

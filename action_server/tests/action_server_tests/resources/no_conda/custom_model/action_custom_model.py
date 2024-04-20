@@ -1,7 +1,7 @@
 from typing import Annotated, Optional, Union
 
 from pydantic import BaseModel, Field
-from robocorp.actions import action
+from sema4ai.actions import action
 
 
 class Dependent(BaseModel):

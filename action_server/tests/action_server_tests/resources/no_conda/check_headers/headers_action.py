@@ -1,6 +1,6 @@
 import json
 
-from robocorp.actions import Request, action
+from sema4ai.actions import Request, action
 
 
 @action

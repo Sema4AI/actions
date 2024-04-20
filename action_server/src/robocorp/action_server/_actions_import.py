@@ -4,6 +4,7 @@ import subprocess
 import sys
 import typing
 from pathlib import Path
+from typing import Literal
 
 from termcolor import colored
 
@@ -243,36 +244,58 @@ Note: no virtual environment will be used for the imported actions, they'll be r
 
     env = build_python_launch_env(use_env)
 
-    v = _get_robocorp_actions_version(env, import_path)
-    expected_version = (0, 0, 7)
-    expected_version_str = ".".join(str(x) for x in expected_version)
-    if v < expected_version:
-        v_as_str = ".".join(str(x) for x in v)
+    try:
+        # any sema4ai.actions version will do at this point.
+        v = _get_actions_version(env, import_path, "sema4ai.actions")
+    except Exception:
+        ### TODO: Remove in the future!
 
-        if package_yaml_exists:
-            raise ActionServerValidationError(
-                f"Error, the `robocorp-actions` version is: {v_as_str}.\n"
-                f"Expected `robocorp-actions` version to be {expected_version_str} or higher.\n"
+        # Still support robocorp.actions for now (but warn the user).
+        try:
+            v = _get_actions_version(env, import_path, "robocorp.actions")
+            log.critical(
+                "Important: 'robocorp.actions' is deprecated!\n"
+                "Please change the 'robocorp-actions' dependency to 'sema4ai-actions'\n"
+                "in your package.yaml\n"
+                "(note: the public API should be the same with the exception that the\n"
+                "imports should come from 'sema4ai.actions' instead of 'robocorp.actions).\n"
+                "On future versions of the Action Server, using 'robocorp-actions' will no\n"
+                "longer be supported.\n"
+            )
+        except Exception:
+            pass
+
+        raise  # The sema4ai.actions error, not the robocorp.actions one.
+
+        expected_version = (0, 0, 7)
+        expected_version_str = ".".join(str(x) for x in expected_version)
+        if v < expected_version:
+            v_as_str = ".".join(str(x) for x in v)
+
+            if package_yaml_exists:
+                raise ActionServerValidationError(
+                    f"Error, the `robocorp-actions` version is: {v_as_str}.\n"
+                    f"Expected `robocorp-actions` version to be {expected_version_str} or higher.\n"
+                    f"Please update the version in: {original_conda_yaml}\n"
+                )
+            else:
+                raise ActionServerValidationError(
+                    f"Error, the `robocorp-actions` version is: {v_as_str}.\n"
+                    f"Expected it to be {expected_version_str} or higher.\n"
+                    f"Please update the `robocorp-actions` version in your python environment (python: {sys.executable})\n"
+                )
+
+        min_version_for_encryption_with_auth_tag = (0, 2, 1)
+        if v < min_version_for_encryption_with_auth_tag:
+            v_as_str = ".".join(str(x) for x in v)
+            log.critical(
+                f"Warning: the `robocorp-actions` version is: {v_as_str}.\n"
+                f"To receive encrypted secrets, robocorp-actions 0.2.1 or newer is required.\n"
                 f"Please update the version in: {original_conda_yaml}\n"
+                "(proceeding with initalization but actions receiving encrypted secrets will\n"
+                "not work properly -- on future versions of the action server, support for \n"
+                "this version of robocorp-actions will be removed)."
             )
-        else:
-            raise ActionServerValidationError(
-                f"Error, the `robocorp-actions` version is: {v_as_str}.\n"
-                f"Expected it to be {expected_version_str} or higher.\n"
-                f"Please update the `robocorp-actions` version in your python environment (python: {sys.executable})\n"
-            )
-
-    min_version_for_encryption_with_auth_tag = (0, 2, 1)
-    if v < min_version_for_encryption_with_auth_tag:
-        v_as_str = ".".join(str(x) for x in v)
-        log.critical(
-            f"Warning: the `robocorp-actions` version is: {v_as_str}.\n"
-            f"To receive encrypted secrets, robocorp-actions 0.2.1 or newer is required.\n"
-            f"Please update the version in: {original_conda_yaml}\n"
-            "(proceeding with initalization but actions receiving encrypted secrets will\n"
-            "not work properly -- on future versions of the action server, support for \n"
-            "this version of robocorp-actions will be removed)."
-        )
 
     _add_actions_to_db(
         datadir,
@@ -285,21 +308,22 @@ Note: no virtual environment will be used for the imported actions, they'll be r
     )
 
 
-def _get_robocorp_actions_version(env, cwd) -> tuple[int, ...]:
+def _get_actions_version(
+    env, cwd, libname: Literal["robocorp.actions"] | Literal["sema4ai.actions"]
+) -> tuple[int, ...]:
     from robocorp.action_server._settings import get_python_exe_from_env
 
     python = get_python_exe_from_env(env)
     cmdline: list[str] = [
         python,
         "-c",
-        "import robocorp.actions;print(robocorp.actions.__version__)",
+        f"import {libname};print({libname}.__version__)",
     ]
-    msg = f"""Unable to get robocorp.actions version.
+    msg = f"""Unable to get {libname} version.
 
-This usually means that `robocorp.actions` is not installed in the python
-environment (if `action-server.yaml` is present, make sure that `robocorp-actions`
-is defined in the environment, otherwise make sure that `robocorp-actions`
-is installed in the same environment being used to run the action server).
+This usually means that `{libname}` is not installed in the python
+environment (make sure that `{libname.replace('.', '-')}`
+is defined in your `package.yaml`).
 
 Python executable being used:
 {python}
@@ -331,7 +355,7 @@ def _add_actions_to_db(
 ):
     from dataclasses import asdict
 
-    from robocorp.actions._lint_action import format_lint_results
+    from sema4ai.actions._lint_action import format_lint_results
 
     from robocorp.action_server._errors_action_server import ActionServerValidationError
     from robocorp.action_server._gen_ids import gen_uuid
@@ -341,7 +365,7 @@ def _add_actions_to_db(
 
     python = get_python_exe_from_env(env)
 
-    cmdline = [python, "-m", "robocorp.actions", "list"]
+    cmdline = [python, "-m", "sema4ai.actions", "list"]
 
     if skip_lint:
         cmdline.append("--skip-lint")
@@ -396,7 +420,7 @@ def _add_actions_to_db(
     else:
         if not isinstance(actions_list_result, list):
             raise RuntimeError(
-                f"Expected robocorp.actions list to provide a list. Found: >>{stdout!r}<<"
+                f"Expected sema4ai.actions list to provide a list. Found: >>{stdout!r}<<"
             )
 
         hook_on_actions_list(

@@ -1,4 +1,4 @@
-from robocorp.actions import Secret, action
+from sema4ai.actions import Secret, action
 
 
 @action
