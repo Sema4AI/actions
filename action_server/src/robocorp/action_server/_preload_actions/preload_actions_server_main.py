@@ -141,7 +141,7 @@ class MessagesHandler:
         # Collect actions so that it's ready to go when requested.
         # s = io.StringIO()
         # try:
-        #     from robocorp.actions import cli
+        #     from sema4ai.actions import cli
         #
         #     with redirect_stdout(s), redirect_stderr(s):
         #         cli.main(["list"], exit=False)
@@ -159,7 +159,7 @@ class MessagesHandler:
         # cmdline: List[str] = [
         #     python,
         #     "-m",
-        #     "robocorp.actions",
+        #     "sema4ai.actions",
         #     "run",
         #     "--preload-module",
         #     "preload_actions",
@@ -257,19 +257,25 @@ class MessagesHandler:
         except ImportError:
             # old (deprecated: using robocorp-actions).
             try:
-                from robocorp.actions._managed_parameters import ManagedParameters
-                from robocorp.actions._request import Request
-                from robocorp.tasks._customization._extension_points import (
+                # fmt: off
+                from robocorp.actions._managed_parameters import (  # type:ignore
+                    ManagedParameters,
+                )
+                from robocorp.actions._request import Request  # type:ignore
+                from robocorp.tasks._customization._extension_points import (  # type:ignore
                     EPManagedParameters,
                 )
-                from robocorp.tasks._customization._plugin_manager import PluginManager
+                from robocorp.tasks._customization._plugin_manager import (  # type:ignore
+                    PluginManager,
+                )
+
+                # fmt: on
 
             except ImportError:
                 return {}
 
-        # Ok, we're dealing with a newer version of robocorp.actions and
-        # robocorp.tasks, so add the customization of parameters to
-        # add the 'request' parameter.
+        # Ok, we're dealing with a newer version of actions, so add the
+        # customization of parameters to add the 'request' parameter.
 
         try:
             pm = getattr(self, "_pm")

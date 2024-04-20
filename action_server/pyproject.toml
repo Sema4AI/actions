@@ -1,18 +1,17 @@
 [tool.poetry]
-name = "robocorp-action-server"
+name = "sema4ai-action-server"
 version = "0.4.1"
-description = "Robocorp local task server"
+description = """Sema4AI Action Server"""
 authors = [
 	"Fabio Z. <fabio@robocorp.com>",
 ]
 readme = "README.md"
-repository = "https://github.com/robocorp/robocorp/"
+repository = "https://github.com/sema4ai/actions/"
 license = "Apache-2.0"
 packages = [{ include = "robocorp", from = "src" }]
 include = [
 	"src/robocorp/action_server/_static_contents.py",
-	"src/robocorp/action_server/bin/rcc.exe",
-	"src/robocorp/action_server/bin/rcc",
+	"src/robocorp/action_server/bin/rcc*",
 ]
 
 [tool.poetry.scripts]
@@ -33,7 +32,8 @@ pydantic = "^2.4.2"
 pyyaml = "^6"
 python = "^3.10"
 requests = "^2"
-robocorp-actions = "^0.2.0"
+# TODO: Add this back
+# sema4ai-actions = "^0.3.0"
 termcolor = "^2.4.0"
 uvicorn = "^0.23.2"
 websockets = "^12.0"
@@ -41,7 +41,10 @@ cryptography = "^42.0.5"
 
 
 [tool.poetry.group.dev.dependencies]
-robocorp-devutils = { path = "../devutils/", develop = true }
+# TODO: needs to be removed when we do the actions release
+sema4ai-actions = { path = "../actions/", develop = true }
+
+sema4ai-devutils = { path = "../devutils/", develop = true }
 types-requests = "^2"
 types-PyYAML = "^6"
 robocorp-log-pytest = "^0.0.2"
@@ -68,7 +71,7 @@ script = "build.py"
 generate-setup-file = true
 
 
-
+# This is for backward compatibility.
 [[tool.mypy.overrides]]
 module = "robocorp.actions.*"
 ignore_missing_imports = true

@@ -14,7 +14,7 @@ from robocorp.action_server.vendored_deps.action_package_handling.cli_errors imp
 from robocorp.action_server.vendored_deps.termcolors import bold_red, bold_yellow
 
 if typing.TYPE_CHECKING:
-    from robocorp.actions._protocols import ActionsListActionTypedDict
+    from sema4ai.actions._protocols import ActionsListActionTypedDict
 
     from robocorp.action_server._models import ActionPackage
 

@@ -2,7 +2,11 @@ import json
 import os
 from pathlib import Path
 
-from robocorp.actions import IAction, teardown
+try:
+    from sema4ai.actions import IAction, teardown
+except ImportError:
+    # old
+    from robocorp.actions import IAction, teardown  # type:ignore
 
 
 @teardown
