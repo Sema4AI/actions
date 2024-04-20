@@ -31,12 +31,20 @@ class CallbackProxy(object):
 
     """
 
+    _in_subject = 0
+
     def __init__(self, callback):
         self.callback = callback
 
     @property
     def __subject__(self):
-        return self.callback()
+        if self._in_subject > 5:
+            raise JsonRefError("Error: recursion when trying to get subject.")
+        self._in_subject += 1
+        try:
+            return self.callback()
+        finally:
+            self._in_subject -= 1
 
 
 class LazyProxy(CallbackProxy):
