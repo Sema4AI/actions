@@ -32,7 +32,7 @@ def _download_rcc(system: Optional[str] = None, target: Optional[str] = None):
             rcc_path = (
                 CURDIR
                 / "src"
-                / "robocorp"
+                / "sema4ai"
                 / "action_server"
                 / "bin"
                 / f"rcc-{RCC_VERSION}.exe"
@@ -41,7 +41,7 @@ def _download_rcc(system: Optional[str] = None, target: Optional[str] = None):
             rcc_path = (
                 CURDIR
                 / "src"
-                / "robocorp"
+                / "sema4ai"
                 / "action_server"
                 / "bin"
                 / f"rcc-{RCC_VERSION}"
