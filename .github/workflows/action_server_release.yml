@@ -64,7 +64,7 @@ jobs:
 
     - name: Upload to PyPI
       run: |
-        poetry config pypi-token.pypi  ${{ secrets.PYPI_TOKEN_ROBOCORP_ACTION_SERVER }}
+        poetry config pypi-token.pypi  ${{ secrets.PYPI_TOKEN_SEMA4AI_ACTION_SERVER }}
         poetry publish
       env:
         ACTION_SERVER_SKIP_DOWNLOAD_IN_BUILD: true

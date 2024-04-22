@@ -68,4 +68,4 @@ jobs:
             twine upload wheelhouse/*.whl
         env:
           TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN_ROBOCORP_ACTION_SERVER }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN_SEMA4AI_ACTION_SERVER }}
