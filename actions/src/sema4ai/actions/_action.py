@@ -346,9 +346,9 @@ class Context:
     def register_lifecycle_prints(self):
         from sema4ai.actions._hooks import after_action_run, before_action_run
 
-        with before_action_run.register(self._before_action_run), after_action_run.register(
-            self._after_action_run
-        ):
+        with before_action_run.register(
+            self._before_action_run
+        ), after_action_run.register(self._after_action_run):
             yield
 
     def __typecheckself__(self) -> None:

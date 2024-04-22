@@ -29,9 +29,9 @@ def setup_cli_auto_logging(config: Optional[log.AutoLogConfigBase]):
     from sema4ai.actions._hooks import after_action_run, before_action_run
 
     with log.setup_auto_logging(config):
-        with before_action_run.register(_log_before_action_run), after_action_run.register(
-            _log_after_action_run
-        ):
+        with before_action_run.register(
+            _log_before_action_run
+        ), after_action_run.register(_log_after_action_run):
             try:
                 yield
             finally:
