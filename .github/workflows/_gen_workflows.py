@@ -180,7 +180,7 @@ class BaseTests:
             "run": "inv build-frontend",
             "env": {
                 "CI": True,
-                "NODE_AUTH_TOKEN": "${{ secrets.CI_GITHUB_TOKEN }}",
+                "NODE_AUTH_TOKEN": "${{ secrets.GH_PAT_READ_PACKAGES }}",
             },
         }
 
