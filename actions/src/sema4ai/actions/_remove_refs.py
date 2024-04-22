@@ -6,7 +6,7 @@
 # No lazy-loading (references are always replaced).
 # Early error when a cyclic reference is found.
 #
-# All modifications Copyright (c) Robocorp Technologies Inc.
+# All modifications Copyright (c) Sema4.ai, Inc.
 # All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")

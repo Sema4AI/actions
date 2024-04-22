@@ -1,7 +1,7 @@
 # Original work Copyright 2018 Brainwy Software Ltda (Dual Licensed: LGPL / Apache 2.0)
 # From https://github.com/fabioz/pyvmmonitor-core
 # See ThirdPartyNotices.txt in the project root for license information.
-# All modifications Copyright (c) Robocorp Technologies Inc.
+# All modifications Copyright (c) Sema4.ai, Inc.
 # All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")

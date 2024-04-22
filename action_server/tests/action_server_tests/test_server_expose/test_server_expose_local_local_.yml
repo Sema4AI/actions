@@ -31,7 +31,7 @@ components:
       title: ValidationError
       type: object
 info:
-  title: Robocorp Action Server
+  title: Sema4.ai Action Server
   version: 0.1.0
 openapi: 3.1.0
 paths:

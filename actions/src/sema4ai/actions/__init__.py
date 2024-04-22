@@ -1,4 +1,4 @@
-"""Sema4AI Actions enables running your AI actions in the Sema4AI Action Server.
+"""Sema4.ai Actions enables running your AI actions in the Sema4.ai Action Server.
 
 To use:
 

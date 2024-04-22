@@ -1,5 +1,5 @@
 name: 🐛 Bug report
-description: Submit a bug report to help us make Robocorp better
+description: Submit a bug report to help us make Sema4.ai better
 labels: [ Bug ]
 body:
   - type: dropdown

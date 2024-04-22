@@ -1,5 +1,5 @@
 # Original work Copyright (c) Django Software Foundation and individual contributors (BSD 3-Clause "New" or "Revised" License)
-# All modifications Copyright (c) Robocorp Technologies Inc.
+# All modifications Copyright (c) Sema4.ai, Inc.
 # All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")

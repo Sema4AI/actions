@@ -16,7 +16,7 @@ HEADER = """<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<title>Robocorp Action Server downloads</title>
+<title>Sema4.ai Action Server downloads</title>
 <link rel="preload" as="font" href="https://cdn.robocorp.com/fonts/BarlowSemiCondensed-SemiBold.woff2" type="font/woff2" crossorigin="anonymous" />
 <style>
 @font-face {
@@ -71,7 +71,7 @@ h3 a.subtle {
 </style>
 </head>
 <body>
-<h1>Robocorp Action Server downloads</h1>
+<h1>Sema4.ai Action Server downloads</h1>
 <p>
 Machine readable version of this list is available <a href="index.json">here</a>.
 And change log can be found <a href="https://github.com/robocorp/robo/blob/master/action_server/docs/CHANGELOG.md">there</a>.

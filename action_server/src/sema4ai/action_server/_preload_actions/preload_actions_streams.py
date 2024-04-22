@@ -1,6 +1,6 @@
 # Original work Copyright 2018 Palantir Technologies, Inc. (MIT)
 # See ThirdPartyNotices.txt in the project root for license information.
-# All modifications Copyright (c) Robocorp Technologies Inc.
+# All modifications Copyright (c) Sema4.ai, Inc.
 # All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")

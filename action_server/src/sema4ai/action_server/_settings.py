@@ -58,7 +58,7 @@ class Settings:
     artifacts_dir: Path
     datadir: Path
 
-    title: str = "Robocorp Action Server"
+    title: str = "Sema4.ai Action Server"
 
     address: str = "localhost"
     port: int = 8080

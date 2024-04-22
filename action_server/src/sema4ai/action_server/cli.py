@@ -85,7 +85,7 @@ def _add_start_server_command(command_parser, defaults):
     start_parser = command_parser.add_parser(
         "start",
         help=(
-            "Starts the Robocorp Action Server (importing the actions in the "
+            "Starts the Sema4.ai Action Server (importing the actions in the "
             "current directory by default)."
         ),
     )
@@ -234,7 +234,7 @@ def _create_parser():
     defaults = Settings.defaults()
     base_parser = argparse.ArgumentParser(
         prog="action-server",
-        description=f"Robocorp Action Server ({__version__})",
+        description=f"Sema4.ai Action Server ({__version__})",
         formatter_class=argparse.RawTextHelpFormatter,
     )
 
@@ -251,7 +251,7 @@ def _create_parser():
         "download-rcc",
         help=(
             "Downloads RCC (by default to the location required by the "
-            "Robocorp Action Server)"
+            "Sema4.ai Action Server)"
         ),
     )
 
@@ -689,7 +689,7 @@ def _make_import_migrate_or_start(
                 log.critical(
                     f"""It was not possible to start the server because a
 database migration is required to use with this version of the
-Robocorp Action Server.
+Sema4.ai Action Server.
 
 Please run the command:
 
