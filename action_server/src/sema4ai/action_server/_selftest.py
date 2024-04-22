@@ -170,7 +170,8 @@ class ActionServerProcess:
                         if not process.is_alive():
                             raise RuntimeError(
                                 f"The process already exited with returncode: "
-                                f"{process.returncode}"
+                                f"{process.returncode}\n"
+                                f"Args: {new_args}"
                             )
             else:
                 host, port = future.result(timeout)

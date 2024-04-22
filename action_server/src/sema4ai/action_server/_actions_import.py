@@ -250,6 +250,7 @@ Note: no virtual environment will be used for the imported actions, they'll be r
     except Exception:
         ### TODO: Remove in the future!
 
+        found_actions = False
         # Still support robocorp.actions for now (but warn the user).
         try:
             v = _get_actions_version(env, import_path, "robocorp.actions")
@@ -262,10 +263,12 @@ Note: no virtual environment will be used for the imported actions, they'll be r
                 "On future versions of the Action Server, using 'robocorp-actions' will no\n"
                 "longer be supported.\n"
             )
+            found_actions = True
         except Exception:
             pass
 
-        raise  # The sema4ai.actions error, not the robocorp.actions one.
+        if not found_actions:
+            raise  # The sema4ai.actions error, not the robocorp.actions one.
 
         expected_version = (0, 0, 7)
         expected_version_str = ".".join(str(x) for x in expected_version)
@@ -365,10 +368,25 @@ def _add_actions_to_db(
 
     python = get_python_exe_from_env(env)
 
-    cmdline = [python, "-m", "sema4ai.actions", "list"]
-
     if skip_lint:
-        cmdline.append("--skip-lint")
+        code = """
+try:
+    from sema4ai.actions import cli
+except:
+    from robocorp.actions import cli
+
+cli.main(["list", "--skip-lint"])
+"""
+    else:
+        code = """
+try:
+    from sema4ai.actions import cli
+except:
+    from robocorp.actions import cli
+
+cli.main(["list"])
+"""
+    cmdline = [python, "-c", code]
 
     popen = subprocess.Popen(
         cmdline,
