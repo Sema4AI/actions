@@ -1,6 +1,36 @@
 <!-- markdownlint-disable -->
 
-# module `robocorp.actions`
+# module `sema4ai.actions`
+
+Sema4AI Actions enables running your AI actions in the Sema4AI Action Server.
+
+To use:
+
+Mark actions with:
+
+```
+from sema4ai.actions import action
+
+@action
+def my_action():
+    ...
+```
+
+And then go to a parent folder containing the action and serve them by  running `action-server start`.
+
+Note that it's also possible to programmatically run actions (without the Action Server) with:
+
+Run all the actions in a .py file:
+
+`python -m sema4ai.actions run <path_to_file>`
+
+Run all the actions in files named *action*.py:
+
+`python -m sema4ai.actions run <directory>`
+
+Run only actions with a given name:
+
+`python -m sema4ai.actions run <directory or file> -t <action_name>`
 
 # Functions
 
@@ -8,30 +38,30 @@ ______________________________________________________________________
 
 ## `action`
 
-Decorator for actions (entry points) which can be executed by `robocorp.actions`.
+Decorator for actions (entry points) which can be executed by `sema4ai.actions`.
 
 i.e.:
 
 If a file such as actions.py has the contents below:
 
 ```python
-from robocorp.actions import action
+from sema4ai.actions import action
 
 @action
 def enter_user() -> str:
     ...
 ```
 
-It'll be executable by robocorp actions as:
+It'll be executable by sema4ai actions as:
 
-python -m robocorp.actions run actions.py -a enter_user
+python -m sema4ai.actions run actions.py -a enter_user
 
 **Args:**
 
-- <b>`func`</b>:  A function which is a action to `robocorp.actions`.
+- <b>`func`</b>:  A function which is an action to `sema4ai.actions`.
 - <b>`is_consequential`</b>:  Whether the action is consequential or not. This will add `x-openai-isConsequential: true` to the action metadata and shown in OpenApi spec.
 
-[**Link to source**](https://github.com/robocorp/robocorp/tree/master/actions/src/robocorp/actions/__init__.py#L25)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/__init__.py#L57)
 
 ```python
 action(*args, **kwargs)
@@ -43,7 +73,7 @@ ______________________________________________________________________
 
 Provides decorator which caches return and clears it automatically when the current action has been run.
 
-A decorator which automatically cache the result of the given function and will return it on any new invocation until robocorp-actions finishes running the current action.
+A decorator which automatically cache the result of the given function and will return it on any new invocation until sema4ai-actions finishes running the current action.
 
 The function may be either a generator with a single yield (so, the first yielded value will be returned and when the cache is released the generator will be resumed) or a function returning some value.
 
@@ -51,7 +81,7 @@ The function may be either a generator with a single yield (so, the first yielde
 
 - <b>`func`</b>:  wrapped function.
 
-[**Link to source**](https://github.com/robocorp/robocorp/tree/master/actions/src/robocorp/actions/__init__.py#L86)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/__init__.py#L134)
 
 ```python
 action_cache(func)
@@ -63,7 +93,7 @@ ______________________________________________________________________
 
 Provides the action which is being currently run or None if not currently running an action.
 
-[**Link to source**](https://github.com/robocorp/robocorp/tree/master/actions/src/robocorp/actions/__init__.py#L117)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/__init__.py#L169)
 
 ```python
 get_current_action() → Optional[IAction]
@@ -75,7 +105,7 @@ ______________________________________________________________________
 
 Provide the output directory being used for the run or None if there's no output dir configured.
 
-[**Link to source**](https://github.com/robocorp/robocorp/tree/master/actions/src/robocorp/actions/__init__.py#L107)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/__init__.py#L156)
 
 ```python
 get_output_dir() → Optional[Path]
@@ -87,7 +117,7 @@ ______________________________________________________________________
 
 Provides decorator which caches return and clears automatically when all actions have been run.
 
-A decorator which automatically cache the result of the given function and will return it on any new invocation until robocorp-actions finishes running all actions.
+A decorator which automatically cache the result of the given function and will return it on any new invocation until sema4ai-actions finishes running all actions.
 
 The function may be either a generator with a single yield (so, the first yielded value will be returned and when the cache is released the generator will be resumed) or a function returning some value.
 
@@ -95,7 +125,7 @@ The function may be either a generator with a single yield (so, the first yielde
 
 - <b>`func`</b>:  wrapped function.
 
-[**Link to source**](https://github.com/robocorp/robocorp/tree/master/actions/src/robocorp/actions/__init__.py#L65)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/__init__.py#L112)
 
 ```python
 session_cache(func)
@@ -112,7 +142,7 @@ Receives as an argument the action or actions that will be run.
 Can be used as a decorator without arguments:
 
 ```python
-from robocorp.actions import setup
+from sema4ai.actions import setup
 
 @setup
 def my_fixture(action):
@@ -122,7 +152,7 @@ def my_fixture(action):
 Alternatively, can be called with a `scope` argument to decide when the fixture is run:
 
 ```python
-from robocorp.actions import setup
+from sema4ai.actions import setup
 
 @setup(scope="action")
 def before_each(action):
@@ -139,7 +169,7 @@ The `setup` fixture also allows running code after the execution, if it `yield`s
 
 ```python
 import time
-from robocorp.actions import setup
+from sema4ai.actions import setup
 
 @setup
 def measure_time(action):
@@ -155,7 +185,7 @@ def my_long_action():
 
 **Note:** If fixtures are defined in another file, they need to be imported in the main actions file to be taken into use
 
-[**Link to source**](https://github.com/robocorp/robocorp/tree/master/actions/src/robocorp/actions/_fixtures.py#L24)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/_fixtures.py#L26)
 
 ```python
 setup(
@@ -175,7 +205,7 @@ Receives as an argument the action or actions that were executed, which contain 
 Can be used as a decorator without arguments:
 
 ```python
-from robocorp.actions import teardown
+from sema4ai.actions import teardown
 
 @teardown
 def my_fixture(action):
@@ -185,7 +215,7 @@ def my_fixture(action):
 Alternatively, can be called with a `scope` argument to decide when the fixture is run:
 
 ```python
-from robocorp.actions import teardown
+from sema4ai.actions import teardown
 
 @teardown(scope="action")
 def after_each(action):
@@ -200,7 +230,7 @@ By default, runs teardowns in `action` scope.
 
 **Note:** If fixtures are defined in another file, they need to be imported in the main actions file to be taken into use
 
-[**Link to source**](https://github.com/robocorp/robocorp/tree/master/actions/src/robocorp/actions/_fixtures.py#L114)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/_fixtures.py#L150)
 
 ```python
 teardown(
@@ -217,7 +247,7 @@ ______________________________________________________________________
 
 - `failed`
 
-Returns true if the task failed. (in which case usually exc_info is not None).
+Returns true if the action failed. (in which case usually exc_info is not None).
 
 - `input_schema`
 
@@ -241,7 +271,7 @@ The input schema from the function signature.
 
 - `lineno`
 
-The line where the task is declared.
+The line where the action is declared.
 
 - `managed_params_schema`
 
@@ -262,7 +292,7 @@ The schema for the managed parameters.
 
 - `name`
 
-The name of the task.
+The name of the action.
 
 - `output_schema`
 
@@ -275,6 +305,20 @@ The output schema based on the function signature.
     "type": "string",
     "description": ""
 }
+```
+
+## Methods
+
+______________________________________________________________________
+
+### `run`
+
+Runs the action and returns its result.
+
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/_protocols.py#L138)
+
+```python
+run() → Any
 ```
 
 ______________________________________________________________________
@@ -301,7 +345,7 @@ ______________________________________________________________________
 
 ### `model_validate`
 
-[**Link to source**](https://github.com/robocorp/robocorp/tree/master/actions/src/robocorp/actions/_request.py#L100)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/_request.py#L100)
 
 ```python
 model_validate(dct: dict) → Request
@@ -318,7 +362,7 @@ The way to use it is by declaring a variable with the 'Secret' type in the @acti
 **Example:**
 
 ```
-from robocorp.actions import action, Secret
+from sema4ai.actions import action, Secret
 
 @action
 def my_action(password: Secret):
@@ -347,7 +391,7 @@ Creates a secret given the action context (which may be encrypted in memory unti
 
 Return: A Secret instance collected from the passed action context.
 
-[**Link to source**](https://github.com/robocorp/robocorp/tree/master/actions/src/robocorp/actions/_secret.py#L45)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/_secret.py#L45)
 
 ```python
 from_action_context(action_context: 'ActionContext', path: str) → Secret
@@ -367,7 +411,7 @@ Return: A Secret instance with the given value.
 
 Note: the model_validate method is used for compatibility with the pydantic API.
 
-[**Link to source**](https://github.com/robocorp/robocorp/tree/master/actions/src/robocorp/actions/_secret.py#L29)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/_secret.py#L29)
 
 ```python
 model_validate(value: str) → Secret
@@ -379,7 +423,7 @@ ______________________________________________________________________
 
 ## `Status`
 
-Task state
+Action state
 
 ### Values
 

@@ -1,6 +1,6 @@
 <!-- markdownlint-disable -->
 
-# module `robocorp.actions.cli`
+# module `sema4ai.actions.cli`
 
 # Functions
 
@@ -8,7 +8,7 @@ ______________________________________________________________________
 
 ## `main`
 
-Entry point for running actions from robocorp-actions.
+Entry point for running actions from sema4ai-actions.
 
 **Args:**
 
@@ -21,7 +21,7 @@ Entry point for running actions from robocorp-actions.
 **Returns:**
 The exit code for the process.
 
-[**Link to source**](https://github.com/robocorp/robocorp/tree/master/actions/src/robocorp/actions/cli.py#L12)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/cli.py#L32)
 
 ```python
 main(

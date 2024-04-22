@@ -16,7 +16,7 @@ from typing import Dict, Iterator, List, Optional, Tuple, Union
 from invoke import task
 
 ROOT = Path(__file__).absolute().parent.parent.parent
-REPOSITORY_URL = "https://github.com/robocorp/robocorp/tree/master/"
+REPOSITORY_URL = "https://github.com/sema4ai/actions/tree/master/"
 
 
 class RoundtripPyProject:
@@ -50,8 +50,8 @@ def collect_deps_pyprojects(root_pyproject: Path, found=None) -> Iterator[Path]:
     contents: dict = tomlkit.loads(root_pyproject.read_bytes().decode("utf-8"))
     dependencies = contents["tool"]["poetry"]["dependencies"]
     for key in dependencies:
-        if key.startswith("robocorp-"):
-            dep_name = key[len("robocorp-") :]
+        if key.startswith("sema4ai-"):
+            dep_name = key[len("sema4ai-") :]
             dep_pyproject = root_pyproject.parent.parent / dep_name / "pyproject.toml"
             assert dep_pyproject.exists(), f"Expected {dep_pyproject} to exist."
             if dep_pyproject not in found:
@@ -63,12 +63,12 @@ def collect_deps_pyprojects(root_pyproject: Path, found=None) -> Iterator[Path]:
 def get_tag(tag_prefix: str) -> str:
     """
     Args:
-        tag_prefix: The tag prefix to match (i.e.: "robocorp-tasks")
+        tag_prefix: The tag prefix to match (i.e.: "sema4ai-actions")
     """
     # Get the last tagged version.
     cmd = f"git describe --tags --abbrev=0 --match {tag_prefix}-[0-9]*"
     proc = subprocess.run(shlex.split(cmd), capture_output=True, text=True)
-    # Something like 'robocorp-tasks-0.0.1'
+    # Something like 'sema4ai-actions-0.0.1'
     return proc.stdout.strip()
 
 
@@ -136,7 +136,7 @@ def _env_in_conda(env_name) -> bool:
     If the given environment name exists in conda, return True, otherwise False.
 
     :param env_name:
-        The name of the env to check (example: 'robocorp-tasks').
+        The name of the env to check (example: 'sema4ai-actions').
     """
     return env_name in _conda_env_name_to_conda_prefix()
 
@@ -160,8 +160,8 @@ def build_common_tasks(
         source_directories: Default Python source directories.
     """
     if tag_prefix is None:
-        # The tag for releases should be `robocorp-tasks-{version}`
-        # i.e.: robocorp-tasks-0.1.1
+        # The tag for releases should be `sema4ai-actions-{version}`
+        # i.e.: sema4ai-actions-0.1.1
         # Here we just want the prefix.
         tag_prefix = package_name.replace(".", "-")
 
@@ -218,7 +218,7 @@ def build_common_tasks(
             poetry(ctx, "update", verbose=verbose)
 
         projects = (
-            [package.replace("robocorp-", "") for package in local.split(",")]
+            [package.replace("sema4ai-", "") for package in local.split(",")]
             if local
             else None
         )
@@ -263,14 +263,14 @@ def build_common_tasks(
                     dependencies = contents["tool"]["poetry"]["dependencies"]
 
                     for key, value in tuple(dependencies.items()):
-                        if not key.startswith("robocorp-"):
+                        if not key.startswith("sema4ai-"):
                             continue
 
                         # Changes something as:
-                        # robocorp-log = "0.1.0"
+                        # sema4ai-actions = "0.1.0"
                         # to:
-                        # robocorp-log = {path = "../log/", develop = true
-                        name = key[len("robocorp-") :]
+                        # sema4ai-actions = {path = "../log/", develop = true
+                        name = key[len("sema4ai-") :]
                         if all_packages or (projects and name in projects):
                             dependencies[key] = dict(path=f"../{name}/", develop=True)
             yield
