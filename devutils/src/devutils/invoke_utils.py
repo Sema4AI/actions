@@ -284,7 +284,7 @@ def build_common_tasks(
         #  only the *.md files not containing the linting-ignore HTML comment tag as
         #  observed with the generated API ones.
         docs_path = Path("docs")
-        static_paths = [
+        static_paths: List[Union[str, Path]] = [
             "README.md",
             docs_path / "guides",
             docs_path / "CHANGELOG.md",
