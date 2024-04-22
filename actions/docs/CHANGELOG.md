@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-## 0.3.0 - 2024-04-18
+## 0.3.0 - 2024-04-22
 
 - Branding change: `robocorp-actions` is now `sema4ai-actions`.
     - The namespace changed from `robocorp.actions` to `sema4ai.actions`.
