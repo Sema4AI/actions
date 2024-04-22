@@ -5,10 +5,10 @@ import pytest
 from sema4ai.actions import setup as actions_setup
 from sema4ai.actions import teardown as actions_teardown
 from sema4ai.actions._hooks import (
-    after_all_actions_run,
     after_action_run,
-    before_all_actions_run,
+    after_all_actions_run,
     before_action_run,
+    before_all_actions_run,
 )
 
 

@@ -53,10 +53,10 @@ def main(
     if plugin_manager is None:
         # If not provided, let's still add the 'request' as a managed parameter
         # (without any actual data).
-        from sema4ai.actions._managed_parameters import ManagedParameters
-        from sema4ai.actions._request import Request
         from sema4ai.actions._customization._extension_points import EPManagedParameters
         from sema4ai.actions._customization._plugin_manager import PluginManager
+        from sema4ai.actions._managed_parameters import ManagedParameters
+        from sema4ai.actions._request import Request
 
         plugin_manager = PluginManager()
         plugin_manager.set_instance(

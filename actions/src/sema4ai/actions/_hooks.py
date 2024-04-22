@@ -1,6 +1,7 @@
 import os
 from logging import getLogger
 
+from sema4ai.actions._callback import Callback
 from sema4ai.actions._protocols import (
     IAfterActionRunCallback,
     IAfterAllActionsRunCallback,
@@ -9,8 +10,6 @@ from sema4ai.actions._protocols import (
     IBeforeCollectActionsCallback,
     IOnActionFuncFoundCallback,
 )
-
-from sema4ai.actions._callback import Callback
 
 logger = getLogger(__name__)
 

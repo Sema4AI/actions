@@ -226,10 +226,10 @@ def run(
     from sema4ai.actions._config import RunConfig, set_config
     from sema4ai.actions._exceptions import RobocorpActionsCollectError
     from sema4ai.actions._hooks import (
-        after_all_actions_run,
         after_action_run,
-        before_all_actions_run,
+        after_all_actions_run,
         before_action_run,
+        before_all_actions_run,
     )
     from sema4ai.actions._interrupts import interrupt_on_timeout
     from sema4ai.actions._log_auto_setup import setup_cli_auto_logging

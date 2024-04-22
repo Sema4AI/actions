@@ -133,7 +133,6 @@ def test_lint_action_integrated(datadir, data_regression):
 def test_lint_action_secret(data_regression, datadir):
     from sema4ai.actions._customization._extension_points import EPManagedParameters
     from sema4ai.actions._customization._plugin_manager import PluginManager
-
     from sema4ai.actions._lint_action import iter_lint_errors
     from sema4ai.actions._managed_parameters import ManagedParameters
 

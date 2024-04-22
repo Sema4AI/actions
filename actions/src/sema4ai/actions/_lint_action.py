@@ -223,6 +223,7 @@ def _check_docstring_contents(
     pm: Optional[PluginManager], node: ast_module.FunctionDef, docstring: str
 ) -> Iterator[Error]:
     import docstring_parser
+
     from sema4ai.actions._commands import _is_managed_param
 
     assert docstring, "Expected docstring to be given."

@@ -4,7 +4,7 @@
 
 ## Modules
 
-- [`sema4ai.actions`](./sema4ai.actions.md#module-sema4aiactions): Sema4AI Actions enables running your AI actions in the Sema4AI Action Server.
+- [`sema4ai.actions`](./sema4ai.actions.md#module-sema4aiactions): Sema4.ai Actions enables running your AI actions in the Sema4.ai Action Server.
 - [`sema4ai.actions.cli`](./sema4ai.actions.cli.md#module-sema4aiactionscli)
 
 ## Classes

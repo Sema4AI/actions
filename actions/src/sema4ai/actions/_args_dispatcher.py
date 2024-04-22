@@ -216,9 +216,8 @@ class _ActionsArgDispatcher(_ArgDispatcher):
     def _register_lint(self, stream: typing.IO):
         from pathlib import Path
 
-        from sema4ai.actions import _lint_action
+        from sema4ai.actions import _hooks, _lint_action
         from sema4ai.actions._lint_action import format_lint_results
-        from sema4ai.actions import _hooks
 
         files_found = set()
 
