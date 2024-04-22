@@ -2,7 +2,7 @@
 SR: main_check_lines.py
     ST: Collect actions (line: 0)
     ET: PASS
-    ST: entry_at_line_10 (line: 10)
+    ST: entry_at_line_10 (line: 11)
         SE: METHOD: ActionContext.from_request (line: 211)
             EA: type: cls: <class 'sema4ai.actions._action_context.ActionContext'>
             EA: _RequestImpl: request: <sema4ai.actions._request_impl._RequestImpl object at 0xXXXXXXXXX>
@@ -12,40 +12,40 @@ SR: main_check_lines.py
                 R: NoneType: None (line: 216)
             EE: IF_SCOPE: PASS
         EE: METHOD: PASS
-        SE: METHOD: entry_at_line_10 (line: 10)
-            L: D: 'debug at line 11' (line: 11)
-            AS: a: 'at line 12' (line: 12)
-            L: I: 'info at line 13' (line: 13)
-            SE: METHOD: another_method_at_line_5 (line: 5)
+        SE: METHOD: entry_at_line_10 (line: 11)
+            L: D: 'debug at line 11' (line: 12)
+            AS: a: 'at line 12' (line: 13)
+            L: I: 'info at line 13' (line: 14)
+            SE: METHOD: another_method_at_line_5 (line: 6)
                 EA: str: a: 'at line 12'
             EE: METHOD: PASS
-            AS: v: 'at_16' (line: 16)
-            SE: FOR: for c in 'at_line20' (line: 20)
-                SE: FOR_STEP: Step: for c in 'at_line20' (line: 20)
+            AS: v: 'at_16' (line: 17)
+            SE: FOR: for c in 'at_line20' (line: 21)
+                SE: FOR_STEP: Step: for c in 'at_line20' (line: 21)
                     EA: str: c: 'a'
                 EE: FOR_STEP: PASS
-                SE: FOR_STEP: Step: for c in 'at_line20' (line: 20)
+                SE: FOR_STEP: Step: for c in 'at_line20' (line: 21)
                     EA: str: c: 't'
                 EE: FOR_STEP: PASS
-                SE: FOR_STEP: Step: for c in 'at_line20' (line: 20)
+                SE: FOR_STEP: Step: for c in 'at_line20' (line: 21)
                     EA: str: c: '_'
                 EE: FOR_STEP: PASS
-                SE: FOR_STEP: Step: for c in 'at_line20' (line: 20)
+                SE: FOR_STEP: Step: for c in 'at_line20' (line: 21)
                     EA: str: c: 'l'
                 EE: FOR_STEP: PASS
-                SE: FOR_STEP: Step: for c in 'at_line20' (line: 20)
+                SE: FOR_STEP: Step: for c in 'at_line20' (line: 21)
                     EA: str: c: 'i'
                 EE: FOR_STEP: PASS
-                SE: FOR_STEP: Step: for c in 'at_line20' (line: 20)
+                SE: FOR_STEP: Step: for c in 'at_line20' (line: 21)
                     EA: str: c: 'n'
                 EE: FOR_STEP: PASS
-                SE: FOR_STEP: Step: for c in 'at_line20' (line: 20)
+                SE: FOR_STEP: Step: for c in 'at_line20' (line: 21)
                     EA: str: c: 'e'
                 EE: FOR_STEP: PASS
-                SE: FOR_STEP: Step: for c in 'at_line20' (line: 20)
+                SE: FOR_STEP: Step: for c in 'at_line20' (line: 21)
                     EA: str: c: '2'
                 EE: FOR_STEP: PASS
-                SE: FOR_STEP: Step: for c in 'at_line20' (line: 20)
+                SE: FOR_STEP: Step: for c in 'at_line20' (line: 21)
                     EA: str: c: '0'
                 EE: FOR_STEP: PASS
             EE: FOR: PASS
