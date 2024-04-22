@@ -54,7 +54,7 @@ jobs:
         poetry build -f sdist
       env:
         CI: true
-        NODE_AUTH_TOKEN: ${{ secrets.CI_GITHUB_TOKEN }}
+        NODE_AUTH_TOKEN: ${{ secrets.GH_PAT_READ_PACKAGES }}
         ACTION_SERVER_SKIP_DOWNLOAD_IN_BUILD: true
 
     - uses: actions/upload-artifact@v4
