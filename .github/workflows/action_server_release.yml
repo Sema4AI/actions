@@ -3,7 +3,7 @@ name: Action Server Release
 on:
   push:
     tags:
-      - "robocorp-action_server-*"
+      - "sema4ai-action_server-*"
 
 defaults:
   run:
@@ -49,7 +49,7 @@ jobs:
       run: |
         inv build-frontend
         # Make sure that we have no binaries present when doing the build.
-        rm src/robocorp/bin/rcc src/robocorp/bin/rcc* -f
+        rm src/sema4ai/bin/rcc* -f
         # Just sdist here, wheels are built in the manylinux job.
         poetry build -f sdist
       env:

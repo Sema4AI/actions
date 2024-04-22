@@ -3,7 +3,7 @@ name: Actions Release
 on:
   push:
     tags:
-      - "robocorp-actions-*"
+      - "sema4ai-actions-*"
 
 defaults:
   run:
