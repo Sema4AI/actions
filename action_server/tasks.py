@@ -97,7 +97,7 @@ def build_frontend(ctx: Context, debug: bool = False, install: bool = True):
     index_src = CURDIR / "frontend" / "dist" / "index.html"
     assert index_src.exists(), f"Expected: {index_src} to exist."
     dest_static_contents = (
-        CURDIR / "src" / "robocorp" / "action_server" / "_static_contents.py"
+        CURDIR / "src" / "sema4ai" / "action_server" / "_static_contents.py"
     )
 
     file_contents = {"index.html": index_src.read_bytes()}
