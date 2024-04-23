@@ -3,13 +3,13 @@ SR: main_check_lines.py
     ST: Collect actions (line: 0)
     ET: PASS
     ST: entry_at_line_10 (line: 11)
-        SE: METHOD: ActionContext.from_request (line: 211)
+        SE: METHOD: ActionContext.from_request (line: 217)
             EA: type: cls: <class 'sema4ai.actions._action_context.ActionContext'>
             EA: _RequestImpl: request: <sema4ai.actions._request_impl._RequestImpl object at 0xXXXXXXXXX>
-            AS: data: None (line: 214)
-            SE: IF_SCOPE: if data is None (line: 215)
+            AS: data: None (line: 220)
+            SE: IF_SCOPE: if data is None (line: 221)
                 EA: NoneType: data: None
-                R: NoneType: None (line: 216)
+                R: NoneType: None (line: 222)
             EE: IF_SCOPE: PASS
         EE: METHOD: PASS
         SE: METHOD: entry_at_line_10 (line: 11)
