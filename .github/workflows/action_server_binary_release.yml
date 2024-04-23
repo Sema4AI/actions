@@ -8,7 +8,7 @@ on:
     # branches:
     #   - wip2
     tags:
-      - "robocorp-action_server-*"
+      - "sema4ai-action_server-*"
 
 
 defaults:

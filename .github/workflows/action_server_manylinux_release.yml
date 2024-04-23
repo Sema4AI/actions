@@ -9,7 +9,7 @@ on:
 #       - "wip-manylinux"
 
     tags:
-      - "robocorp-action_server-*"
+      - "sema4ai-action_server-*"
 
 
 defaults:
