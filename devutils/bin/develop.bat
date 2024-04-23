@@ -8,7 +8,7 @@ cd /D %scriptPath%
 SET venvDir=venv
 
 :: Get RCC, binary with which we're going to create the master environment.
-SET rccUrl=https://downloads.robocorp.com/rcc/releases/latest/windows64/rcc.exe
+SET rccUrl=https://sema4.ai/cdn/downloads/rcc/releases/latest/windows64/rcc.exe
 IF NOT EXIST ".\rcc.exe" (
     curl -o rcc.exe %rccUrl% --fail || goto venv_error
 )

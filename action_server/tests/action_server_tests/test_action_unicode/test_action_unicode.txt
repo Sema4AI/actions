@@ -1,7 +1,7 @@
 {
     "openapi": "3.1.0",
     "info": {
-        "title": "Robocorp Action Server",
+        "title": "Sema4.ai Action Server",
         "version": "0.1.0"
     },
     "servers": [

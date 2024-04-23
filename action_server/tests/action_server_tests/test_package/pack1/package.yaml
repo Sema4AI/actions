@@ -7,7 +7,7 @@ dependencies:
     - python=3.10.12
     - pip=24
   pypi:
-    - robocorp-actions=0.1.0
+    - sema4ai-actions=0.3.1
 
 packaging:
   exclude:

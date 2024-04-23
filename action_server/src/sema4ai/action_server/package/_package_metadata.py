@@ -13,7 +13,7 @@ def collect_package_metadata(package_dir: Path, datadir: str) -> str | int:
     Returns: Either the package metadata to be printed or an error code.
     """
     from fastapi.applications import FastAPI
-    from robocorp.actions._protocols import ActionsListActionTypedDict
+    from sema4ai.actions._protocols import ActionsListActionTypedDict
 
     from sema4ai.action_server._actions_import import hook_on_actions_list
     from sema4ai.action_server._errors_action_server import ActionServerValidationError

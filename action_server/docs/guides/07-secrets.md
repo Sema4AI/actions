@@ -10,7 +10,7 @@ To receive secrets using actions, it's possible to add a parameter with a
 i.e.:
 
 ```
-from robocorp.actions import action, Secret
+from sema4ai.actions import action, Secret
 
 @action
 def my_action(my_secret: Secret):

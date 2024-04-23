@@ -1749,23 +1749,21 @@ files = [
 
 [[package]]
 name = "sema4ai-actions"
-version = "0.3.0"
+version = "0.3.1"
 description = "Sema4AI Actions"
 optional = false
-python-versions = "^3.10"
-files = []
-develop = true
+python-versions = "<4.0,>=3.10"
+files = [
+    {file = "sema4ai_actions-0.3.1-py3-none-any.whl", hash = "sha256:2365e1822b34a2f3708fa36958f3172c50aea385ef56aaf4e7fbcf309fca30da"},
+    {file = "sema4ai_actions-0.3.1.tar.gz", hash = "sha256:c0a30d03fa654428ba2f119d30e23d7795855177a0fada3a3c2b1836a3e0f66e"},
+]
 
 [package.dependencies]
-cryptography = "^42.0.5"
-docstring_parser_fork = "^0.0.5"
-psutil = "^5.0"
+cryptography = ">=42.0.5,<43.0.0"
+docstring_parser_fork = ">=0.0.5,<0.0.6"
+psutil = ">=5.0,<6.0"
 robocorp-log = ">=2.4,<3"
 robocorp-truststore = ">=0.8.0"
-
-[package.source]
-type = "directory"
-url = "../actions"
 
 [[package]]
 name = "sema4ai-devutils"
@@ -1933,13 +1931,13 @@ files = [
 
 [[package]]
 name = "types-psutil"
-version = "5.9.5.20240316"
+version = "5.9.5.20240423"
 description = "Typing stubs for psutil"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "types-psutil-5.9.5.20240316.tar.gz", hash = "sha256:5636f5714bb930c64bb34c4d47a59dc92f9d610b778b5364a31daa5584944848"},
-    {file = "types_psutil-5.9.5.20240316-py3-none-any.whl", hash = "sha256:2fdd64ea6e97befa546938f486732624f9255fde198b55e6f00fda236f059f64"},
+    {file = "types-psutil-5.9.5.20240423.tar.gz", hash = "sha256:1b976cf86308316c5ac22cec688015b04273c84f8e691c3dfb0c12318f32a6f3"},
+    {file = "types_psutil-5.9.5.20240423-py3-none-any.whl", hash = "sha256:93a5f61c05d36804ffaf008e4f4f56661e5ab2beb432645ce5789248f64b5d6f"},
 ]
 
 [[package]]
@@ -2294,4 +2292,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "80ffddfc1ccd011f6d26f94d4c4e9ac5396bad286fbfce4b6789a4e7c1d73364"
+content-hash = "7f84ebd0ddace637e435261e71d0bf80e0d5bca8282aa4b9966c324ad39a8790"

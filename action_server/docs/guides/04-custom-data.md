@@ -17,7 +17,7 @@ Below is an example which defines an `@action` with a custom input and output:
 from typing import Annotated
 
 from pydantic import BaseModel, Field
-from robocorp.actions import action
+from sema4ai.actions import action
 
 class InputData(BaseModel):
     name: Annotated[str, Field(description="This is the name.")]

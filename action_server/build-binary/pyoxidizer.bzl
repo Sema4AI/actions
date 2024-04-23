@@ -194,7 +194,7 @@ def make_exe():
     # python_config.run_command = "<code>"
 
     # Run a Python module as __main__ when the interpreter starts.
-    python_config.run_module = "robocorp.action_server"
+    python_config.run_module = "sema4ai.action_server"
 
     # Run a Python file when the interpreter starts.
     # python_config.run_filename = "/path/to/file"
@@ -250,9 +250,8 @@ def make_exe():
     # to our binary.
     # exe.add_python_resources(exe.pip_install(["-r", "requirements.txt"]))
 
-    # Important: when these versions change, pyproject.toml needs
-    # to be updated too for.
-    # This should be updated. See: https://github.com/robocorp/robocorp/issues/173
+    # Important: use `inv update-pyoxidizer-versions` to update
+    # these versions from the pyproject.toml.
     for resource in exe.pip_install(
         [
             ## START DEPS
@@ -266,7 +265,7 @@ def make_exe():
             "pydantic~=2.4",
             "pyyaml>=6,<7",
             "requests>=2,<3",
-            "robocorp-actions~=0.2",
+            "sema4ai-actions~=0.3",
             "termcolor~=2.4",
             "uvicorn~=0.23",
             "websockets~=12.0",
@@ -290,7 +289,7 @@ def make_exe():
 
     for resource in exe.read_package_root(
         path="../src",
-        packages=["robocorp.action_server"],
+        packages=["sema4ai.action_server"],
     ):
         if "bin/rcc" in resource.name:
             # We'll download it after the build is done (because I couldn't

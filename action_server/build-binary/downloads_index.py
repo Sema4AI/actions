@@ -146,7 +146,7 @@ def changelog_top(filename, count):
 
 
 def download(version, suffix):
-    return "https://downloads.robocorp.com/action-server/releases/%s/%s" % (
+    return "https://sema4.ai/cdn/downloads/action-server/releases/%s/%s" % (
         version,
         suffix,
     )

@@ -32,8 +32,7 @@ pydantic = "^2.4.2"
 pyyaml = "^6"
 python = "^3.10"
 requests = "^2"
-# TODO: Add this back
-# sema4ai-actions = "^0.3.0"
+sema4ai-actions = "^0.3.1"
 termcolor = "^2.4.0"
 uvicorn = "^0.23.2"
 websockets = "^12.0"
@@ -41,9 +40,6 @@ cryptography = "^42.0.5"
 
 
 [tool.poetry.group.dev.dependencies]
-# TODO: needs to be removed when we do the actions release
-sema4ai-actions = { path = "../actions/", develop = true }
-
 sema4ai-devutils = { path = "../devutils/", develop = true }
 types-requests = "^2"
 types-PyYAML = "^6"

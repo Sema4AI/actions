@@ -54,7 +54,7 @@ brew install robocorp/tools/action-server
 
 ```sh
 # Download Robocorp Action Server
-curl -o action-server.exe https://downloads.robocorp.com/action-server/releases/latest/windows64/action-server.exe
+curl -o action-server.exe https://sema4.ai/cdn/downloads/action-server/releases/latest/windows64/action-server.exe
 ```
 
 You can download/move the executable into a folder that is in your `PATH`, or you can [add the folder into PATH](https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/) so that you can call `action-server` wherever you are.
@@ -66,7 +66,7 @@ You can download/move the executable into a folder that is in your `PATH`, or yo
 
 ```sh
 # Download Robocorp Action Server
-curl -o action-server https://downloads.robocorp.com/action-server/releases/latest/linux64/action-server
+curl -o action-server https://sema4.ai/cdn/downloads/action-server/releases/latest/linux64/action-server
 chmod a+x action-server
 
 # Add to PATH or move to a folder that is in PATH

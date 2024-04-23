@@ -4,6 +4,30 @@ from sema4ai.action_server._selftest import ActionServerClient, ActionServerProc
 USE_STATIC_INFO = False
 
 
+def encrypt(key: bytes, plaintext: bytes) -> tuple[bytes, bytes, bytes]:
+    import os
+
+    from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+
+    # Generate a random 96-bit IV.
+    iv = os.urandom(12)
+    if USE_STATIC_INFO:
+        iv = b"b" * len(iv)
+
+    # Construct an AES-GCM Cipher object with the given key and a
+    # randomly generated IV.
+    encryptor = Cipher(
+        algorithms.AES(key),
+        modes.GCM(iv),
+    ).encryptor()
+
+    # Encrypt the plaintext and get the associated ciphertext.
+    # GCM does not require padding.
+    ciphertext = encryptor.update(plaintext) + encryptor.finalize()
+
+    return (iv, ciphertext, encryptor.tag)
+
+
 def test_secrets_encrypted(
     action_server_process: ActionServerProcess,
     client: ActionServerClient,
@@ -11,7 +35,6 @@ def test_secrets_encrypted(
 ):
     import base64
     import json
-    import os
 
     from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
@@ -47,16 +70,13 @@ def test_secrets_encrypted(
     data: bytes = json.dumps({"secrets": {"private_info": "my-secret-value"}}).encode(
         "utf-8"
     )
-    aesgcm = AESGCM(keys[0])
-    nonce = os.urandom(12)
-    if USE_STATIC_INFO:
-        nonce = b"b" * len(nonce)
-    encrypted_data = aesgcm.encrypt(nonce, data, None)
+    iv, encrypted_data, tag = encrypt(keys[0], data)
 
     action_server_context = {
         "cipher": base64.b64encode(encrypted_data).decode("ascii"),
         "algorithm": "aes256-gcm",
-        "iv": base64.b64encode(nonce).decode("ascii"),
+        "iv": base64.b64encode(iv).decode("ascii"),
+        "auth-tag": base64.b64encode(tag).decode("ascii"),
     }
 
     ctx_info: str = base64.b64encode(

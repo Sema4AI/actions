@@ -2,13 +2,13 @@ usage: action-server [-h]
                      {start,import,download-rcc,new,version,migrate,package}
                      ...
 
-Robocorp Action Server (0.4.1)
+Sema4.ai Action Server (0.4.1)
 
 positional arguments:
   {start,import,download-rcc,new,version,migrate,package}
-    start               Starts the Robocorp Action Server (importing the actions in the current directory by default).
+    start               Starts the Sema4.ai Action Server (importing the actions in the current directory by default).
     import              Imports an Action Package and exits
-    download-rcc        Downloads RCC (by default to the location required by the Robocorp Action Server)
+    download-rcc        Downloads RCC (by default to the location required by the Sema4.ai Action Server)
     new                 Bootstrap new project from template
     version             Prints the version and exits
     migrate             Makes a database migration (if needed) and exits

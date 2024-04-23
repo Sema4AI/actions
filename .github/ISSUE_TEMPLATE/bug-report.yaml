@@ -1,33 +1,7 @@
 name: 🐛 Bug report
-description: Submit a bug report to help us make Sema4.ai better
+description: Submit a bug report to help us make Sema4.ai Actions better
 labels: [ Bug ]
 body:
-  - type: dropdown
-    id: components
-    attributes:
-      label: Target components
-      description: Select the affected packages in the reported bug
-      multiple: true
-      options:
-        - Other
-        - action_server
-        - actions
-        - browser
-        - devutils
-        - docs
-        - excel
-        - integration_tests
-        - log
-        - log_pytest
-        - meta
-        - storage
-        - tasks
-        - vault
-        - windows
-        - workitems
-      default: 0
-    validations:
-      required: true
   - type: textarea
     attributes:
       label: What is wrong
@@ -35,7 +9,7 @@ body:
         Give details on what you are doing, what you expect to happen, and what
         is currently happening.
       placeholder: |
-        * I'm trying to use the `robocorp` library to do X
+        * I'm trying to use the `Sema4.ai` library to do X
         * I expected to get Y
         * Instead it does Z
     validations:

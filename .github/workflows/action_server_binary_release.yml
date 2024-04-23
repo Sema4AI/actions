@@ -315,7 +315,7 @@ jobs:
       - name: Wait for Downloads S3 Bucket to have the right content
         timeout-minutes: 5
         run: |
-          VERSION_URL="https://downloads.robocorp.com/action-server/releases/latest/version.txt"
+          VERSION_URL="https://sema4.ai/cdn/downloads/action-server/releases/latest/version.txt"
           EXPECTED_VERSION=${{ needs.sign-macos.outputs.version }}
 
           while true; do

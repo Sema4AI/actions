@@ -73,10 +73,10 @@ def test_run_id_in_response_header(
 
     result = requests.post(
         client.build_full_url("api/actions/calculator/calculator-sum/run"),
-        json={"v1": 1, "v2": 2},
+        json={"v1": 1.0, "v2": 2.0},
     )
     assert result.status_code == 200
-    assert json.loads(result.text) == 3
+    assert json.loads(result.text) == 3.0
     run_id = result.headers["X-Action-Server-Run-Id"]
 
     result = requests.get(
@@ -84,8 +84,8 @@ def test_run_id_in_response_header(
     )
 
     run_info = result.json()
-    assert json.loads(run_info["inputs"]) == {"v1": 1, "v2": 2}
-    assert json.loads(run_info["result"]) == 3
+    assert json.loads(run_info["inputs"]) == {"v1": 1.0, "v2": 2.0}
+    assert json.loads(run_info["result"]) == 3.0
     assert run_info["id"] == run_id
 
     artifacts_response = client.get_json(
@@ -102,7 +102,7 @@ def test_run_id_in_response_header(
     # Note: there are more contents, but the ones below are the ones we cane about
     expected = """
 SR: calculator_actions.py - calculator_sum
-    ST: Collect tasks
+    ST: Collect actions
     ET: PASS
     ST: calculator_sum
         SE: METHOD: calculator_sum
@@ -113,12 +113,13 @@ SR: calculator_actions.py - calculator_sum
         SE: METHOD: on_teardown_save_result
         EE: METHOD: PASS
     ET: PASS
-    ST: Teardown tasks
+    ST: Teardown actions
     ET: PASS
 ER: PASS
 """
 
-    for line in expected:
+    for line in expected.splitlines():
+        line = line.strip()
         assert line in log_pretty_printed, f"'{line}' not in:\n{log_pretty_printed}"
 
 
@@ -451,7 +452,7 @@ def test_import(
     found = client.post_get_str("api/actions/greeter/greet/run", {"name": "Foo"})
     assert found == '"Hello Mr. Foo."', f"{found} != '\"Hello Mr. Foo.\"'"
 
-    # 500 seems appropriate here as the user task didn't complete properly.
+    # 500 seems appropriate here as the user action didn't complete properly.
     client.post_error("api/actions/calculator/broken-action/run", 500)
 
     db: Database
@@ -502,7 +503,7 @@ def test_import(
             )
             assert len(found) == 2
             assert (
-                "Collecting task greet from: greeter_action.py"
+                "Collecting action greet from: greeter_action.py"
                 in found["__action_server_output.txt"]
             )
             assert '"PASS"' in found["output.robolog"]
@@ -524,7 +525,7 @@ def test_import(
                 },
             )
 
-            assert "Collecting task greet from: greeter_action.py" in found
+            assert "Collecting action greet from: greeter_action.py" in found
 
 
 def test_routes(action_server_process: ActionServerProcess, data_regression):

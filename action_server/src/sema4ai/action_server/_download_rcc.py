@@ -10,9 +10,9 @@ log = logging.getLogger(__name__)
 # Note: also referenced in action_server/build.py
 RCC_VERSION = "17.23.2"
 RCC_URLS = {
-    "Windows": f"https://downloads.robocorp.com/rcc/releases/v{RCC_VERSION}/windows64/rcc.exe",
-    "Darwin": f"https://downloads.robocorp.com/rcc/releases/v{RCC_VERSION}/macos64/rcc",
-    "Linux": f"https://downloads.robocorp.com/rcc/releases/v{RCC_VERSION}/linux64/rcc",
+    "Windows": f"https://sema4.ai/cdn/downloads/rcc/releases/v{RCC_VERSION}/windows64/rcc.exe",
+    "Darwin": f"https://sema4.ai/cdn/downloads/rcc/releases/v{RCC_VERSION}/macos64/rcc",
+    "Linux": f"https://sema4.ai/cdn/downloads/rcc/releases/v{RCC_VERSION}/linux64/rcc",
 }
 
 

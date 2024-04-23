@@ -23,7 +23,7 @@ brew install sema4ai/tools/action-server
 
 ```sh
 # Download Sema4.ai Action Server
-curl -o action-server.exe https://downloads.robocorp.com/action-server/releases/latest/windows64/action-server.exe
+curl -o action-server.exe https://sema4.ai/cdn/downloads/action-server/releases/latest/windows64/action-server.exe
 
 # Add to PATH or move to a folder that is in PATH
 setx PATH=%PATH%;%CD%
@@ -33,7 +33,7 @@ setx PATH=%PATH%;%CD%
 
 ```sh
 # Download Sema4.ai Action Server
-curl -o action-server https://downloads.robocorp.com/action-server/releases/latest/linux64/action-server
+curl -o action-server https://sema4.ai/cdn/downloads/action-server/releases/latest/linux64/action-server
 chmod a+x action-server
 
 # Add to PATH or move to a folder that is in PATH

@@ -3,4 +3,4 @@ dependencies:
     - python=3.10.12
     - pip=24
   pypi:
-    - robocorp-actions
+    - sema4ai-actions

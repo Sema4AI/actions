@@ -11,8 +11,8 @@ Keep in mind that only one beta version can exist at a time and if you run
 the pipeline again, it will overwrite the previous version.
 
 In order to use the beta binaries, you can just download them directly.
-For example this is the URL for Windows: `https://downloads.robocorp.com/action-server/beta/windows64/action-server.exe`
+For example this is the URL for Windows: `https://sema4.ai/cdn/downloads/action-server/beta/windows64/action-server.exe`
 The name for the Linux and Mac binaries is just `action-server` and you can just replace
 windows64 with linux64 or mac64 for the respective OS's. If you also need to
 have a reference of what version was used, you can find the version file at:
-`https://downloads.robocorp.com/action-server/beta/version.txt`
+`https://sema4.ai/cdn/downloads/action-server/beta/version.txt`
