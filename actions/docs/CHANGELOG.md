@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.3.1 - 2024-04-23
+
 - Fixes `aes256-gcm` to use auth tag properly (instead of associated data).
 - The `auth-tag` is always required when encryption is used now.
 
