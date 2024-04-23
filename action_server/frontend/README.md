@@ -1,4 +1,4 @@
-# robocorp-server-frontend
+# sema4ai-server-frontend
 
 ## Installation
 

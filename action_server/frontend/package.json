@@ -1,15 +1,15 @@
 {
-  "name": "robocorp-action-server-frontend",
+  "name": "sema4ai-action-server-frontend",
   "description": "",
   "version": "0.0.1",
-  "copyright": "Copyright 2023 Robocorp Technologies, Inc.",
+  "copyright": "Copyright 2024 Sema4.ai, Inc.",
   "license": "SEE LICENSE IN LICENSE",
   "main": "index.js",
   "type": "module",
   "author": {
-    "name": "Robocorp Technologies",
+    "name": "Sema4.ai, Inc.",
     "email": "info@robocorp.com",
-    "url": "https://robocorp.com"
+    "url": "https://sema4ai.com"
   },
   "scripts": {
     "dev": "vite",

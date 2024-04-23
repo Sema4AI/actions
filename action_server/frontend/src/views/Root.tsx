@@ -91,7 +91,7 @@ const ErrorPage = () => {
       <h4>Error: no content found at this url...</h4>
       <p>
         <br />
-        <Link href="/">Navigate back to the Robocorp Action Server root url.</Link>
+        <Link href="/">Navigate back to the Sema4.ai Action Server root url.</Link>
       </p>
     </div>
   );
@@ -206,7 +206,7 @@ const Root = () => {
               <Box display="flex" alignItems="center" ml={24} mt={8} color="content.subtle.light">
                 <IconLogoRobocorp size={24} />
                 <Box ml={8} fontSize={12}>
-                  Powered by Robocorp
+                  Powered by Sema4.ai
                 </Box>
               </Box>
             </SideNavigation>
