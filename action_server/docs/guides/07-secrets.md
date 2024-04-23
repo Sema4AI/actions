@@ -1,7 +1,6 @@
 ## Secrets
 
-*Important*: Requires `robocorp-actions 0.2.0` onwards to work.
-*Important*: On `robocorp-actions 0.2.1` the `auth-tag` is accepted (on `0.2.0` an empty string would always be used as the auth-tag).
+*Important*: Requires `sema4ai-actions 0.3.1` onwards to work.
 
 ### Receiving a Secret
 
@@ -72,7 +71,7 @@ base64({
     "cipher": base64(encrypted_data(JSON.stringify(content))),
     "algorithm": "aes256-gcm",
     "iv": base64(nonce),
-    "auth-tag": base64(auth-tag),  # Note: requires robocorp-actions 0.2.1
+    "auth-tag": base64(auth-tag),
 })
 ```
 
@@ -93,7 +92,7 @@ action_server_context = {
     "cipher": base64.b64encode(encrypted_data).decode("ascii"),
     "algorithm": "aes256-gcm",
     "iv": base64.b64encode(nonce).decode("ascii"),
-    "auth-tag": base64.b64encode(auth_tag).decode("ascii"),  # Note: requires robocorp-actions 0.2.1
+    "auth-tag": base64.b64encode(auth_tag).decode("ascii"),
 }
 
 x_action_server_header: str = base64.b64encode(

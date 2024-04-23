@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Fixes `aes256-gcm` to use auth tag properly (instead of associated data).
+- The `auth-tag` is always required when encryption is used now.
+
 ## 0.3.0 - 2024-04-22
 
 - Branding change: `robocorp-actions` is now `sema4ai-actions`.

@@ -36,6 +36,17 @@ def _get_str_list_from_env(env_name: str, env) -> List[str]:
     return lst_info_to_decrypt
 
 
+def _decrypt(key: bytes, iv: bytes, ciphertext: bytes, tag: bytes) -> bytes:
+    from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+
+    decryptor = Cipher(
+        algorithms.AES(key),
+        modes.GCM(iv, tag),
+    ).decryptor()
+
+    return decryptor.update(ciphertext) + decryptor.finalize()
+
+
 class ActionContext:
     """
     This is data received as input which may or may not be encrypted.
@@ -112,8 +123,6 @@ class ActionContext:
         from robocorp import log
 
         with log.suppress():
-            from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-
             keys = _get_str_list_from_env(
                 "ACTION_SERVER_DECRYPT_KEYS", env=self._env or os.environ
             )
@@ -126,7 +135,7 @@ class ActionContext:
             cipher = self._encrypted_data["cipher"]
             algorithm = self._encrypted_data["algorithm"]
             iv = self._encrypted_data["iv"]
-            auth_tag = self._encrypted_data.get("auth-tag")
+            auth_tag = self._encrypted_data["auth-tag"]
 
             if not isinstance(cipher, str):
                 raise RuntimeError(
@@ -140,6 +149,11 @@ class ActionContext:
 
             if not isinstance(iv, str):
                 raise RuntimeError(f"Expected the iv to be a str. Found: {iv!r}")
+
+            if not isinstance(auth_tag, str):
+                raise RuntimeError(
+                    f"Expected the auth-tag to be a str. Found: {auth_tag!r}"
+                )
 
             try:
                 cipher_decoded_base_64: bytes = base64.b64decode(cipher)
@@ -155,20 +169,12 @@ class ActionContext:
                     "Unable to decode the 'iv' field passed to X-Action-Context as base64."
                 )
 
-            if not auth_tag:
-                auth_tag_decoded_base_64: bytes = b""
-            else:
-                if isinstance(auth_tag, str):
-                    try:
-                        auth_tag_decoded_base_64 = base64.b64decode(auth_tag)
-                    except Exception:
-                        raise RuntimeError(
-                            "Unable to decode the 'auth-tag' field passed to X-Action-Context as base64."
-                        )
-                else:
-                    raise RuntimeError(
-                        f"Expected the auth-tag to be a str. Found: {auth_tag!r}"
-                    )
+            try:
+                auth_tag_decoded_base_64 = base64.b64decode(auth_tag)
+            except Exception:
+                raise RuntimeError(
+                    "Unable to decode the 'auth-tag' field passed to X-Action-Context as base64."
+                )
 
             if algorithm != "aes256-gcm":
                 raise RuntimeError(
@@ -177,9 +183,9 @@ class ActionContext:
 
             for key in keys:
                 k: bytes = base64.b64decode(key.encode("ascii"))
-                aesgcm = AESGCM(k)
                 try:
-                    raw_data = aesgcm.decrypt(
+                    raw_data = _decrypt(
+                        k,
                         iv_decoded_base_64,
                         cipher_decoded_base_64,
                         auth_tag_decoded_base_64,
