@@ -2,10 +2,20 @@
 
 ## Unreleased
 
+## 0.5.0 - 2024-04-23
+
+- Branding change: `Robocorp Action Server` is now `Sema4.ai Action Server`.
+- `robocorp-actions` is now deprecated and `sema4ai.actions` should
+  be used instead (temporarily `robocorp-actions` is still accepted, but
+  it'll be deprecated soon).
+- `auth-tag` is now properly used in the `X-Action-Context`, but
+  `sema4ai-actions=0.3.1` is required in the environment.
+
 ## 0.4.1 - 2024-04-17
 
 - `auth-tag` can be passed/used in the `X-Action-Context` header when encoding using `aes256-gcm` encryption.
     - Note: requires `robocorp-actions=0.2.1`
+    - Note: actually has an issue (auth-tag still not properly supported).
 
 
 ## 0.4.0 - 2024-04-16
