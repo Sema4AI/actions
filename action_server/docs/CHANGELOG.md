@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 0.5.1 - 2024-04-24
+
+- Fixed issue in Windows binary build signing.
+
 ## 0.5.0 - 2024-04-23
 
 - Branding change: `Robocorp Action Server` is now `Sema4.ai Action Server`.
