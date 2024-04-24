@@ -1,5 +1,4 @@
 name: pack2 name
-version: 0.2a1
 
 dependencies:
   conda-forge: 

@@ -130,18 +130,13 @@ def build_package(
         )
 
     name = package_yaml_contents.get("name")
-    version = package_yaml_contents.get("version")
     if not name:
         raise ActionServerValidationError(
             f"The 'name' of the action package must be specified in the package.yaml ({package_yaml})."
         )
-    if not version:
-        raise ActionServerValidationError(
-            f"The 'version' of the action package must be specified in the package.yaml ({package_yaml})."
-        )
 
     slugified_name = slugify(name)
-    target_zip_name = f"{slugified_name}-{version}.zip"
+    target_zip_name = f"{slugified_name}.zip"
 
     output_file = Path(output_dir) / target_zip_name
     if not override and output_file.exists():

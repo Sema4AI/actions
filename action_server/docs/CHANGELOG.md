@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- The `version` field in the `package.yaml` is no longer required nor used
+  (when uploading an action package a version will be automatically given).
+
 ## 0.5.1 - 2024-04-24
 
 - Fixed issue in Windows binary build signing.

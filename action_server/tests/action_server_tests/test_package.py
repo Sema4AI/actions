@@ -37,7 +37,7 @@ def test_package_zip(datadir):
         returncode=0,
         cwd=datadir / "pack1",
     )
-    zip_name = "pack1-name-0.2a1.zip"
+    zip_name = "pack1-name.zip"
     escaped = re.escape(zip_name)
     check_regexp_in_lines(output.stderr, f"Created(.*){escaped}")
 
