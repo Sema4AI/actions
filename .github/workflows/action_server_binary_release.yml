@@ -215,6 +215,9 @@ jobs:
           path: action_server/build/action-server.exe
 
   deploy-s3:
+    permissions:
+      id-token: write # required by AWS aws-actions/configure-aws-credentials
+      contents: read
     needs:
       - sign-macos
       - sign-windows
@@ -270,7 +273,7 @@ jobs:
           name: action-server-artifacts-for-s3-${{ env.actionServerVersion }}
           path: action_server/s3-drop
       - name: Configure AWS credentials Dropbox bucket
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: eu-west-1
           role-to-assume: arn:aws:iam::710450854638:role/github-action-robocorp-action-server
