@@ -2,7 +2,7 @@ usage: action-server [-h]
                      {start,import,download-rcc,new,version,migrate,package}
                      ...
 
-Sema4.ai Action Server (0.4.1)
+Sema4.ai Action Server (<version>)
 
 positional arguments:
   {start,import,download-rcc,new,version,migrate,package}

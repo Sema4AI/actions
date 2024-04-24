@@ -31,10 +31,13 @@ def test_new(
 
 
 def test_help(str_regression):
+    import re
+
     from action_server_tests.fixtures import robocorp_action_server_run
 
     result = robocorp_action_server_run(["-h"], returncode=0)
-    str_regression.check(result.stdout)
+    out = re.sub(r"\(\d+.\d+.\d+\)", "(<version>)", result.stdout)
+    str_regression.check(out)
 
 
 def test_migrate(database_v0):
