@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.5.3 - 2024-04-24
+
 - Properly work with `uv` (to use add `uv=<version>` in the `conda-forge` section).
 
 ## 0.5.2 - 2024-04-24
