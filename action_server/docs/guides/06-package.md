@@ -22,8 +22,6 @@ name: CRM automation
 
 description: Automates dealing with the CRM.
 
-version: 0.2.3
-
 documentation: https://github.com/robocorp/actions-cookbook/blob/master/database-postgres/README.md
 
 dependencies:
@@ -45,14 +43,14 @@ packaging:
 ```
 
 Note: using `action-server package build` with the `package.yaml` above will
-create a `.zip` named: `crm-automation-0.2.3.zip` in the current directory.
+create a `.zip` named: `crm-automation.zip` in the current directory.
 
 # Extracting zip with Action Package:
 
-To extract the Action Package from the `crm-automation-0.2.3.zip` 
+To extract the Action Package from the `crm-automation.zip` 
 previously created, it's possible to use:
 
-`action-server package extract crm-automation-0.2.3.zip --output-dir=v023`
+`action-server package extract crm-automation.zip --output-dir=v023`
 
 Note: if `--output-dir` is not given, the current directory will be used.
 

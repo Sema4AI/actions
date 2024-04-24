@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Properly work with `uv` (to use add `uv=<version>` in the `conda-forge` section).
+
 ## 0.5.2 - 2024-04-24
 
 - The `version` field in the `package.yaml` is no longer required nor used

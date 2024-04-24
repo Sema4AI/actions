@@ -21,9 +21,6 @@ An example `package.yaml` would be something as:
     # Required: A description of what's in the action package.
     description: This does cookies  
 
-    # Required: The current version of this action package.
-    version: 0.2.3
-
     # Required: A link to where the documentation on the package lives.
     documentation: https://github.com/robocorp/actions-cookbook/blob/master/database-postgres/README.md
 
