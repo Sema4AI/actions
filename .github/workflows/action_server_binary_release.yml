@@ -29,7 +29,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.10"
-  
+
       - name: Setup node
         uses: actions/setup-node@v3
         with:
@@ -46,7 +46,7 @@ jobs:
         env:
            CI: true
            NODE_AUTH_TOKEN: ${{ secrets.GH_PAT_READ_PACKAGES }}
-        
+
       - name: Build binary
         run: |
             python -m pip install pyoxidizer
@@ -64,7 +64,7 @@ jobs:
           CLIENT_ID: ${{secrets.WIN_SIGN_AZURE_KEY_VAULT_CLIENT_ID}}
           TENANT_ID: ${{secrets.WIN_SIGN_AZURE_KEY_VAULT_TENANT_ID}}
           CLIENT_SECRET: ${{secrets.WIN_SIGN_AZURE_KEY_VAULT_CLIENT_SECRET}}
-          CERTIFICATE: ${{secrets.WIN_SIGN_AZURE_KEY_VAULT_CERTIFICATE}}
+          CERTIFICATE: ${{secrets.WIN_SIGN_AZURE_KEY_VAULT_CERTIFICATE_NAME}}
         run: |
           dotnet tool install --global AzureSignTool --version 3.0.0
           azuresigntool sign --description-url "https://robocorp.com" --file-digest sha256 --azure-key-vault-url $Env:VAULT_URL --azure-key-vault-client-id $Env:CLIENT_ID --azure-key-vault-tenant-id $Env:TENANT_ID --azure-key-vault-client-secret $Env:CLIENT_SECRET --azure-key-vault-certificate $Env:CERTIFICATE --timestamp-rfc3161 http://timestamp.digicert.com --timestamp-digest sha256 build-binary\build\x86_64-pc-windows-msvc\release\install\action-server.exe
@@ -108,7 +108,7 @@ jobs:
         with:
           name: action-server-version
           path: "action_server/go-wrapper/assets"
-      
+
       - name: Build Go binary wrapper
         run: |
             cd go-wrapper
@@ -141,7 +141,7 @@ jobs:
         with:
           name: action-server-version
           path: "action_server"
-      
+
       - name: Set Version for Brew
         id: set_version
         run: |
@@ -202,7 +202,7 @@ jobs:
           CLIENT_ID: ${{secrets.WIN_SIGN_AZURE_KEY_VAULT_CLIENT_ID}}
           TENANT_ID: ${{secrets.WIN_SIGN_AZURE_KEY_VAULT_TENANT_ID}}
           CLIENT_SECRET: ${{secrets.WIN_SIGN_AZURE_KEY_VAULT_CLIENT_SECRET}}
-          CERTIFICATE: ${{secrets.WIN_SIGN_AZURE_KEY_VAULT_CERTIFICATE}}
+          CERTIFICATE: ${{secrets.WIN_SIGN_AZURE_KEY_VAULT_CERTIFICATE_NAME}}
         run: |
           dotnet tool install --global AzureSignTool --version 3.0.0
           mv build\action-server-unsigned build\action-server.exe
@@ -269,20 +269,11 @@ jobs:
         with:
           name: action-server-artifacts-for-s3-${{ env.actionServerVersion }}
           path: action_server/s3-drop
-      - name: Configure AWS credentials Dropbox bucket [Non-Beta]
-        if: ${{ steps.check_beta.outputs.is_beta == 'false' }}
-        uses: aws-actions/configure-aws-credentials@v1-node16
+      - name: Configure AWS credentials Dropbox bucket
+        uses: aws-actions/configure-aws-credentials@v2
         with:
-            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_CICD_DROPBOX }}
-            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_CICD_DROPBOX }}
-            aws-region: eu-west-1
-      - name: Configure AWS credentials Downloads bucket [Beta]
-        if: ${{ steps.check_beta.outputs.is_beta == 'true' }}
-        uses: aws-actions/configure-aws-credentials@v1-node16
-        with:
-            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DOWNLOADS_INDEX_UPDATER }}
-            aws-secret-access-key: ${{ secrets.AWS_ACCESS_KEY_DOWNLOADS_INDEX_UPDATER }}
-            aws-region: eu-west-1
+          aws-region: eu-west-1
+          role-to-assume: arn:aws:iam::710450854638:role/github-action-robocorp-action-server
       - name: AWS S3 copies
         run: |
           if [ "${{ steps.check_beta.outputs.is_beta }}" = "false" ]; then
@@ -296,7 +287,7 @@ jobs:
             aws s3 cp s3-drop/macos64/action-server $S3_BASE_URL/macos64/action-server --cache-control max-age=120 --content-type "application/octet-stream"
             aws s3 cp s3-drop/linux64/action-server $S3_BASE_URL/linux64/action-server --cache-control max-age=120 --content-type "application/octet-stream"
           fi
-          
+
   trigger-brew-workflow:
     needs:
       # sign-macos needs to be explicit in order to get the version, even if it's implied
@@ -305,7 +296,7 @@ jobs:
     defaults:
       run:
         working-directory: .
-    
+
     # No Brew run for beta -releases
     if: ${{ needs.deploy-s3.outputs.is_beta == 'false' }}
 
@@ -347,11 +338,11 @@ jobs:
     needs:
       - deploy-s3  # needed for is_beta
       - trigger-brew-workflow
-    
+
     defaults:
       run:
         working-directory: .
-    
+
     runs-on: ubuntu-latest
 
     steps:

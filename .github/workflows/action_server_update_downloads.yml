@@ -20,11 +20,11 @@ jobs:
               cd build-binary/
               python downloads_index.py -c ../docs/CHANGELOG.md -p index.html -j index.json
           - name: Configure AWS credentials for index.html update
-            uses: aws-actions/configure-aws-credentials@v1-node16
+            uses: aws-actions/configure-aws-credentials@v2
             with:
-                aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DOWNLOADS_INDEX_UPDATER }}
-                aws-secret-access-key: ${{ secrets.AWS_ACCESS_KEY_DOWNLOADS_INDEX_UPDATER }}
-                aws-region: eu-west-1
+              aws-region: eu-west-1
+              role-to-assume: arn:aws:iam::710450854638:role/github-action-robocorp-action-server
+
           - name: Copy files to the deploy drop-box with the AWS CLI
             run: |
                 aws s3 cp ./build-binary/index.html s3://downloads.robocorp.com/action-server/releases/index.html --cache-control max-age=120 --content-type "text/html"
