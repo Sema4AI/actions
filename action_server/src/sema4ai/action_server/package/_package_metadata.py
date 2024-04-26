@@ -16,9 +16,9 @@ def collect_package_metadata(package_dir: Path, datadir: str) -> str | int:
     from sema4ai.actions._protocols import ActionsListActionTypedDict
 
     from sema4ai.action_server._actions_import import hook_on_actions_list
+    from sema4ai.action_server._cli_impl import _main_retcode
     from sema4ai.action_server._errors_action_server import ActionServerValidationError
     from sema4ai.action_server._models import Action, ActionPackage, create_db
-    from sema4ai.action_server.cli import _main_retcode
 
     args = ["start", "--db-file", ":memory:"]
     if datadir:
