@@ -9,6 +9,7 @@ Everything else is considered private and can be broken/changed without
 being considered a backward-incompatible change!
 """
 import logging
+from typing import Optional
 
 # Important: main() is the only public API supported from the action-server.
 # Everything else is considered private and can be broken/changed without
@@ -28,6 +29,7 @@ def main(args: Optional[list[str]] = None, *, exit=True) -> int:  # noqa
         args = sys.argv[1:]
 
     if not args:
+        # Note this is not to be relied by clients. Added for the build.
         if os.environ.get(
             "RC_ACTION_SERVER_FORCE_DOWNLOAD_RCC", ""
         ).strip().lower() in (
@@ -47,6 +49,7 @@ def main(args: Optional[list[str]] = None, *, exit=True) -> int:  # noqa
             "1",
             "true",
         ):
+            # Note this is not to be relied by clients. Added for the build.
             from . import _selftest
 
             log.info(

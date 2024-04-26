@@ -1,6 +1,7 @@
 import os
 import re
 import zipfile
+from pathlib import Path
 
 
 def check_regexp_in_lines(text, regexp):
@@ -137,3 +138,11 @@ def test_package_metadata_secrets(datadir, data_regression):
         cwd=datadir / "pack_secrets",
     )
     data_regression.check(json.loads(output.stdout))
+
+
+def test_package_metadata_api(datadir, data_regression):
+    from sema4ai.action_server import api
+
+    action_package_dir = Path(datadir / "pack_secrets")
+    found = api.collect_metadata(action_package_dir, datadir=Path(datadir / "data"))
+    data_regression.check(found)
