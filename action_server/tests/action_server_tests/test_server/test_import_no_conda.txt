@@ -47,7 +47,7 @@
                             "application/json": {
                                 "schema": {
                                     "type": "number",
-                                    "title": "Response Calculator Sum",
+                                    "title": "Response for Calculator Sum",
                                     "description": ""
                                 }
                             }

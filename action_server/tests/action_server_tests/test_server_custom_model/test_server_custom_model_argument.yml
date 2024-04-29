@@ -106,7 +106,7 @@ paths:
                 required:
                 - accepted
                 - depends_on
-                title: Response My Action
+                title: Response for My Action
                 type: object
           description: Successful Response
         '422':

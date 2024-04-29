@@ -52,7 +52,7 @@ paths:
             application/json:
               schema:
                 description: ''
-                title: Response Broken Action
+                title: Response for Broken Action
                 type: integer
           description: Successful Response
         '422':
@@ -90,7 +90,7 @@ paths:
             application/json:
               schema:
                 description: The sum of v1 + v2.
-                title: Response Calculator Sum
+                title: Response for Calculator Sum
                 type: number
           description: Successful Response
         '422':
@@ -128,7 +128,7 @@ paths:
             application/json:
               schema:
                 description: The greeting for the person.
-                title: Response Greet
+                title: Response for Greet
                 type: string
           description: Successful Response
         '422':

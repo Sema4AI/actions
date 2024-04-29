@@ -50,7 +50,9 @@ def action(func: Callable) -> Callable:
 
 
 @overload
-def action(*, is_consequential: Optional[bool] = None) -> Callable:
+def action(
+    *, is_consequential: Optional[bool] = None, display_name: Optional[str] = None
+) -> Callable:
     ...
 
 
@@ -79,6 +81,8 @@ def action(*args, **kwargs):
         is_consequential: Whether the action is consequential or not.
             This will add `x-openai-isConsequential: true` to the action
             metadata and shown in OpenApi spec.
+        display_name: A name to be displayed for this action.
+            If given will be used as the openapi.json summary for this action.
     """
 
     def decorator(func, **kwargs):
@@ -91,6 +95,11 @@ def action(*args, **kwargs):
                     "Expected 'is_consequential' argument to be a boolean."
                 )
 
+        display_name = kwargs.pop("display_name", None)
+        if display_name is not None:
+            if not isinstance(display_name, str):
+                raise ValueError("Expected 'display_name' argument to be a str.")
+
         if kwargs:
             raise ValueError(
                 f"Arguments accepted by @action: ['is_consequential']. Received arguments: {list(kwargs.keys())}"
@@ -98,7 +107,11 @@ def action(*args, **kwargs):
 
         # When an action is found, register it in the framework as a target for execution.
         _hooks.on_action_func_found(
-            func, options={"is_consequential": is_consequential}
+            func,
+            options={
+                "is_consequential": is_consequential,
+                "display_name": display_name,
+            },
         )
 
         return func

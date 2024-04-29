@@ -37,6 +37,10 @@ components:
         name:
           title: Name
           type: string
+        options:
+          default: ''
+          title: Options
+          type: string
         output_schema:
           title: Output Schema
           type: string

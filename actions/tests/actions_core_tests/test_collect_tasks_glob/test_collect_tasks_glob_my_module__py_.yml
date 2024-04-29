@@ -7,6 +7,7 @@
   managed_params_schema: {}
   name: task_on_my_module
   options:
+    display_name: null
     is_consequential: null
   output_schema:
     description: ''

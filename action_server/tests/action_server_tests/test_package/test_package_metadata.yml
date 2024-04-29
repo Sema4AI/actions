@@ -68,7 +68,7 @@ openapi.json:
               application/json:
                 schema:
                   description: The greeting for the person.
-                  title: Response Hello
+                  title: Response for Hello
                   type: string
             description: Successful Response
           '422':

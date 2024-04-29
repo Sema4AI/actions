@@ -62,7 +62,7 @@ paths:
             application/json:
               schema:
                 description: ''
-                title: Response Calculator Sum
+                title: Response for Calculator Sum
                 type: number
           description: Successful Response
         '422':
