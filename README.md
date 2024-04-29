@@ -1,6 +1,6 @@
 ![Sema4ai](./docs/include/header.svg)
 
-<samp>[Docs](https://robocorp.com/docs) | [Blog](https://medium.com/sema4-ai) | [Examples](https://github.com/robocorp/actions-cookbook) | [CodeGen](https://chat.robocorp.com) | [Slack](https://robocorp-developers.slack.com/) | [Youtube](https://www.youtube.com/@Robocorp) | [𝕏](https://twitter.com/sema4ai)</samp>
+<samp>[Docs](https://robocorp.com/docs) | [Blog](https://medium.com/sema4-ai) | [Examples](https://github.com/sema4ai/cookbook) | [CodeGen](https://chat.robocorp.com) | [Slack](https://robocorp-developers.slack.com/) | [Youtube](https://www.youtube.com/@Robocorp) | [𝕏](https://twitter.com/sema4ai)</samp>
 
 [![PyPI - Version](https://img.shields.io/pypi/v/sema4ai-actions?label=sema4ai-actions&color=%23733CFF)](https://pypi.org/project/sema4ai-actions)
 [![PyPI - Version](https://img.shields.io/pypi/v/sema4ai-action-server?label=sema4ai-action-server&color=%23733CFF)](https://pypi.org/project/sema4ai-action-server)
