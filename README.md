@@ -1,26 +1,25 @@
 ![Sema4ai](./docs/include/header.svg)
 
-<samp>[Docs](https://robocorp.com/docs) | [Blog](https://robocorp.com/blog) | [Examples](https://github.com/robocorp/actions-cookbook) | [ReMark](https://chat.robocorp.com) | [Courses](https://robocorp.com/docs/courses) | [Slack](https://robocorp-developers.slack.com/) | [Youtube](https://www.youtube.com/@Robocorp) | [𝕏](https://twitter.com/RobocorpInc)</samp>
+<samp>[Docs](https://robocorp.com/docs) | [Blog](https://medium.com/sema4-ai) | [Examples](https://github.com/robocorp/actions-cookbook) | [CodeGen](https://chat.robocorp.com) | [Slack](https://robocorp-developers.slack.com/) | [Youtube](https://www.youtube.com/@Robocorp) | [𝕏](https://twitter.com/sema4ai)</samp>
 
 [![PyPI - Version](https://img.shields.io/pypi/v/sema4ai-actions?label=sema4ai-actions&color=%23733CFF)](https://pypi.org/project/sema4ai-actions)
 [![PyPI - Version](https://img.shields.io/pypi/v/sema4ai-action-server?label=sema4ai-action-server&color=%23733CFF)](https://pypi.org/project/sema4ai-action-server)
 [![GitHub issues](https://img.shields.io/github/issues/sema4ai/actions?color=%232080C0)](https://github.com/sema4ai/actions/issues)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-# Create, deploy and operate 🐍 Python Automations and AI Actions anywhere.
+> **NOTE:**  
+> This project started as Robocorp Action Server, and is currently being migrated under Sema4.ai organization. You will still likely find links to Robocorp resources. It's all the same company!
 
-Sema4.ai is the easiest way to extend the capabilities of AI agents, assistants and copilots with custom actions, written in Python. 
-Create and deploy tools, skills, loaders and plugins that securely connect any AI Assistant platform to your data and applications.
+# Build Semantic Actions that connect AI Agents with the real-world - all in 🐍 Python.
 
-Sema4.ai Action Server makes your Python scripts compatible with ChatGPT and LangChain by automatically creating and exposing an API 
-based on function declaration, type hints and docstrings. Just add `@action` and start!
+Sema4.ai is the easiest way to extend the capabilities of AI agents, assistants and copilots with custom actions, written in Python. Create and deploy tools, skills, loaders and plugins that securely connect any AI Assistant platform to your data and applications.
+
+Sema4.ai Action Server makes your Python scripts compatible with e.g. OpenAI's [custom GPTs](https://chat.openai.com/gpts/editor), [LangChain](https://python.langchain.com/docs/integrations/toolkits/robocorp/) and [OpenGPTs](https://github.com/langchain-ai/opengpts) by automatically creating and exposing an API based on function declaration, type hints and docstrings. Just add `@action` and start!
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./docs/include/robocorp-flow-dark.webp">
-  <img alt="Text changing depending on mode. Light: 'So light!' Dark: 'So dark!'" src="./docs/include/robocorp-flow-light.webp">
+  <source media="(prefers-color-scheme: dark)" srcset="./docs/include/sema4ai-flow-dark_1x.webp">
+  <img alt="Text changing depending on mode. Light: 'So light!' Dark: 'So dark!'" src="./docs/include/sema4ai-flow-light_1x.webp">
 </picture>
-
-Looking for a replacement to RPA? Head over to our [Enterprise Python Automation site](https://robocorp.com/docs/quickstart-guide) for more.
 
 ---
 
@@ -28,23 +27,14 @@ Looking for a replacement to RPA? Head over to our [Enterprise Python Automation
 
 # 🏃‍♂️ Quickstart
 
-There are two main ways using the Action Server: use with our VSCode extension, or DIY from the command line. This section gets you going!
-
-<details open>
-<summary><b>Robocorp Code extension for VS Code</b></summary>
-
-After installing [Robocorp Code extension from the VS Code Markeplace](https://marketplace.visualstudio.com/items?itemName=robocorp.robocorp-code), open the Command Palette (`Command-Shift-P` or `Ctrl-Shift-P`) and select `Robocorp: Create Action Package`. This will bootstrap a new project. You can then run/debug indvidual Actions from the Extension's sidebar, or start the Action Server.
-
-![github-extension](https://github.com/robocorp/robocorp/assets/40179958/d53000bf-558e-48a7-bb30-4610b9bf24c5)
-
-</details>
+There are two main ways using the Action Server: use the command line, or with our VS Code extension. This section gets you going!
 
 <details open>
 <summary><b>CLI For macOS</b></summary>
 
 ```sh
 brew update
-brew install robocorp/tools/action-server
+brew install sema4ai/tools/action-server
 ```
 
 </details>
@@ -74,6 +64,19 @@ sudo mv action-server /usr/local/bin/
 ```
 
 </details>
+
+<details>
+<summary><b>Robocorp Code extension for VS Code</b></summary>
+
+> **NOTE:**  
+> Robocorp VS Code extension is in the process to be renamed to Sema4.ai extension.
+
+After installing [Robocorp Code extension from the VS Code Markeplace](https://marketplace.visualstudio.com/items?itemName=robocorp.robocorp-code), open the Command Palette (`Command-Shift-P` or `Ctrl-Shift-P`) and select `Robocorp: Create Action Package`. This will bootstrap a new project. You can then run/debug indvidual Actions from the Extension's sidebar, or start the Action Server.
+
+![github-extension](https://github.com/robocorp/robocorp/assets/40179958/d53000bf-558e-48a7-bb30-4610b9bf24c5)
+
+</details>
+
 <br/>
 
 Bootstrap a new project from a template. You’ll be prompted for the name of the project:
@@ -106,18 +109,15 @@ Head over to [Action Server docs](./action_server/README.md) for more.
 ```yaml
 name: Package name
 description: Action package description
-version: 0.0.1
 documentation: https://github.com/...
 
 dependencies:
   conda-forge:
   - python=3.10.12
-  - pip=23.2.1
-  - robocorp-truststore=0.8.0
+  - uv=0.1.37
   pypi:
-  - robocorp=1.6.1
-  - robocorp-actions=0.0.7
-  - pytz=2023.3
+  - sema4ai-actions=0.3.1
+  - pytz=2024.1
 ```
 
 <details>
@@ -135,7 +135,7 @@ Think of this as an equivalent of the requirements.txt, but much better. 👩‍
 - Define dependencies in package.yaml let our tooling do the heavy lifting.
 - You get all the content of [conda-forge](https://prefix.dev/channels/conda-forge) without any extra tooling
 
-> This is courtesy of another open-source project of ours, [RCC](https://github.com/robocorp/rcc).
+> The environment management is provided by another open-source project of ours, [RCC](https://github.com/robocorp/rcc).
 
 </details>
 <br/>
@@ -186,7 +186,10 @@ Adding the Action Server-hosted AI Action to your custom GPT is super simple: ba
 
 ## Add Action Server as a Toolkit to [🦜️🔗 LangChain](https://github.com/robocorp/langchain)
 
-Robocorp Action Server has everything needed to connect it to your Langchain AI app project. The easiest way is to start with the template provided in the Langchain project. Here’s how to do it:
+> **NOTE:**  
+> This section is still under Robocorp, but pending rename to Sema4.ai soon.
+
+Sema4.ai Action Server has everything needed to connect it to your Langchain AI app project. The easiest way is to start with the template provided in the Langchain project. Here’s how to do it:
 
 ```sh
 # Install LangChain cli tool if not already there
@@ -234,18 +237,18 @@ tools = toolkit.get_tools()
 
 <div id="why-actions"></div>
 
-## Why use Robocorp AI Actions
+## Why use Sema4.ai AI Actions
 
-- ❤️ “when it comes to automation, the Robocorp suite is the best one” _[/u/disturbing_nickname](https://old.reddit.com/r/rpa/comments/18qqspn/codeonly_rpa_pet_project/kez2jds/?context=3)_
-- ❤️ “Robocorp seems to be a good player in this domain” _[/u/thankred](https://old.reddit.com/r/rpa/comments/18r5gne/recommendation_for_open_source_or_somewhat_less/kez6aw6/?context=3)_
-- ❤️ “Since you know Python, check out Robocorp. Their product is crazy good.” _[/u/Uomis](https://old.reddit.com/r/rpa/comments/18n5sah/c/ke8qz2g?context=3)_
+- ❤️ “when it comes to automation, the (ex)Robocorp suite is the best one” _[/u/disturbing_nickname](https://old.reddit.com/r/rpa/comments/18qqspn/codeonly_rpa_pet_project/kez2jds/?context=3)_
+- ❤️ “(ex)Robocorp seems to be a good player in this domain” _[/u/thankred](https://old.reddit.com/r/rpa/comments/18r5gne/recommendation_for_open_source_or_somewhat_less/kez6aw6/?context=3)_
+- ❤️ “Since you know Python, check out (ex)Robocorp. Their product is crazy good.” _[/u/Uomis](https://old.reddit.com/r/rpa/comments/18n5sah/c/ke8qz2g?context=3)_
 
-Robocorp stack is hands down the easiest way to give AI agents more capabilities. It’s an end-to-end stack supporting every type of connection between AI and your apps and data. You are in control where to run the code and everything is built for easiness, security, and scalability.
+Sema4.ai stack is hands down the easiest way to give AI agents more capabilities. It’s an end-to-end stack supporting every type of connection between AI and your apps and data. You are in control where to run the code and everything is built for easiness, security, and scalability.
 
 - 🔐 **Decouple AI and Actions that touches your data/apps** - Clarity and security with segregation of duties between your AI agent and code that touches your data and apps. Build `@action` and use from multiple AI frameworks.
-- 🏎️ **Develop Actions faster with `robocorp` automation libraries** - Robocorp libraries and the Python ecosystem lets you act on anything - from data to API to Browser to Desktops.
+- 🏎️ **Develop Actions faster with Sema4.ai's `robocorp` automation libraries** - [Robocorp libraries](https://github.com/robocorp/robocorp) and the Python ecosystem lets you act on anything - from data to API to Browser to Desktops.
 - 🕵️ **Observability out of the box** - Log and trace every `@action` run automatically without a single `print` statement. _Pro tip: connect [LangSmith](https://www.langchain.com/langsmith) traces with Action logs!_
-- 🤯 **No-pain Python environment management** - Don't do [this](https://xkcd.com/1987/). Robocorp manages a full Python environment for your actions with ease.
+- 🤯 **No-pain Python environment management** - Don't do [this](https://xkcd.com/1987/). Sema4.ai manages a full Python environment for your actions with ease.
 - 🚀 **Deploy with zero config and infra** - One step deployment, and you'll be connecting your `@action` to AI apps like Langchain and OpenAI GPTs in seconds.
 
 <div id="inspiration"></div>
@@ -261,36 +264,17 @@ Check out these example projects for inspiration.
 
 Build more `@actions` and be awesome! We'd love to hear and see what have you built. Join our [Slack community](https://robocorp-developers.slack.com/) to share your work, or post it in the [Discussions](https://github.com/robocorp/robocorp/discussions/categories/show-and-tell). We'll soon start showcasing the best from the community here!
 
-<div id="roadmap"></div>
-
-## Roadmap
-
-- [x] ~~Action Server `brew install` for Mac users~~
-- [x] ~~Expose actions to public URL~~
-- [x] ~~Resume previously exposed session~~
-- [x] ~~Run and debug `@actions` like `@tasks` with [Robocorp VS Code Extension](https://marketplace.visualstudio.com/items?itemName=robocorp.robocorp-code)~~
-- [x] ~~Support JSON/Dicts for inputs and outputs~~
-- [ ] Docstring to OpenAPI specs improvements [#236](https://github.com/robocorp/robocorp/issues/236), [#250](https://github.com/robocorp/robocorp/issues/250)
-- [ ] Action can access request headers [#167](https://github.com/robocorp/robocorp/issues/167)
-- [ ] MS Copilot Studio manifest file support
-- [ ] Action Gallery for prebuilt actions
-- [ ] Llamaindex Tools support
-- [ ] Link and deploy Action Servers to [Control Room](https://cloud.robocorp.com/)
-- [ ] Hot reload of actions after a change
-- [ ] Explicit action user approval
-- [ ] Stateful actions
-
 <div id="contribute"></div>
 
 ## Contributing and issues
 
 > ⭐️ First, please star the repo - your support is highly appreciated!
 
-- 🚩 Issues – our [GitHub Issues](https://github.com/robocorp/robocorp/issues) is kept up to date with bugs, improvements, and feature requests
+- 🚩 Issues – our [GitHub Issues](https://github.com/Sema4AI/actions/issues) is kept up to date with bugs, improvements, and feature requests
 - 🙋 Help - you are welcome to [join our Community Slack](https://robocorp-developers.slack.com/) if you experience any difficulty getting setup
-- 🌟 Contribution and recognition – Start [here](https://github.com/robocorp/robocorp/blob/master/CONTRIBUTING.md), [PR's](https://github.com/robocorp/robocorp/pulls) are welcome!
+- 🌟 Contribution and recognition – Start [here](https://github.com/Sema4AI/actions/blob/master/CONTRIBUTING.md), [PR's](https://github.com/Sema4AI/actions/pulls) are welcome!
 - 🔐 Refer to our [Security policy](https://robocorp.com/.well-known/security.txt) for details
 
 ### Contributors
 
-![Contributors](https://contrib.nn.ci/api?repo=robocorp/robocorp)
+![Contributors](https://contrib.nn.ci/api?repo=sema4ai/actions)
