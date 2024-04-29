@@ -267,7 +267,7 @@ def str_regression(datadir, original_datadir, request):
 
 def sema4ai_actions_run(
     cmdline,
-    returncode: Union[Literal["error"], int],
+    returncode: Union[Literal["error"], Literal["any"], int],
     cwd=None,
     additional_env: Optional[Dict[str, str]] = None,
     timeout=None,

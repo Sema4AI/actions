@@ -30,7 +30,7 @@ def my_action(param1: str) -> str:
 
 
 def test_lint_action_no_description(data_regression):
-    from sema4ai.actions._lint_action import iter_lint_errors
+    from sema4ai.actions.api import collect_lint_errors
 
     contents = """
 @action
@@ -42,7 +42,7 @@ def my_action(param1) -> str:
     return ''
 """
 
-    data_regression.check([x.to_lsp_diagnostic() for x in iter_lint_errors(contents)])
+    data_regression.check(collect_lint_errors(contents))
 
 
 def test_lint_action_argument_untyped(data_regression):

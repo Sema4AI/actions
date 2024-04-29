@@ -3,9 +3,9 @@
   range:
     end:
       character: 13
-      line: 3
+      line: 2
     start:
       character: 4
-      line: 3
+      line: 2
   severity: 1
   source: sema4ai.actions

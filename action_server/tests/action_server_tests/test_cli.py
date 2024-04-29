@@ -64,8 +64,8 @@ def test_migrate(database_v0):
 def test_default_datadir(tmpdir):
     from pathlib import Path
 
+    from sema4ai.action_server._cli_impl import _create_parser
     from sema4ai.action_server._settings import setup_settings
-    from sema4ai.action_server.cli import _create_parser
 
     use_dir = Path(tmpdir) / "foobar"
     curdir = Path(".").absolute()
@@ -85,8 +85,8 @@ def test_default_datadir(tmpdir):
 def test_datadir_user_specified(tmpdir):
     from pathlib import Path
 
+    from sema4ai.action_server._cli_impl import _create_parser
     from sema4ai.action_server._settings import setup_settings
-    from sema4ai.action_server.cli import _create_parser
 
     use_dir = Path(tmpdir) / "foobar"
 

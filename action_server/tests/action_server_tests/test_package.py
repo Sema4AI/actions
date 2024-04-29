@@ -144,5 +144,5 @@ def test_package_metadata_api(datadir, data_regression):
     from sema4ai.action_server import api
 
     action_package_dir = Path(datadir / "pack_secrets")
-    found = api.collect_metadata(action_package_dir, datadir=Path(datadir / "data"))
+    found = api.package_metadata(action_package_dir, datadir=Path(datadir / "data"))
     data_regression.check(found)
