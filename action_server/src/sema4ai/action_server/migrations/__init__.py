@@ -28,6 +28,8 @@ MIGRATION_ID_TO_NAME: Dict[int, str] = {
     3: "add_is_consequential",
     # we'll look for a 'migration_add_action_managed_params' module based on this.
     4: "add_action_managed_params",
+    # we'll look for a 'migration_add_action_options' module based on this.
+    5: "add_action_options",
 }
 
 CURRENT_VERSION: int = max(MIGRATION_ID_TO_NAME.keys())

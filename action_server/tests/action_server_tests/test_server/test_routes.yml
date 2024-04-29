@@ -63,7 +63,7 @@ paths:
             application/json:
               schema:
                 description: The greeting for the person.
-                title: Response Greet
+                title: Response for Greet
                 type: string
           description: Successful Response
         '422':

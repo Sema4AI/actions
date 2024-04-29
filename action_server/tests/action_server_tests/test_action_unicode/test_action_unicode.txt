@@ -41,7 +41,7 @@
                             "application/json": {
                                 "schema": {
                                     "type": "string",
-                                    "title": "Response Unicode A\u00e7\u00e3o \u03a3",
+                                    "title": "Response for Unicode A\u00e7\u00e3o \u03a3",
                                     "description": ""
                                 }
                             }

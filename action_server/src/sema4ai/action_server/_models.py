@@ -61,6 +61,8 @@ class Action:  # Table name: action
     # The json content for the managed params schema
     managed_params_schema: Optional[str] = None
 
+    options: str = ""
+
 
 RUN_ID_COUNTER = "run_id"
 ALL_COUNTERS = (RUN_ID_COUNTER,)

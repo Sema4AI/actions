@@ -259,7 +259,7 @@ def _name_as_class_name(name):
 
 
 def generate_func_from_action(
-    action: "Action",
+    action: "Action", display_name: str
 ) -> Tuple[Callable[[Response, Request], Any], dict[str, object]]:
     """
     This method generates the function which should be called from FastAPI.
@@ -292,9 +292,7 @@ def generate_func_from_action(
                     "application/json": {
                         "schema": {
                             **output_schema_dict,
-                            **{
-                                "title": f"Response {action.name.title().replace('_', ' ').replace('-', ' ')}"
-                            },
+                            **{"title": f"Response for {display_name}"},
                         }
                     }
                 },

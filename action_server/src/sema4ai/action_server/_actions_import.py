@@ -466,6 +466,7 @@ cli.main(["list"])
             if action_fields.get("managed_params_schema"):
                 managed_params_str = json.dumps(action_fields["managed_params_schema"])
 
+            options = action_fields.get("options") or {}
             actions.append(
                 Action(
                     id=gen_uuid("action"),
@@ -477,10 +478,9 @@ cli.main(["list"])
                     input_schema=json.dumps(action_fields["input_schema"]),
                     output_schema=json.dumps(action_fields["output_schema"]),
                     enabled=True,
-                    is_consequential=(action_fields.get("options") or {}).get(
-                        "is_consequential", None
-                    ),
+                    is_consequential=options.get("is_consequential", None),
                     managed_params_schema=managed_params_str,
+                    options=json.dumps(options),
                 )
             )
 

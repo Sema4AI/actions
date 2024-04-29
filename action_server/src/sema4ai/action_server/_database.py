@@ -673,6 +673,14 @@ CREATE TABLE IF NOT EXISTS {table_name}(
         if not_null and field_cls != bool:
             use = f"{use} NOT NULL"
 
+        try:
+            default_value = getattr(cls, name)
+        except AttributeError:
+            pass
+        else:
+            if field_cls == str:
+                use = f"{use} DEFAULT {default_value!r}"
+
         if primary_key:
             use = f"{use} PRIMARY KEY"
 

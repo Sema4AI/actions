@@ -1,8 +1,8 @@
 from sema4ai.actions import Secret, action
 
 
-@action
-def hello(name: str, private_info: Secret) -> str:
+@action(display_name="Display hello greeting")
+def hello_greeting(name: str, private_info: Secret) -> str:
     """
     Provides a greeting for a person.
 

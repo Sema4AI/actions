@@ -51,6 +51,7 @@ def start_server(
     whitelist: str | None,
     before_start: Sequence[IBeforeStartCallback],
 ) -> None:
+    import json
     from dataclasses import asdict
 
     import uvicorn
@@ -136,8 +137,18 @@ def start_server(
                     action.name,
                 )
                 continue
+        display_name = _name_as_summary(action.name)
+        options = action.options
+        if options:
+            options_as_dict = json.loads(options)
+            if options_as_dict:
+                display_name_in_options = options_as_dict.get("display_name")
+                if display_name_in_options:
+                    display_name = display_name_in_options
 
-        func, openapi_extra = _actions_run.generate_func_from_action(action)
+        func, openapi_extra = _actions_run.generate_func_from_action(
+            action, display_name
+        )
         if action.is_consequential is not None:
             openapi_extra["x-openai-isConsequential"] = action.is_consequential
 
@@ -145,7 +156,7 @@ def start_server(
             build_url_api_run(action_package.name, action.name),
             func,
             name=action.name,
-            summary=_name_as_summary(action.name),
+            summary=display_name,
             description=doc_desc,
             operation_id=action.name,
             methods=["POST"],
