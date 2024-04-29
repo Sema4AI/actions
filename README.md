@@ -257,12 +257,13 @@ Sema4.ai stack is hands down the easiest way to give AI agents more capabilities
 
 Check out these example projects for inspiration.
 
-- 🐣 [Simplest possible AI Action](https://github.com/robocorp/actions-cookbook/tree/master/greeter)
-- 🤡 [Get a random joke or jokes per theme. Showcases how easy it is to work with APIs.](https://github.com/robocorp/actions-cookbook/tree/master/api-jokes)
-- 🕸️ [Open a local Playwright browser and make some Google searches.](https://github.com/robocorp/actions-cookbook/tree/master/browser-google)
-- 🖥️ [Securely fetch contents of `.txt` and `.pdf` files from your local machine's folder in real time.](https://github.com/robocorp/actions-cookbook/tree/master/desktop-files)
+- 🐣 [Simplest possible AI Action](https://github.com/Sema4AI/cookbook/tree/main/actions/simple-greeter)
+- 🤡 [Get a random joke or jokes per theme. Showcases how easy it is to work with APIs.](https://github.com/Sema4AI/cookbook/tree/main/actions/api-jokes)
+- 🕸️ [Open a local Playwright browser and make some Google searches.](https://github.com/Sema4AI/cookbook/tree/main/actions/browser-google)
+- 🖥️ [Securely fetch contents of `.txt` and `.pdf` files from your local machine's folder in real time.](https://github.com/Sema4AI/cookbook/tree/main/actions/desktop-files)
+- 📝 [Read and write with local Excel file.](https://github.com/Sema4AI/cookbook/tree/main/actions/excel-local)
 
-Build more `@actions` and be awesome! We'd love to hear and see what have you built. Join our [Slack community](https://robocorp-developers.slack.com/) to share your work, or post it in the [Discussions](https://github.com/robocorp/robocorp/discussions/categories/show-and-tell). We'll soon start showcasing the best from the community here!
+Build more `@actions` and be awesome! We'd love to hear and see what have you built. Join our [Slack community](https://robocorp-developers.slack.com/) to share your work.
 
 <div id="contribute"></div>
 
