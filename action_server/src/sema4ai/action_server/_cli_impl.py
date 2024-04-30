@@ -528,8 +528,10 @@ def _basic_setup(
 
     with setup_settings(base_args) as settings:
         settings.datadir.mkdir(parents=True, exist_ok=True)
-        robocorp_home = settings.datadir / ".robocorp_home"
-        robocorp_home.mkdir(parents=True, exist_ok=True)
+        # No longer set ROBOCORP_HOME inside of the datadir.
+        # robocorp_home = settings.datadir / ".robocorp_home"
+        # robocorp_home.mkdir(parents=True, exist_ok=True)
+        robocorp_home = None
 
         with initialize_rcc(download_rcc(force=False), robocorp_home) as rcc:
             yield _SetupInfo(rcc=rcc, settings=settings)

@@ -39,11 +39,11 @@ def as_str(s) -> str:
 
 
 class Rcc(object):
-    def __init__(self, rcc_location: Path, robocorp_home: Path):
+    def __init__(self, rcc_location: Path, robocorp_home: Optional[Path]):
         self._rcc_location = rcc_location
         self._robocorp_home = robocorp_home
         self.config_location = os.environ.get(
-            "RC_ACTION_SERVER_RCC_CONFIG_LOCATION", ""
+            "S4_ACTION_SERVER_RCC_CONFIG_LOCATION", ""
         )
 
     def _compute_env(self):
@@ -54,7 +54,8 @@ class Rcc(object):
         env["PYTHONIOENCODING"] = "utf-8"
         env["PYTHONUNBUFFERED"] = "1"
 
-        env["ROBOCORP_HOME"] = str(self._robocorp_home)
+        if self._robocorp_home:
+            env["ROBOCORP_HOME"] = str(self._robocorp_home)
         return env
 
     def _compute_launch_args_and_kwargs(
@@ -98,7 +99,9 @@ class Rcc(object):
         from sema4ai.action_server._robo_utils.process import check_output_interactive
 
         env = self._compute_env()
-        robocorp_home = env["ROBOCORP_HOME"]
+        robocorp_home = env.get("ROBOCORP_HOME")
+        if not robocorp_home:
+            robocorp_home = "<unset>"
 
         args, kwargs = self._compute_launch_args_and_kwargs(cwd, env, args, stderr)
         cmdline = list2cmdline([str(x) for x in args])
@@ -292,7 +295,7 @@ _rcc: Optional["Rcc"] = None
 
 
 @contextmanager
-def initialize_rcc(rcc_location: Path, robocorp_home: Path) -> Iterator[Rcc]:
+def initialize_rcc(rcc_location: Path, robocorp_home: Optional[Path]) -> Iterator[Rcc]:
     global _rcc
 
     rcc = Rcc(rcc_location, robocorp_home)

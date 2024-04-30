@@ -23,7 +23,7 @@ def rcc_config_location(temp_directory_session) -> Path:
     ret = Path(temp_directory_session) / ".rcc_config"
     ret.mkdir(parents=True, exist_ok=True)
     ret = ret / "rcc.yaml"
-    os.environ["RC_ACTION_SERVER_RCC_CONFIG_LOCATION"] = str(ret)
+    os.environ["S4_ACTION_SERVER_RCC_CONFIG_LOCATION"] = str(ret)
     return ret
 
 

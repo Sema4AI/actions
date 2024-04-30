@@ -9,6 +9,8 @@
   which is already being used. 
 - Actions from action packages that are no longer available are disabled when actions 
   are synchronized.
+- The `ROBOCORP_HOME` is no longer set to be inside of the datadir (users can set
+  the home using the environment variable when needed).
 
 ## 0.5.3 - 2024-04-24
 

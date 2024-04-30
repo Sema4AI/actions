@@ -137,7 +137,7 @@ class Rcc(object):
         self.rcc_location = rcc_location
         self.robocorp_home = robocorp_home
         self.config_location = os.environ.get(
-            "RC_ACTION_SERVER_RCC_CONFIG_LOCATION", ""
+            "S4_ACTION_SERVER_RCC_CONFIG_LOCATION", ""
         )
         self.endpoint = endpoint
         self._last_verified_account_info: Optional[AccountInfo] = None
