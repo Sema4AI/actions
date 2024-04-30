@@ -7,6 +7,8 @@
   replacing '_' by spaces and making it a title).
 - Error message is properly shown when trying to bind the action server to a port 
   which is already being used. 
+- Actions from action packages that are no longer available are disabled when actions 
+  are synchronized.
 
 ## 0.5.3 - 2024-04-24
 

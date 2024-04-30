@@ -485,6 +485,9 @@ cli.main(["list"])
             )
 
     db = get_db()
+    if disable_not_imported:
+        all_previously_existing_actions = db.all(Action)
+
     try:
         existing_action_package = db.first(
             ActionPackage,
@@ -499,6 +502,11 @@ cli.main(["list"])
             for action in actions:
                 log.info("Found new action: %s", action.name)
                 db.insert(action)
+
+            if disable_not_imported:
+                for action in all_previously_existing_actions:
+                    log.info("Disabling action: %s", action.name)
+                    db.update_by_id(Action, action.id, dict(enabled=False))
     else:
         # We already have an existing action package with the same name. This
         # means we'll have to update it instead of adding a new one.
@@ -515,9 +523,6 @@ cli.main(["list"])
         existing_action_name_to_action = {}
         for action in existing_actions:
             existing_action_name_to_action[action.name] = action
-
-        if disable_not_imported:
-            all_actions = db.all(Action)
 
         seen_action_ids = set()
         with db.transaction():
@@ -547,7 +552,7 @@ cli.main(["list"])
                     seen_action_ids.add(action.id)
 
             if disable_not_imported:
-                for action in all_actions:
+                for action in all_previously_existing_actions:
                     if action.id not in seen_action_ids:
                         log.info("Disabling action: %s", action.name)
                         db.update_by_id(Action, action.id, dict(enabled=False))

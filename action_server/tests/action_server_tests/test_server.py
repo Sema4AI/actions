@@ -1,4 +1,5 @@
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -813,4 +814,50 @@ def test_port_in_use(action_server_process: ActionServerProcess, tmpdir):
         )
 
     # Make sure we log uvicorn errors on no-verbose mode.
-    assert "only one usage of each socket address" in process2.get_stderr()
+    stderr = process2.get_stderr()
+    assert (
+        "only one usage of each socket address" in stderr
+        or "address already in use" in stderr
+    )
+
+
+def test_action_package_rename(
+    action_server_process: ActionServerProcess, client: ActionServerClient, tmpdir
+):
+    calculator = Path(tmpdir) / "calculator" / "action_calculator.py"
+    calculator.parent.mkdir(parents=True, exist_ok=True)
+    calculator.write_text(
+        """
+from sema4ai.actions import action
+
+@action
+def calculator_sum(v1: float, v2: float) -> float:
+    return v1 + v2
+"""
+    )
+
+    action_server_process.start(
+        actions_sync=True, cwd=Path(tmpdir / "calculator"), db_file="server.db"
+    )
+    # Check that the actions are there
+    openapi1 = json.loads(client.get_openapi_json())
+    action_server_process.stop()
+
+    action_server_process = ActionServerProcess(Path(action_server_process.datadir))
+
+    os.rename(Path(tmpdir) / "calculator", Path(tmpdir) / "calculator_new")
+    action_server_process.start(
+        actions_sync=True, cwd=Path(tmpdir / "calculator_new"), db_file="server.db"
+    )
+    client = ActionServerClient(action_server_process)
+    try:
+        openapi2 = json.loads(client.get_openapi_json())
+    finally:
+        action_server_process.stop()
+
+    assert list(openapi1["paths"].keys()) == [
+        "/api/actions/calculator/calculator-sum/run"
+    ]
+    assert list(openapi2["paths"].keys()) == [
+        "/api/actions/calculator-new/calculator-sum/run"
+    ]
