@@ -345,7 +345,9 @@ def start_server(
 
         for child in children_processes:
             if child.pid != expose_pid:  # If it's still around, don't kill it again.
-                log.info("Killing sub-process when exiting action server: %s", child)
+                log.info(
+                    f"Killing sub-process when exiting action server: {child.name()} (pid: {child.pid})"
+                )
                 try:
                     kill_process_and_subprocesses(child.pid)
                 except Exception:

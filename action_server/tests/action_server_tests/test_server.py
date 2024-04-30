@@ -795,3 +795,22 @@ def calculator_sum(v1: str, v2: str) -> str:
             actions = db.all(Action)
             assert len(actions) == 1
             assert actions[0].is_consequential is False
+
+
+def test_port_in_use(action_server_process: ActionServerProcess, tmpdir):
+    from sema4ai.action_server._selftest import ActionServerExitedError
+
+    action_server_datadir = tmpdir / ".robocorp_action_server_2"
+    process2 = ActionServerProcess(Path(action_server_datadir))
+    action_server_process.start()
+    try:
+        process2.start(port=action_server_process.port, verbose="")
+    except ActionServerExitedError:
+        pass
+    else:
+        raise AssertionError(
+            "Did not expect that the action server would have started."
+        )
+
+    # Make sure we log uvicorn errors on no-verbose mode.
+    assert "only one usage of each socket address" in process2.get_stderr()

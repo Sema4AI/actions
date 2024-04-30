@@ -1,3 +1,4 @@
+import logging
 import re
 from datetime import datetime
 from logging import Filter, Formatter
@@ -21,7 +22,7 @@ class FormatterStdout(Formatter):
         self._access_formatter = AccessFormatter()
 
     def format(self, record):
-        if record.name.startswith("uvicorn"):
+        if record.name.startswith("uvicorn") and len(record.args) == 5:
             (
                 client_addr,
                 method,
@@ -44,4 +45,8 @@ class FormatterStdout(Formatter):
 class UvicornLogFilter(Filter):
     def filter(self, record):
         # Log only Uvicorn Access messages
-        return not (record.name.startswith("uvicorn") and len(record.args) != 5)
+        if record.levelno > logging.INFO:
+            accept = True
+        else:
+            accept = not (record.name.startswith("uvicorn") and len(record.args) != 5)
+        return accept

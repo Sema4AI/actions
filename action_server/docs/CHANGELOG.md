@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- It's possible to use `@action(display_name="<Action name>")` to specify a different
+  summary in the openapi.json (the default is using the action signature name 
+  replacing '_' by spaces and making it a title).
+- Error message is properly shown when trying to bind the action server to a port 
+  which is already being used. 
+
 ## 0.5.3 - 2024-04-24
 
 - Properly work with `uv` (to use add `uv=<version>` in the `conda-forge` section).

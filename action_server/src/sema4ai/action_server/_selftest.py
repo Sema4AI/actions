@@ -29,15 +29,23 @@ def is_debugger_active() -> bool:
     return bool(pydevd.get_global_debugger())
 
 
+class ActionServerExitedError(RuntimeError):
+    pass
+
+
 class ActionServerProcess:
     SHOW_OUTPUT = True
 
     def __init__(self, datadir: Path) -> None:
+        from io import StringIO
+
         self._datadir = datadir.absolute()
         self._process: Optional["Process"] = None
         self._host: str = ""
         self._port: int = -1
         self.started: bool = False
+        self._stdout = StringIO()
+        self._stderr = StringIO()
 
     @property
     def datadir(self) -> Path:
@@ -84,6 +92,8 @@ class ActionServerProcess:
         lint: bool = False,
         additional_args: Optional[list[str]] = None,
         env: Optional[Dict[str, str]] = None,
+        port=0,
+        verbose="-v",
     ) -> None:
         from sema4ai.action_server._robo_utils.process import Process
         from sema4ai.action_server._settings import is_frozen
@@ -108,11 +118,13 @@ class ActionServerProcess:
         new_args = base_args + [
             "start",
             "--actions-sync=false" if not actions_sync else "--actions-sync=true",
-            "--port=0",
-            "--verbose",
+            f"--port={port}",
             f"--datadir={str(self._datadir)}",
             f"--db-file={db_file}",
         ]
+
+        if verbose:
+            new_args.append(verbose)
 
         if not lint:
             new_args.append("--skip-lint")
@@ -144,10 +156,12 @@ class ActionServerProcess:
                 future.set_result((host, port))
 
         def on_stdout(line):
+            self._stdout.write(line)
             if self.SHOW_OUTPUT:
                 sys.stdout.write(f"stdout: {line.rstrip()}\n")
 
         def on_stderr(line):
+            self._stderr.write(line)
             # Note: this is called in a thread.
             sys.stderr.write(f"stderr: {line.rstrip()}\n")
 
@@ -168,7 +182,7 @@ class ActionServerProcess:
                         if time.monotonic() - initial_time >= timeout:
                             raise TimeoutError()
                         if not process.is_alive():
-                            raise RuntimeError(
+                            raise ActionServerExitedError(
                                 f"The process already exited with returncode: "
                                 f"{process.returncode}\n"
                                 f"Args: {new_args}"
@@ -181,9 +195,18 @@ class ActionServerProcess:
         self._port = int(port)
 
     def stop(self):
+        """
+        Returns a tuple with stdout/stderr.
+        """
         if self._process is not None:
             self._process.stop()
             self._process = None
+
+    def get_stdout(self):
+        return self._stdout.getvalue()
+
+    def get_stderr(self):
+        return self._stderr.getvalue()
 
 
 class ActionServerClient:
