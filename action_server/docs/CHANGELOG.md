@@ -7,6 +7,7 @@
 - It's possible to use `@action(display_name="<Action name>")` to specify a different
   summary in the openapi.json (the default is using the action signature name 
   replacing '_' by spaces and making it a title).
+  - Note: require `sema4ai-actions 0.4.0`.
 - Error message is properly shown when trying to bind the action server to a port 
   which is already being used. 
 - Actions from action packages that are no longer available are disabled when actions 
