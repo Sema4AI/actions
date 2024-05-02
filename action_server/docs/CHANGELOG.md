@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.6.0 - 2024-05-02
+
 - It's possible to use `@action(display_name="<Action name>")` to specify a different
   summary in the openapi.json (the default is using the action signature name 
   replacing '_' by spaces and making it a title).
