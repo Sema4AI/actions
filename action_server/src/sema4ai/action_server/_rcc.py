@@ -205,8 +205,58 @@ class Rcc(object):
         return RCCActionResult(cmdline, success=True, message=None, result=output)
 
     def create_env_and_get_vars(
+        self, datadir: Path, conda_yaml: Path, conda_hash: str
+    ) -> ActionResult[EnvInfo]:
+        """
+        Creates the environment if needed. Note: this function needs to be
+        careful so that it doesn't call `_create_env_and_get_vars` unless
+        the environment file really changed, as that will build an environment
+        (with all the pypi/mamba caches it entails), meaning that if the user
+        did use `action-server env clean-tools-caches` the caches will be
+        rebuilt and the command will need to be called again.
+        """
+
+        env_info_dir = datadir / "env-info"
+        env_info_dir.mkdir(parents=True, exist_ok=True)
+
+        env_info_cache_file = env_info_dir / f"{conda_hash}.json"
+        if env_info_cache_file.exists():
+            try:
+                contents = env_info_cache_file.read_text(encoding="utf-8")
+                if contents:
+                    loaded = json.loads(contents)
+                    loaded["lastUsage"] = self._get_curr_time_as_str()
+                    return ActionResult(True, None, EnvInfo(loaded["environ"]))
+            except Exception:
+                return ActionResult(
+                    success=False,
+                    message=(
+                        f"It was not possible to get the environment info from:\n{env_info_cache_file}\n"
+                        "to proceed delete that file or fix it (note: if the caches\n"
+                        "were cleared they will need to be cleared again after restoring\n"
+                        "the environment)."
+                    ),
+                )
+
+        env_info = self._create_env_and_get_vars(conda_yaml, conda_hash)
+        if env_info.success:
+            assert isinstance(env_info.result, EnvInfo)
+            dump = {
+                "environ": env_info.result.env,
+                "lastUsage": self._get_curr_time_as_str(),
+            }
+            env_info_cache_file.write_text(json.dumps(dump), encoding="utf-8")
+        return env_info
+
+    def _get_curr_time_as_str(self):
+        from datetime import datetime
+
+        return datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f%Z")
+
+    def _create_env_and_get_vars(
         self, conda_yaml: Path, conda_hash: str
     ) -> ActionResult[EnvInfo]:
+        """ """
         args = [
             "holotree",
             "variables",
@@ -214,7 +264,10 @@ class Rcc(object):
             conda_hash,
             str(conda_yaml),
         ]
+        self._add_config_to_args(args)
         args.append("--json")
+        args.append("--no-retry-build")
+        args.append("--no-pyc-management")
         timeout = 60 * 60  # Wait up to 1 hour for the env...
         ret = self._run_rcc(
             args,
@@ -289,6 +342,11 @@ class Rcc(object):
             subprocess.Popen(args, **kwargs)
         except BaseException:
             log.exception("Error submitting feedback.")
+
+    def clean_tools_caches(self):
+        args = ["config", "cleanup", "--caches"]
+        self._add_config_to_args(args)
+        self._run_rcc(args, timeout=600, show_interactive_output=True)
 
 
 _rcc: Optional["Rcc"] = None

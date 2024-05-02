@@ -1,0 +1,18 @@
+{
+  "python.pydev.pythonPath": [
+    "actions/src",
+    "actions/tests",
+    "action_server/src",
+    "action_server/tests",
+    "devutils/src"
+  ],
+  "python.pydev.preferredImportLocation": "lineBeforeUsage",
+
+  "[python]": {
+    "editor.formatOnType": true,
+    "editor.formatOnSave": true
+  },
+  "python.pydev.formatter": "ruff",
+  "python.pydev.lint.mypy.use": true,
+  "python.pydev.lint.mypy.showOutput": true
+}

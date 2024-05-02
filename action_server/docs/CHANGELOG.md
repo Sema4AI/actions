@@ -11,6 +11,12 @@
   are synchronized.
 - The `ROBOCORP_HOME` is no longer set to be inside of the datadir (users can set
   the home using the environment variable when needed).
+- Passing `--no-retry-build` to RCC when building the environment.
+- RCC updated to `v17.28.4`.
+- Created command: `action-server env clean-tools-caches`.
+- `.pyc` files are now written (passing `--no-pyc-management` to RCC).
+- The environment is built only once and is no longer checked/made pristine
+  whenever the action server is started.
 
 ## 0.5.3 - 2024-04-24
 

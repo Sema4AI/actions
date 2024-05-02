@@ -204,7 +204,7 @@ Note: no virtual environment will be used for the imported actions, they'll be r
             "Bootstrapping RCC environment (please wait, this can take a long time)."
         )
         rcc = get_rcc()
-        env_info = rcc.create_env_and_get_vars(conda_yaml, condahash)
+        env_info = rcc.create_env_and_get_vars(datadir, conda_yaml, condahash)
         if not env_info.success:
             raise ActionPackageError(
                 f"It was not possible to bootstrap the RCC environment. "

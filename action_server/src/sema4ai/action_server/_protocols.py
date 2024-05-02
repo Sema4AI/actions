@@ -104,7 +104,7 @@ class ArgumentsNamespace(Protocol):
     """
 
     command: Literal[
-        "download-rcc", "package", "import", "start", "version", "new", "migrate"
+        "download-rcc", "package", "import", "start", "version", "new", "migrate", "env"
     ]
     verbose: bool
 
@@ -112,6 +112,11 @@ class ArgumentsNamespace(Protocol):
 class ArgumentsNamespaceNew(ArgumentsNamespace):
     command: Literal["new"]
     name: str
+
+
+class ArgumentsNamespaceEnv(ArgumentsNamespace):
+    command: Literal["env"]
+    env_command: Literal["clean-tools-caches"]
 
 
 class ArgumentsNamespaceDownloadRcc(ArgumentsNamespace):

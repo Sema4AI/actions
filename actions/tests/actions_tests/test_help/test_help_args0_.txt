@@ -1,6 +1,6 @@
-usage: robocorp.actions [-h] {run,list} ...
+usage: sema4ai.actions [-h] {run,list} ...
 
-Robocorp Actions library
+Sema4.ai framework for AI actions.
 
 positional arguments:
   {run,list}
@@ -12,4 +12,4 @@ positional arguments:
 options:
   -h, --help  show this help message and exit
 
-View https://github.com/robocorp/robo for more information
+View https://github.com/sema4ai/actions for more information

@@ -47,6 +47,7 @@ def test_package_zip(datadir):
 
     with zipfile.ZipFile(target_zip, "r") as zip_file:
         file_names = set(zip_file.namelist())
+        file_names = set(x for x in file_names if "__pycache__" not in x)
 
     assert file_names == {
         "another/ok.txt",
@@ -72,7 +73,7 @@ def test_package_zip(datadir):
             returncode=0,
             cwd=datadir,
         )
-        files = set(f.name for f in extract_to.glob("*"))
+        files = set(f.name for f in extract_to.glob("*") if "__pycache__" not in f.name)
         assert files == {
             "another",
             "folder",

@@ -541,13 +541,15 @@ def build_common_tasks(
             content = stream.read()
 
             new_version = f"## {version} - {datetime.today().strftime('%Y-%m-%d')}"
-            changelog_start = re.search(r"# Changelog", content).end()
-            if not changelog_start:
+            changelog_start_match = re.search(r"# Changelog", content)
+            if not changelog_start_match:
                 print(
                     f"Did not find # Changelog in the changelog:\n{file}\n"
                     f"Please update Changelog before proceeding."
                 )
                 sys.exit(1)
+
+            changelog_start = changelog_start_match.end()
 
             unreleased_match = re.search(r"## Unreleased", content, flags=re.IGNORECASE)
             double_newline = "\n\n"

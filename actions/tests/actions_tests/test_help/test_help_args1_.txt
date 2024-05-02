@@ -1,14 +1,14 @@
-usage: robocorp.actions run [-h] [--glob GLOB] [-a ACTION_NAME] [-o OUTPUT_DIR]
-                            [--max-log-files MAX_LOG_FILES]
-                            [--max-log-file-size MAX_LOG_FILE_SIZE]
-                            [--console-colors {auto,plain,ansi}]
-                            [--log-output-to-stdout {no,json}]
-                            [--json-input JSON_INPUT]
-                            [--preload-module PRELOAD_MODULE] [--no-status-rc]
-                            [--teardown-dump-threads-timeout TEARDOWN_DUMP_THREADS_TIMEOUT]
-                            [--teardown-interrupt-timeout TEARDOWN_INTERRUPT_TIMEOUT]
-                            [--os-exit {no,before-teardown,after-teardown}]
-                            [path]
+usage: sema4ai.actions run [-h] [--glob GLOB] [-a ACTION_NAME] [-o OUTPUT_DIR]
+                           [--max-log-files MAX_LOG_FILES]
+                           [--max-log-file-size MAX_LOG_FILE_SIZE]
+                           [--console-colors {auto,plain,ansi}]
+                           [--log-output-to-stdout {no,json}]
+                           [--json-input JSON_INPUT]
+                           [--preload-module PRELOAD_MODULE] [--no-status-rc]
+                           [--teardown-dump-threads-timeout TEARDOWN_DUMP_THREADS_TIMEOUT]
+                           [--teardown-interrupt-timeout TEARDOWN_INTERRUPT_TIMEOUT]
+                           [--os-exit {no,before-teardown,after-teardown}]
+                           [path]
 
 positional arguments:
   path                  The directory or file with the actions to run.
@@ -16,7 +16,8 @@ positional arguments:
 options:
   -h, --help            show this help message and exit
   --glob GLOB           May be used to specify a glob to select from which
-                        files actions should be searched (default '*action*.py')
+                        files actions should be searched (default
+                        '*action*.py')
   -a ACTION_NAME, --action ACTION_NAME
                         The name of the action that should be run.
   -o OUTPUT_DIR, --output-dir OUTPUT_DIR
@@ -57,6 +58,6 @@ options:
                         process (if not specified the
                         RC_TEARDOWN_INTERRUPT_TIMEOUT is also queried).
   --os-exit {no,before-teardown,after-teardown}
-                        Can be used to do an early os._exit to avoid the actions
-                        session teardown or the interpreter teardown. Not
-                        recommended in general.
+                        Can be used to do an early os._exit to avoid the
+                        actions session teardown or the interpreter teardown.
+                        Not recommended in general.

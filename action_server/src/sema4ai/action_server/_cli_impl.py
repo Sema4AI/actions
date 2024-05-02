@@ -283,6 +283,19 @@ def _create_parser():
 
     add_package_command(command_subparser, defaults)
 
+    # Clean env caches
+    env_parser = command_subparser.add_parser(
+        "env",
+        help="Commands related to the environment handling",
+    )
+
+    env_subparser = env_parser.add_subparsers(dest="env_command")
+
+    env_parser = env_subparser.add_parser(
+        "clean-tools-caches",
+        help="Cleans up caches from tools used to build the environment (such as micromamba, pip and uv).",
+    )
+
     return base_parser
 
 
@@ -477,6 +490,11 @@ def _main_retcode(
         )
 
         return handle_package_command(base_args)
+
+    if command == "env":
+        from sema4ai.action_server.env import handle_env_command
+
+        return handle_env_command(base_args)
 
     if command not in (
         "migrate",

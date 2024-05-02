@@ -7,7 +7,7 @@ from typing import Optional
 # No real build, just download RCC at this point.
 
 # Note: referenced here and in sema4ai.action_server._download_rcc
-RCC_VERSION = "17.23.2"
+RCC_VERSION = "17.28.4"
 
 RCC_URLS = {
     "Windows": f"https://sema4.ai/cdn/downloads/rcc/releases/v{RCC_VERSION}/windows64/rcc.exe",
