@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## 0.4.0 - 2024-05-02
+
+- A 'display_name' may be set in an `@action` to control the summary of the
+  action in the openapi.json (the default is the action signature name replacing
+  `_` by spaces and making it a title).
+- A public API function was added to collect linting errors from a file
+  containing `@action`s (`sema4ai.actions.api.collect_lint_errors`).
+
 ## 0.3.1 - 2024-04-23
 
 - Fixes `aes256-gcm` to use auth tag properly (instead of associated data).
