@@ -2,15 +2,30 @@
 
 ## Unreleased
 
+- Add new command: cloud
+  - Subcommand: login
+    - Save the Control Room login information to keyring, the access credentials and the hostname
+  - Subcommand: verify-login
+    - Verify if the user credentials have been saved to the keyring
+  - Subcommand: list-organizations
+    - List all available organization with given access credentials
+- Add new package subcommand
+  - publish, publish action package to Control Room
+    - Intended for human user to handle the whole publish pipeline
+  - Subcommands intended for CI users that handles the publish pipeline without interaction:
+    - push, upload the action package to Control Room
+    - status, query the action package publish status
+    - set-changelog, update the action package changelog to Control Room
+
 ## 0.11.0 - 2024-05-23
 
 - Improved support for exceptions raised in `@action`s from `sema4ai-actions`.
-- Note: `sema4ai-actions 0.8.0` added `ActionError` and `Response` classes 
+- Note: `sema4ai-actions 0.8.0` added `ActionError` and `Response` classes
   to the public API for improved handling of error conditions.
 - See: [Structuring actions guide](./guides/09-structuring-actions.md) for more information.
 - `list-templates` subcommand is now available for the `new` command, allowing to get the list of available Action templates
   - subcommand can be used with `--json` flag, which will format the output as JSON
-- In the builtin view, added a link to see logs from a run where the run is done. 
+- In the builtin view, added a link to see logs from a run where the run is done.
 
 ## 0.10.0 - 2024-05-20
 
@@ -71,6 +86,7 @@
   ```
 
   - See the secrets guide for more information.
+  folder to store the `action-server` directory information.
 
 ## 0.8.1 - 2024-05-09
 
@@ -84,8 +100,13 @@
 - Fixed brew reference to `sema4ai/tools/action-server` in conda wrapper.
 - The internal database (which keeps information on the runs, etc) is now auto-migrated, so, the
   separate `migrate` command does not need to be manually called.
+<<<<<<< HEAD
   - Note: The action server will now check the internal database version and if it's newer than
     the current expected version it'll notify the user and abort the startup.
+=======
+    - Note: The action server will now check the internal database version and if it's newer than
+      the current expected version it'll notify the user and abort the startup.
+>>>>>>> Update changelog
 
 ## 0.7.0 - 2024-05-06
 

@@ -241,6 +241,41 @@ def _add_new_command(command_subparser, defaults):
     add_json_output_args(list_templates_parser)
 
 
+def _add_cloud_command(command_subparser, defaults):
+    from sema4ai.action_server._cli_helpers import (
+        add_json_output_args,
+        add_login_args,
+        add_verbose_args,
+    )
+
+    cloud_parser = command_subparser.add_parser(
+        "cloud",
+        help="Utilities to perform Control Room operations",
+    )
+
+    cloud_subparsers = cloud_parser.add_subparsers(dest="cloud_command")
+
+    login_parser = cloud_subparsers.add_parser(
+        "login",
+        help="Store Control Room login information",
+    )
+    add_login_args(login_parser)
+    add_verbose_args(login_parser, defaults)
+
+    verify_login_parser = cloud_subparsers.add_parser(
+        "verify-login", help="Check if user is logged in to Control Room"
+    )
+    add_json_output_args(verify_login_parser)
+
+    list_organizations_parser = cloud_subparsers.add_parser(
+        "list-organizations",
+        help="List the Control Room organizations",
+    )
+    add_json_output_args(list_organizations_parser)
+    add_login_args(list_organizations_parser)
+    add_verbose_args(list_organizations_parser, defaults)
+
+
 def _create_parser():
     from sema4ai.action_server.package._package_build_cli import add_package_command
 
@@ -318,6 +353,8 @@ def _create_parser():
         "clean-tools-caches",
         help="Cleans up caches from tools used to build the environment (such as micromamba, pip and uv).",
     )
+
+    _add_cloud_command(command_subparser, defaults)
 
     return base_parser
 
@@ -519,11 +556,17 @@ def _main_retcode(
 
         return handle_env_command(base_args)
 
+    if command == "cloud":
+        from sema4ai.action_server._actions_cloud import handle_cloud_command
+
+        return handle_cloud_command(base_args)
+
     if command not in (
         "migrate",
         "import",
         "start",
         "new",
+        "cloud",
     ):
         log.critical(f"Unexpected command: {command}.")
         return 1
@@ -675,11 +718,11 @@ def _make_import_migrate_or_start(
                 elif migration_status == MigrationStatus.TOO_NEW:
                     log.critical(
                         """
-The current action server datadir was written with a newer version of the 
+The current action server datadir was written with a newer version of the
 action server and can no longer be used with this version of the action server.
 
-Please use a newer version of the action server version to access the 
-information from this datadir. 
+Please use a newer version of the action server version to access the
+information from this datadir.
 """
                     )
                     return 1
