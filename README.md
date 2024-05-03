@@ -43,7 +43,7 @@ brew install sema4ai/tools/action-server
 <summary><b>CLI For Windows</b></summary>
 
 ```sh
-# Download Robocorp Action Server
+# Download Sema4.ai Action Server
 curl -o action-server.exe https://sema4.ai/cdn/downloads/action-server/releases/latest/windows64/action-server.exe
 ```
 
@@ -55,7 +55,7 @@ You can download/move the executable into a folder that is in your `PATH`, or yo
 <summary><b>CLI For Linux</b></summary>
 
 ```sh
-# Download Robocorp Action Server
+# Download Sema4.ai Action Server
 curl -o action-server https://sema4.ai/cdn/downloads/action-server/releases/latest/linux64/action-server
 chmod a+x action-server
 
