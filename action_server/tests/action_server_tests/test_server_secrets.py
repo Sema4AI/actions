@@ -4,30 +4,6 @@ from sema4ai.action_server._selftest import ActionServerClient, ActionServerProc
 USE_STATIC_INFO = False
 
 
-def encrypt(key: bytes, plaintext: bytes) -> tuple[bytes, bytes, bytes]:
-    import os
-
-    from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-
-    # Generate a random 96-bit IV.
-    iv = os.urandom(12)
-    if USE_STATIC_INFO:
-        iv = b"b" * len(iv)
-
-    # Construct an AES-GCM Cipher object with the given key and a
-    # randomly generated IV.
-    encryptor = Cipher(
-        algorithms.AES(key),
-        modes.GCM(iv),
-    ).encryptor()
-
-    # Encrypt the plaintext and get the associated ciphertext.
-    # GCM does not require padding.
-    ciphertext = encryptor.update(plaintext) + encryptor.finalize()
-
-    return (iv, ciphertext, encryptor.tag)
-
-
 def test_secrets_encrypted(
     action_server_process: ActionServerProcess,
     client: ActionServerClient,
@@ -67,21 +43,11 @@ def test_secrets_encrypted(
         env=env,
     )
 
-    data: bytes = json.dumps({"secrets": {"private_info": "my-secret-value"}}).encode(
-        "utf-8"
+    from sema4ai.action_server._encryption import make_encrypted_data_envelope
+
+    ctx_info = make_encrypted_data_envelope(
+        keys[0], {"secrets": {"private_info": "my-secret-value"}}
     )
-    iv, encrypted_data, tag = encrypt(keys[0], data)
-
-    action_server_context = {
-        "cipher": base64.b64encode(encrypted_data).decode("ascii"),
-        "algorithm": "aes256-gcm",
-        "iv": base64.b64encode(iv).decode("ascii"),
-        "auth-tag": base64.b64encode(tag).decode("ascii"),
-    }
-
-    ctx_info: str = base64.b64encode(
-        json.dumps(action_server_context).encode("utf-8")
-    ).decode("ascii")
 
     found = client.post_get_str(
         "api/actions/pack-encryption/get-private/run",
@@ -96,7 +62,37 @@ def test_secrets_not_encrypted(
     client: ActionServerClient,
     datadir,
 ):
+    import json
+
     # Verify that things work if the X-Action-Context is not encrypted.
+    from sema4ai.action_server._encryption import make_unencrypted_data_envelope
+
+    pack = datadir / "pack_encryption"
+
+    action_server_process.start(
+        cwd=pack,
+        actions_sync=True,
+        db_file="server.db",
+        lint=True,
+    )
+
+    secrets_in_base64 = make_unencrypted_data_envelope(
+        {"secrets": {"private_info": "my-secret-value"}}
+    )
+
+    found = client.post_get_str(
+        "api/actions/pack-encryption/get-private/run",
+        {"name": "Foo"},
+        headers={"x-action-context": secrets_in_base64},
+    )
+    assert "my-secret-value" == json.loads(found)
+
+
+def test_secrets_unencrypted_set_through_separate_post_request(
+    action_server_process: ActionServerProcess,
+    client: ActionServerClient,
+    datadir,
+):
     import base64
     import json
 
@@ -109,16 +105,75 @@ def test_secrets_not_encrypted(
         lint=True,
     )
 
-    action_server_context: str = json.dumps(
-        {"secrets": {"private_info": "my-secret-value"}}
+    data: str = json.dumps(
+        {
+            "secrets": {"private_info": "my-secret-value"},
+            "scope": {"action-package": "pack_encryption"},
+        }
     )
-    ctx_info: str = base64.b64encode(action_server_context.encode("utf-8")).decode(
-        "ascii"
+    ctx_info: str = base64.b64encode(data.encode("utf-8")).decode("ascii")
+
+    found = client.post_get_str(
+        "api/secrets",
+        {"data": ctx_info},
     )
+    assert json.loads(found) == "ok"
 
     found = client.post_get_str(
         "api/actions/pack-encryption/get-private/run",
         {"name": "Foo"},
-        headers={"x-action-context": ctx_info},
+    )
+    assert "my-secret-value" == json.loads(found)
+
+
+def test_secrets_encrypted_set_through_separate_post_request(
+    action_server_process: ActionServerProcess,
+    client: ActionServerClient,
+    datadir,
+):
+    import base64
+    import json
+
+    from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+
+    from sema4ai.action_server._encryption import make_encrypted_data_envelope
+
+    pack = datadir / "pack_encryption"
+
+    keys = [AESGCM.generate_key(bit_length=256), AESGCM.generate_key(bit_length=256)]
+    if USE_STATIC_INFO:
+        keys = [b"a" * len(keys[0])]
+
+    env = dict(
+        ACTION_SERVER_DECRYPT_KEYS=json.dumps(
+            [base64.b64encode(k).decode("ascii") for k in keys]
+        ),
+    )
+
+    action_server_process.start(
+        cwd=pack,
+        actions_sync=True,
+        db_file="server.db",
+        lint=True,
+        env=env,
+    )
+
+    ctx_info: str = make_encrypted_data_envelope(
+        keys[0],
+        {
+            "secrets": {"private_info": "my-secret-value"},
+            "scope": {"action-package": "pack_encryption"},
+        },
+    )
+
+    found = client.post_get_str(
+        "api/secrets",
+        {"data": ctx_info},
+    )
+    assert json.loads(found) == "ok"
+
+    found = client.post_get_str(
+        "api/actions/pack-encryption/get-private/run",
+        {"name": "Foo"},
     )
     assert "my-secret-value" == json.loads(found)

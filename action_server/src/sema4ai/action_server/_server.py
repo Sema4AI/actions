@@ -64,6 +64,7 @@ def start_server(
     from . import _actions_process_pool, _actions_run
     from ._api_action_package import action_package_api_router
     from ._api_run import run_api_router
+    from ._api_secrets import secrets_api_router
     from ._app import get_app
     from ._models import Action, ActionPackage, get_db
     from ._server_websockets import websocket_api_router
@@ -147,7 +148,7 @@ def start_server(
                     display_name = display_name_in_options
 
         func, openapi_extra = _actions_run.generate_func_from_action(
-            action, display_name
+            action_package, action, display_name
         )
         if action.is_consequential is not None:
             openapi_extra["x-openai-isConsequential"] = action.is_consequential
@@ -188,6 +189,7 @@ def start_server(
         action_package_api_router, include_in_schema=settings.full_openapi_spec
     )
     app.include_router(websocket_api_router)
+    app.include_router(secrets_api_router, include_in_schema=settings.full_openapi_spec)
 
     @app.get("/config", include_in_schema=settings.full_openapi_spec)
     async def serve_config():

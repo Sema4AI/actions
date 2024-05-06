@@ -29,7 +29,7 @@ AF_INET, SOCK_STREAM, SHUT_WR, SOL_SOCKET, SO_REUSEADDR, IPPROTO_TCP, socket = (
 )
 
 if sys.platform == "win32":
-    SO_EXCLUSIVEADDRUSE = socket_module.SO_EXCLUSIVEADDRUSE
+    SO_EXCLUSIVEADDRUSE = socket_module.SO_EXCLUSIVEADDRUSE  # noqa
 
 
 class _Key(tuple):
@@ -66,7 +66,7 @@ def _connect_to_socket(host, port):
     except (AttributeError, OSError):
         pass  # May not be available everywhere.
     try:
-        s.setsockopt(socket_module.IPPROTO_TCP, socket_module.TCP_KEEPIDLE, 1)
+        s.setsockopt(socket_module.IPPROTO_TCP, socket_module.TCP_KEEPIDLE, 1)  # noqa
     except (AttributeError, OSError):
         pass  # May not be available everywhere.
     try:
@@ -256,6 +256,7 @@ class ProcessHandle:
 
     def _do_run_action(
         self,
+        action_package: ActionPackage,
         action: Action,
         input_json: Path,
         robot_artifacts: Path,
@@ -263,6 +264,12 @@ class ProcessHandle:
         request: Request,
         reuse_process: bool,
     ) -> int:
+        from sema4ai.action_server._api_secrets import IN_MEMORY_SECRETS
+
+        headers = dict(request.headers)
+
+        headers = IN_MEMORY_SECRETS.update_headers(action_package, action, headers)
+
         msg = {
             "command": "run_action",
             "action_name": action.name,
@@ -270,7 +277,7 @@ class ProcessHandle:
             "input_json": f"{input_json}",
             "robot_artifacts": f"{robot_artifacts}",
             "result_json": f"{result_json}",
-            "headers": dict(request.headers),
+            "headers": headers,
             "cookies": dict(request.cookies),
             "reuse_process": reuse_process,
         }
@@ -281,6 +288,7 @@ class ProcessHandle:
 
     def run_action(
         self,
+        action_package: ActionPackage,
         action: Action,
         input_json: Path,
         robot_artifacts: Path,
@@ -302,6 +310,7 @@ class ProcessHandle:
             with self._on_output.register(on_output):
                 # stdout is now used for communicating, so, don't hear on it.
                 returncode = self._do_run_action(
+                    action_package,
                     action,
                     input_json,
                     robot_artifacts,
