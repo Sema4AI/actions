@@ -12,7 +12,7 @@ from fastapi.exceptions import RequestValidationError
 from starlette.concurrency import run_in_threadpool
 
 if typing.TYPE_CHECKING:
-    from ._models import Action, Run
+    from ._models import Action, ActionPackage, Run
 
 log = logging.getLogger(__name__)
 
@@ -132,6 +132,7 @@ def _set_run_as_running(run: "Run", initial_time: float):
 
 
 def _run_action_in_thread(
+    action_package: "ActionPackage",
     action: "Action",
     input_schema_dict: dict,
     output_schema_dict: dict,
@@ -211,6 +212,7 @@ def _run_action_in_thread(
             try:
                 _set_run_as_running(run, initial_time)
                 returncode = process_handle.run_action(
+                    action_package,
                     action,
                     input_json,
                     robot_artifacts,
@@ -259,7 +261,7 @@ def _name_as_class_name(name):
 
 
 def generate_func_from_action(
-    action: "Action", display_name: str
+    action_package: "ActionPackage", action: "Action", display_name: str
 ) -> Tuple[Callable[[Response, Request], Any], dict[str, object]]:
     """
     This method generates the function which should be called from FastAPI.
@@ -330,6 +332,7 @@ def generate_func_from_action(
         return await run_in_threadpool(
             partial(
                 _run_action_in_thread,
+                action_package,
                 action,
                 input_schema_dict,
                 output_schema_dict,

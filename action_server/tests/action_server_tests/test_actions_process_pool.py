@@ -122,11 +122,15 @@ def _create_run(
     result_json = robot_artifacts / "result.json"
     request = _DummyRequest()
     input_json.write_text(json.dumps({"name": "John"}))
+    action_package = actions_process_pool.action_package_id_to_action_package[
+        action.action_package_id
+    ]
 
     with actions_process_pool.obtain_process_for_action(action) as process_handle:
         fut: Future[int] = run_in_thread(
             partial(
                 process_handle.run_action,
+                action_package,
                 action,
                 input_json,
                 robot_artifacts,

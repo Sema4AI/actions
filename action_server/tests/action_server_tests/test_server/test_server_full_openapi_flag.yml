@@ -147,6 +147,15 @@ components:
       - numbered_id
       title: Run
       type: object
+    SetSecretData:
+      properties:
+        data:
+          title: Data
+          type: string
+      required:
+      - data
+      title: SetSecretData
+      type: object
     ValidationError:
       properties:
         loc:
@@ -375,6 +384,39 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
           description: Validation Error
       summary: Get Run Log Html
+  /api/secrets:
+    post:
+      description: "API to set secrets in memory which will later be passed on to\
+        \ actions when they're run\n(those are later passed using the x-action-context\
+        \ -- it's meant to be\nused in cases where a process is managing the action\
+        \ server but is not intercepting\nrequests to set the x-action-context as\
+        \ would be needed to set the secrets).\n\nArgs:\n    data: The data to be\
+        \ set as secrets. Note that it's expected to be passed in the\n    same way\
+        \ that the x-action-context is passed (note that it can be encrypted or not).\n\
+        \nreturns:\n    'ok' string if it worked (if it didn't work an exception is\
+        \ thrown with an error message)."
+      operationId: set_secrets_api_secrets_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetSecretData'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                title: Response Set Secrets Api Secrets Post
+                type: string
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Set Secrets
   /config:
     get:
       operationId: serve_config_config_get

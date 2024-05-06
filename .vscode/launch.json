@@ -1,16 +1,46 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
-    "configurations": [{
-        "type": "pydevd",
-        "name": "PyDev Debug (Launch)",
-        "request": "launch",
-        "cwd": "${workspaceFolder}/action_server/tests",
-        "console": "integratedTerminal",
-        "module": "pytest",
-        "args": ["-k", "test_env_cleanup"],
-        // "env": {"PYDEVD_DEBUG": "1", "PYDEVD_DEBUG_FILE": "C:/temp/my-logs.txt" }
-    }]
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "pydevd",
+      "name": "pytest all (with pydevd)",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/action_server/tests",
+      "console": "integratedTerminal",
+      "module": "pytest",
+      "args": ["-n", "auto", "--force-regen"]
+      // "env": {
+      //   "PYDEVD_DEBUG": "1",
+      //   "PYDEVD_DEBUG_FILE": "C:/temp/pydevdLogs.txt"
+      // }
+    },
+    {
+      "type": "pydevd",
+      "name": "pytest single (with pydevd)",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/action_server/tests",
+      "console": "integratedTerminal",
+      "module": "pytest",
+      "args": ["-k", "test_actions_process_pool_run", "--force-regen"]
+      // "env": {
+      //   "PYDEVD_DEBUG": "1",
+      //   "PYDEVD_DEBUG_FILE": "C:/temp/pydevdLogs.txt"
+      // }
+    },
+    {
+      "type": "pydevd",
+      "name": "current file (with pydevd)",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "program": "${file}"
+      // "env": {
+      //   "PYDEVD_DEBUG": "1",
+      //   "PYDEVD_DEBUG_FILE": "C:/temp/pydevdLogs.txt"
+      // }
+    }
+  ]
 }
