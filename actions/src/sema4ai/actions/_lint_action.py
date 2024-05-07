@@ -2,6 +2,7 @@ import ast as ast_module
 from dataclasses import dataclass
 from typing import Any, Iterator, List, Optional, Tuple, TypedDict, Union, overload
 
+from sema4ai.actions._commands import _get_managed_param_type
 from sema4ai.actions._customization._plugin_manager import PluginManager
 
 
@@ -266,6 +267,15 @@ def _check_docstring_contents(
         for arg in arguments.args:
             desc = param_name_to_description.pop(arg.arg, None)
             if pm is not None and _is_managed_param(pm, arg.arg, node=node):
+                if not desc:
+                    if _get_managed_param_type(pm, arg.arg, node=node) == "Secret":
+                        yield _make_error(
+                            arg,
+                            f"Parameter: `{arg.arg}` documentation not found in docstring. "
+                            "Please update docstring to add it (as it will be added to the "
+                            "secrets metadata explaining the secret).",
+                        )
+
                 continue
 
             if not desc:

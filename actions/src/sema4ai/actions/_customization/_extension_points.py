@@ -53,13 +53,30 @@ class EPManagedParameters(Protocol):
         """
         raise NotImplementedError()
 
-    def get_managed_param_type(self, param: inspect.Parameter) -> type:
+    @overload
+    def get_managed_param_type(
+        self, param_name: str, *, param: inspect.Parameter
+    ) -> type:
         """
         Provides the type of the given managed parameter.
 
         Args:
+            param_name: The parameter name for which the type is requested.
             param: The parameter for which the type is requested.
 
         Return: The type of the managed parameter.
+        """
+        raise NotImplementedError()
+
+    @overload
+    def get_managed_param_type(self, param_name: str, *, node: FunctionDef) -> str:
+        """
+        Provides the type (as a string) of the given managed parameter.
+
+        Args:
+            param_name: The parameter name for which the type is requested.
+            node: The function definition node of the requested parameter
+
+        Return: The type (string) of the managed parameter.
         """
         raise NotImplementedError()

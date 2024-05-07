@@ -112,32 +112,45 @@ class Action:
 
         managed_params_schema: Dict[str, Any] = {}
         sig = inspect.signature(self.method)
+
+        param_name_to_description = self._get_param_name_to_description()
         for param in sig.parameters.values():
             if _is_managed_param(self._pm, param.name, param=param):
-                tp = _get_managed_param_type(self._pm, param).__name__
+                tp = _get_managed_param_type(self._pm, param.name, param=param).__name__
 
-                managed_params_schema[param.name] = {"type": tp}
+                dct = {"type": tp}
+
+                desc = param_name_to_description.get(param.name)
+                if desc:
+                    dct["description"] = desc
+                managed_params_schema[param.name] = dct
 
         return managed_params_schema
 
-    @property
-    def input_schema(self) -> Dict[str, Any]:
+    def _get_param_name_to_description(self) -> dict[str, str]:
         import docstring_parser
 
-        from sema4ai.actions._commands import _is_managed_param
-
-        sig = inspect.signature(self.method)
-        method_name = self.method.__code__.co_name
-        type_hints = get_type_hints(self.method)
-
         param_name_to_description: Dict[str, str] = {}
-
         doc = getattr(self.method, "__doc__", "")
         if doc:
             contents = docstring_parser.parse(doc)
             for docparam in contents.params:
                 if docparam.description:
                     param_name_to_description[docparam.arg_name] = docparam.description
+
+        return param_name_to_description
+
+    @property
+    def input_schema(self) -> Dict[str, Any]:
+        from sema4ai.actions._commands import _is_managed_param
+
+        sig = inspect.signature(self.method)
+        method_name = self.method.__code__.co_name
+        type_hints = get_type_hints(self.method)
+
+        param_name_to_description: dict[
+            str, str
+        ] = self._get_param_name_to_description()
 
         properties: Dict[str, Any] = {}
         required: List[str] = []

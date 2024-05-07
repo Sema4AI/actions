@@ -31,8 +31,6 @@ class ManagedParameters:
         node: Optional[FunctionDef] = None,
         param: Optional[inspect.Parameter] = None,
     ) -> bool:
-        import ast
-
         from sema4ai.actions._secret import Secret
 
         if param_name in self._param_name_to_instance:
@@ -42,22 +40,7 @@ class ManagedParameters:
             assert (
                 param is None
             ), "Either node or param is expected, but not both at the same time."
-            is_managed = False
-            args: ast.arguments = node.args
-            for arg in args.args:
-                if arg.arg == param_name:
-                    if arg.annotation:
-                        unparsed = ast.unparse(arg.annotation)
-                        if unparsed in (
-                            "Secret",
-                            "actions.Secret",
-                            "sema4ai.actions.Secret",
-                        ):
-                            is_managed = True
-
-                    break
-
-            return is_managed
+            return self._is_secret_node(param_name, node)
 
         elif param is not None:
             if param.annotation and issubclass(param.annotation, Secret):
@@ -65,6 +48,25 @@ class ManagedParameters:
 
         else:
             raise AssertionError("Either node or param must be passed.")
+
+        return False
+
+    def _is_secret_node(self, param_name: str, node: FunctionDef) -> bool:
+        import ast
+
+        args: ast.arguments = node.args
+        for arg in args.args:
+            if arg.arg == param_name:
+                if arg.annotation:
+                    unparsed = ast.unparse(arg.annotation)
+                    if unparsed in (
+                        "Secret",
+                        "actions.Secret",
+                        "sema4ai.actions.Secret",
+                    ):
+                        return True
+
+                return False
 
         return False
 
@@ -108,18 +110,43 @@ class ManagedParameters:
 
         return use_kwargs
 
+    @overload
+    def get_managed_param_type(
+        self, param_name: str, *, param: inspect.Parameter
+    ) -> type:
+        raise NotImplementedError()
+
+    @overload
+    def get_managed_param_type(self, param_name: str, *, node: FunctionDef) -> str:
+        raise NotImplementedError()
+
     def get_managed_param_type(
         self,
-        param: inspect.Parameter,
-    ) -> type:
+        param_name: str,
+        *,
+        param: Optional[inspect.Parameter] = None,
+        node: Optional[FunctionDef] = None,
+    ) -> type | str:
         from sema4ai.actions._request import Request
         from sema4ai.actions._secret import Secret
 
-        if param.name == "request":
+        if param_name == "request":
             return Request
 
-        if param.annotation and issubclass(param.annotation, Secret):
-            return Secret
+        if node is None and param is None:
+            raise ValueError("Either node or param are required.")
+        if node is not None and param is not None:
+            raise ValueError(
+                "Either node or param is expected, but not both at the same time."
+            )
+
+        if param is not None:
+            if param.annotation and issubclass(param.annotation, Secret):
+                return Secret
+        else:
+            assert node is not None
+            if self._is_secret_node(param_name, node):
+                return "Secret"
 
         raise RuntimeError(
             f"Unable to get managed parameter type for parameter: {param}"

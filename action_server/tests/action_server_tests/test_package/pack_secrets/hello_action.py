@@ -8,7 +8,7 @@ def hello_greeting(name: str, private_info: Secret) -> str:
 
     Args:
         name: The name of the person to greet.
-        private_info: Some private information gotten from the
+        private_info: Some private information gotten from somewhere.
 
     Returns:
         The greeting for the person.

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Backward incompatible change: the argument docstring for secrets is now required 
+  to be documented in the arguments (and this information is now provided in the
+  action server metadata).
+
 ## 0.4.0 - 2024-05-02
 
 - A 'display_name' may be set in an `@action` to control the summary of the

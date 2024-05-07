@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Secret information (with `sema4ai-actions 0.5.0`) is now available in the package metadata.
+
 ## 0.7.0 - 2024-05-06
 
 - A new API (`/api/secrets`) is now available to set secrets in memory which will later

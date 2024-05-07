@@ -598,7 +598,7 @@ def _validate_and_convert_kwargs(
         if param_type is None:
             # If not given, default to `str`.
             if is_managed_param:
-                param_type = _get_managed_param_type(pm, param)
+                param_type = _get_managed_param_type(pm, param.name, param=param)
             else:
                 param_type = str
 
@@ -728,9 +728,42 @@ def _is_managed_param(
     return False
 
 
-def _get_managed_param_type(pm: PluginManager, param: inspect.Parameter) -> type:
+@overload
+def _get_managed_param_type(
+    pm: PluginManager,
+    param_name: str,
+    *,
+    node: FunctionDef,
+) -> str:
+    raise NotImplementedError()
+
+
+@overload
+def _get_managed_param_type(
+    pm: PluginManager,
+    param_name: str,
+    *,
+    param: inspect.Parameter,
+) -> type:
+    raise NotImplementedError()
+
+
+def _get_managed_param_type(
+    pm: PluginManager,
+    param_name: str,
+    *,
+    node: Optional[FunctionDef] = None,
+    param: Optional[inspect.Parameter] = None,
+):
     if pm.has_instance(EPManagedParameters):
         ep_managed_parameters = pm.get_instance(EPManagedParameters)
+        if node is not None:
+            return ep_managed_parameters.get_managed_param_type(param_name, node=node)
+        elif param is not None:
+            return ep_managed_parameters.get_managed_param_type(param_name, param=param)
+        else:
+            raise AssertionError("Not expected to get here.")
+
         managed_param_type = ep_managed_parameters.get_managed_param_type(param)
         assert managed_param_type is not None
         return managed_param_type
