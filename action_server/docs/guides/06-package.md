@@ -88,5 +88,6 @@ metadata:  # Note: optional as no additional metadata may be needed
       actionPackage: <action-package-name>
       secrets:
         <secret-name>:
+          description: <secret description -- only available when used with sema4ai-actions 0.5.0 onwards>
           type: Secret
 ```
