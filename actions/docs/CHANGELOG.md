@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.5.0 - 2024-05-08
+
 - Backward incompatible change: the argument docstring for secrets is now required 
   to be documented in the arguments (and this information is now provided in the
   action server metadata).
