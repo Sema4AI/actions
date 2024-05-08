@@ -3,6 +3,12 @@
 ## Unreleased
 
 - Secret information (with `sema4ai-actions 0.5.0`) is now available in the package metadata.
+    - Note: this is a backward-incompatible change in `sema4ai-actions 0.5.0` as secrets are now required to be documented.
+- Fixed brew reference to `sema4ai/tools/action-server` in conda wrapper.
+- The internal database (which keeps information on the runs, etc) is now auto-migrated, so, the
+  separate `migrate` command does not need to be manually called.
+    - Note: The action server will now check the internal database version and if it's newer than 
+      the current expected version it'll notify the user and abort the startup.
 
 ## 0.7.0 - 2024-05-06
 

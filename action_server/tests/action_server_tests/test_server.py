@@ -13,7 +13,7 @@ def test_action_server_starts(action_server_process: ActionServerProcess, tmpdir
     assert action_server_process.port > 0
     assert action_server_process.host == "localhost"
 
-    p = Path(str(tmpdir)) / ".robocorp_action_server"
+    p = Path(str(tmpdir)) / ".sema4ai-test-action-server"
     assert p.exists()
     assert (p / "server.db").exists()
 
@@ -23,7 +23,7 @@ def test_action_server_in_memory_db(action_server_process: ActionServerProcess, 
     assert action_server_process.port > 0
     assert action_server_process.host == "localhost"
 
-    p = Path(str(tmpdir)) / ".robocorp_action_server"
+    p = Path(str(tmpdir)) / ".sema4ai-test-action-server"
     assert p.exists()
     assert not (p / "server.db").exists()
 

@@ -511,7 +511,7 @@ def make_tmpdir() -> Iterator[Path]:
 
 @contextmanager
 def make_action_server_process(tmpdir: Path) -> Iterator[ActionServerProcess]:
-    action_server_datadir = tmpdir / ".robocorp_action_server"
+    action_server_datadir = tmpdir / ".sema4ai-test-action-server"
     ret = ActionServerProcess(action_server_datadir)
     try:
         yield ret

@@ -562,7 +562,7 @@ def _make_import_migrate_or_start(
     use_db: Optional["Database"] = None,
     before_start: Sequence[IBeforeStartCallback] = (),
 ) -> int:
-    from sema4ai.action_server._settings import is_frozen
+    from sema4ai.action_server.migrations import MigrationStatus
 
     from ._robo_utils.system_mutex import SystemMutex
     from ._runs_state_cache import use_runs_state_ctx
@@ -617,7 +617,7 @@ def _make_import_migrate_or_start(
             db_path = settings.db_file
 
         from sema4ai.action_server._models import create_db, load_db
-        from sema4ai.action_server.migrations import db_migration_pending, migrate_db
+        from sema4ai.action_server.migrations import db_migration_status, migrate_db
 
         is_new = db_path == ":memory:" or not os.path.exists(db_path)
 
@@ -645,27 +645,23 @@ def _make_import_migrate_or_start(
                 return 1
             return 0
         else:
-            if is_frozen():
-                cmdline = "action-server"
-            else:
-                cmdline = "python -m sema4ai.action_server"
+            if not is_new:
+                migration_status = db_migration_status(db_path)
+                if migration_status == MigrationStatus.NEEDS_MIGRATION:
+                    # Do auto-migration
+                    if not migrate_db(db_path):
+                        return 1
+                elif migration_status == MigrationStatus.TOO_NEW:
+                    log.critical(
+                        """
+The current action server datadir was written with a newer version of the 
+action server and can no longer be used with this version of the action server.
 
-            if not is_new and db_migration_pending(db_path):
-                log.critical(
-                    f"""It was not possible to start the server because a
-database migration is required to use with this version of the
-Sema4.ai Action Server.
-
-Please run the command:
-
-{cmdline} migrate
-
-To migrate the database to the current version
--- or start from scratch by erasing the file:
-{db_path}
+Please use a newer version of the action server version to access the 
+information from this datadir. 
 """
-                )
-                return 1
+                    )
+                    return 1
 
         with use_db_ctx(db_path) as db:
             if command == "import":

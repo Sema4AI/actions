@@ -182,7 +182,8 @@ def test_migrate(database_v0: Path, tmpdir) -> None:
         CURRENT_VERSION,
         MIGRATION_ID_TO_NAME,
         Migration,
-        db_migration_pending,
+        MigrationStatus,
+        db_migration_status,
         migrate_db,
     )
 
@@ -193,10 +194,10 @@ def test_migrate(database_v0: Path, tmpdir) -> None:
             base_indexes = base_db.list_indexes()
 
     db_path = database_v0
-    if db_migration_pending(db_path):
-        assert migrate_db(db_path, CURRENT_VERSION)
+    assert db_migration_status(db_path) == MigrationStatus.NEEDS_MIGRATION
+    assert migrate_db(db_path, CURRENT_VERSION)
 
-    assert not db_migration_pending(db_path)
+    assert db_migration_status(db_path) == MigrationStatus.UP_TO_DATE
     db = Database(db_path)
     with db.connect():
         assert sorted(db.list_table_names()) == sorted(

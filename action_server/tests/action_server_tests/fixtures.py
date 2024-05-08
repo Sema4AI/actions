@@ -15,7 +15,7 @@ from sema4ai.action_server._selftest import (
 
 @pytest.fixture
 def action_server_datadir(tmpdir) -> Path:
-    return Path(str(tmpdir)) / ".robocorp_action_server"
+    return Path(str(tmpdir)) / ".sema4ai-test-action-server"
 
 
 @pytest.fixture(scope="session")
@@ -103,12 +103,12 @@ def base_case(
         get_all_model_classes,
     )
 
-    p = Path(str(tmpdir)) / ".robocorp_action_server"
+    p = Path(str(tmpdir)) / ".sema4ai-test-action-server"
     p.mkdir(parents=True, exist_ok=True)
     db_path = p / "server.db"
     assert not db_path.exists()
 
-    persistent_dir = Path(temp_directory_session) / ".robocorp_action_server"
+    persistent_dir = Path(temp_directory_session) / ".sema4ai-test-action-server"
     persistent_dir.mkdir(parents=True, exist_ok=True)
 
     initial_db_version = persistent_dir / "initial.db"

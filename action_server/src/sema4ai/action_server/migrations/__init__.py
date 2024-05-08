@@ -11,6 +11,7 @@ import logging
 import os.path
 import typing
 from dataclasses import dataclass
+from enum import Enum
 from pathlib import Path
 from typing import Dict, Optional, Union
 
@@ -62,7 +63,8 @@ def migrate_db(
     """
     assert os.path.exists(db_path), f"Unable to do migration. {db_path} does not exist."
 
-    if not db_migration_pending(db_path):
+    migration_status = db_migration_status(db_path)
+    if migration_status == MigrationStatus.UP_TO_DATE:
         return True  # It's already correct
 
     import shutil
@@ -116,25 +118,34 @@ Please erase it and recreate it from scratch."""
     return True
 
 
-def _db_migration_pending(db: "Database") -> bool:
+class MigrationStatus(Enum):
+    UP_TO_DATE = "UP_TO_DATE"
+    NEEDS_MIGRATION = "NEEDS_MIGRATION"
+    TOO_NEW = "TOO_NEW"
+
+
+def _db_migration_status(db: "Database") -> MigrationStatus:
     if "migration" not in db.list_table_names():
-        return True
+        return MigrationStatus.NEEDS_MIGRATION
 
     db.initialize([Migration])
     migrations = db.all(Migration)
     if not migrations:
         # No migrations applied, do it now.
-        return True
+        return MigrationStatus.NEEDS_MIGRATION
 
     latest_migration_applied = max(x.id for x in migrations)
 
     if latest_migration_applied == CURRENT_VERSION:
-        return False
+        return MigrationStatus.UP_TO_DATE
 
-    return True
+    if latest_migration_applied > CURRENT_VERSION:
+        return MigrationStatus.TOO_NEW
+
+    return MigrationStatus.NEEDS_MIGRATION
 
 
-def db_migration_pending(db_path: Union[Path, str]) -> bool:
+def db_migration_status(db_path: Union[Path, str]) -> MigrationStatus:
     from sema4ai.action_server._database import Database
 
     if db_path == ":memory:":
@@ -146,7 +157,7 @@ def db_migration_pending(db_path: Union[Path, str]) -> bool:
             f"Unable to check if migration is pending because file: {db_path} does not exist."
         )
 
-    # Ok, it already exists. Check if it's pending a migration.
+    # Ok, it already exists. Check the migration status.
     db = Database(db_path)
     with db.connect():
-        return _db_migration_pending(db)
+        return _db_migration_status(db)
