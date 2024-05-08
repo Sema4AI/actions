@@ -85,7 +85,7 @@ func checkAvailableUpdate(version string) {
 		fmt.Fprintf(os.Stderr, "\n ⏫ A new version of action-server is now available: %s → %s \n", colorT.Yellow(version), colorT.Green(latestVersion))
 		if runtime.GOOS == "darwin" {
 			fmt.Fprintf(os.Stderr, "    To update, download from: %s \n", colorT.Bold(urlPath))
-			fmt.Fprintf(os.Stderr, "    Or run: %s \n\n", colorT.Bold("brew update && brew install robocorp/tools/action-server"))
+			fmt.Fprintf(os.Stderr, "    Or run: %s \n\n", colorT.Bold("brew update && brew install sema4ai/tools/action-server"))
 		} else {
 			fmt.Fprintf(os.Stderr, "    To update, download from: %s \n\n", colorT.Bold(urlPath))
 		}
