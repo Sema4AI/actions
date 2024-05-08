@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.8.0 - 2024-05-08
+
 - Secret information (with `sema4ai-actions 0.5.0`) is now available in the package metadata.
     - Note: this is a backward-incompatible change in `sema4ai-actions 0.5.0` as secrets are now required to be documented.
 - Fixed brew reference to `sema4ai/tools/action-server` in conda wrapper.
