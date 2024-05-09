@@ -124,7 +124,6 @@ async def set_secrets(data: SetSecretData) -> str:
         'ok' string if it worked (if it didn't work an exception is thrown with an error message).
     """
     from sema4ai.action_server._encryption import MaybeEncryptedJsonData
-    from sema4ai.action_server._models import ActionPackage
 
     encrypted_data = MaybeEncryptedJsonData(data.data)
     value = encrypted_data.value
@@ -149,7 +148,6 @@ async def set_secrets(data: SetSecretData) -> str:
 
         if not isinstance(v, str):
             raise ValueError("Expected the received secrets values to be strings.")
-    from sema4ai.action_server._models import get_db
 
     IN_MEMORY_SECRETS._update_secrets(
         typing.cast(dict[str, str], secrets),
