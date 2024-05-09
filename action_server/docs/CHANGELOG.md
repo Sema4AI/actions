@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.8.1 - 2024-05-09
+
 - Action package names are now properly validated when setting secrets through `/api/secrets`.
 
 ## 0.8.0 - 2024-05-08
