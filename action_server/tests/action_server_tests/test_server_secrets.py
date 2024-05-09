@@ -125,6 +125,20 @@ def test_secrets_unencrypted_set_through_separate_post_request(
     )
     assert "my-secret-value" == json.loads(found)
 
+    data = json.dumps(
+        {
+            "secrets": {"private_info": "my-secret-value"},
+            "scope": {"action-package": "bad-name"},
+        }
+    )
+    ctx_info = base64.b64encode(data.encode("utf-8")).decode("ascii")
+
+    found = client.post_error(
+        "api/secrets",
+        500,
+        {"data": ctx_info},
+    )
+
 
 def test_secrets_encrypted_set_through_separate_post_request(
     action_server_process: ActionServerProcess,

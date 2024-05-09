@@ -75,13 +75,25 @@ class InMemorySecrets:
         secrets: dict[str, str],
         scope: Literal["global"] | ActionPackageScopeTypedDict,
     ):
+        from sema4ai.action_server._models import ActionPackage, get_db
+
         if scope == "global":
             # Note: resets previous values
             self._global_scope_secrets = secrets
 
         elif isinstance(scope, dict) and scope.get("action-package"):
             # Note: resets previous values for the action package
-            self._action_package_scope_secrets[scope["action-package"]] = secrets
+            action_package_name = scope["action-package"]
+            db = get_db()
+            with db.connect():
+                action_package_names = set(p.name for p in db.all(ActionPackage))
+            if action_package_name not in action_package_names:
+                raise ValueError(
+                    f"The action package name: `{action_package_name}` is not valid.\n"
+                    f"Valid names: {action_package_names}"
+                )
+
+            self._action_package_scope_secrets[action_package_name] = secrets
 
         else:
             raise ValueError(
@@ -112,6 +124,7 @@ async def set_secrets(data: SetSecretData) -> str:
         'ok' string if it worked (if it didn't work an exception is thrown with an error message).
     """
     from sema4ai.action_server._encryption import MaybeEncryptedJsonData
+    from sema4ai.action_server._models import ActionPackage
 
     encrypted_data = MaybeEncryptedJsonData(data.data)
     value = encrypted_data.value
@@ -136,6 +149,7 @@ async def set_secrets(data: SetSecretData) -> str:
 
         if not isinstance(v, str):
             raise ValueError("Expected the received secrets values to be strings.")
+    from sema4ai.action_server._models import get_db
 
     IN_MEMORY_SECRETS._update_secrets(
         typing.cast(dict[str, str], secrets),

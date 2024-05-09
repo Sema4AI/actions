@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Action package names are now properly validated when setting secrets through `/api/secrets`.
+
 ## 0.8.0 - 2024-05-08
 
 - Secret information (with `sema4ai-actions 0.5.0`) is now available in the package metadata.
@@ -18,6 +20,8 @@
   be passed on to actions when they're run (those are later passed using the `x-action-context`
   -- it's meant to be used in cases where a process is managing the action server but is
   not intercepting requests to set the `x-action-context` as would be needed to set the secrets).
+  - Note: a new call for a given action package will override previous secrets given for the
+    same action package.
 
 ## 0.6.0 - 2024-05-02
 
