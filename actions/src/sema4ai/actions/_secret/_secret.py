@@ -1,70 +1,9 @@
 import typing
 
+from sema4ai.actions._secret import Secret
+
 if typing.TYPE_CHECKING:
     from sema4ai.actions._action_context import ActionContext
-
-
-class Secret:
-    """
-    This class should be used to receive secrets.
-
-    The way to use it is by declaring a variable with the 'Secret' type
-    in the @action.
-
-    Example:
-
-        ```
-        from sema4ai.actions import action, Secret
-
-        @action
-        def my_action(password: Secret):
-            login(password.value)
-        ```
-
-    Note: this class is abstract and is not meant to be instanced by clients.
-        An instance can be created from one of the factory methods (`model_validate`
-        or `from_action_context`).
-    """
-
-    @classmethod
-    def model_validate(cls, value: str) -> "Secret":
-        """
-        Creates a secret given a string (expected when the user
-        is passing the arguments using a json input).
-
-        Args:
-            value: The raw-text value to be used in the secret.
-
-        Return: A Secret instance with the given value.
-
-        Note: the model_validate method is used for compatibility with
-            the pydantic API.
-        """
-        return _RawSecret(value)
-
-    @classmethod
-    def from_action_context(
-        cls, action_context: "ActionContext", path: str
-    ) -> "Secret":
-        """
-        Creates a secret given the action context (which may be encrypted
-        in memory until the actual secret value is requested).
-
-        Args:
-            action_context: The action context which has the secret.
-
-            path: The path inside of the action context for the secret data
-            requested (Example: 'secrets/my_secret_name').
-
-        Return: A Secret instance collected from the passed action context.
-        """
-        return _SecretInActionContext(action_context, path)
-
-    @property
-    def value(self) -> str:
-        raise NotImplementedError(
-            "The Secret class is abstract and should not be directly used."
-        )
 
 
 class _RawSecret(Secret):
