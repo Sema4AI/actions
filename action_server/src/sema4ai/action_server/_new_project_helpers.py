@@ -50,11 +50,11 @@ def _ensure_latest_templates():
 
     # @TODO:
     # Provide fallback when no templates are available.
-    if not local_metadata.hash and not new_metadata.hash:
+    if not local_metadata and not new_metadata:
         log.critical("No templates available")
         return
 
-    if local_metadata.hash != new_metadata.hash:
+    if not local_metadata or local_metadata.hash != new_metadata.hash:
         _download_and_unzip_templates(ACTION_TEMPLATES_DIR)
 
         with open(ACTION_TEMPLATES_METADATA_PATH, "w+") as f:
