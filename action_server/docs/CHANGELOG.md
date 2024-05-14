@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- The default datadirs will now be created in `~/.sema4ai/action-server`
+  or `LOCALAPPDATA/sema4ai/action-server` instead of `~/robocorp/.action_server`
+  or `LOCALAPPDATA/robocorp/action_server`.
+  Note that this is a *backward incompatible* change. Users can move the contents
+  of the old dir to the new dir to keep existing information (a warning is shown
+  from the action server notifying users about it if the old directory exists).
+- The `SEMA4AI_HOME` environment variable can now be used to set a different home
+  folder to store the `action-server` directory information.
+
 ## 0.8.1 - 2024-05-09
 
 - Action package names are now properly validated when setting secrets through `/api/secrets`.

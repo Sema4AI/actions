@@ -3,10 +3,13 @@ import os
 import sys
 from contextlib import contextmanager
 from dataclasses import dataclass
+from functools import lru_cache
 from pathlib import Path
 from typing import Iterator, Optional
 
 from termcolor import colored
+
+from sema4ai.action_server.vendored_deps.termcolors import bold_red
 
 from ._protocols import ArgumentsNamespaceMigrateImportOrStart
 
@@ -39,7 +42,7 @@ def get_python_exe_from_env(env):
     return python
 
 
-def get_default_settings_dir() -> Path:
+def _old_get_default_settings_dir() -> Path:
     if sys.platform == "win32":
         localappdata = os.environ.get("LOCALAPPDATA")
         if not localappdata:
@@ -48,9 +51,51 @@ def get_default_settings_dir() -> Path:
     else:
         # Linux/Mac
         path = Path("~/robocorp/.action_server").expanduser()
-
-    path.mkdir(parents=True, exist_ok=True)
     return path
+
+
+@lru_cache
+def get_default_settings_dir() -> Path:
+    home_env_var = os.environ.get("SEMA4AI_HOME")
+    if home_env_var:
+        home = Path(home_env_var)
+    else:
+        if sys.platform == "win32":
+            localappdata = os.environ.get("LOCALAPPDATA")
+            if not localappdata:
+                raise RuntimeError("Error. LOCALAPPDATA not defined in environment!")
+            home = Path(localappdata) / "sema4ai"
+        else:
+            # Linux/Mac
+            home = Path("~/.sema4ai").expanduser()
+
+    default_settings_dir = home / "action-server"
+
+    # Notify users about backward incompatible change
+    # (as this is lru-cached, should notify only once).
+    old_dir = _old_get_default_settings_dir()
+    if os.path.exists(old_dir):
+        log.critical(
+            bold_red(
+                f"""Note: the action server settings are now stored in:
+{default_settings_dir}
+
+instead of:
+{old_dir}
+
+If you want to keep data on old runs, consider moving 
+the contents of {old_dir} to {default_settings_dir}
+
+-- otherwise, please remove: 
+{old_dir}
+
+so that this message is no longer shown.
+"""
+            )
+        )
+
+    default_settings_dir.mkdir(parents=True, exist_ok=True)
+    return default_settings_dir
 
 
 @dataclass(slots=True, kw_only=True)
