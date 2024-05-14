@@ -112,6 +112,7 @@ class ArgumentsNamespace(Protocol):
 class ArgumentsNamespaceNew(ArgumentsNamespace):
     command: Literal["new"]
     name: str
+    template: str
 
 
 class ArgumentsNamespaceEnv(ArgumentsNamespace):

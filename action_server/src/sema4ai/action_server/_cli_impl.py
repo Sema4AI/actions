@@ -251,10 +251,17 @@ def _create_parser():
         "new",
         help="Bootstrap new project from template",
     )
+
     new_parser.add_argument(
         "--name",
         help="Name for the project",
     )
+
+    new_parser.add_argument(
+        "--template",
+        help="Action template for the project",
+    )
+
     add_verbose_args(new_parser, defaults)
 
     # Schema
@@ -514,7 +521,7 @@ def _main_retcode(
         new_args: ArgumentsNamespaceNew = typing.cast(ArgumentsNamespaceNew, base_args)
         from ._new_project import create_new_project
 
-        create_new_project(directory=new_args.name)
+        create_new_project(directory=new_args.name, template_name=new_args.template)
         return 0
 
     migrate_import_or_start_args = typing.cast(
