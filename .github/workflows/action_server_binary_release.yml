@@ -10,10 +10,9 @@ on:
     tags:
       - "sema4ai-action_server-*"
 
-
 defaults:
   run:
-    working-directory: './action_server'
+    working-directory: "./action_server"
 
 jobs:
   build:
@@ -37,24 +36,23 @@ jobs:
           registry-url: "https://npm.pkg.github.com"
           scope: "@robocorp"
 
-
       - name: Install cibuildwheel
         run: |
-            python -m pip install poetry
-            python -m pip install invoke
-            python -m invoke build-frontend
+          python -m pip install poetry
+          python -m pip install invoke
+          python -m invoke build-frontend
         env:
-           CI: true
-           NODE_AUTH_TOKEN: ${{ secrets.GH_PAT_READ_PACKAGES }}
+          CI: true
+          NODE_AUTH_TOKEN: ${{ secrets.GH_PAT_READ_PACKAGES }}
 
       - name: Build binary
         run: |
-            python -m pip install pyoxidizer
-            cd build-binary
-            pyoxidizer run --release
+          python -m pip install pyoxidizer
+          cd build-binary
+          pyoxidizer run --release
         env:
-           RC_ACTION_SERVER_FORCE_DOWNLOAD_RCC: true
-           RC_ACTION_SERVER_DO_SELFTEST: true
+          RC_ACTION_SERVER_FORCE_DOWNLOAD_RCC: true
+          RC_ACTION_SERVER_DO_SELFTEST: true
 
       - name: Action Server Python Binary Signing [Windows]
         if: matrix.os == 'windows-2019'
@@ -73,7 +71,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.21'
+          go-version: "1.21"
 
       - uses: actions/upload-artifact@v4
         with:
@@ -84,7 +82,7 @@ jobs:
       - name: Get version
         if: matrix.os == 'ubuntu-20.04'
         run: |
-            poetry version | awk '{print $2}' > version.txt
+          poetry version | awk '{print $2}' > version.txt
       - uses: actions/upload-artifact@v4
         if: matrix.os == 'ubuntu-20.04'
         with:
@@ -94,15 +92,15 @@ jobs:
       - name: Copy assets [Linux]
         if: matrix.os == 'ubuntu-20.04'
         run: |
-            cp -R build-binary/build/x86_64-unknown-linux-gnu/release/install/* go-wrapper/assets
+          cp -R build-binary/build/x86_64-unknown-linux-gnu/release/install/* go-wrapper/assets
       - name: Copy assets [Mac]
         if: matrix.os == 'macos-11'
         run: |
-            cp -R build-binary/build/x86_64-apple-darwin/release/install/* go-wrapper/assets
+          cp -R build-binary/build/x86_64-apple-darwin/release/install/* go-wrapper/assets
       - name: Copy assets [Windows]
         if: matrix.os == 'windows-2019'
         run: |
-            xcopy /e /h /i build-binary\\build\\x86_64-pc-windows-msvc\\release\\install go-wrapper\\assets
+          xcopy /e /h /i build-binary\\build\\x86_64-pc-windows-msvc\\release\\install go-wrapper\\assets
 
       - uses: actions/download-artifact@v4
         with:
@@ -111,8 +109,8 @@ jobs:
 
       - name: Build Go binary wrapper
         run: |
-            cd go-wrapper
-            go build -o action-server-unsigned
+          cd go-wrapper
+          go build -o action-server-unsigned
 
       - uses: actions/upload-artifact@v4
         with:
@@ -134,8 +132,8 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-            name: macOS-action-server-unsigned
-            path: action_server/build
+          name: macOS-action-server-unsigned
+          path: action_server/build
 
       - uses: actions/download-artifact@v4
         with:
@@ -192,8 +190,8 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-            name: Windows-action-server-unsigned
-            path: action_server/build
+          name: Windows-action-server-unsigned
+          path: action_server/build
 
       - name: Action Server Signing [Windows]
         env:
@@ -240,20 +238,20 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-            name: action-server-signed-windows
-            path: action_server/build/windows64/
+          name: action-server-signed-windows
+          path: action_server/build/windows64/
       - uses: actions/download-artifact@v4
         with:
-            name: action-server-signed-macos
-            path: action_server/build/macos64/
+          name: action-server-signed-macos
+          path: action_server/build/macos64/
       - uses: actions/download-artifact@v4
         with:
-            name: Linux-action-server-unsigned
-            path: action_server/build/linux64/
+          name: Linux-action-server-unsigned
+          path: action_server/build/linux64/
       - uses: actions/download-artifact@v4
         with:
-            name: action-server-version
-            path: action_server/build/
+          name: action-server-version
+          path: action_server/build/
       - run: |
           ls -l
           pwd
@@ -290,57 +288,56 @@ jobs:
             aws s3 cp s3-drop/macos64/action-server $S3_BASE_URL/macos64/action-server --cache-control max-age=120 --content-type "application/octet-stream"
             aws s3 cp s3-drop/linux64/action-server $S3_BASE_URL/linux64/action-server --cache-control max-age=120 --content-type "application/octet-stream"
           fi
-   
-   trigger-brew-workflow:
-     needs:
-       # sign-macos needs to be explicit in order to get the version, even if it's implied
-       - sign-macos
-       - deploy-s3
-     defaults:
-       run:
-         working-directory: .
- 
-     # No Brew run for beta -releases
-     if: ${{ needs.deploy-s3.outputs.is_beta == 'false' }}
- 
-     runs-on: ubuntu-latest
- 
-     steps:
-       - name: Wait for Downloads S3 Bucket to have the right content
-         timeout-minutes: 5
-         run: |
-           VERSION_URL="https://sema4.ai/cdn/downloads/action-server/releases/latest/version.txt"
-           EXPECTED_VERSION=${{ needs.sign-macos.outputs.version }}
- 
-           while true; do
-             DOWNLOADED_VERSION=$(curl -sS $VERSION_URL)
-             echo "Downloaded version: $DOWNLOADED_VERSION"
-             echo "Expected version: $EXPECTED_VERSION"
- 
-             if [ "$DOWNLOADED_VERSION" = "$EXPECTED_VERSION" ]; then
-               echo "Versions match."
-               break
-             else
-               echo "Versions do not match. Retrying in 30 seconds."
-             fi
- 
-             sleep 30
-           done
-       - name: Trigger Brew Deploy Workflow
-         run: |
-           curl -X POST \
-            -H "Authorization: token ${{ secrets.GH_PAT_GHA_TO_ANOTHER_REPO }}" \
-            -H "Accept: application/vnd.github.v3+json" \
-            https://api.github.com/repos/sema4ai/homebrew-tools/actions/workflows/publish.yml/dispatches \
-            -d '{"ref":"main","inputs":{"version":"${{ needs.sign-macos.outputs.version }}"}}'
+
+  trigger-brew-workflow:
+    needs:
+      # sign-macos needs to be explicit in order to get the version, even if it's implied
+      - sign-macos
+      - deploy-s3
+    defaults:
+      run:
+        working-directory: .
+
+    # No Brew run for beta -releases
+    if: ${{ needs.deploy-s3.outputs.is_beta == 'false' }}
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Wait for Downloads S3 Bucket to have the right content
+        timeout-minutes: 5
+        run: |
+          VERSION_URL="https://sema4.ai/cdn/downloads/action-server/releases/latest/version.txt"
+          EXPECTED_VERSION=${{ needs.sign-macos.outputs.version }}
+
+          while true; do
+            DOWNLOADED_VERSION=$(curl -sS $VERSION_URL)
+            echo "Downloaded version: $DOWNLOADED_VERSION"
+            echo "Expected version: $EXPECTED_VERSION"
+
+            if [ "$DOWNLOADED_VERSION" = "$EXPECTED_VERSION" ]; then
+              echo "Versions match."
+              break
+            else
+              echo "Versions do not match. Retrying in 30 seconds."
+            fi
+
+            sleep 30
+          done
+      - name: Trigger Brew Deploy Workflow
+        run: |
+          curl -X POST \
+           -H "Authorization: token ${{ secrets.GH_PAT_GHA_TO_ANOTHER_REPO }}" \
+           -H "Accept: application/vnd.github.v3+json" \
+           https://api.github.com/repos/sema4ai/homebrew-tools/actions/workflows/publish.yml/dispatches \
+           -d '{"ref":"main","inputs":{"version":"${{ needs.sign-macos.outputs.version }}"}}'
 
   release:
-
     if: ${{ needs.deploy-s3.outputs.is_beta == 'false' }}
 
     needs:
-      - deploy-s3  # needed for is_beta
-#       - trigger-brew-workflow
+      - deploy-s3 # needed for is_beta
+      - trigger-brew-workflow
 
     defaults:
       run:
@@ -360,16 +357,16 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/download-artifact@v4
         with:
-            name: action-server-signed-windows
-            path: windows64/
+          name: action-server-signed-windows
+          path: windows64/
       - uses: actions/download-artifact@v4
         with:
-            name: action-server-signed-macos
-            path: macos64/
+          name: action-server-signed-macos
+          path: macos64/
       - uses: actions/download-artifact@v4
         with:
-            name: Linux-action-server-unsigned
-            path: linux64/
+          name: Linux-action-server-unsigned
+          path: linux64/
       - name: Rename Linux binary
         run: mv linux64/action-server-unsigned linux64/action-server
 
@@ -399,4 +396,3 @@ jobs:
           asset_name: $tag-windows64
           tag: ${{ github.ref }}
           overwrite: true
-
