@@ -427,7 +427,7 @@ def check_new_template(
             print(f"Creating template project in: {tmpdir}")
 
         output = robocorp_action_server_run(
-            ["new", "--name=my_project"], returncode=0, cwd=str(tmpdir)
+            ["new", "--name=my_project", "--template=basic"], returncode=0, cwd=str(tmpdir)
         )
         if verbose:
             print("Template creation stdout: ", output.stdout)
@@ -455,13 +455,13 @@ def check_new_template(
 
         if verbose:
             print("Querying action packages available.")
-
+            
         action_packages = client.get_json("api/actionPackages")
         assert len(action_packages) == 1
         action_package = next(iter(action_packages))
         actions = action_package["actions"]
         action_names = tuple(action["name"] for action in actions)
-        assert "compare_time_zones" in action_names
+        assert "get_wikipedia_article_summary" in action_names
 
         if verbose:
             print("Using post to call action.")
@@ -471,16 +471,13 @@ def check_new_template(
         # print(json.dumps(decoded, indent=4))
 
         found = client.post_get_str(
-            "/api/actions/package-name/compare-time-zones/run",
+            "/api/actions/package-name/get-wikipedia-article-summary/run",
             {
-                "user_timezone": "Europe/Helsinki",
-                "compare_to_timezones": "America/New_York, Asia/Kolkata",
+                "article_url": "https://en.wikipedia.org/wiki/Intelligence"
             },
         )
-        assert "Current time in Europe/Helsinki" in found
-        assert "Current time in America/New_York" in found
-        assert "Current time in Asia/Kolkata" in found
-
+        assert "Intelligence" in found
+        
         if verbose:
             print("Test finished with success.")
     finally:

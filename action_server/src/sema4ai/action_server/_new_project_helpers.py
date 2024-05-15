@@ -6,7 +6,7 @@ import zipfile
 import yaml
 import requests
 from pathlib import Path
-from typing import Dict, List, Union, Optional
+from typing import Dict, List, Optional, TypedDict
 from pydantic.main import BaseModel
 
 from ._settings import get_default_settings_dir
@@ -16,10 +16,14 @@ TEMPLATES_PACKAGE_URL = "https://downloads.robocorp.com/action-templates/action-
 
 ACTION_TEMPLATES_METADATA_FILENAME = "action-templates.yaml"
 
-ACTION_TEMPLATES_DIR = Path(f"{get_default_settings_dir()}/action-templates")
-ACTION_TEMPLATES_METADATA_PATH = Path(f"{ACTION_TEMPLATES_DIR}/{ACTION_TEMPLATES_METADATA_FILENAME}")
-
 log = logging.getLogger(__name__)
+
+
+class ActionTemplatesYaml(TypedDict):
+    hash: str
+    url: str
+    date: datetime.datetime
+    templates: Dict[str, str]
 
 
 class ActionTemplate(BaseModel):
@@ -30,77 +34,68 @@ class ActionTemplate(BaseModel):
 class ActionTemplatesMetadata(BaseModel):
     hash: str
     url: str
-    date: datetime.datetime
+    date: datetime.datetime | None
     templates: List[ActionTemplate]
 
 
-def _ensure_latest_templates():
+def _ensure_latest_templates() -> None:
     # Ensures the existence of the latest templates package.
-    # It downloads the latest templates metadata file, and compares the hash with
-    # the metadata hold locally (if exists).
-    # If there is no match (or metadata is not available locally), it will download
-    # the templates package.
+    # It downloads the latest templates metadata file, and compares the hash with the metadata held locally (if exists).
+    # If there is no match (or metadata is not available locally), it will download the templates package.
+    action_templates_dir_path = _get_action_templates_dir_path()
 
-    os.makedirs(ACTION_TEMPLATES_DIR, exist_ok=True)
+    os.makedirs(action_templates_dir_path, exist_ok=True)
 
     local_metadata = _get_local_templates_metadata()
-
     new_metadata_content = requests.get(TEMPLATES_METADATA_URL).text
+        
     new_metadata = _parse_templates_metadata(new_metadata_content)
 
-    # @TODO:
-    # Provide fallback when no templates are available.
-    if not local_metadata and not new_metadata:
-        log.critical("No templates available")
-        return
+    if not local_metadata or not new_metadata or local_metadata.hash != new_metadata.hash:
+        _download_and_unzip_templates(action_templates_dir_path)
 
-    if not local_metadata or local_metadata.hash != new_metadata.hash:
-        _download_and_unzip_templates(ACTION_TEMPLATES_DIR)
-
-        with open(ACTION_TEMPLATES_METADATA_PATH, "w+") as f:
+        with open(_get_action_templates_metadata_path(), "w+") as f:
             f.write(new_metadata_content)
 
 
-def _download_and_unzip_templates(action_templates_dir: Path):
-    # Downloads the action templates package and unpacks particular template zip files.
-
+def _download_and_unzip_templates(action_templates_dir: Path) -> None:
     templates_response = requests.get(TEMPLATES_PACKAGE_URL)
 
     with zipfile.ZipFile(io.BytesIO(templates_response.content)) as zip_ref:
         zip_ref.extractall(action_templates_dir)
 
-def _get_local_templates_metadata() -> Optional[ActionTemplatesMetadata]:
-    # Loads templates metadata YAML file.
 
-    if not os.path.isfile(ACTION_TEMPLATES_METADATA_PATH):
+def _get_local_templates_metadata() -> Optional[ActionTemplatesMetadata]:
+    action_templates_metadata_path = _get_action_templates_metadata_path()
+
+    if not os.path.isfile(action_templates_metadata_path):
         return None
 
-    return _parse_templates_metadata(ACTION_TEMPLATES_METADATA_PATH.read_text())
+    return _parse_templates_metadata(action_templates_metadata_path.read_text())
+
 
 def _parse_templates_metadata(yaml_content: str) -> Optional[ActionTemplatesMetadata]:
-    # Parses templates YAML metadata into ActionTemplatesMetadata model.
-
     try:
-        metadata: Dict[str, Union[str, Dict[str, str]]] = yaml.safe_load(yaml_content)
+        metadata: ActionTemplatesYaml = yaml.safe_load(yaml_content)
 
         templates: List[ActionTemplate] = list()
 
-        for name, description in metadata["templates"].items():
+        for name, description in metadata.get("templates", dict()).items():
             templates.append(ActionTemplate(name=name, description=description))
-
+            
         return ActionTemplatesMetadata(
-            hash=metadata.get("hash"),
-            url=metadata.get("url"),
-            date=metadata.get("date"),
+            hash=metadata.get("hash", ""),
+            url=metadata.get("url", ""),
+            date=metadata.get("date", None),
             templates=templates
         )
     except yaml.YAMLError as e:
         log.warning(f"Error reading metadata: {e}")
         return None
 
-def _unpack_template(template_name: str, directory: str = "."):
-    # Unzips the template to given directory.
-    template_path = f"{ACTION_TEMPLATES_DIR}/{template_name}.zip"
+
+def _unpack_template(template_name: str, directory: str = ".") -> None:
+    template_path = f"{_get_action_templates_dir_path()}/{template_name}.zip"
 
     if not os.path.isfile(template_path):
         raise RuntimeError(f"Template {template_name} does not exist")
@@ -108,3 +103,10 @@ def _unpack_template(template_name: str, directory: str = "."):
     with zipfile.ZipFile(template_path, "r") as zip_ref:
         zip_ref.extractall(directory)
 
+
+def _get_action_templates_dir_path() -> Path:
+    return Path(f"{get_default_settings_dir()}/action-templates")
+
+
+def _get_action_templates_metadata_path() -> Path:
+    return Path(f"{_get_action_templates_dir_path()}/{ACTION_TEMPLATES_METADATA_FILENAME}")

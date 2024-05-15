@@ -4,7 +4,7 @@ import os
 log = logging.getLogger(__name__)
 
 
-def create_new_project(directory: str = ".", template_name: str = None):
+def create_new_project(directory: str = ".", template_name: str = "") -> None:
     """Creates a new project under the specified directory.
 
     Args:
@@ -17,10 +17,20 @@ def create_new_project(directory: str = ".", template_name: str = None):
         _unpack_template
     )
     from sema4ai.action_server.vendored_deps.termcolors import bold_red, colored
-
+    
     try:
         _ensure_latest_templates()
+    except Exception as e:
+        log.warning(
+            f"Refreshing templates failed, reason: {e}\n"
+            "Already cached templates will be used if available."
+        )
+
+    try:
         metadata = _get_local_templates_metadata()
+        
+        if not metadata:
+            raise RuntimeError("No templates available")
 
         if not directory:
             directory = input("Name of the project: ")
