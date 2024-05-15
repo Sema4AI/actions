@@ -38,7 +38,7 @@ from typing import Callable, Optional, overload
 from ._fixtures import setup, teardown
 from ._protocols import IAction, Status
 from ._request import Request
-from ._secret import Secret
+from ._secret import OAuth2Secret, Secret
 
 __version__ = "0.5.0"
 version_info = [int(x) for x in __version__.split(".")]

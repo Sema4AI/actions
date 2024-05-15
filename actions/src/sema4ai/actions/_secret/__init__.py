@@ -5,6 +5,32 @@ if typing.TYPE_CHECKING:
     from sema4ai.actions._action_context import ActionContext
 
 
+def is_secret_subclass(cls: type) -> bool:
+    try:
+        return issubclass(cls, Secret)
+    except TypeError:
+        # This can happen if the first param is not a class
+        # -- this is the case when using `Oauth2Secret[...]`
+        return False
+
+
+def is_oauth2_secret_subclass(cls: type) -> bool:
+    try:
+        # Case where we have the parametrized version of the class
+        # i.e.: OAuth2Secret[Literal['google'], ...]
+        if issubclass(getattr(cls, "__origin__", None), OAuth2Secret):
+            return True
+    except TypeError:
+        pass
+
+    try:
+        return issubclass(cls, OAuth2Secret)
+    except TypeError:
+        # This can happen if the first param is not a class
+        # -- this is the case when using `Oauth2Secret[...]`
+        return False
+
+
 class Secret:
     """
     This class should be used to receive secrets.
@@ -93,7 +119,7 @@ class OAuth2Secret(Generic[ProviderT, ScopesT]):
         @action
         def add_column_to_spreadsheet(
             spreadsheet_name: str,
-            access_token: OAuth2Secret[
+            google_oauth_secret: OAuth2Secret[
                 Literal["google"],
                 list[
                     Literal[
@@ -103,7 +129,7 @@ class OAuth2Secret(Generic[ProviderT, ScopesT]):
             ],
         ):
             ...
-            add_column(spreadsheet_name, auth_info.token)
+            add_column(spreadsheet_name, google_oauth_secret.access_token)
         ```
 
     Note: this class is abstract and is not meant to be instanced by clients.
@@ -111,17 +137,50 @@ class OAuth2Secret(Generic[ProviderT, ScopesT]):
         or `from_action_context`).
     """
 
-    def __init__(
-        self,
-        provider: ProviderT,
-        scopes: ScopesT,
-        token: str,
-        metadata: JSONValue = None,
-    ):
-        self._provider = provider
-        self._scopes = scopes
-        self._token = token
-        self._metadata = metadata
+    @classmethod
+    def model_validate(cls, value: dict) -> "OAuth2Secret":
+        """
+        Creates an OAuth2 Secret given a dict with the information
+        (expected when the user is passing the arguments using a json input).
+
+        Args:
+            value: The dict containing the information to build the OAuth2 Secret.
+
+        Return: An OAuth2Secret instance with the given value.
+
+        Note: the model_validate method is used for compatibility with
+            the pydantic API.
+        """
+        from sema4ai.actions._secret._oauth2_secret import _RawOauth2Secret
+
+        if not isinstance(value, dict):
+            raise TypeError(
+                "To create an OAuth2Secret from input data, it's expected that a dict\n"
+                "with 'provider', 'scopes' and 'access_token' values are passed.\n"
+                f"Received: {value}({type(value)})"
+            )
+
+        return _RawOauth2Secret(value)
+
+    @classmethod
+    def from_action_context(
+        cls, action_context: "ActionContext", path: str
+    ) -> "OAuth2Secret":
+        """
+        Creates an OAuth2 Secret given the action context (which may be encrypted
+        in memory until the actual secret value is requested).
+
+        Args:
+            action_context: The action context which has the secret.
+
+            path: The path inside of the action context for the secret data
+            requested (Example: 'secrets/my_secret_name').
+
+        Return: An OAuth2Secret instance collected from the passed action context.
+        """
+        from sema4ai.actions._secret._oauth2_secret import _OAuth2SecretInActionContext
+
+        return _OAuth2SecretInActionContext(action_context, path)
 
     @property
     def provider(self) -> str:
@@ -136,7 +195,7 @@ class OAuth2Secret(Generic[ProviderT, ScopesT]):
         )
 
     @property
-    def token(self) -> str:
+    def access_token(self) -> str:
         raise NotImplementedError(
             "The OAuth2Secret class is abstract and should not be directly used."
         )

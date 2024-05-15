@@ -31,7 +31,10 @@ class ManagedParameters:
         node: Optional[FunctionDef] = None,
         param: Optional[inspect.Parameter] = None,
     ) -> bool:
-        from sema4ai.actions._secret import Secret
+        from sema4ai.actions._secret import (
+            is_oauth2_secret_subclass,
+            is_secret_subclass,
+        )
 
         if param_name in self._param_name_to_instance:
             return True
@@ -43,8 +46,11 @@ class ManagedParameters:
             return self._is_secret_node(param_name, node)
 
         elif param is not None:
-            if param.annotation and issubclass(param.annotation, Secret):
-                return True
+            if param.annotation:
+                if is_secret_subclass(param.annotation):
+                    return True
+                if is_oauth2_secret_subclass(param.annotation):
+                    return True
 
         else:
             raise AssertionError("Either node or param must be passed.")
@@ -77,11 +83,21 @@ class ManagedParameters:
         original_kwargs: Dict[str, Any],
     ) -> Dict[str, Any]:
         from sema4ai.actions._action_context import ActionContext
-        from sema4ai.actions._secret import Secret
+        from sema4ai.actions._request import Request
+        from sema4ai.actions._secret import (
+            OAuth2Secret,
+            Secret,
+            is_oauth2_secret_subclass,
+            is_secret_subclass,
+        )
 
         use_kwargs = new_kwargs.copy()
 
         request = new_kwargs.get("request")
+        if request is None:
+            req = original_kwargs.get("request")
+            if req is not None:
+                request = Request.model_validate(req)
         if request is None:
             request = self._param_name_to_instance.get("request")
 
@@ -94,19 +110,27 @@ class ManagedParameters:
             ):
                 use_kwargs[param.name] = self._param_name_to_instance[param.name]
 
-            elif param.annotation and issubclass(param.annotation, Secret):
-                # Handle a secret
-                secret_value = original_kwargs.get(param.name)
+            elif param.annotation:
+                use_class = None
+                if is_secret_subclass(param.annotation):
+                    use_class = Secret
 
-                if secret_value is not None:
-                    # Gotten directly from the input.json (or command line)
-                    # as a value in the root.
-                    use_kwargs[param.name] = Secret.model_validate(secret_value)
+                elif is_oauth2_secret_subclass(param.annotation):
+                    use_class = OAuth2Secret
 
-                elif x_action_context is not None:
-                    use_kwargs[param.name] = Secret.from_action_context(
-                        x_action_context, f"secrets/{param.name}"
-                    )
+                if use_class is not None:
+                    # Handle a secret
+                    secret_value = original_kwargs.get(param.name)
+
+                    if secret_value is not None:
+                        # Gotten directly from the input.json (or command line)
+                        # as a value in the root.
+                        use_kwargs[param.name] = use_class.model_validate(secret_value)
+
+                    elif x_action_context is not None:
+                        use_kwargs[param.name] = use_class.from_action_context(
+                            x_action_context, f"secrets/{param.name}"
+                        )
 
         return use_kwargs
 
@@ -128,7 +152,11 @@ class ManagedParameters:
         node: Optional[FunctionDef] = None,
     ) -> type | str:
         from sema4ai.actions._request import Request
-        from sema4ai.actions._secret import Secret
+        from sema4ai.actions._secret import (
+            Secret,
+            is_oauth2_secret_subclass,
+            is_secret_subclass,
+        )
 
         if param_name == "request":
             return Request
@@ -141,8 +169,12 @@ class ManagedParameters:
             )
 
         if param is not None:
-            if param.annotation and issubclass(param.annotation, Secret):
-                return Secret
+            if param.annotation:
+                if is_secret_subclass(param.annotation):
+                    return Secret
+
+                if is_oauth2_secret_subclass(param.annotation):
+                    return Secret
         else:
             assert node is not None
             if self._is_secret_node(param_name, node):
