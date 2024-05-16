@@ -472,10 +472,7 @@ def check_new_template(
         # decoded = json.loads(open_api)
         # print(json.dumps(decoded, indent=4))
 
-        found = client.post_get_str(
-            "/api/actions/package-name/greet/run",
-            {}
-        )
+        found = client.post_get_str("/api/actions/package-name/greet/run", {})
         assert "Hello world" in found
 
         if verbose:
