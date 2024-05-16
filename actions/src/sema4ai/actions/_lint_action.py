@@ -278,6 +278,14 @@ def _check_docstring_contents(
 
                 continue
 
+            # Note: at this time we don't do handling for OAuth2 parameters here because
+            # we currently don't follow aliases, so, in practice it'll consider OAuth2
+            # parameters (when using static analysis) as any other parameter.
+            # -- given that the only difference is a better error message, this is
+            # a reasonable compromise at this point (in runtime the types are
+            # resolved properly and the actual type is then verified to inject
+            # properly as a managed parameter).
+
             if not desc:
                 yield _make_error(
                     arg,
@@ -302,7 +310,14 @@ def iter_lint_errors(
     for _stack, node in _iter_nodes(ast, recursive=False):
         if isinstance(node, ast_module.FunctionDef):
             for decorator in node.decorator_list:
-                if isinstance(decorator, ast_module.Name) and decorator.id == "action":
+                if (
+                    isinstance(decorator, ast_module.Name) and decorator.id == "action"
+                ) or (
+                    isinstance(decorator, ast_module.Attribute)
+                    and decorator.attr == "action"
+                    and isinstance(decorator.value, ast_module.Name)
+                    and decorator.value.id == "actions"
+                ):
                     # We found an @action. Do the needed checks.
 
                     # Check for docstring
