@@ -324,6 +324,89 @@ run() → Any
 
 ______________________________________________________________________
 
+# Class `OAuth2Secret`
+
+This class should be used to specify that OAuth2 secrets should be received.
+
+The way to use it is by declaring a variable with the 'OAuth2Secret' type in the @action along with its accepted provider and scope as Literals.
+
+**Example:**
+
+```
+from sema4ai.actions import action, OAuth2Secret
+
+@action
+def add_column_to_spreadsheet(
+    spreadsheet_name: str,
+    google_oauth2_secret: OAuth2Secret[
+        Literal["google"],
+        list[
+            Literal[
+                "https://www.googleapis.com/auth/spreadsheets",
+            ]
+        ],
+    ]
+):
+    ...
+    add_column(spreadsheet_name, google_oauth2_secret.access_token)
+```
+
+Note: this class is abstract and is not meant to be instanced by clients. An instance can be created from one of the factory methods (`model_validate`or `from_action_context`).
+
+## Properties
+
+- `access_token`
+
+- `metadata`
+
+- `provider`
+
+- `scopes`
+
+## Methods
+
+______________________________________________________________________
+
+### `from_action_context`
+
+Creates an OAuth2 Secret given the action context (which may be encrypted in memory until the actual secret value is requested).
+
+**Args:**
+
+- <b>`action_context`</b>:  The action context which has the secret.
+
+- <b>`path`</b>:  The path inside of the action context for the secret datarequested (Example: 'secrets/my_secret_name').
+
+Return: An OAuth2Secret instance collected from the passed action context.
+
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/_secret/__init__.py#L169)
+
+```python
+from_action_context(action_context: 'ActionContext', path: str) → OAuth2Secret
+```
+
+______________________________________________________________________
+
+### `model_validate`
+
+Creates an OAuth2 Secret given a dict with the information (expected when the user is passing the arguments using a json input).
+
+**Args:**
+
+- <b>`value`</b>:  The dict containing the information to build the OAuth2 Secret.
+
+Return: An OAuth2Secret instance with the given value.
+
+Note: the model_validate method is used for compatibility with the pydantic API.
+
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/_secret/__init__.py#L144)
+
+```python
+model_validate(value: dict) → OAuth2Secret
+```
+
+______________________________________________________________________
+
 # Class `Request`
 
 Contains the information exposed in a request (such as headers and cookies).
@@ -392,7 +475,7 @@ Creates a secret given the action context (which may be encrypted in memory unti
 
 Return: A Secret instance collected from the passed action context.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/_secret.py#L45)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/_secret/__init__.py#L78)
 
 ```python
 from_action_context(action_context: 'ActionContext', path: str) → Secret
@@ -412,7 +495,7 @@ Return: A Secret instance with the given value.
 
 Note: the model_validate method is used for compatibility with the pydantic API.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/_secret.py#L29)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/_secret/__init__.py#L60)
 
 ```python
 model_validate(value: str) → Secret

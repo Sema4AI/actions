@@ -28,6 +28,17 @@ def my_action(param1: str) -> str:
 
     data_regression.check([x.to_lsp_diagnostic() for x in iter_lint_errors(contents)])
 
+    contents = """
+@actions.action
+def my_action(param1: str) -> str:
+    '''
+    Empty docstring?
+    '''
+    return ''
+"""
+
+    data_regression.check([x.to_lsp_diagnostic() for x in iter_lint_errors(contents)])
+
 
 def test_lint_action_no_description(data_regression):
     from sema4ai.actions.api import collect_lint_errors
@@ -146,6 +157,40 @@ def my_action(my_password: Secret, another: actions.Secret) -> str:
     This is an action.
     '''
     return ''
+"""
+
+    pm = PluginManager()
+    pm.set_instance(EPManagedParameters, ManagedParameters({}))
+    data_regression.check(
+        [x.to_lsp_diagnostic() for x in iter_lint_errors(contents, pm=pm)]
+    )
+
+    assert not find_issues_in_actions_list(datadir, contents)
+
+
+def test_lint_action_oauth2_secret(data_regression, datadir):
+    from sema4ai.actions._customization._extension_points import EPManagedParameters
+    from sema4ai.actions._customization._plugin_manager import PluginManager
+    from sema4ai.actions._lint_action import iter_lint_errors
+    from sema4ai.actions._managed_parameters import ManagedParameters
+
+    contents = """
+from typing import Literal
+
+from sema4ai import actions
+from sema4ai.actions import OAuth2Secret
+
+
+@actions.action
+def my_action(
+    another: actions.OAuth2Secret[
+        Literal["google"], list[Literal["readscope", "writescope"]]
+    ],
+) -> str:
+    '''
+    This is an action.
+    '''
+    return ""
 """
 
     pm = PluginManager()

@@ -11,6 +11,7 @@
 ## Classes
 
 - [`_protocols.IAction`](./sema4ai.actions._protocols.md#class-iaction)
+- [`_secret.OAuth2Secret`](./sema4ai.actions._secret.md#class-oauth2secret): This class should be used to specify that OAuth2 secrets should be received.
 - [`_request.Request`](./sema4ai.actions._request.md#class-request): Contains the information exposed in a request (such as headers and cookies).
 - [`_secret.Secret`](./sema4ai.actions._secret.md#class-secret): This class should be used to receive secrets.
 - [`_protocols.Status`](./sema4ai.actions._protocols.md#class-status): Action state

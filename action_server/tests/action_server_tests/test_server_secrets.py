@@ -21,7 +21,7 @@ def test_secrets_encrypted(
         keys = [b"a" * len(keys[0])]
 
     # ACTION_SERVER_DECRYPT_INFORMATION: Contains information on what is passed
-    # as encrypted.
+    # encrypted.
     # Note: x-action-context is "special" in that it's a header that can be sent to
     # the action server over multiple parts (x-action-context-1, x-action-context-2, ...)
     # the result of all the parts will be decoded.
@@ -191,3 +191,65 @@ def test_secrets_encrypted_set_through_separate_post_request(
         {"name": "Foo"},
     )
     assert "my-secret-value" == json.loads(found)
+
+
+def test_secrets_encrypted_oauth2(
+    action_server_process: ActionServerProcess,
+    client: ActionServerClient,
+    datadir,
+):
+    import base64
+    import json
+
+    from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+
+    pack = datadir / "pack_encryption_oauth2"
+
+    keys = [AESGCM.generate_key(bit_length=256), AESGCM.generate_key(bit_length=256)]
+    if USE_STATIC_INFO:
+        keys = [b"a" * len(keys[0])]
+
+    # ACTION_SERVER_DECRYPT_INFORMATION: Contains information on what is passed
+    # encrypted.
+    # Note: x-action-context is "special" in that it's a header that can be sent to
+    # the action server over multiple parts (x-action-context-1, x-action-context-2, ...)
+    # the result of all the parts will be decoded.
+    #
+    # ACTION_SERVER_DECRYPT_KEYS: The keys that can be used to decrypt (base-64
+    # version of the actual bytes used to encrypt).
+    env = dict(
+        ACTION_SERVER_DECRYPT_INFORMATION=json.dumps(["header:x-action-context"]),
+        ACTION_SERVER_DECRYPT_KEYS=json.dumps(
+            [base64.b64encode(k).decode("ascii") for k in keys]
+        ),
+    )
+
+    action_server_process.start(
+        cwd=pack,
+        actions_sync=True,
+        db_file="server.db",
+        lint=True,
+        env=env,
+    )
+
+    from sema4ai.action_server._encryption import make_encrypted_data_envelope
+
+    ctx_info = make_encrypted_data_envelope(
+        keys[0],
+        {
+            "secrets": {
+                "oauth2_secret": {
+                    "provider": "google",
+                    "scopes": ["https://scope:read", "https://scope:write"],
+                    "access_token": "foobar",
+                }
+            }
+        },
+    )
+
+    found = client.post_get_str(
+        "api/actions/pack-encryption-oauth2/hello-greeting/run",
+        {"name": "foo"},
+        headers={"x-action-context": ctx_info},
+    )
+    assert "Hello foo. Access token: foobar" == json.loads(found)

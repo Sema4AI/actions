@@ -46,6 +46,7 @@ def list_actions(
 
     from sema4ai.actions._action import Context
     from sema4ai.actions._collect_actions import collect_actions
+    from sema4ai.actions._exceptions import ActionsCollectError
     from sema4ai.actions._protocols import ActionsListActionTypedDict
 
     p = Path(path)
@@ -64,23 +65,31 @@ def list_actions(
         write_to = original_stdout
 
     with redirect_stdout(sys.stderr):
-        action: IAction
-        actions_found: List[ActionsListActionTypedDict] = []
-        for action in collect_actions(pm, p, glob=glob):
-            entry: ActionsListActionTypedDict = {
-                "name": action.name,
-                "line": action.lineno,
-                "file": action.filename,
-                "docs": getattr(action.method, "__doc__") or "",
-                "input_schema": action.input_schema,
-                "output_schema": action.output_schema,
-                "managed_params_schema": action.managed_params_schema,
-                "options": action.options,
-            }
-            actions_found.append(entry)
+        try:
+            action: IAction
+            actions_found: List[ActionsListActionTypedDict] = []
+            for action in collect_actions(pm, p, glob=glob):
+                entry: ActionsListActionTypedDict = {
+                    "name": action.name,
+                    "line": action.lineno,
+                    "file": action.filename,
+                    "docs": getattr(action.method, "__doc__") or "",
+                    "input_schema": action.input_schema,
+                    "output_schema": action.output_schema,
+                    "managed_params_schema": action.managed_params_schema,
+                    "options": action.options,
+                }
+                actions_found.append(entry)
 
-        write_to.write(json.dumps(actions_found))
-        write_to.flush()
+            write_to.write(json.dumps(actions_found))
+            write_to.flush()
+        except Exception as e:
+            if not isinstance(e, ActionsCollectError):
+                traceback.print_exc()
+            else:
+                context.show_error(str(e))
+            return 1
+
     return 0
 
 
@@ -224,7 +233,7 @@ def run(
     from sema4ai.actions._action import Context, set_current_action
     from sema4ai.actions._collect_actions import collect_actions
     from sema4ai.actions._config import RunConfig, set_config
-    from sema4ai.actions._exceptions import RobocorpActionsCollectError
+    from sema4ai.actions._exceptions import ActionsCollectError
     from sema4ai.actions._hooks import (
         after_action_run,
         after_all_actions_run,
@@ -418,7 +427,7 @@ def run(
                     )
 
                     if not actions:
-                        raise RobocorpActionsCollectError(
+                        raise ActionsCollectError(
                             f"Did not find any actions in: {path}"
                         )
                 except Exception as e:
@@ -426,7 +435,7 @@ def run(
                     setup_message = str(e)
 
                     log.exception()
-                    if not isinstance(e, RobocorpActionsCollectError):
+                    if not isinstance(e, ActionsCollectError):
                         traceback.print_exc()
                     else:
                         context.show_error(setup_message)

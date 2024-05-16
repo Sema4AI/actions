@@ -21,10 +21,15 @@
       "type": "pydevd",
       "name": "pytest single (with pydevd)",
       "request": "launch",
-      "cwd": "${workspaceFolder}/action_server/tests",
+      "cwd": "${workspaceFolder}/actions/tests",
       "console": "integratedTerminal",
       "module": "pytest",
-      "args": ["-k", "test_actions_process_pool_run", "--force-regen"]
+      "args": [
+        "-k",
+        "test_actions_oauth2_secret_list_bad",
+        "--force-regen",
+        "--capture=no"
+      ]
       // "env": {
       //   "PYDEVD_DEBUG": "1",
       //   "PYDEVD_DEBUG_FILE": "C:/temp/pydevdLogs.txt"

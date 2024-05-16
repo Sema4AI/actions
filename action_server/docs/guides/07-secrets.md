@@ -1,10 +1,10 @@
 ## Secrets
 
-*Important*: Requires `sema4ai-actions 0.3.1` onwards to work.
+**Important**: Requires `sema4ai-actions 0.3.1` onwards to work.
 
 ### Receiving a Secret
 
-To receive secrets using actions, it's possible to add a parameter with a 
+To receive secrets using actions, it's possible to add a parameter with a
 'Secret' type so that it's automatically received by the action.
 
 i.e.:
@@ -29,7 +29,7 @@ Example `input.json`:
 
 ```json
 {
-    "my_secret": "secret-value"
+  "my_secret": "secret-value"
 }
 ```
 
@@ -59,7 +59,7 @@ x_action_server_header = base64.b64encode(
         payload
     ).encode("utf-8")
 ).decode("ascii")
-``` 
+```
 
 Note: the `X-Action-Context` header can also be passed encrypted with a
 key shared with the action server in the environment variables.
@@ -111,5 +111,67 @@ ACTION_SERVER_DECRYPT_KEYS=json.dumps(
 )
 ```
 
-Note: all the keys will be checked in order and the caller may use any of the 
+Note: all the keys will be checked in order and the caller may use any of the
 keys set to encrypt the data.
+
+## OAuth2 Secrets
+
+Starting with `Sema4.ai Action Server 0.9.0` and `sema4ai-actions 0.6.0`, OAuth2 secrets
+may be passed to the action server (note: it's up to the client to actually manage
+the user/tokens, the action server will just receive the `access_token` and related
+information collected by the client).
+
+### Receiving an OAuth2 Secret
+
+To receive OAuth2 secrets using actions, it's possible to add a parameter with an
+'OAuth2Secret' type (typed accordingly) so that it's automatically received by the action.
+
+i.e.:
+
+```python
+from typing import Literal
+from sema4ai.actions import OAuth2Secret, action
+
+@action
+def read_spreadsheet(
+    name: str,
+    google_secret: OAuth2Secret[
+        Literal["google"],
+        list[
+            Literal[
+                "https://www.googleapis.com/auth/spreadsheets.readonly",
+                "https://www.googleapis.com/auth/drive.readonly",
+            ]
+        ],
+    ],
+) -> str:
+    return do_read_spreadsheet(name, google_secret.access_token)
+```
+
+### Passing Secrets
+
+The action server will receive an OAuth2 secret in the same way that a regular secret
+is passed, the only difference is that the initial payload is different. Instead
+of a payload where the value is just a string, the payload is a dict with the following
+keys: `"provider", "scopes", "access_token", "metadata"`.
+
+i.e.: While the payload for regular secrets is:
+
+```json
+{
+  "my_secret": "secret-value"
+}
+```
+
+The payload for OAuth2 secrets is:
+
+```json
+{
+  "my_oauth2_secret": {
+    "provider": "google",
+    "scopes": ["scope1", "scope2"],
+    "access_token": "<this-is-the-access-token>",
+    "metadata": { "any": "additional info" }
+  }
+}
+```
