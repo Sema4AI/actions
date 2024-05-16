@@ -155,13 +155,15 @@ is passed, the only difference is that the initial payload is different. Instead
 of a payload where the value is just a string, the payload is a dict with the following
 keys: `"provider", "scopes", "access_token", "metadata"`.
 
+i.e.: While the payload for regular secrets is:
+
 ```json
 {
   "my_secret": "secret-value"
 }
 ```
 
-The payload is:
+The payload for OAuth2 secrets is:
 
 ```json
 {

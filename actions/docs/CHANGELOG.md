@@ -32,9 +32,9 @@
 
 ## 0.4.0 - 2024-05-02
 
-- A 'display*name' may be set in an `@action` to control the summary of the
+- A `display_name` may be set in an `@action` to control the summary of the
   action in the openapi.json (the default is the action signature name replacing
-  `*` by spaces and making it a title).
+  `_` by spaces and making it a title).
 - A public API function was added to collect linting errors from a file
   containing `@action`s (`sema4ai.actions.api.collect_lint_errors`).
 

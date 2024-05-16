@@ -21,7 +21,7 @@ def test_secrets_encrypted(
         keys = [b"a" * len(keys[0])]
 
     # ACTION_SERVER_DECRYPT_INFORMATION: Contains information on what is passed
-    # as encrypted.
+    # encrypted.
     # Note: x-action-context is "special" in that it's a header that can be sent to
     # the action server over multiple parts (x-action-context-1, x-action-context-2, ...)
     # the result of all the parts will be decoded.
@@ -210,7 +210,7 @@ def test_secrets_encrypted_oauth2(
         keys = [b"a" * len(keys[0])]
 
     # ACTION_SERVER_DECRYPT_INFORMATION: Contains information on what is passed
-    # as encrypted.
+    # encrypted.
     # Note: x-action-context is "special" in that it's a header that can be sent to
     # the action server over multiple parts (x-action-context-1, x-action-context-2, ...)
     # the result of all the parts will be decoded.

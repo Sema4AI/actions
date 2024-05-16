@@ -147,6 +147,8 @@ def collect_actions(
 ) -> Iterator[IAction]:
     """
     Note: collecting actions is not thread-safe.
+
+    Raises: ActionsCollectError
     """
     from sema4ai.actions import _constants, _hooks
 
@@ -162,11 +164,11 @@ def collect_actions(
         return action.name in action_names
 
     def on_func_found(func, options: Dict):
-        from sema4ai.actions._exceptions import RobocorpActionsError
+        from sema4ai.actions._exceptions import ActionsError
 
         key = (func.__code__.co_name, func.__code__.co_filename)
         if key in _found_as_set:
-            raise RobocorpActionsError(
+            raise ActionsError(
                 f"Error: an action with the name '{func.__code__.co_name}' was "
                 + f"already found in: {func.__code__.co_filename}."
             )
@@ -214,14 +216,12 @@ def collect_actions(
                 import_path(path, root=root)
 
         else:
-            from ._exceptions import RobocorpActionsCollectError
+            from ._exceptions import ActionsCollectError
 
             if not path.exists():
-                raise RobocorpActionsCollectError(f"Path: {path} does not exist")
+                raise ActionsCollectError(f"Path: {path} does not exist")
 
-            raise RobocorpActionsCollectError(
-                f"Expected {path} to map to a directory or file."
-            )
+            raise ActionsCollectError(f"Expected {path} to map to a directory or file.")
 
     from sema4ai.actions._action import Action
 

@@ -7,6 +7,8 @@ def test_actions_oauth2_secret_run_with_request(datadir: Path):
 
     from devutils.fixtures import sema4ai_actions_run
 
+    datadir = datadir / "good"
+
     # Specifies the request in the json input.
     json_output = datadir / "json.output"
     secret_data = {
@@ -48,6 +50,8 @@ def test_actions_oauth2_secret_run_with_input(datadir: Path):
 
     from devutils.fixtures import sema4ai_actions_run
 
+    datadir = datadir / "good"
+
     # Specifies the request in the json input.
     json_output = datadir / "json.output"
     secret_data = {
@@ -78,6 +82,8 @@ def test_actions_oauth2_secret_list(datadir, data_regression):
 
     from devutils.fixtures import sema4ai_actions_run
 
+    datadir = datadir / "good"
+
     result = sema4ai_actions_run(
         ["list", "--skip-lint"], returncode=0, cwd=str(datadir)
     )
@@ -93,3 +99,14 @@ def test_actions_oauth2_secret_list(datadir, data_regression):
             "output_schema": f["output_schema"],
         }
     data_regression.check(data)
+
+
+def test_actions_oauth2_secret_list_bad(datadir):
+    from devutils.fixtures import sema4ai_actions_run
+
+    datadir = datadir / "bad"
+
+    result = sema4ai_actions_run(
+        ["list", "--skip-lint"], returncode=1, cwd=str(datadir)
+    )
+    assert "Invalid OAuth2Secret annotation found." in result.stderr.decode("utf-8")

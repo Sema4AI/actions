@@ -26,7 +26,7 @@
       "module": "pytest",
       "args": [
         "-k",
-        "test_lint_action_oauth2_secret",
+        "test_actions_oauth2_secret_list_bad",
         "--force-regen",
         "--capture=no"
       ]

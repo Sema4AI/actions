@@ -1,12 +1,12 @@
-class RobocorpActionsError(RuntimeError):
+class ActionsError(RuntimeError):
     pass
 
 
-class RobocorpActionsCollectError(RobocorpActionsError):
+class ActionsCollectError(ActionsError):
     """
     Exception given if there was some issue collecting actions.
     """
 
 
-class InvalidArgumentsError(RobocorpActionsError):
+class InvalidArgumentsError(ActionsError):
     pass
