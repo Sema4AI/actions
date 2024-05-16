@@ -164,7 +164,7 @@ class OAuth2Secret(Generic[ProviderT, ScopesT]):
                 f"Received: {value}({type(value)})"
             )
 
-        return typing.cast(OAuth2Secret, _RawOauth2Secret(value))
+        return _RawOauth2Secret(value)
 
     @classmethod
     def from_action_context(
@@ -184,9 +184,7 @@ class OAuth2Secret(Generic[ProviderT, ScopesT]):
         """
         from sema4ai.actions._secret._oauth2_secret import _OAuth2SecretInActionContext
 
-        return typing.cast(
-            OAuth2Secret, _OAuth2SecretInActionContext(action_context, path)
-        )
+        return _OAuth2SecretInActionContext(action_context, path)
 
     @property
     def provider(self) -> str:

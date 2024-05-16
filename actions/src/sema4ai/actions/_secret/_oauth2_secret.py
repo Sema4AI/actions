@@ -1,15 +1,10 @@
-from typing import Any, Generic, Optional, TypeVar
+from typing import Any, Optional
 
 from sema4ai.actions._action_context import ActionContext
-
-# Definition (internal to sema4ai-actions)
-ProviderT = TypeVar("ProviderT", bound=str)  # Restrict Provider to string
-ScopesT = TypeVar("ScopesT", bound=list)
-
-JSONValue = dict[str, "JSONValue"] | list["JSONValue"] | str | int | float | bool | None
+from sema4ai.actions._secret import JSONValue, OAuth2Secret, ProviderT, ScopesT
 
 
-class OAuth2Secret(Generic[ProviderT, ScopesT]):
+class _BaseInternalOAuth2Secret(OAuth2Secret):
     def __init__(
         self,
         provider: ProviderT,
@@ -32,7 +27,7 @@ class OAuth2Secret(Generic[ProviderT, ScopesT]):
         return self._provider
 
     @property
-    def scopes(self) -> ScopesT:
+    def scopes(self) -> list[str]:
         return self._scopes
 
     @property
@@ -44,7 +39,7 @@ class OAuth2Secret(Generic[ProviderT, ScopesT]):
         return self._metadata
 
 
-class _OAuth2SecretInActionContext(OAuth2Secret):
+class _OAuth2SecretInActionContext(_BaseInternalOAuth2Secret):
     """
     Internal API to wrap a secret which is passed encrypted.
     """
@@ -123,7 +118,7 @@ class _OAuth2SecretInActionContext(OAuth2Secret):
             return dct["provider"]
 
     @property
-    def scopes(self) -> str:
+    def scopes(self) -> list[str]:
         """
         Provides the actual scopes wrapped in this class.
         """
@@ -145,7 +140,7 @@ class _OAuth2SecretInActionContext(OAuth2Secret):
             return dct.get("metadata")
 
 
-class _RawOauth2Secret(OAuth2Secret):
+class _RawOauth2Secret(_BaseInternalOAuth2Secret):
     """
     Internal API to wrap a secret which is not passed encrypted.
     """

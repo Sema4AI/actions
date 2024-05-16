@@ -64,8 +64,8 @@ def list_actions(
     else:
         write_to = original_stdout
 
-    try:
-        with redirect_stdout(sys.stderr):
+    with redirect_stdout(sys.stderr):
+        try:
             action: IAction
             actions_found: List[ActionsListActionTypedDict] = []
             for action in collect_actions(pm, p, glob=glob):
@@ -83,12 +83,12 @@ def list_actions(
 
             write_to.write(json.dumps(actions_found))
             write_to.flush()
-    except Exception as e:
-        if not isinstance(e, ActionsCollectError):
-            traceback.print_exc()
-        else:
-            context.show_error(str(e))
-        return 1
+        except Exception as e:
+            if not isinstance(e, ActionsCollectError):
+                traceback.print_exc()
+            else:
+                context.show_error(str(e))
+            return 1
 
     return 0
 
