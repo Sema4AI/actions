@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.9.0 - 2024-05-16
+
 - The default datadirs will now be created in `~/.sema4ai/action-server`
   or `LOCALAPPDATA/sema4ai/action-server` instead of `~/robocorp/.action_server`
   or `LOCALAPPDATA/robocorp/action_server`.

@@ -265,7 +265,7 @@ def make_exe():
             "pydantic~=2.4",
             "pyyaml>=6,<7",
             "requests>=2,<3",
-            "sema4ai-actions~=0.3",
+            "sema4ai-actions~=0.6",
             "termcolor~=2.4",
             "uvicorn~=0.23",
             "websockets~=12.0",
