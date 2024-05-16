@@ -126,7 +126,7 @@ information collected by the client).
 The action server will receive an OAuth2 secret in the same way that a regular secret
 is passed, the only difference is that the initial payload is different. Instead
 of payload where the value is just a string, the payload is a dict with the following
-keys: `"provider", "scopes", "access_token", `
+keys: `"provider", "scopes", "access_token", "metadata"`.
 
 ```json
 {
