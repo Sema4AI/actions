@@ -338,17 +338,17 @@ from sema4ai.actions import action, OAuth2Secret
 @action
 def add_column_to_spreadsheet(
     spreadsheet_name: str,
-    google_oauth_secret: OAuth2Secret[
+    google_oauth2_secret: OAuth2Secret[
         Literal["google"],
         list[
             Literal[
                 "https://www.googleapis.com/auth/spreadsheets",
             ]
         ],
-    ],
+    ]
 ):
     ...
-    add_column(spreadsheet_name, google_oauth_secret.access_token)
+    add_column(spreadsheet_name, google_oauth2_secret.access_token)
 ```
 
 Note: this class is abstract and is not meant to be instanced by clients. An instance can be created from one of the factory methods (`model_validate`or `from_action_context`).

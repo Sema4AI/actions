@@ -21,6 +21,9 @@
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
+  "[markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },

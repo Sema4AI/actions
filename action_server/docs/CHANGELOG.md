@@ -5,11 +5,12 @@
 - The default datadirs will now be created in `~/.sema4ai/action-server`
   or `LOCALAPPDATA/sema4ai/action-server` instead of `~/robocorp/.action_server`
   or `LOCALAPPDATA/robocorp/action_server`.
-  Note that this is a *backward incompatible* change. Users can move the contents
+  Note that this is a _backward incompatible_ change. Users can move the contents
   of the old dir to the new dir to keep existing information (a warning is shown
   from the action server notifying users about it if the old directory exists).
 - The `SEMA4AI_HOME` environment variable can now be used to set a different home
   folder to store the `action-server` directory information.
+- OAuth2 Secrets can now be passed to the action server (see the secrets guide for more information).
 
 ## 0.8.1 - 2024-05-09
 
@@ -18,12 +19,12 @@
 ## 0.8.0 - 2024-05-08
 
 - Secret information (with `sema4ai-actions 0.5.0`) is now available in the package metadata.
-    - Note: this is a backward-incompatible change in `sema4ai-actions 0.5.0` as secrets are now required to be documented.
+  - Note: this is a backward-incompatible change in `sema4ai-actions 0.5.0` as secrets are now required to be documented.
 - Fixed brew reference to `sema4ai/tools/action-server` in conda wrapper.
 - The internal database (which keeps information on the runs, etc) is now auto-migrated, so, the
   separate `migrate` command does not need to be manually called.
-    - Note: The action server will now check the internal database version and if it's newer than 
-      the current expected version it'll notify the user and abort the startup.
+  - Note: The action server will now check the internal database version and if it's newer than
+    the current expected version it'll notify the user and abort the startup.
 
 ## 0.7.0 - 2024-05-06
 

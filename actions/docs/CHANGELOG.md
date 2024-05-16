@@ -2,17 +2,34 @@
 
 ## Unreleased
 
+- OAuth2 secrets can now be received in the arguments. Example:
+
+```
+def read_spreadsheet(
+    name: str,
+    google_secret: OAuth2Secret[
+        Literal["google"],
+        list[
+            Literal[
+                "https://www.googleapis.com/auth/spreadsheets.readonly",
+            ]
+        ],
+    ],
+) -> str:
+    read_spreadsheet(name, google_secret.access_token)
+```
+
 ## 0.5.0 - 2024-05-08
 
-- Backward incompatible change: the argument docstring for secrets is now required 
+- Backward incompatible change: the argument docstring for secrets is now required
   to be documented in the arguments (and this information is now provided in the
   action server metadata).
 
 ## 0.4.0 - 2024-05-02
 
-- A 'display_name' may be set in an `@action` to control the summary of the
+- A 'display*name' may be set in an `@action` to control the summary of the
   action in the openapi.json (the default is the action signature name replacing
-  `_` by spaces and making it a title).
+  `*` by spaces and making it a title).
 - A public API function was added to collect linting errors from a file
   containing `@action`s (`sema4ai.actions.api.collect_lint_errors`).
 
@@ -24,20 +41,20 @@
 ## 0.3.0 - 2024-04-22
 
 - Branding change: `robocorp-actions` is now `sema4ai-actions`.
-    - The namespace changed from `robocorp.actions` to `sema4ai.actions`.
-    - The public API remains the same (so, the only change needed should be a rename of `from robocorp.actions import ...` to `from sema4ai.actions import ...`.
-    - `robocorp.tasks` is no longer a dependency (rather, the needed code is now incorporated into `sema4ai-actions`).
+  - The namespace changed from `robocorp.actions` to `sema4ai.actions`.
+  - The public API remains the same (so, the only change needed should be a rename of `from robocorp.actions import ...` to `from sema4ai.actions import ...`.
+  - `robocorp.tasks` is no longer a dependency (rather, the needed code is now incorporated into `sema4ai-actions`).
 
 ## 0.2.1 - 2024-04-17
 
 - Accepts `auth-tag` when using `aes256-gcm` for encrypting the `x-action-context` contents
-  (previously it'd always be an empty string). 
+  (previously it'd always be an empty string).
 
 ## 0.2.0 - 2024-04-10
 
 - `python -m robocorp.actions list` now has information on the managed parameters
   (`managed_params_schema`, which is a dict from parameter name to parameter
-   information is given for each task).
+  information is given for each task).
 - Parameters in `@action` typed as `robocorp.actions.Secret` will now be considered
   managed parameters (the client must to provide the secret information when
   running the action).
@@ -69,26 +86,26 @@
 
 ## 0.0.8 - 2024-03-11
 
-- `pydantic` models are accepted as the input and output of `@action`s. 
+- `pydantic` models are accepted as the input and output of `@action`s.
 
 ## 0.0.7 - 2024-01-31
 
 - When actions are imported they're also automatically linted for the following errors:
-    - Mising docstrings (error)
-    - Mising docstrings docstring (error)
-    - Return statement is found (error).
-    - Each argument has a description in the docstring (error).
-    - Arguments are properly typed (warning).
-    - Return is properly typed (warning).
+  - Mising docstrings (error)
+  - Mising docstrings docstring (error)
+  - Return statement is found (error).
+  - Each argument has a description in the docstring (error).
+  - Arguments are properly typed (warning).
+  - Return is properly typed (warning).
 - Files named `*task*.py` are no longer loaded by default in actions.
 
 ## 0.0.6 - 2024-01-18
 
 - Provides support for calling `main` multiple times.
-    - Modules containing `@action` are no longer reimported anymore.
-    - Any `@action` that was already imported is still available for running in a new `main` call.
-    - `RC_TASKS_SKIP_SESSION_SETUP` env variable may be used to skip setup of new `@setup`s found.
-    - `RC_TASKS_SKIP_SESSION_TEARDOWN` env variable may be used to skip teardon of `@teardown`s found.
+  - Modules containing `@action` are no longer reimported anymore.
+  - Any `@action` that was already imported is still available for running in a new `main` call.
+  - `RC_TASKS_SKIP_SESSION_SETUP` env variable may be used to skip setup of new `@setup`s found.
+  - `RC_TASKS_SKIP_SESSION_TEARDOWN` env variable may be used to skip teardon of `@teardown`s found.
 
 ## 0.0.5 - 2024-01-14
 
