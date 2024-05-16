@@ -41,3 +41,55 @@ def test_actions_oauth2_secret_run_with_request(datadir: Path):
 
     sema4ai_actions_run(args, returncode=0, cwd=str(datadir))
     assert json.loads(json_output.read_text()) == secret_data
+
+
+def test_actions_oauth2_secret_run_with_input(datadir: Path):
+    import json
+
+    from devutils.fixtures import sema4ai_actions_run
+
+    # Specifies the request in the json input.
+    json_output = datadir / "json.output"
+    secret_data = {
+        "provider": "google",
+        "scopes": ["https://www.googleapis.com/auth/drive.file"],
+        "access_token": "this-is-the-access-token",
+        "metadata": {"anything": "goes here"},
+    }
+    json_input_contents = {"message": "some-message", "google_secret": secret_data}
+
+    input_json = datadir / "json.input"
+    input_json.write_text(json.dumps(json_input_contents))
+
+    args = [
+        "run",
+        "-a",
+        "action_check_oauth2",
+        datadir,
+        f"--json-input={input_json}",
+    ]
+
+    sema4ai_actions_run(args, returncode=0, cwd=str(datadir))
+    assert json.loads(json_output.read_text()) == secret_data
+
+
+def test_actions_oauth2_secret_list(datadir, data_regression):
+    import json
+
+    from devutils.fixtures import sema4ai_actions_run
+
+    result = sema4ai_actions_run(
+        ["list", "--skip-lint"], returncode=0, cwd=str(datadir)
+    )
+    found = json.loads(result.stdout)
+    assert len(found) == 1
+    # # Note: the secret does not appear in the schema!
+    # print(json.dumps(found, indent=4))
+    data = {}
+    for f in found:
+        data[f["name"]] = {
+            "input_schema": f["input_schema"],
+            "managed_params_schema": f["managed_params_schema"],
+            "output_schema": f["output_schema"],
+        }
+    data_regression.check(data)

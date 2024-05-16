@@ -108,6 +108,8 @@ class Action:
 
     @property
     def managed_params_schema(self) -> Dict[str, Any]:
+        from typing import get_args, get_origin
+
         from sema4ai.actions._commands import _get_managed_param_type, _is_managed_param
 
         managed_params_schema: Dict[str, Any] = {}
@@ -119,6 +121,76 @@ class Action:
                 tp = _get_managed_param_type(self._pm, param.name, param=param).__name__
 
                 dct = {"type": tp}
+                if tp == "OAuth2Secret":
+                    # In this case we need to make some introspection to get additional information
+                    # on the type (provider, scopes, ...)
+                    annotation_args = get_args(param.annotation)
+                    error_message = """
+The OAuth2Secret annotation is not correct. It should contain 2 arguments, 
+the first being a Literal with the provider name 
+(i.e.: `Literal["google"]`) 
+and the second a list with one Literal with the (multiple) scopes that are required
+(i.e.: `list[Literal["scope1", "scope2", ...]])
+
+Full Example for a parameter named `google_secret` requiring google sheets 
+and google drive scopes:
+
+google_secret: OAuth2Secret[
+    Literal["google"],
+    list[
+        Literal[
+            "https://www.googleapis.com/auth/drive.readonly",
+            "https://www.googleapis.com/auth/spreadsheets.readonly",
+        ]
+    ],
+]
+"""
+                    if not annotation_args or len(annotation_args) != 2:
+                        raise TypeError(error_message)
+
+                    provider = annotation_args[0]
+                    scopes = annotation_args[1]
+                    if get_origin(provider) != Literal:
+                        raise TypeError(
+                            f"First parameter is not a Literal.\n{error_message}"
+                        )
+                    if get_origin(scopes) not in (list, List):
+                        raise TypeError(
+                            f"Second parameter is not a list.\n{error_message}"
+                        )
+                    provider_args = get_args(provider)
+                    if not provider_args or len(provider_args) != 1:
+                        raise TypeError(
+                            f"First parameter does not have a single provider argument.\n{error_message}"
+                        )
+                    provider_str = provider_args[0]
+                    if not isinstance(provider_str, str):
+                        raise TypeError(
+                            f"First parameter Literal does not have a string.\n{error_message}"
+                        )
+
+                    dct["provider"] = provider_str
+
+                    scope_args = get_args(scopes)
+                    if not scope_args or len(scope_args) != 1:
+                        raise TypeError(
+                            f"Second parameter is not a list with a single Literal.\n{error_message}"
+                        )
+
+                    scope_args_literal = scope_args[0]
+                    if get_origin(scope_args_literal) != Literal:
+                        raise TypeError(
+                            f"Second parameter is not a list with a single Literal.\n{error_message}"
+                        )
+
+                    scope_strs = get_args(scope_args_literal)
+                    for entry in scope_strs:
+                        if not isinstance(entry, str):
+                            raise TypeError(
+                                f"Second parameter is not a list with a literal with strings.\n{error_message}"
+                            )
+
+                    dct["scopes"] = scope_strs
 
                 desc = param_name_to_description.get(param.name)
                 if desc:

@@ -15,10 +15,12 @@ def is_secret_subclass(cls: type) -> bool:
 
 
 def is_oauth2_secret_subclass(cls: type) -> bool:
+    from typing import get_origin
+
     try:
         # Case where we have the parametrized version of the class
         # i.e.: OAuth2Secret[Literal['google'], ...]
-        if issubclass(getattr(cls, "__origin__", None), OAuth2Secret):
+        if issubclass(get_origin(cls), OAuth2Secret):
             return True
     except TypeError:
         pass

@@ -39,7 +39,10 @@ def collect_package_metadata(package_dir: Path, datadir: str) -> str | int:
             if managed_params_schema and isinstance(managed_params_schema, dict):
                 found_secrets = {}
                 for k, v in managed_params_schema.items():
-                    if isinstance(v, dict) and v.get("type") == "Secret":
+                    if isinstance(v, dict) and v.get("type") in (
+                        "Secret",
+                        "OAuth2Secret",
+                    ):
                         found_secrets[k] = v
 
                 if found_secrets:

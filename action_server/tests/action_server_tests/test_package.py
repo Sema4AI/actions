@@ -123,6 +123,24 @@ def test_package_metadata(datadir, data_regression):
     data_regression.check(json.loads(output.stdout))
 
 
+def test_package_metadata_oauth2_secrets(datadir, data_regression):
+    import json
+
+    from sema4ai.action_server._selftest import robocorp_action_server_run
+
+    output = robocorp_action_server_run(
+        [
+            "package",
+            "metadata",
+            "--datadir",
+            str(datadir / "data"),
+        ],
+        returncode=0,
+        cwd=datadir / "pack_oauth2_secrets",
+    )
+    data_regression.check(json.loads(output.stdout))
+
+
 def test_package_metadata_secrets(datadir, data_regression):
     import json
 

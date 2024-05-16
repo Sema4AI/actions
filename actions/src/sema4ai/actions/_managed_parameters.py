@@ -153,6 +153,7 @@ class ManagedParameters:
     ) -> type | str:
         from sema4ai.actions._request import Request
         from sema4ai.actions._secret import (
+            OAuth2Secret,
             Secret,
             is_oauth2_secret_subclass,
             is_secret_subclass,
@@ -174,7 +175,7 @@ class ManagedParameters:
                     return Secret
 
                 if is_oauth2_secret_subclass(param.annotation):
-                    return Secret
+                    return OAuth2Secret
         else:
             assert node is not None
             if self._is_secret_node(param_name, node):

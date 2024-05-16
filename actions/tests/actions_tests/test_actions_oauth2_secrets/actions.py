@@ -11,7 +11,7 @@ def action_check_oauth2(
         list[
             Literal[
                 "https://www.googleapis.com/auth/spreadsheets",
-                "https://www.googleapis.com/auth/drive.file",
+                "https://www.googleapis.com/auth/spreadsheets.readonly",
             ]
         ],
     ],

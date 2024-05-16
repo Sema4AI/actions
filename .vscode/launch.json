@@ -24,7 +24,12 @@
       "cwd": "${workspaceFolder}/action_server/tests",
       "console": "integratedTerminal",
       "module": "pytest",
-      "args": ["-k", "test_actions_process_pool_run", "--force-regen"]
+      "args": [
+        "-k",
+        "test_package_metadata_oauth2_secrets",
+        "--force-regen",
+        "--capture=no"
+      ]
       // "env": {
       //   "PYDEVD_DEBUG": "1",
       //   "PYDEVD_DEBUG_FILE": "C:/temp/pydevdLogs.txt"

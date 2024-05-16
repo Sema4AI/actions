@@ -11,11 +11,15 @@ def test_actions_secret_list(datadir, data_regression):
     )
     found = json.loads(result.stdout)
     assert len(found) == 2
-    # Note: the secret does not appear in the schema!
+    # # Note: the secret does not appear in the schema!
     # print(json.dumps(found, indent=4))
     data = {}
     for f in found:
-        data[f["name"]] = {"input_schema": f["input_schema"]}
+        data[f["name"]] = {
+            "input_schema": f["input_schema"],
+            "managed_params_schema": f["managed_params_schema"],
+            "output_schema": f["output_schema"],
+        }
     data_regression.check(data)
 
 
