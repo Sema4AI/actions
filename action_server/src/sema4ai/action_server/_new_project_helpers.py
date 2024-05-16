@@ -6,7 +6,7 @@ import zipfile
 import yaml
 import requests
 from pathlib import Path
-from typing import Dict, List, Optional, TypedDict
+from typing import Optional, TypedDict
 from pydantic.main import BaseModel
 
 from ._settings import get_default_settings_dir
@@ -23,7 +23,7 @@ class ActionTemplatesYaml(TypedDict):
     hash: str
     url: str
     date: datetime.datetime
-    templates: Dict[str, str]
+    templates: dict[str, str]
 
 
 class ActionTemplate(BaseModel):
@@ -35,7 +35,7 @@ class ActionTemplatesMetadata(BaseModel):
     hash: str
     url: str
     date: datetime.datetime | None
-    templates: List[ActionTemplate]
+    templates: list[ActionTemplate]
 
 
 def _ensure_latest_templates() -> None:
@@ -78,9 +78,9 @@ def _parse_templates_metadata(yaml_content: str) -> Optional[ActionTemplatesMeta
     try:
         metadata: ActionTemplatesYaml = yaml.safe_load(yaml_content)
 
-        templates: List[ActionTemplate] = list()
+        templates: list[ActionTemplate] = []
 
-        for name, description in metadata.get("templates", dict()).items():
+        for name, description in metadata.get("templates", {}).items():
             templates.append(ActionTemplate(name=name, description=description))
             
         return ActionTemplatesMetadata(
@@ -95,7 +95,7 @@ def _parse_templates_metadata(yaml_content: str) -> Optional[ActionTemplatesMeta
 
 
 def _unpack_template(template_name: str, directory: str = ".") -> None:
-    template_path = f"{_get_action_templates_dir_path()}/{template_name}.zip"
+    template_path = _get_action_templates_dir_path() / f"{template_name}.zip"
 
     if not os.path.isfile(template_path):
         raise RuntimeError(f"Template {template_name} does not exist")
@@ -105,8 +105,8 @@ def _unpack_template(template_name: str, directory: str = ".") -> None:
 
 
 def _get_action_templates_dir_path() -> Path:
-    return Path(f"{get_default_settings_dir()}/action-templates")
+    return Path(get_default_settings_dir() / "action-templates")
 
 
 def _get_action_templates_metadata_path() -> Path:
-    return Path(f"{_get_action_templates_dir_path()}/{ACTION_TEMPLATES_METADATA_FILENAME}")
+    return Path(_get_action_templates_dir_path() / ACTION_TEMPLATES_METADATA_FILENAME)

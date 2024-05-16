@@ -8,8 +8,8 @@ def create_new_project(directory: str = ".", template_name: str = "") -> None:
     """Creates a new project under the specified directory.
 
     Args:
-        directory (str): The directory to create the project in.
-        template_name (str): Temple to use for the new project.
+        directory: The directory to create the project in.
+        template_name: Template to use for the new project.
     """
     from ._new_project_helpers import (
         _ensure_latest_templates,
