@@ -427,7 +427,7 @@ def check_new_template(
             print(f"Creating template project in: {tmpdir}")
 
         output = robocorp_action_server_run(
-            ["new", "--name=my_project", "--template=basic"],
+            ["new", "--name=my_project", "--template=minimal"],
             returncode=0,
             cwd=str(tmpdir),
         )
@@ -463,7 +463,7 @@ def check_new_template(
         action_package = next(iter(action_packages))
         actions = action_package["actions"]
         action_names = tuple(action["name"] for action in actions)
-        assert "get_wikipedia_article_summary" in action_names
+        assert "greet" in action_names
 
         if verbose:
             print("Using post to call action.")
@@ -473,10 +473,10 @@ def check_new_template(
         # print(json.dumps(decoded, indent=4))
 
         found = client.post_get_str(
-            "/api/actions/package-name/get-wikipedia-article-summary/run",
-            {"article_url": "https://en.wikipedia.org/wiki/Intelligence"},
+            "/api/actions/package-name/greet/run",
+            {}
         )
-        assert "Intelligence" in found
+        assert "Hello world" in found
 
         if verbose:
             print("Test finished with success.")
