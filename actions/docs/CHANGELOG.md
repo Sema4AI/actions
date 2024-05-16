@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.6.0 - 2024-05-16
+
 - OAuth2 secrets can now be received in the arguments. Example:
 
   ```python
