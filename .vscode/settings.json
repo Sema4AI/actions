@@ -9,8 +9,11 @@
   "python.pydev.preferredImportLocation": "topOfMethod",
 
   "python.pydev.formatter": "ruff",
+  "python.pydev.lint.ruff.use": true,
+  "python.pydev.lint.ruff.showOutput": true,
   "python.pydev.lint.mypy.use": true,
   "python.pydev.lint.mypy.showOutput": true,
+  "python.pydev.lint.mypy.args": "--follow-imports=silent --show-column-numbers --namespace-packages --explicit-package-bases",
   "editor.formatOnType": true,
   "editor.formatOnSave": true,
   "python.pydev.sortImportsOnFormat": "isort",

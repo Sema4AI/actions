@@ -193,6 +193,7 @@ __all__ = [
     "IAction",
     "Request",
     "Secret",
+    "OAuth2Secret",
     "Status",
     "action",
     "action_cache",

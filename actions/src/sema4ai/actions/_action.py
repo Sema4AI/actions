@@ -120,7 +120,7 @@ class Action:
             if _is_managed_param(self._pm, param.name, param=param):
                 tp = _get_managed_param_type(self._pm, param.name, param=param).__name__
 
-                dct = {"type": tp}
+                dct: dict[str, Any] = {"type": tp}
                 if tp == "OAuth2Secret":
                     # In this case we need to make some introspection to get additional information
                     # on the type (provider, scopes, ...)

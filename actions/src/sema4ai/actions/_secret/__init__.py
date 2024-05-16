@@ -20,8 +20,10 @@ def is_oauth2_secret_subclass(cls: type) -> bool:
     try:
         # Case where we have the parametrized version of the class
         # i.e.: OAuth2Secret[Literal['google'], ...]
-        if issubclass(get_origin(cls), OAuth2Secret):
-            return True
+        origin = get_origin(cls)
+        if origin is not None:
+            if issubclass(origin, OAuth2Secret):
+                return True
     except TypeError:
         pass
 
@@ -121,17 +123,17 @@ class OAuth2Secret(Generic[ProviderT, ScopesT]):
         @action
         def add_column_to_spreadsheet(
             spreadsheet_name: str,
-            google_oauth_secret: OAuth2Secret[
+            google_oauth2_secret: OAuth2Secret[
                 Literal["google"],
                 list[
                     Literal[
                         "https://www.googleapis.com/auth/spreadsheets",
                     ]
                 ],
-            ],
+            ]
         ):
             ...
-            add_column(spreadsheet_name, google_oauth_secret.access_token)
+            add_column(spreadsheet_name, google_oauth2_secret.access_token)
         ```
 
     Note: this class is abstract and is not meant to be instanced by clients.
@@ -162,7 +164,7 @@ class OAuth2Secret(Generic[ProviderT, ScopesT]):
                 f"Received: {value}({type(value)})"
             )
 
-        return _RawOauth2Secret(value)
+        return typing.cast(OAuth2Secret, _RawOauth2Secret(value))
 
     @classmethod
     def from_action_context(
@@ -182,7 +184,9 @@ class OAuth2Secret(Generic[ProviderT, ScopesT]):
         """
         from sema4ai.actions._secret._oauth2_secret import _OAuth2SecretInActionContext
 
-        return _OAuth2SecretInActionContext(action_context, path)
+        return typing.cast(
+            OAuth2Secret, _OAuth2SecretInActionContext(action_context, path)
+        )
 
     @property
     def provider(self) -> str:

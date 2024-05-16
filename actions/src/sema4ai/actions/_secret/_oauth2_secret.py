@@ -1,4 +1,4 @@
-from typing import Generic, TypeVar
+from typing import Any, Generic, Optional, TypeVar
 
 from sema4ai.actions._action_context import ActionContext
 
@@ -134,7 +134,7 @@ class _OAuth2SecretInActionContext(OAuth2Secret):
             return dct["scopes"]
 
     @property
-    def metadata(self) -> str:
+    def metadata(self) -> Optional[Any]:
         """
         Provides the actual metadata wrapped in this class.
         """

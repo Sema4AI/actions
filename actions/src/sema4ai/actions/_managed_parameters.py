@@ -111,7 +111,7 @@ class ManagedParameters:
                 use_kwargs[param.name] = self._param_name_to_instance[param.name]
 
             elif param.annotation:
-                use_class = None
+                use_class: Optional[Any] = None
                 if is_secret_subclass(param.annotation):
                     use_class = Secret
 
