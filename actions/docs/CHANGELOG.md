@@ -4,20 +4,25 @@
 
 - OAuth2 secrets can now be received in the arguments. Example:
 
-```
-def read_spreadsheet(
-    name: str,
-    google_secret: OAuth2Secret[
-        Literal["google"],
-        list[
-            Literal[
-                "https://www.googleapis.com/auth/spreadsheets.readonly",
-            ]
-        ],
-    ],
-) -> str:
-    read_spreadsheet(name, google_secret.access_token)
-```
+  ```python
+  from typing import Literal
+  from sema4ai.actions import OAuth2Secret, action
+
+  @action
+  def read_spreadsheet(
+      name: str,
+      google_secret: OAuth2Secret[
+          Literal["google"],
+          list[
+              Literal[
+                  "https://www.googleapis.com/auth/spreadsheets.readonly",
+                  "https://www.googleapis.com/auth/drive.readonly",
+              ]
+          ],
+      ],
+  ) -> str:
+      return do_read_spreadsheet(name, google_secret.access_token)
+  ```
 
 ## 0.5.0 - 2024-05-08
 

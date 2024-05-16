@@ -1,6 +1,6 @@
 ## Secrets
 
-_Important_: Requires `sema4ai-actions 0.3.1` onwards to work.
+**Important**: Requires `sema4ai-actions 0.3.1` onwards to work.
 
 ### Receiving a Secret
 
@@ -121,11 +121,38 @@ may be passed to the action server (note: it's up to the client to actually mana
 the user/tokens, the action server will just receive the `access_token` and related
 information collected by the client).
 
+### Receiving an OAuth2 Secret
+
+To receive OAuth2 secrets using actions, it's possible to add a parameter with an
+'OAuth2Secret' type (typed accordingly) so that it's automatically received by the action.
+
+i.e.:
+
+```python
+from typing import Literal
+from sema4ai.actions import OAuth2Secret, action
+
+@action
+def read_spreadsheet(
+    name: str,
+    google_secret: OAuth2Secret[
+        Literal["google"],
+        list[
+            Literal[
+                "https://www.googleapis.com/auth/spreadsheets.readonly",
+                "https://www.googleapis.com/auth/drive.readonly",
+            ]
+        ],
+    ],
+) -> str:
+    return do_read_spreadsheet(name, google_secret.access_token)
+```
+
 ### Passing Secrets
 
 The action server will receive an OAuth2 secret in the same way that a regular secret
 is passed, the only difference is that the initial payload is different. Instead
-of payload where the value is just a string, the payload is a dict with the following
+of a payload where the value is just a string, the payload is a dict with the following
 keys: `"provider", "scopes", "access_token", "metadata"`.
 
 ```json
