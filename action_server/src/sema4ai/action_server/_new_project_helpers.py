@@ -1,18 +1,23 @@
-import io
 import datetime
+import io
 import logging
 import os
 import zipfile
-import yaml
-import requests
 from pathlib import Path
 from typing import Optional, TypedDict
+
+import requests
+import yaml
 from pydantic.main import BaseModel
 
 from ._settings import get_default_settings_dir
 
-TEMPLATES_METADATA_URL = "https://downloads.robocorp.com/action-templates/action-templates.yaml"
-TEMPLATES_PACKAGE_URL = "https://downloads.robocorp.com/action-templates/action-templates.zip"
+TEMPLATES_METADATA_URL = (
+    "https://downloads.robocorp.com/action-templates/action-templates.yaml"
+)
+TEMPLATES_PACKAGE_URL = (
+    "https://downloads.robocorp.com/action-templates/action-templates.zip"
+)
 
 ACTION_TEMPLATES_METADATA_FILENAME = "action-templates.yaml"
 
@@ -48,10 +53,14 @@ def _ensure_latest_templates() -> None:
 
     local_metadata = _get_local_templates_metadata()
     new_metadata_content = requests.get(TEMPLATES_METADATA_URL).text
-        
+
     new_metadata = _parse_templates_metadata(new_metadata_content)
 
-    if not local_metadata or not new_metadata or local_metadata.hash != new_metadata.hash:
+    if (
+        not local_metadata
+        or not new_metadata
+        or local_metadata.hash != new_metadata.hash
+    ):
         _download_and_unzip_templates(action_templates_dir_path)
 
         with open(_get_action_templates_metadata_path(), "w+") as f:
@@ -82,12 +91,12 @@ def _parse_templates_metadata(yaml_content: str) -> Optional[ActionTemplatesMeta
 
         for name, description in metadata.get("templates", {}).items():
             templates.append(ActionTemplate(name=name, description=description))
-            
+
         return ActionTemplatesMetadata(
             hash=metadata.get("hash", ""),
             url=metadata.get("url", ""),
             date=metadata.get("date", None),
-            templates=templates
+            templates=templates,
         )
     except yaml.YAMLError as e:
         log.warning(f"Error reading metadata: {e}")

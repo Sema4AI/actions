@@ -11,13 +11,14 @@ def create_new_project(directory: str = ".", template_name: str = "") -> None:
         directory: The directory to create the project in.
         template_name: Template to use for the new project.
     """
+    from sema4ai.action_server.vendored_deps.termcolors import bold_red, colored
+
     from ._new_project_helpers import (
         _ensure_latest_templates,
         _get_local_templates_metadata,
-        _unpack_template
+        _unpack_template,
     )
-    from sema4ai.action_server.vendored_deps.termcolors import bold_red, colored
-    
+
     try:
         _ensure_latest_templates()
     except Exception as e:
@@ -28,7 +29,7 @@ def create_new_project(directory: str = ".", template_name: str = "") -> None:
 
     try:
         metadata = _get_local_templates_metadata()
-        
+
         if not metadata:
             raise RuntimeError("No templates available")
 
