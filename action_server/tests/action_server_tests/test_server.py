@@ -31,8 +31,10 @@ def test_action_server_in_memory_db(action_server_process: ActionServerProcess, 
 def test_schema_request_no_actions_registered(
     client: ActionServerClient, data_regression
 ) -> None:
+    from action_server_tests.fixtures import fix_openapi_json
+
     openapi_json = client.get_openapi_json()
-    data_regression.check(json.loads(openapi_json))
+    data_regression.check(fix_openapi_json(json.loads(openapi_json)))
 
 
 def test_bad_return_on_no_conda(
@@ -297,6 +299,8 @@ def test_is_consequential_openapi_spec(
     action_server_datadir: Path,
     client: ActionServerClient,
 ) -> None:
+    from action_server_tests.fixtures import fix_openapi_json
+
     action_server_datadir.mkdir(parents=True, exist_ok=True)
     db_path = action_server_datadir / "server.db"
     assert not db_path.exists()
@@ -316,7 +320,7 @@ def calculator_sum(v1: float, v2: float) -> float:
     action_server_process.start(
         actions_sync=True, cwd=calculator.parent, db_file="server.db"
     )
-    data_regression.check(json.loads(client.get_openapi_json()))
+    data_regression.check(fix_openapi_json(json.loads(client.get_openapi_json())))
 
 
 def test_import_no_conda(
@@ -327,7 +331,10 @@ def test_import_no_conda(
     action_server_datadir: Path,
     client: ActionServerClient,
 ) -> None:
-    from action_server_tests.fixtures import robocorp_action_server_run
+    from action_server_tests.fixtures import (
+        fix_openapi_json,
+        robocorp_action_server_run,
+    )
 
     from sema4ai.action_server._database import Database
     from sema4ai.action_server._models import Action, load_db
@@ -424,7 +431,9 @@ def calculator_sum(v1: float, v2: float) -> float:
     # disabled.
 
     # Check that it doesn't appear in the open api spec.
-    str_regression.check(json.dumps(json.loads(client.get_openapi_json()), indent=4))
+    str_regression.check(
+        json.dumps(fix_openapi_json(json.loads(client.get_openapi_json())), indent=4)
+    )
 
     action_server_process.stop()
 
@@ -445,11 +454,13 @@ def test_import(
     base_case,
     client: ActionServerClient,
 ) -> None:
+    from action_server_tests.fixtures import fix_openapi_json
+
     from sema4ai.action_server._database import Database, str_to_datetime
     from sema4ai.action_server._models import Run, RunStatus, load_db
 
     openapi_json = client.get_openapi_json()
-    data_regression.check(json.loads(openapi_json))
+    data_regression.check(fix_openapi_json(json.loads(openapi_json)))
 
     db_path = base_case.db_path
 
@@ -533,6 +544,7 @@ def test_import(
 
 
 def test_routes(action_server_process: ActionServerProcess, data_regression):
+    from action_server_tests.fixtures import fix_openapi_json
     from action_server_tests.sample_data import ACTION, ACTION_PACKAGE, RUN, RUN2
 
     from sema4ai.action_server._database import Database
@@ -553,7 +565,7 @@ def test_routes(action_server_process: ActionServerProcess, data_regression):
     client = ActionServerClient(action_server_process)
     openapi_json = client.get_openapi_json()
     spec = json.loads(openapi_json)
-    data_regression.check(spec)
+    data_regression.check(fix_openapi_json(spec))
 
     runs = client.get_json("/api/runs")
     assert len(runs) == 2
@@ -564,27 +576,31 @@ def test_routes(action_server_process: ActionServerProcess, data_regression):
 
 
 def test_server_url_flag(action_server_process: ActionServerProcess, data_regression):
+    from action_server_tests.fixtures import fix_openapi_json
+
     action_server_process.start(additional_args=["--server-url=https://foo.bar"])
 
     client = ActionServerClient(action_server_process)
     openapi_json = client.get_openapi_json()
     spec = json.loads(openapi_json)
-    data_regression.check(spec)
+    data_regression.check(fix_openapi_json(spec))
 
 
 def test_server_full_openapi_flag(
     action_server_process: ActionServerProcess, data_regression
 ):
+    from action_server_tests.fixtures import fix_openapi_json
+
     action_server_process.start(additional_args=["--full-openapi-spec"])
 
     client = ActionServerClient(action_server_process)
     openapi_json = client.get_openapi_json()
     spec = json.loads(openapi_json)
-    data_regression.check(spec)
+    data_regression.check(fix_openapi_json(spec))
 
 
 def test_auth_routes(action_server_process: ActionServerProcess, data_regression):
-    from action_server_tests.fixtures import get_in_resources
+    from action_server_tests.fixtures import fix_openapi_json, get_in_resources
 
     pack = get_in_resources("no_conda", "greeter")
     action_server_process.start(
@@ -597,7 +613,7 @@ def test_auth_routes(action_server_process: ActionServerProcess, data_regression
     client = ActionServerClient(action_server_process)
     openapi_json = client.get_openapi_json()
     spec = json.loads(openapi_json)
-    data_regression.check(spec)
+    data_regression.check(fix_openapi_json(spec))
 
     client.post_error("api/actions/greeter/greet/run", 403)
 
