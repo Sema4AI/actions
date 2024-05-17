@@ -253,3 +253,62 @@ def test_secrets_encrypted_oauth2(
         headers={"x-action-context": ctx_info},
     )
     assert "Hello foo. Access token: foobar" == json.loads(found)
+
+
+def test_secrets_oauth2_encrypted_set_through_separate_post_request(
+    action_server_process: ActionServerProcess,
+    client: ActionServerClient,
+    datadir,
+):
+    import base64
+    import json
+
+    from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+
+    from sema4ai.action_server._encryption import make_encrypted_data_envelope
+
+    pack = datadir / "pack_encryption_oauth2"
+
+    keys = [AESGCM.generate_key(bit_length=256), AESGCM.generate_key(bit_length=256)]
+    if USE_STATIC_INFO:
+        keys = [b"a" * len(keys[0])]
+
+    env = dict(
+        ACTION_SERVER_DECRYPT_KEYS=json.dumps(
+            [base64.b64encode(k).decode("ascii") for k in keys]
+        ),
+    )
+
+    action_server_process.start(
+        cwd=pack,
+        actions_sync=True,
+        db_file="server.db",
+        lint=True,
+        env=env,
+    )
+
+    ctx_info: str = make_encrypted_data_envelope(
+        keys[0],
+        {
+            "secrets": {
+                "oauth2_secret": {
+                    "provider": "google",
+                    "scopes": ["https://scope:read", "https://scope:write"],
+                    "access_token": "foobar",
+                }
+            },
+            "scope": {"action-package": "pack_encryption_oauth2"},
+        },
+    )
+
+    found = client.post_get_str(
+        "api/secrets",
+        {"data": ctx_info},
+    )
+    assert json.loads(found) == "ok"
+
+    found = client.post_get_str(
+        "api/actions/pack-encryption-oauth2/hello-greeting/run",
+        {"name": "foo"},
+    )
+    assert "Hello foo. Access token: foobar" == json.loads(found)

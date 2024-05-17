@@ -147,7 +147,15 @@ async def set_secrets(data: SetSecretData) -> str:
             raise ValueError("Expected the received secrets keys to be strings.")
 
         if not isinstance(v, str):
-            raise ValueError("Expected the received secrets values to be strings.")
+            if isinstance(v, dict):
+                if "access_token" not in v:
+                    raise ValueError(
+                        "When passing a dict for an OAuth2Secret, it's expected that the dict has at least the `access_token` key."
+                    )
+            else:
+                raise ValueError(
+                    "Expected the received secrets values to be strings or dicts."
+                )
 
     IN_MEMORY_SECRETS._update_secrets(
         typing.cast(dict[str, str], secrets),

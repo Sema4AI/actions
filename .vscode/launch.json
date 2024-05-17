@@ -21,12 +21,12 @@
       "type": "pydevd",
       "name": "pytest single (with pydevd)",
       "request": "launch",
-      "cwd": "${workspaceFolder}/actions/tests",
+      "cwd": "${workspaceFolder}/action_server/tests",
       "console": "integratedTerminal",
       "module": "pytest",
       "args": [
         "-k",
-        "test_actions_oauth2_secret_list_bad",
+        "test_secrets_oauth2_encrypted_set_through_separate_post_request",
         "--force-regen",
         "--capture=no"
       ]
