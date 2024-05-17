@@ -3,6 +3,8 @@ import re
 import zipfile
 from pathlib import Path
 
+from action_server_tests.fixtures import fix_metadata
+
 
 def check_regexp_in_lines(text, regexp):
     """Checks if the given regexp is found in any line of the text.
@@ -120,7 +122,7 @@ def test_package_metadata(datadir, data_regression):
         returncode=0,
         cwd=datadir / "pack1",
     )
-    data_regression.check(json.loads(output.stdout))
+    data_regression.check(fix_metadata(json.loads(output.stdout)))
 
 
 def test_package_metadata_oauth2_secrets(datadir, data_regression):
@@ -138,7 +140,7 @@ def test_package_metadata_oauth2_secrets(datadir, data_regression):
         returncode=0,
         cwd=datadir / "pack_oauth2_secrets",
     )
-    data_regression.check(json.loads(output.stdout))
+    data_regression.check(fix_metadata(json.loads(output.stdout)))
 
 
 def test_package_metadata_secrets(datadir, data_regression):
@@ -156,7 +158,7 @@ def test_package_metadata_secrets(datadir, data_regression):
         returncode=0,
         cwd=datadir / "pack_secrets",
     )
-    data_regression.check(json.loads(output.stdout))
+    data_regression.check(fix_metadata(json.loads(output.stdout)))
 
 
 def test_package_metadata_api(datadir, data_regression):
@@ -164,4 +166,4 @@ def test_package_metadata_api(datadir, data_regression):
 
     action_package_dir = Path(datadir / "pack_secrets")
     found = api.package_metadata(action_package_dir, datadir=Path(datadir / "data"))
-    data_regression.check(found)
+    data_regression.check(fix_metadata(found))

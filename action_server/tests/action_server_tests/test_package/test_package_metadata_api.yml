@@ -44,7 +44,7 @@ openapi.json:
         type: object
   info:
     title: Sema4.ai Action Server
-    version: 0.1.0
+    version: <removed-for-compare>
   openapi: 3.1.0
   paths:
     /api/actions/pack-secrets/hello-greeting/run:
