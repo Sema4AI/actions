@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.9.1 - 2024-05-17
+
 - Accept passing `OAuth2 secrets` (as a dict with the required keys) in the `/api/secrets`.
 
 ## 0.9.0 - 2024-05-16
