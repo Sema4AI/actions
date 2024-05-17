@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Accept passing `OAuth2 secrets` (as a dict with the required keys) in the `/api/secrets`.
+
 ## 0.9.0 - 2024-05-16
 
 - The default datadirs will now be created in `~/.sema4ai/action-server`
