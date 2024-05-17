@@ -52,7 +52,11 @@ def _ensure_latest_templates() -> None:
     os.makedirs(action_templates_dir_path, exist_ok=True)
 
     local_metadata = _get_local_templates_metadata()
-    new_metadata_content = requests.get(TEMPLATES_METADATA_URL).text
+
+    response = requests.get(TEMPLATES_METADATA_URL)
+    response.raise_for_status()
+
+    new_metadata_content = response.text
 
     new_metadata = _parse_templates_metadata(new_metadata_content)
 

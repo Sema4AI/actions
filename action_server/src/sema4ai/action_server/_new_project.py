@@ -4,14 +4,18 @@ import os
 log = logging.getLogger(__name__)
 
 
-def create_new_project(directory: str = ".", template_name: str = "") -> None:
+def create_new_project(directory: str = ".", template_name: str = "") -> int:
     """Creates a new project under the specified directory.
 
     Args:
         directory: The directory to create the project in.
         template_name: Template to use for the new project.
     """
-    from sema4ai.action_server.vendored_deps.termcolors import bold_red, colored
+    from sema4ai.action_server.vendored_deps.termcolors import (
+        bold_red,
+        bold_yellow,
+        colored,
+    )
 
     from ._new_project_helpers import (
         _ensure_latest_templates,
@@ -23,15 +27,18 @@ def create_new_project(directory: str = ".", template_name: str = "") -> None:
         _ensure_latest_templates()
     except Exception as e:
         log.warning(
-            f"Refreshing templates failed, reason: {e}\n"
-            "Already cached templates will be used if available."
+            bold_yellow(
+                bold_yellow("Refreshing templates failed, reason: \n")
+                + f"{e}\n"
+                + "Already cached templates will be used if available."
+            )
         )
 
     try:
         metadata = _get_local_templates_metadata()
 
         if not metadata:
-            raise RuntimeError("No templates available")
+            raise RuntimeError("No cached or remote templates available.")
 
         if not directory:
             directory = input("Name of the project: ")
@@ -64,7 +71,15 @@ def create_new_project(directory: str = ".", template_name: str = "") -> None:
         _unpack_template(template_name, directory)
 
         log.info("✅ Project created")
+        return 0
     except KeyboardInterrupt:
         log.debug("Operation cancelled")
+        return 0
     except Exception as e:
-        log.critical(f"Error creating the project: {e}")
+        log.critical(bold_red(f"\nError creating the project: {e}"))
+        log.info(
+            "If the problem persists, the list of available templates can be found here: "
+            "https://github.com/Sema4AI/actions/tree/master/templates"
+        )
+
+        return 1

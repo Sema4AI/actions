@@ -521,8 +521,9 @@ def _main_retcode(
         new_args: ArgumentsNamespaceNew = typing.cast(ArgumentsNamespaceNew, base_args)
         from ._new_project import create_new_project
 
-        create_new_project(directory=new_args.name, template_name=new_args.template)
-        return 0
+        return create_new_project(
+            directory=new_args.name, template_name=new_args.template
+        )
 
     migrate_import_or_start_args = typing.cast(
         ArgumentsNamespaceMigrateImportOrStart, base_args
