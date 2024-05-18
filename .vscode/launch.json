@@ -11,8 +11,8 @@
       "cwd": "${workspaceFolder}/action_server/tests",
       "console": "integratedTerminal",
       "module": "pytest",
-      "args": ["-n", "auto", "--force-regen"]
-      // "args": ["-n", "auto", "--force-regen", "--last-failed"]
+      // "args": ["-n", "auto", "--force-regen"]
+      "args": ["-n", "auto", "--force-regen", "--last-failed"]
       // "env": {
       //   "PYDEVD_DEBUG": "1",
       //   "PYDEVD_DEBUG_FILE": "C:/temp/pydevdLogs.txt"

@@ -2,6 +2,7 @@ metadata:
   description: pack1 description
   name: pack1 name
   secrets: {}
+  version: 1
 openapi.json:
   components:
     schemas:

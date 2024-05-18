@@ -108,7 +108,6 @@ def build_package(
     import yaml
 
     from sema4ai.action_server._cli_impl import _main_retcode
-    from sema4ai.action_server._models import Action, create_db
     from sema4ai.action_server._slugify import slugify
     from sema4ai.action_server.package._ask_user import ask_user_input_to_proceed
 
