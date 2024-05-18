@@ -172,8 +172,13 @@ def create_db(db_path: Union[Path, str]) -> Iterator["Database"]:
         yield db
 
 
+class DBNotInitializedError(AssertionError):
+    pass
+
+
 def get_db() -> "Database":
-    assert _global_db is not None, "DB not initialized"
+    if _global_db is None:
+        raise DBNotInitializedError("DB not initialized")
     return _global_db
 
 

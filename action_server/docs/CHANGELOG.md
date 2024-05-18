@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- A `version` is now available in the metadata to signal the current version of the metadata format.
+- `openapi.json` (also provided in the metadata): now has an `info/version` field with the version of the `Action Server` (previously it was always `0.1.0`).
+- The `action-server package metadata` now has an `--output-file` parameter which allows writing to a file.
+- In the `action-server package build`, a file named `__action_server_metadata__.json` is added to the root of the `.zip` with the metadata contents.
+
 ## 0.9.1 - 2024-05-17
 
 - Accept passing `OAuth2 secrets` (as a dict with the required keys) in the `/api/secrets`.

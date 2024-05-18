@@ -10,6 +10,8 @@ def test_action_unicode(
     datadir,
     str_regression,
 ) -> None:
+    from action_server_tests.fixtures import fix_openapi_json
+
     dir_contents = [x for x in os.listdir(datadir) if not x.startswith("test")]
     assert len(dir_contents) == 1
     action_server_process.start(
@@ -19,7 +21,9 @@ def test_action_unicode(
         timeout=300,
         lint=False,
     )
-    str_regression.check(json.dumps(json.loads(client.get_openapi_json()), indent=4))
+    str_regression.check(
+        json.dumps(fix_openapi_json(json.loads(client.get_openapi_json())), indent=4)
+    )
 
     found = client.post_get_str(
         "api/actions/acao-pkg/unicode-acao/run",

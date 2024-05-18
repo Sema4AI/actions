@@ -108,7 +108,6 @@ def build_package(
     import yaml
 
     from sema4ai.action_server._cli_impl import _main_retcode
-    from sema4ai.action_server._models import Action, create_db
     from sema4ai.action_server._slugify import slugify
     from sema4ai.action_server.package._ask_user import ask_user_input_to_proceed
 
@@ -191,20 +190,24 @@ def build_package(
 
             exclude_patterns.append(pat)
 
-    # Import in-memory contents (importing will validate everything and as it's
-    # in-memory it should not affect existing data). We still need the system
+    # `package metadata`` will validate everything and as it's
+    # in-memory it should not affect existing data. We still need the system
     # mutex lock on the datadir due to environment updates that can't happen in
     # parallel.
-    args = ["import", "--db-file", ":memory:"]
+    args_metadata = [
+        "package",
+        "metadata",
+        "--db-file",
+        ":memory:",
+        "--output-file",
+        "__action_server_metadata__.json",
+    ]
     if datadir:
-        args.extend(["--datadir", datadir])
+        args_metadata.extend(["--datadir", datadir])
 
-    with create_db(":memory:") as db:
-        returncode = _main_retcode(args, is_subcommand=True, use_db=db)
-        if returncode != 0:
-            return returncode
-        if not db.all(Action):
-            raise ActionServerValidationError(f"No actions found in '{input_dir}'.")
+    returncode = _main_retcode(args_metadata, is_subcommand=True)
+    if returncode != 0:
+        return returncode
 
     # Ok, it seems we're good to go. Package everything based on the
     # package.yaml exclude rules.
@@ -221,4 +224,9 @@ def build_package(
             zip_file.writestr(relative_path, path.read_bytes())
 
     log.info(f"Created {output_file}")
+    try:
+        # Remove temporary file that was created.
+        os.remove("__action_server_metadata__.json")
+    except OSError:
+        pass
     return 0

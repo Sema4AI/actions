@@ -8,7 +8,7 @@ def test_server_custom_model_argument(
     client: ActionServerClient,
     data_regression,
 ) -> None:
-    from action_server_tests.fixtures import get_in_resources
+    from action_server_tests.fixtures import fix_openapi_json, get_in_resources
 
     pack = get_in_resources("no_conda", "custom_model")
     action_server_process.start(
@@ -21,7 +21,7 @@ def test_server_custom_model_argument(
     spec = json.loads(openapi_json)
     # print(json.dumps(spec, indent=4))
 
-    data_regression.check(spec)
+    data_regression.check(fix_openapi_json(spec))
 
     found = client.post_get_str(
         "api/actions/custom-model/my-action/run",

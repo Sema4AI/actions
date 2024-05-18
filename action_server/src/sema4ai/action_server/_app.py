@@ -57,10 +57,12 @@ class _CustomFastAPI(FastAPI):
 
 @cache
 def get_app() -> FastAPI:
+    from sema4ai.action_server import __version__
+
     settings = get_settings()
 
     server = {"url": settings.server_url}
-    app = _CustomFastAPI(title=settings.title, servers=[server])
+    app = _CustomFastAPI(title=settings.title, servers=[server], version=__version__)
 
     app.add_middleware(
         CORSMiddleware,

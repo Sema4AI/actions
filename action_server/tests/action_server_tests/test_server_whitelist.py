@@ -96,6 +96,8 @@ def test_whitelist_on_start(
     tmpdir,
     client: ActionServerClient,
 ) -> None:
+    from action_server_tests.fixtures import fix_openapi_json
+
     calculator = Path(tmpdir) / "v1" / "calculator" / "action_calculator.py"
     calculator.parent.mkdir(parents=True, exist_ok=True)
     calculator.write_text(
@@ -120,7 +122,7 @@ def calculator_subtract(v1: float, v2: float) -> float:
         additional_args=["--whitelist", "calculator_sum"],
     )
 
-    spec = json.dumps(json.loads(client.get_openapi_json()), indent=4)
+    spec = json.dumps(fix_openapi_json(json.loads(client.get_openapi_json())), indent=4)
     assert "calculator_subtract" not in spec
     str_regression.check(spec)
 
@@ -132,6 +134,8 @@ def test_whitelist_on_start_run(
     client: ActionServerClient,
     action_server_datadir: Path,
 ) -> None:
+    from action_server_tests.fixtures import fix_openapi_json
+
     from sema4ai.action_server._selftest import robocorp_action_server_run
 
     calculator = Path(tmpdir) / "v1" / "calculator" / "action_calculator.py"
@@ -171,6 +175,6 @@ def calculator_subtract(v1: float, v2: float) -> float:
         additional_args=["--whitelist", "calculator_sum"],
     )
 
-    spec = json.dumps(json.loads(client.get_openapi_json()), indent=4)
+    spec = json.dumps(fix_openapi_json(json.loads(client.get_openapi_json())), indent=4)
     assert "calculator_subtract" not in spec
     str_regression.check(spec)
