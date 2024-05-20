@@ -1,19 +1,45 @@
-import io
 import logging
 import os
-import sys
-import zipfile
-from urllib.request import urlopen
-
-TEMPLATE_URL = (
-    "https://github.com/robocorp/template-action/archive/refs/heads/master.zip"
-)
 
 log = logging.getLogger(__name__)
 
 
-def create_new_project(directory: str = "."):
+def create_new_project(directory: str = ".", template_name: str = "") -> int:
+    """Creates a new project under the specified directory.
+
+    Args:
+        directory: The directory to create the project in.
+        template_name: Template to use for the new project.
+    """
+    from sema4ai.action_server.vendored_deps.termcolors import (
+        bold_red,
+        bold_yellow,
+        colored,
+    )
+
+    from ._new_project_helpers import (
+        _ensure_latest_templates,
+        _get_local_templates_metadata,
+        _unpack_template,
+    )
+
     try:
+        _ensure_latest_templates()
+    except Exception as e:
+        log.warning(
+            bold_yellow(
+                bold_yellow("Refreshing templates failed, reason: \n")
+                + f"{e}\n"
+                + "Already cached templates will be used if available."
+            )
+        )
+
+    try:
+        metadata = _get_local_templates_metadata()
+
+        if not metadata:
+            raise RuntimeError("No cached or remote templates available.")
+
         if not directory:
             directory = input("Name of the project: ")
             if not directory:
@@ -25,57 +51,35 @@ def create_new_project(directory: str = "."):
                     f"The folder: {directory} already exists and is not empty."
                 )
 
-        download_and_unzip(TEMPLATE_URL, directory)
+        if not template_name:
+            for index, template in enumerate(metadata.templates, start=1):
+                log.info(colored(f" > {index}. {template.description}", "cyan"))
+
+            # @TODO:
+            # Make a reusable version once https://github.com/Sema4AI/actions/pull/3 is merged.
+            while True:
+                try:
+                    choice = int(input("Enter the number of your choice: "))
+                    if 1 <= choice <= len(metadata.templates):
+                        template_name = metadata.templates[choice - 1].name
+                        break
+                    else:
+                        log.error(bold_red("Invalid number, please try again."))
+                except ValueError:
+                    log.error(bold_red("Invalid input, please enter a number."))
+
+        _unpack_template(template_name, directory)
 
         log.info("✅ Project created")
+        return 0
     except KeyboardInterrupt:
         log.debug("Operation cancelled")
+        return 0
     except Exception as e:
-        log.critical(f"Error creating the project: {e}")
+        log.critical(bold_red(f"\nError creating the project: {e}"))
+        log.info(
+            "If the problem persists, the list of available templates can be found here: "
+            "https://github.com/Sema4AI/actions/tree/master/templates"
+        )
 
-
-def download_and_unzip(url: str, directory: str = "."):
-    """
-    Downloads a zip file from the given URL to memory,
-    extracts files one by one and makes .sh files executable.
-    """
-
-    created_parents = set()
-    with urlopen(url) as response:
-        with io.BytesIO(response.read()) as zip_buffer:
-            with zipfile.ZipFile(zip_buffer, "r") as zip_ref:
-                namelist = list(zip_ref.namelist())
-
-                for path_in_zip in namelist:
-                    parts = path_in_zip.split("/", 1)
-                    if len(parts) < 2 or not parts[1]:
-                        continue
-
-                    # i.e.: Remove the root dir from the .zip
-                    # (which is something as template-action-master)
-                    write_to = os.path.join(directory, parts[1])
-
-                    if path_in_zip.endswith("/"):
-                        created_parents.add(write_to)
-                        os.makedirs(write_to, exist_ok=True)
-                        continue
-                    else:
-                        parent_dir = os.path.dirname(write_to)
-                        if parent_dir and parent_dir not in created_parents:
-                            created_parents.add(parent_dir)
-                            os.makedirs(parent_dir, exist_ok=True)
-
-                    with zip_ref.open(path_in_zip, "r") as zip_file:
-                        data = zip_file.read()
-
-                    with open(write_to, "wb") as out_file:
-                        out_file.write(data)
-
-                    # Make .sh files executable
-                    if path_in_zip.endswith(".sh"):
-                        if sys.platform != "win32":
-                            os.chmod(write_to, 0o755)
-
-
-# if __name__ == "__main__":
-#     download_and_unzip(TEMPLATE_URL, "ra")
+        return 1

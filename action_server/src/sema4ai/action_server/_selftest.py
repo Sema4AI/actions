@@ -427,7 +427,9 @@ def check_new_template(
             print(f"Creating template project in: {tmpdir}")
 
         output = robocorp_action_server_run(
-            ["new", "--name=my_project"], returncode=0, cwd=str(tmpdir)
+            ["new", "--name=my_project", "--template=minimal"],
+            returncode=0,
+            cwd=str(tmpdir),
         )
         if verbose:
             print("Template creation stdout: ", output.stdout)
@@ -461,7 +463,7 @@ def check_new_template(
         action_package = next(iter(action_packages))
         actions = action_package["actions"]
         action_names = tuple(action["name"] for action in actions)
-        assert "compare_time_zones" in action_names
+        assert "greet" in action_names
 
         if verbose:
             print("Using post to call action.")
@@ -470,16 +472,8 @@ def check_new_template(
         # decoded = json.loads(open_api)
         # print(json.dumps(decoded, indent=4))
 
-        found = client.post_get_str(
-            "/api/actions/package-name/compare-time-zones/run",
-            {
-                "user_timezone": "Europe/Helsinki",
-                "compare_to_timezones": "America/New_York, Asia/Kolkata",
-            },
-        )
-        assert "Current time in Europe/Helsinki" in found
-        assert "Current time in America/New_York" in found
-        assert "Current time in Asia/Kolkata" in found
+        found = client.post_get_str("/api/actions/package-name/greet/run", {})
+        assert "Hello world" in found
 
         if verbose:
             print("Test finished with success.")
