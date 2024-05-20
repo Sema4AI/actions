@@ -9,9 +9,12 @@
 - The `action-server package metadata` now has an `--output-file` parameter which allows writing to a file.
 - In the `action-server package build`, a file named `__action_server_metadata__.json` is added to the root of the `.zip` with the metadata contents.
 - `new` command allows to choose a template from a predefined list now. Command will list available templates,
-  and prompt user to choose one. 
+  and prompt user to choose one.
   - `--template` argument has been added, allowing to specify a concrete template when running the command (when specified,
     user won't be prompted to choose a template from the list).
+  - Note: this is a **backward incompatible** change (clients using `action-server new --name <name>` must upgrade
+    to pass a template name, otherwise the command will appear to be stuck and will not create anything while waiting for
+    an input).
 
 ## 0.9.1 - 2024-05-17
 
