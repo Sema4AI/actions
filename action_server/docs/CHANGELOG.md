@@ -2,14 +2,14 @@
 
 ## Unreleased
 
-## 0.9.1 - 2024-05-17
-
-- Accept passing `OAuth2 secrets` (as a dict with the required keys) in the `/api/secrets`.
 - `new` command allows to choose a template from a predefined list now. Command will list available templates,
   and prompt user to choose one. 
   - `--template` argument has been added, allowing to specify a concrete template when running the command (when specified,
     user won't be prompted to choose a template from the list).
 
+## 0.9.1 - 2024-05-17
+
+- Accept passing `OAuth2 secrets` (as a dict with the required keys) in the `/api/secrets`.
 
 ## 0.9.0 - 2024-05-16
 
