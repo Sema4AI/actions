@@ -1,0 +1,20 @@
+{
+    "templateBundleUrl": "https://downloads.robocorp.com/action-templates/beta/action-templates.zip",
+    "templates": [
+        {
+            "id": "minimal",
+            "name": "Minimal",
+            "desc": "A bare bone starting template."
+        },
+        {
+            "id": "basic",
+            "name": "Basic",
+            "desc": "Simple example showcasing some basic configuration."
+        },
+        {
+            "id": "advanced",
+            "name": "Advanced",
+            "desc": "An example showcasing more advanced configuration features of Actions."
+        }
+    ]
+}

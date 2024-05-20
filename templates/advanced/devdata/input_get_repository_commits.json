@@ -1,0 +1,7 @@
+{
+  "github_access_token": "YOUR_ACCESS_TOKEN",
+  "repository_info": {
+    "owner_id": "OWNER_ID",
+    "name": "REPOSITORY_NAME"
+  }
+}

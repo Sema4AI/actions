@@ -1,0 +1,43 @@
+name: Deploy Template Actions for Action Server
+on:
+  workflow_dispatch:
+
+# These permissions are needed to interact with GitHub's OIDC Token endpoint.
+permissions:
+  id-token: write
+  contents: write # use of external ID requires write instead of read here
+
+jobs:
+  deploy:
+    name: Deploy Template Actions to S3
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      AWS_CLOUDFRONT_DISTRIBUTION_ID: E9TJZTROUQAQR # downloads.robocorp.com
+      AWS_S3_BUCKET_NAME: downloads.robocorp.com
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Create package
+        shell: bash
+        run: |
+          cd templates/packaging
+          ls
+          ./create-templates-package.sh templates-prod.json
+          ls ./temp
+          ls ./temp/zips
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: eu-west-1
+          role-to-assume: arn:aws:iam::710450854638:role/github-action-packaging
+          # ExternalID does not seem to work with AssumeRoleWithWebIdentity
+          # role-external-id: ${{ secrets.AWS_ROLE_EXTERNAL_ID }}
+
+      - name: Update to S3
+        run: |
+          cd templates/packaging/temp
+          aws s3 cp action-templates.zip s3://${env:AWS_S3_BUCKET_NAME}/action-templates/action-templates.zip --cache-control 'max-age=120'
+          aws s3 cp action-templates.yaml s3://${env:AWS_S3_BUCKET_NAME}/action-templates/action-templates.yaml --cache-control 'max-age=120'
