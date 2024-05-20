@@ -19,6 +19,9 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          sparse-checkout: 'templates'
+          sparse-checkout-cone-mode: false
 
       - name: Create package
         shell: bash
