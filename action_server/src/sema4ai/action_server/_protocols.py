@@ -155,6 +155,7 @@ class ArgumentsNamespacePackageExtract(ArgumentsNamespace):
 class ArgumentsNamespacePackageMetadata(ArgumentsNamespace):
     command: Literal["package"]
     package_command: Literal["metadata"]
+    output_file: Optional[str]
 
 
 class ArgumentsNamespaceMigrateImportOrStart(ArgumentsNamespace):

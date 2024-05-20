@@ -3,6 +3,8 @@ import re
 import zipfile
 from pathlib import Path
 
+from action_server_tests.fixtures import fix_metadata
+
 
 def check_regexp_in_lines(text, regexp):
     """Checks if the given regexp is found in any line of the text.
@@ -55,12 +57,19 @@ def test_package_zip(datadir):
         "hello_action.py",
         "package.yaml",
         "folder/ignore_only_at_root",
+        "__action_server_metadata__.json",
     }
+
+    assert not (datadir / "pack1" / "__action_server_metadata__.json").exists()
 
     # Extract it
     extract_to = datadir / "extracted"
 
     def extract():
+        import json
+
+        from sema4ai.action_server import __version__
+
         robocorp_action_server_run(
             [
                 "package",
@@ -79,7 +88,13 @@ def test_package_zip(datadir):
             "folder",
             "hello_action.py",
             "package.yaml",
+            "__action_server_metadata__.json",
         }
+
+        metadata = extract_to / "__action_server_metadata__.json"
+        contents = json.loads(metadata.read_text())
+        assert contents["openapi.json"]
+        assert contents["openapi.json"]["info"]["version"] == __version__
 
     extract()
     # Just remove the package.yaml and see if it's restored.
@@ -102,7 +117,7 @@ def test_package_zip_no_actions(datadir):
         returncode=1,
         cwd=datadir / "pack2",
     )
-    assert "No actions found in " in output.stderr
+    assert "No actions found" in output.stderr
 
 
 def test_package_metadata(datadir, data_regression):
@@ -120,7 +135,7 @@ def test_package_metadata(datadir, data_regression):
         returncode=0,
         cwd=datadir / "pack1",
     )
-    data_regression.check(json.loads(output.stdout))
+    data_regression.check(fix_metadata(json.loads(output.stdout)))
 
 
 def test_package_metadata_oauth2_secrets(datadir, data_regression):
@@ -138,7 +153,7 @@ def test_package_metadata_oauth2_secrets(datadir, data_regression):
         returncode=0,
         cwd=datadir / "pack_oauth2_secrets",
     )
-    data_regression.check(json.loads(output.stdout))
+    data_regression.check(fix_metadata(json.loads(output.stdout)))
 
 
 def test_package_metadata_secrets(datadir, data_regression):
@@ -156,7 +171,7 @@ def test_package_metadata_secrets(datadir, data_regression):
         returncode=0,
         cwd=datadir / "pack_secrets",
     )
-    data_regression.check(json.loads(output.stdout))
+    data_regression.check(fix_metadata(json.loads(output.stdout)))
 
 
 def test_package_metadata_api(datadir, data_regression):
@@ -164,4 +179,4 @@ def test_package_metadata_api(datadir, data_regression):
 
     action_package_dir = Path(datadir / "pack_secrets")
     found = api.package_metadata(action_package_dir, datadir=Path(datadir / "data"))
-    data_regression.check(found)
+    data_regression.check(fix_metadata(found))

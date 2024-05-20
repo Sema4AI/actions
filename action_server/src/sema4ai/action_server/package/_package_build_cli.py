@@ -77,7 +77,7 @@ def add_package_command(command_subparser, defaults):
     extract_parser.add_argument(
         "--output-dir",
         dest="output_dir",
-        help="The output file for saving the action package built file",
+        help="The output directory for saving the action package zip",
         default=".",
     )
     extract_parser.add_argument(
@@ -96,6 +96,12 @@ def add_package_command(command_subparser, defaults):
     extract_parser = package_subparsers.add_parser(
         "metadata",
         help="Collects metadata from the action package in the current cwd and prints it to stdout",
+    )
+    extract_parser.add_argument(
+        "--output-file",
+        dest="output_file",
+        help="The output file for saving the metadata (default is writing to stdout)",
+        default="-",
     )
     add_data_args(extract_parser, defaults)
     add_verbose_args(extract_parser, defaults)
@@ -204,8 +210,15 @@ def handle_package_command(base_args: ArgumentsNamespace):
                 datadir=package_metadata_args.datadir,
             )
             if isinstance(package_metadata_or_returncode, str):
-                print(package_metadata_or_returncode)
-                sys.stdout.flush()
+                if (
+                    package_metadata_args.output_file
+                    and package_metadata_args.output_file != "-"
+                ):
+                    with open(package_metadata_args.output_file, "wb") as stream:
+                        stream.write(package_metadata_or_returncode.encode("utf-8"))
+                else:
+                    print(package_metadata_or_returncode)
+                    sys.stdout.flush()
             else:
                 assert package_metadata_or_returncode != 0
                 retcode = package_metadata_or_returncode

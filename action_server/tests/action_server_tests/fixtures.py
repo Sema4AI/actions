@@ -13,6 +13,28 @@ from sema4ai.action_server._selftest import (
 )
 
 
+def fix_metadata(metadata: dict) -> dict:
+    assert "openapi.json" in metadata
+    fix_openapi_json(metadata["openapi.json"])
+    return metadata
+
+
+def fix_openapi_json(openapi: dict) -> dict:
+    from sema4ai.action_server import __version__
+
+    info = openapi.get("info")
+    assert info is not None, "Expected info to be in the openapi.json"
+    version = info.get("version")
+    assert version is not None, "Expected info/version to be in the openapi.json"
+    assert (
+        version == __version__
+    ), f"Expected version to be the sema4.ai version ({__version__}) instead of: {version}"
+
+    info["version"] = "<removed-for-compare>"
+
+    return openapi
+
+
 @pytest.fixture
 def action_server_datadir(tmpdir) -> Path:
     return Path(str(tmpdir)) / ".sema4ai-test-action-server"

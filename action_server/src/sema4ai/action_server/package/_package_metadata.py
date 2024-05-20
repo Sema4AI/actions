@@ -67,6 +67,9 @@ def collect_package_metadata(package_dir: Path, datadir: str) -> str | int:
             "name": action_package.name,
             "description": package_description,
             "secrets": secrets,
+            # This is the version of the metadata itself. Should be raised
+            # when the info in the metadata itself changes.
+            "version": 1,
         }
 
     def collect_metadata_and_cancel_startup(app: FastAPI) -> bool:

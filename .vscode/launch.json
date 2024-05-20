@@ -11,7 +11,8 @@
       "cwd": "${workspaceFolder}/action_server/tests",
       "console": "integratedTerminal",
       "module": "pytest",
-      "args": ["-n", "auto", "--force-regen"]
+      // "args": ["-n", "auto", "--force-regen"]
+      "args": ["-n", "auto", "--force-regen", "--last-failed"]
       // "env": {
       //   "PYDEVD_DEBUG": "1",
       //   "PYDEVD_DEBUG_FILE": "C:/temp/pydevdLogs.txt"
@@ -24,12 +25,7 @@
       "cwd": "${workspaceFolder}/action_server/tests",
       "console": "integratedTerminal",
       "module": "pytest",
-      "args": [
-        "-k",
-        "test_secrets_oauth2_encrypted_set_through_separate_post_request",
-        "--force-regen",
-        "--capture=no"
-      ]
+      "args": ["-k", "test_package_zip", "--force-regen", "--capture=no"]
       // "env": {
       //   "PYDEVD_DEBUG": "1",
       //   "PYDEVD_DEBUG_FILE": "C:/temp/pydevdLogs.txt"

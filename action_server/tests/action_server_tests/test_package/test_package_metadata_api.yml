@@ -9,6 +9,7 @@ metadata:
         private_info:
           description: Some private information gotten from somewhere.
           type: Secret
+  version: 1
 openapi.json:
   components:
     schemas:
@@ -44,7 +45,7 @@ openapi.json:
         type: object
   info:
     title: Sema4.ai Action Server
-    version: 0.1.0
+    version: <removed-for-compare>
   openapi: 3.1.0
   paths:
     /api/actions/pack-secrets/hello-greeting/run:
