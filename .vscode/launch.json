@@ -6,6 +6,15 @@
   "configurations": [
     {
       "type": "pydevd",
+      "purpose": "test-template",
+      "args": ["--verbose", "-n", "0", "--assert=plain"]
+      // "env": {
+      //   "PYDEVD_DEBUG": "1",
+      //   "PYDEVD_DEBUG_FILE": "C:/temp/pydevdLogs.txt"
+      // }
+    },
+    {
+      "type": "pydevd",
       "name": "pytest all (with pydevd)",
       "request": "launch",
       "cwd": "${workspaceFolder}/action_server/tests",

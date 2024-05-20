@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.10.0 - 2024-05-20
+
 - A `version` is now available in the metadata to signal the current version of the metadata format.
 - `openapi.json` (also provided in the metadata): now has an `info/version` field with the version of the `Action Server` (previously it was always `0.1.0`).
 - The `action-server package metadata` now has an `--output-file` parameter which allows writing to a file.
