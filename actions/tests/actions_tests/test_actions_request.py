@@ -33,7 +33,14 @@ def test_actions_request_run(datadir: Path):
         "action_with_request",
         datadir,
         f"--json-input={input_json}",
+        "--print-input",
+        "--print-result",
     ]
 
-    sema4ai_actions_run(args, returncode=0, cwd=str(datadir))
+    result = sema4ai_actions_run(args, returncode=0, cwd=str(datadir))
     assert json_output.read_text() == "value-in-header"
+    output = result.stdout.decode("utf-8")
+    assert '"The result is value-in-header"' in output
+    assert '"x-custom-header": "value-in-header"' in output
+    assert "result:" in output
+    assert "input:" in output
