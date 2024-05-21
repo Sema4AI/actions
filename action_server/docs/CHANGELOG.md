@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- `list-templates` subcommand is now available for the `new` command, allowing to get the list of available Action templates
+  - subcommand can be used with `--json` flag, which will format the output as JSON
+
 ## 0.10.0 - 2024-05-20
 
 - A `version` is now available in the metadata to signal the current version of the metadata format.
