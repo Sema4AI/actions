@@ -448,13 +448,14 @@ def calculator_sum(v1: float, v2: float) -> float:
     assert action_name_to_enabled == {"calculator_sum": True, "another_action": False}
 
 
-def test_import(
+def test_full_run(
     action_server_process: ActionServerProcess,
     data_regression,
     base_case,
     client: ActionServerClient,
 ) -> None:
     from action_server_tests.fixtures import fix_openapi_json
+    from robocorp.log._log_formatting import pretty_format_logs_from_log_html_contents
 
     from sema4ai.action_server._database import Database, str_to_datetime
     from sema4ai.action_server._models import Run, RunStatus, load_db
@@ -541,6 +542,61 @@ def test_import(
             )
 
             assert "Collecting action greet from: greeter_action.py" in found
+
+            # Check that the contents of the log.html have what we expect.
+            log_html_contents = client.get_str(
+                f"api/runs/{run.id}/artifacts/binary-content",
+                params={
+                    "artifact_name": [
+                        "log.html",
+                    ]
+                },
+            )
+            contents = pretty_format_logs_from_log_html_contents(log_html_contents)
+            assert "EA: str: name: 'Foo'" in contents
+            assert "R: str: 'Hello Mr. Foo.'" in contents
+
+
+def test_full_run_with_env_build(
+    action_server_process: ActionServerProcess,
+    data_regression,
+    client: ActionServerClient,
+    tmpdir,
+) -> None:
+    from action_server_tests.fixtures import get_in_resources
+    from robocorp.log._log_formatting import pretty_format_logs_from_log_html_contents
+
+    project = get_in_resources("hello_uv")
+    action_server_process.start(
+        db_file="server.db",
+        cwd=project,
+        actions_sync=True,
+        timeout=300,
+        lint=False,
+        env={
+            "ROBOT_ROOT": str(tmpdir / "bad_root")
+        },  # That's ok, the action server manages it properly.
+    )
+
+    response = client.post_get_response(
+        "api/actions/hello-uv/hello/run", {"name": "Foo"}
+    )
+    found = response.text
+    assert found == '"Hello Mr. Foo."', f"{found} != '\"Hello Mr. Foo.\"'"
+    run_id = response.headers["x-action-server-run-id"]
+
+    # Check that the contents of the log.html have what we expect.
+    log_html_contents = client.get_str(
+        f"api/runs/{run_id}/artifacts/binary-content",
+        params={
+            "artifact_name": [
+                "log.html",
+            ]
+        },
+    )
+    contents = pretty_format_logs_from_log_html_contents(log_html_contents)
+    assert "EA: str: name: 'Foo'" in contents
+    assert "R: str: 'Hello Mr. Foo.'" in contents
 
 
 def test_routes(action_server_process: ActionServerProcess, data_regression):
