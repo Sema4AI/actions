@@ -176,7 +176,7 @@ def run(
 
     Args:
         output_dir: The directory where output should be put.
-        path: The path (file or directory where the actions should be collected from.
+        path: The file or directory where the actions should be collected from.
         action_name: The name(s) of the action to run.
         max_log_files: The maximum number of log files to be created (if more would
             be needed the oldest one is deleted).
@@ -230,6 +230,10 @@ def run(
         0 if everything went well.
         1 if there was some error running the action.
     """
+    # If it's set it'll only consider files under the ROBOT_ROOT to contain user code
+    # we leave it unset so that it considers all files under lib or site-packages as
+    # lib code and everything else is user code.
+    os.environ.pop("ROBOT_ROOT", None)
     import copy
 
     from robocorp.log import ConsoleMessageKind, console, redirect

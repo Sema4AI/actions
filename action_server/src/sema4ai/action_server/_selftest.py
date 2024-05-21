@@ -271,6 +271,18 @@ class ActionServerClient:
         cookies: Optional[dict] = None,
         params: Optional[dict] = None,
     ):
+        result = self.post_get_response(url, data, headers, cookies, params)
+        result.raise_for_status()
+        return result.text
+
+    def post_get_response(
+        self,
+        url,
+        data,
+        headers: Optional[dict] = None,
+        cookies: Optional[dict] = None,
+        params: Optional[dict] = None,
+    ):
         import requests
 
         result = requests.post(
@@ -282,7 +294,7 @@ class ActionServerClient:
             timeout=self._get_default_timeout(),
         )
         result.raise_for_status()
-        return result.text
+        return result
 
     def post_error(self, url, status_code, data=None):
         import requests

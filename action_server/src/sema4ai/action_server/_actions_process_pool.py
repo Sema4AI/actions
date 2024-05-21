@@ -106,6 +106,10 @@ class ProcessHandle:
         env = json.loads(action_package.env_json)
         _add_preload_actions_dir_to_env_pythonpath(env)
         env = build_python_launch_env(env)
+        # Shouldn't be there, but just making sure... if it is it can
+        # affect how the logs are generated and if wrong the logs would
+        # also be wrong.
+        env.pop("ROBOT_ROOT", None)
 
         if settings.reuse_processes:
             # When reusing processes we don't want to dump threads if
