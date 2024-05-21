@@ -1,5 +1,13 @@
+import json
 import logging
 import os
+import typing
+
+from ._protocols import (
+    ArgumentsNamespace,
+    ArgumentsNamespaceNew,
+    ArgumentsNamespaceNewTemplates,
+)
 
 log = logging.getLogger(__name__)
 
@@ -11,15 +19,12 @@ def create_new_project(directory: str = ".", template_name: str = "") -> int:
         directory: The directory to create the project in.
         template_name: Template to use for the new project.
     """
-    from sema4ai.action_server.vendored_deps.termcolors import (
-        bold_red,
-        bold_yellow,
-        colored,
-    )
+    from sema4ai.action_server.vendored_deps.termcolors import bold_red, bold_yellow
 
     from ._new_project_helpers import (
         _ensure_latest_templates,
         _get_local_templates_metadata,
+        _print_templates_list,
         _unpack_template,
     )
 
@@ -52,8 +57,7 @@ def create_new_project(directory: str = ".", template_name: str = "") -> int:
                 )
 
         if not template_name:
-            for index, template in enumerate(metadata.templates, start=1):
-                log.info(colored(f" > {index}. {template.description}", "cyan"))
+            _print_templates_list(metadata.templates)
 
             # @TODO:
             # Make a reusable version once https://github.com/Sema4AI/actions/pull/3 is merged.
@@ -83,3 +87,51 @@ def create_new_project(directory: str = ".", template_name: str = "") -> int:
         )
 
         return 1
+
+
+def list_templates(print_json: bool = False) -> int:
+    """Lists availabe templates.
+
+    Args:
+        print_json: If true, the output will be formatted as JSON.
+    """
+    from sema4ai.action_server.vendored_deps.termcolors import bold_red
+
+    from ._new_project_helpers import (
+        _ensure_latest_templates,
+        _get_local_templates_metadata,
+        _print_templates_list,
+    )
+
+    try:
+        _ensure_latest_templates()
+        metadata = _get_local_templates_metadata()
+
+        if not metadata or len(metadata.templates) == 0:
+            raise RuntimeError("No cached or remote templates available.")
+
+        if print_json:
+            print(
+                json.dumps([template.model_dump() for template in metadata.templates])
+            )
+        else:
+            _print_templates_list(metadata.templates)
+
+        return 0
+    except Exception as e:
+        log.critical(bold_red(f"\nError listing templates: {e}"))
+
+        return 1
+
+
+def handle_new_command(base_args: ArgumentsNamespace) -> int:
+    new_args: ArgumentsNamespaceNew = typing.cast(ArgumentsNamespaceNew, base_args)
+
+    if new_args.new_command == "list-templates":
+        list_templates_args: ArgumentsNamespaceNewTemplates = typing.cast(
+            ArgumentsNamespaceNewTemplates, base_args
+        )
+
+        return list_templates(print_json=list_templates_args.json)
+
+    return create_new_project(directory=new_args.name, template_name=new_args.template)
