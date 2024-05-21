@@ -335,8 +335,9 @@ class Context:
     # Some user message which was being sent to the stderr.
     KIND_STDERR = ConsoleMessageKind.STDERR
 
-    def __init__(self):
+    def __init__(self, print_result: bool = False):
         self._msg_len_target = 80
+        self._print_result = print_result
 
     def _show_header(self, parts: List[Tuple[str, str]]) -> int:
         """
@@ -400,6 +401,7 @@ class Context:
         )
 
     def _after_action_run(self, action: IAction):
+        import json
         import traceback
 
         msg = ""
@@ -411,9 +413,13 @@ class Context:
             status_kind = self.KIND_ERROR
 
         show = self.show
+
+        result = action.result
+
         show(f"{action.name}", end="", kind=self.KIND_TASK_NAME)
         show(" status: ", end="")
         show(f"{action.status.value}", kind=status_kind)
+
         if msg:
             show(f"{msg}", kind=status_kind)
 
@@ -430,6 +436,24 @@ class Context:
                     "".join(traceback.format_exception(*action.exc_info)),
                     kind=self.KIND_TRACEBACK,
                 )
+
+        if self._print_result and action.status == Status.PASS:
+            show("result:", kind=self.KIND_IMPORTANT)
+            try:
+                if hasattr(result, "model_dump_json"):
+                    # Support for pydantic
+                    result_as_json_str = result.model_dump_json(indent=4)
+                else:
+                    result_as_json_str = json.dumps(result, indent=4)
+            except Exception:
+                raise RuntimeError(
+                    "The resulting value: {result} cannot be converted to JSON."
+                )
+
+            show(
+                result_as_json_str,
+                flush=True,
+            )
 
         self._show_header([])
 

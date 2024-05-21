@@ -22,4 +22,4 @@ def action_with_request(custom_cls: InputData, request: Request) -> str:
     """
     v = request.headers["x-custom-header"]
     Path(custom_cls.filename).write_text(v)
-    return v
+    return f"The result is {v}"

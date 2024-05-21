@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- New command line flag `--print-result` can be used to have the result of an `@action` printed to the terminal.
+- New command line flag `--print-input` can be used to have the input of an `@action` printed to the terminal.
+
 ## 0.6.0 - 2024-05-16
 
 - OAuth2 secrets can now be received in the arguments. Example:

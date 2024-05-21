@@ -143,6 +143,20 @@ class _ArgDispatcher:
             choices=["no", "before-teardown", "after-teardown"],
             help="Can be used to do an early os._exit to avoid the actions session teardown or the interpreter teardown. Not recommended in general.",
         )
+        run_parser.add_argument(
+            "--print-input",
+            dest="print_input",
+            action="store_true",
+            default=False,
+            help="Can be used to see the input of the actions run in the terminal.",
+        )
+        run_parser.add_argument(
+            "--print-result",
+            dest="print_result",
+            action="store_true",
+            default=False,
+            help="Can be used to see the result of the actions run in the terminal.",
+        )
 
         return run_parser
 
