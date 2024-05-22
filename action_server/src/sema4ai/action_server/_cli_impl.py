@@ -261,9 +261,6 @@ def _create_parser():
     # Import
     _add_import_command(command_subparser, defaults)
 
-    # New project from template
-    _add_new_command(command_subparser, defaults)
-
     # Download RCC
     rcc_parser = command_subparser.add_parser(
         "download-rcc",
@@ -295,6 +292,9 @@ def _create_parser():
     #     ),
     #     nargs="?",
     # )
+    
+    # New project from template
+    _add_new_command(command_subparser, defaults)
 
     # Version
     command_subparser.add_parser(
