@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.7.0 - 2024-05-22
+
 - New command line flag `--print-result` can be used to have the result of an `@action` printed to the terminal.
 - New command line flag `--print-input` can be used to have the input of an `@action` printed to the terminal.
 - Unsets `ROBOT_ROOT` when running actions so that all non-library code is considered user code when generating logs.

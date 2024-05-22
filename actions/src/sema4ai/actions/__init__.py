@@ -40,7 +40,7 @@ from ._protocols import IAction, Status
 from ._request import Request
 from ._secret import OAuth2Secret, Secret
 
-__version__ = "0.6.0"
+__version__ = "0.7.0"
 version_info = [int(x) for x in __version__.split(".")]
 
 
