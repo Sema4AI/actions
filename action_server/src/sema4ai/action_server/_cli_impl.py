@@ -21,7 +21,6 @@ from ._protocols import (
     ArgumentsNamespaceDownloadRcc,
     ArgumentsNamespaceImport,
     ArgumentsNamespaceMigrateImportOrStart,
-    ArgumentsNamespaceNew,
     ArgumentsNamespaceStart,
 )
 
@@ -209,8 +208,40 @@ def _add_import_command(command_subparser, defaults):
     _add_whitelist_args(import_parser, defaults)
 
 
+def _add_new_command(command_subparser, defaults):
+    from sema4ai.action_server._cli_helpers import (
+        add_json_output_args,
+        add_verbose_args,
+    )
+
+    new_parser = command_subparser.add_parser(
+        "new",
+        help="Bootstrap new project from template",
+    )
+
+    new_parser.add_argument(
+        "--name",
+        help="Name for the project",
+    )
+
+    new_parser.add_argument(
+        "--template",
+        help="Action template for the project",
+    )
+
+    add_verbose_args(new_parser, defaults)
+
+    new_subparsers = new_parser.add_subparsers(dest="new_command")
+
+    list_templates_parser = new_subparsers.add_parser(
+        "list-templates", help="List the available templates"
+    )
+
+    add_verbose_args(list_templates_parser, defaults)
+    add_json_output_args(list_templates_parser)
+
+
 def _create_parser():
-    from sema4ai.action_server._cli_helpers import add_verbose_args
     from sema4ai.action_server.package._package_build_cli import add_package_command
 
     from ._settings import Settings
@@ -246,24 +277,6 @@ def _create_parser():
         nargs="?",
     )
 
-    # New project from template
-    new_parser = command_subparser.add_parser(
-        "new",
-        help="Bootstrap new project from template",
-    )
-
-    new_parser.add_argument(
-        "--name",
-        help="Name for the project",
-    )
-
-    new_parser.add_argument(
-        "--template",
-        help="Action template for the project",
-    )
-
-    add_verbose_args(new_parser, defaults)
-
     # Schema
     # schema_parser = command_subparser.add_parser(
     #     "schema",
@@ -279,6 +292,9 @@ def _create_parser():
     #     ),
     #     nargs="?",
     # )
+
+    # New project from template
+    _add_new_command(command_subparser, defaults)
 
     # Version
     command_subparser.add_parser(
@@ -518,12 +534,9 @@ def _main_retcode(
     )
 
     if command == "new":
-        new_args: ArgumentsNamespaceNew = typing.cast(ArgumentsNamespaceNew, base_args)
-        from ._new_project import create_new_project
+        from ._new_project import handle_new_command
 
-        return create_new_project(
-            directory=new_args.name, template_name=new_args.template
-        )
+        return handle_new_command(base_args)
 
     migrate_import_or_start_args = typing.cast(
         ArgumentsNamespaceMigrateImportOrStart, base_args

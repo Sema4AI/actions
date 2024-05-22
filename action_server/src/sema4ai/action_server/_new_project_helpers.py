@@ -123,3 +123,10 @@ def _get_action_templates_dir_path() -> Path:
 
 def _get_action_templates_metadata_path() -> Path:
     return Path(_get_action_templates_dir_path() / ACTION_TEMPLATES_METADATA_FILENAME)
+
+
+def _print_templates_list(templates: list[ActionTemplate]) -> None:
+    from sema4ai.action_server.vendored_deps.termcolors import colored
+
+    for index, template in enumerate(templates, start=1):
+        log.info(colored(f" > {index}. {template.description}", "cyan"))

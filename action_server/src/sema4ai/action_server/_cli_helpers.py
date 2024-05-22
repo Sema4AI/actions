@@ -27,3 +27,11 @@ def add_verbose_args(parser, defaults):
         default=False,
         help="Be more talkative (default: %(default)s)",
     )
+
+
+def add_json_output_args(parser):
+    parser.add_argument(
+        "--json",
+        help="Write output to stdout in json format",
+        action="store_true",
+    )

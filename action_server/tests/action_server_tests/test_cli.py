@@ -30,6 +30,32 @@ def test_new(
     check_new_template(tmpdir, action_server_process, client)
 
 
+def test_new_list_templates(tmpdir) -> None:
+    import json
+
+    from sema4ai.action_server._selftest import robocorp_action_server_run
+
+    output = robocorp_action_server_run(
+        ["new", "list-templates"], returncode=0, cwd=tmpdir
+    )
+
+    assert "Minimal" in output.stderr
+    assert "Basic" in output.stderr
+    assert "Advanced" in output.stderr
+
+    output = robocorp_action_server_run(
+        ["new", "list-templates", "--json"], returncode=0, cwd=tmpdir
+    )
+
+    templates: list[dict[str, str]] = json.loads(output.stdout)
+
+    assert len(templates) == 3
+
+    assert templates[0].get("name") == "minimal"
+    assert templates[1].get("name") == "basic"
+    assert templates[2].get("name") == "advanced"
+
+
 def test_help(str_regression):
     import re
 
