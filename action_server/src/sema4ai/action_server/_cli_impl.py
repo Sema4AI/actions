@@ -292,7 +292,7 @@ def _create_parser():
     #     ),
     #     nargs="?",
     # )
-    
+
     # New project from template
     _add_new_command(command_subparser, defaults)
 
