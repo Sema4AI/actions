@@ -12,7 +12,7 @@ from ._protocols import (
 log = logging.getLogger(__name__)
 
 
-def create_new_project(directory: str = ".", template_name: str = "") -> int:
+def handle_new_project(directory: str = ".", template_name: str = "") -> int:
     """Creates a new project under the specified directory.
 
     Args:
@@ -89,15 +89,16 @@ def create_new_project(directory: str = ".", template_name: str = "") -> int:
         return 1
 
 
-def list_templates(print_json: bool = False) -> int:
+def handle_list_templates(output_json: bool = False) -> int:
     """Lists availabe templates.
 
     Args:
-        print_json: If true, the output will be formatted as JSON.
+        output_json: If true, the output will be formatted as JSON.
     """
     from sema4ai.action_server.vendored_deps.termcolors import bold_red
 
     from ._new_project_helpers import (
+        ActionTemplate,
         _ensure_latest_templates,
         _get_local_templates_metadata,
         _print_templates_list,
@@ -107,15 +108,15 @@ def list_templates(print_json: bool = False) -> int:
         _ensure_latest_templates()
         metadata = _get_local_templates_metadata()
 
-        if not metadata or len(metadata.templates) == 0:
-            raise RuntimeError("No cached or remote templates available.")
+        templates: list[ActionTemplate] = metadata.templates if metadata else []
 
-        if print_json:
-            print(
-                json.dumps([template.model_dump() for template in metadata.templates])
-            )
+        if output_json:
+            print(json.dumps([template.model_dump() for template in templates]))
         else:
-            _print_templates_list(metadata.templates)
+            if len(templates) == 0:
+                log.info("No templates available.")
+            else:
+                _print_templates_list(metadata.templates)
 
         return 0
     except Exception as e:
@@ -132,6 +133,6 @@ def handle_new_command(base_args: ArgumentsNamespace) -> int:
             ArgumentsNamespaceNewTemplates, base_args
         )
 
-        return list_templates(print_json=list_templates_args.json)
+        return handle_list_templates(output_json=list_templates_args.json)
 
-    return create_new_project(directory=new_args.name, template_name=new_args.template)
+    return handle_new_project(directory=new_args.name, template_name=new_args.template)
