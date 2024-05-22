@@ -116,7 +116,7 @@ def handle_list_templates(output_json: bool = False) -> int:
             if len(templates) == 0:
                 log.info("No templates available.")
             else:
-                _print_templates_list(metadata.templates)
+                _print_templates_list(templates)
 
         return 0
     except Exception as e:
