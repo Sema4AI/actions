@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.8.0 - 2024-05-23
+
 - API used from pydantic changed (using `model_dump` instead of `model_dump_json`).
 - `pydantic v2` (onwards) is now a required dependency of `sema4ai-actions`.
 - Improved support for error conditions:
