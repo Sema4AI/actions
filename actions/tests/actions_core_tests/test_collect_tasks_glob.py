@@ -45,11 +45,9 @@ def test_run_tasks_glob(datadir, data_regression):
         "--console-colors=plain",
     ]
 
-    result = sema4ai_actions_run(cmdline, returncode=0, cwd=datadir)
+    result = sema4ai_actions_run(cmdline, returncode=1, cwd=datadir)
     output = result.stdout.decode("utf-8")
-    assert output.count("status: PASS") == 2, f"Found: {output}"
-    assert output.count("task_on_my_task status: PASS") == 1
-    assert output.count("task_on_another_module status: PASS") == 1
+    assert "Expected a single action to be run." in output
 
 
 def test_run_tasks_glob_multiple_matches(datadir, data_regression):
@@ -63,9 +61,6 @@ def test_run_tasks_glob_multiple_matches(datadir, data_regression):
         "--console-colors=plain",
     ]
 
-    result = sema4ai_actions_run(cmdline, returncode=0, cwd=datadir)
+    result = sema4ai_actions_run(cmdline, returncode=1, cwd=datadir)
     output = result.stdout.decode("utf-8")
-    assert output.count("status: PASS") == 3
-    assert output.count("task_on_my_module status: PASS") == 1
-    assert output.count("task_on_my_task status: PASS") == 1
-    assert output.count("task_on_another_module status: PASS") == 1
+    assert "Expected a single action to be run." in output

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Improved support for exceptions raised in `@action`s from `sema4ai-actions`.
+- Note: `sema4ai-actions 0.8.0` added `ActionError` and `Response` classes 
+  to the public API for improved handling of error conditions.
+- See: [Structuring actions guide](./guides/09-structuring-actions.md) for more information.
 - `list-templates` subcommand is now available for the `new` command, allowing to get the list of available Action templates
   - subcommand can be used with `--json` flag, which will format the output as JSON
 

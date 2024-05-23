@@ -17,14 +17,12 @@ robocorp-log = ">=2.4,<3"
 robocorp-truststore= ">=0.8.0"
 psutil = "^5.0"
 docstring_parser_fork = "^0.0.5"
+pydantic = "^2.0" # Required for the `Response[T]`
 
 [tool.poetry.group.dev.dependencies]
 sema4ai-devutils = { path = "../devutils/", develop = true }
 types-psutil = "^5.9"
 
-# We just need it for tests. In runtime duck-typing is used to
-# check for `cls.parse_obj(dict)` and `cls.model_json_schema()`
-pydantic = "^2.6"
 
 
 [tool.mypy]

@@ -1,0 +1,112 @@
+raise_other_error_action:
+  input_schema:
+    properties: {}
+    type: object
+  managed_params_schema: {}
+  output_schema:
+    properties:
+      error:
+        anyOf:
+        - type: string
+        - type: 'null'
+        default: null
+        description: The error message if the action failed for some reason
+        title: Error
+      result:
+        anyOf:
+        - properties:
+            show:
+              default: true
+              title: Show
+              type: boolean
+          title: SomeData
+          type: object
+        - type: 'null'
+        default: null
+        description: The result for the action if it ran successfully
+    title: Response[SomeData]
+    type: object
+rase_action_error_action:
+  input_schema:
+    properties: {}
+    type: object
+  managed_params_schema: {}
+  output_schema:
+    properties:
+      error:
+        anyOf:
+        - type: string
+        - type: 'null'
+        default: null
+        description: The error message if the action failed for some reason
+        title: Error
+      result:
+        anyOf:
+        - properties:
+            show:
+              default: true
+              title: Show
+              type: boolean
+          title: SomeData
+          type: object
+        - type: 'null'
+        default: null
+        description: The result for the action if it ran successfully
+    title: Response[SomeData]
+    type: object
+return_response_error_action:
+  input_schema:
+    properties: {}
+    type: object
+  managed_params_schema: {}
+  output_schema:
+    properties:
+      error:
+        anyOf:
+        - type: string
+        - type: 'null'
+        default: null
+        description: The error message if the action failed for some reason
+        title: Error
+      result:
+        anyOf:
+        - properties:
+            show:
+              default: true
+              title: Show
+              type: boolean
+          title: SomeData
+          type: object
+        - type: 'null'
+        default: null
+        description: The result for the action if it ran successfully
+    title: Response[SomeData]
+    type: object
+return_response_ok_action:
+  input_schema:
+    properties: {}
+    type: object
+  managed_params_schema: {}
+  output_schema:
+    properties:
+      error:
+        anyOf:
+        - type: string
+        - type: 'null'
+        default: null
+        description: The error message if the action failed for some reason
+        title: Error
+      result:
+        anyOf:
+        - properties:
+            show:
+              default: true
+              title: Show
+              type: boolean
+          title: SomeData
+          type: object
+        - type: 'null'
+        default: null
+        description: The result for the action if it ran successfully
+    title: Response[SomeData]
+    type: object

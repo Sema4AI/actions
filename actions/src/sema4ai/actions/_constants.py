@@ -3,7 +3,7 @@
 #
 # `cls.model_validate(dict)`
 # `cls.model_json_schema()`
-# `obj.model_dump_json()`
+# `obj.model_dump()`
 SUPPORTED_TYPES_IN_SCHEMA = (str, int, float, bool)
 
 DEFAULT_ACTION_SEARCH_GLOB = "*action*.py"

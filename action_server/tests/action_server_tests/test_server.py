@@ -52,7 +52,8 @@ def test_bad_return_on_no_conda(
         lint=False,
     )
     found = client.post_error("api/actions/calculator/bad-return-none/run", 500)
-    assert found.json()["message"] == (
+    message = found.json()["message"]
+    assert message == (
         "Inconsistent value returned from action: data must be string -- i.e.: the returned "
         "value (None) does not match the expected output schema ({'type': 'string', 'description': ''})."
     )

@@ -17,8 +17,15 @@ def on_teardown_save_result(action: IAction):
         result = action.result
         p = Path(S4_ACTION_RESULT_LOCATION)
         p.parent.mkdir(parents=True, exist_ok=True)
-        if hasattr(result, "model_dump_json"):
+        dump = result
+        if hasattr(result, "model_dump"):
             # Support for pydantic
-            p.write_text(result.model_dump_json())
-        else:
-            p.write_text(json.dumps(result))
+            dump = result.model_dump()
+
+        contents_to_write = {
+            "result": dump,
+            "message": action.message,
+            "status": action.status.value,
+        }
+
+        p.write_text(json.dumps(contents_to_write))

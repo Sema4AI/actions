@@ -440,11 +440,12 @@ class Context:
         if self._print_result and action.status == Status.PASS:
             show("result:", kind=self.KIND_IMPORTANT)
             try:
-                if hasattr(result, "model_dump_json"):
+                dump = result
+                if hasattr(result, "model_dump"):
                     # Support for pydantic
-                    result_as_json_str = result.model_dump_json(indent=4)
-                else:
-                    result_as_json_str = json.dumps(result, indent=4)
+                    dump = result.model_dump()
+
+                result_as_json_str = json.dumps(dump, indent=4)
             except Exception:
                 raise RuntimeError(
                     "The resulting value: {result} cannot be converted to JSON."
