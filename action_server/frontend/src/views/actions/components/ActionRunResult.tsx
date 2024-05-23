@@ -1,7 +1,8 @@
 import { FC } from 'react';
-import { Header } from '@robocorp/components';
-
+import { Header, Link } from '@robocorp/components';
+import { baseUrl } from '~/lib/requestData';
 import { ActionRunConsole, Code } from '~/components';
+import { IconFileText } from '@robocorp/icons/iconic';
 
 type Props = {
   result: string;
@@ -29,6 +30,9 @@ export const ActionRunResult: FC<Props> = ({ result, runId, outputSchemaType }) 
         <Header.Title title="Console output" />
       </Header>
       <ActionRunConsole runId={runId} />
+      <Link href={`${baseUrl}/api/runs/${runId}/log.html`} icon={IconFileText}>
+        Open Log
+      </Link>
     </>
   );
 };
