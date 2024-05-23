@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.11.0 - 2024-05-23
+
 - Improved support for exceptions raised in `@action`s from `sema4ai-actions`.
 - Note: `sema4ai-actions 0.8.0` added `ActionError` and `Response` classes 
   to the public API for improved handling of error conditions.
