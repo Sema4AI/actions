@@ -68,7 +68,7 @@ async def http_error_handler(
     return JSONResponse(
         status_code=exc.status_code,
         content=_to_response(
-            error_code=ErrorCode.UNKNOWN,
+            error_code=ErrorCode.INTERNAL_ERROR,
             message=str(exc.detail),
             path=str(request.url.path),
         ),

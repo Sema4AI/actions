@@ -150,6 +150,16 @@ class _OsExit(enum.Enum):
     AFTER_TEARDOWN = 2
 
 
+def _has_response_schema(action: IAction) -> bool:
+    output_schema = action.output_schema
+    if isinstance(output_schema, dict):
+        properties = output_schema.get("properties")
+        if properties and isinstance(properties, dict):
+            if set(properties.keys()) == {"result", "error"}:
+                return True
+    return False
+
+
 def run(
     *,
     output_dir: str,
@@ -230,6 +240,8 @@ def run(
         0 if everything went well.
         1 if there was some error running the action.
     """
+    from sema4ai.actions._response import ActionError, Response
+
     # If it's set it'll only consider files under the ROBOT_ROOT to contain user code
     # we leave it unset so that it considers all files under lib or site-packages as
     # lib code and everything else is user code.
@@ -442,6 +454,10 @@ def run(
                         raise ActionsCollectError(
                             f"Did not find any actions in: {path}"
                         )
+                    if len(actions) > 1:
+                        raise ActionsCollectError(
+                            f"Expected a single action to be run. Found: {', '.join(x.name for x in actions)}."
+                        )
                 except Exception as e:
                     run_status = "ERROR"
                     setup_message = str(e)
@@ -487,13 +503,40 @@ def run(
                                 )
 
                             result = action.run(**kwargs)
+
                             action.result = result
                             action.status = Status.PASS
+
+                            if _has_response_schema(action):
+                                if getattr(result, "error", None):
+                                    action.status = Status.FAIL
+                                    action.message = str(result.error)
+
                         except Exception as e:
                             action.status = Status.FAIL
-                            # Make sure we put some message even if str(e) is empty.
-                            action.message = str(e) or f"{e.__class__}"
                             action.exc_info = sys.exc_info()
+
+                            if isinstance(e, ActionError):
+                                # Custom support: if an action raised an
+                                # expected error, provide a custom response
+                                error_msg = (
+                                    str(e)
+                                    or (
+                                        f"Error ({e.__class__.__name__})"  # Maybe it's a subclass?
+                                    )
+                                )
+                                action.message = error_msg
+                            else:
+                                # In this case, as it's unexpected, just show the class
+                                # (we don't show the message because it could contain
+                                # private information and that goes out to the LLM).
+                                action.message = (
+                                    f"Unexpected error ({e.__class__.__name__})"
+                                )
+
+                            if _has_response_schema(action):
+                                action.result = Response(error=action.message)
+
                         finally:
                             with interrupt_on_timeout(
                                 teardown_dump_threads_timeout,

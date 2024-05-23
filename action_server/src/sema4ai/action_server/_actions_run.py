@@ -20,7 +20,7 @@ log = logging.getLogger(__name__)
 # Note: for pydantic models, the following APIs are used:
 # cls.model_validate(dict)
 # cls.model_json_schema()
-# obj.model_dump_json()
+# obj.model_dump()
 #
 # Besides pydantic, the following basic types are accepted:
 _spec_api_type_to_python_type = {
@@ -115,6 +115,14 @@ def _set_run_as_finished_ok(run: "Run", result: str, initial_time: float):
     from ._models import RunStatus
 
     _update_run(run, initial_time, True, result=result, status=RunStatus.PASSED)
+
+
+def _set_run_as_finished_failed_with_response(
+    run: "Run", result: str, initial_time: float
+):
+    from ._models import RunStatus
+
+    _update_run(run, initial_time, True, status=RunStatus.FAILED, result=result)
 
 
 def _set_run_as_finished_failed(run: "Run", error_message: str, initial_time: float):
@@ -222,34 +230,48 @@ def _run_action_in_thread(
                     reuse_process,
                 )
 
+                try:
+                    run_result_str: str = result_json.read_text("utf-8", "replace")
+                except Exception:
+                    raise RuntimeError(
+                        "It was not possible to collect the contents of the "
+                        "result (json not created)."
+                    )
+
+                try:
+                    result_contents = json.loads(run_result_str)
+                except Exception:
+                    raise RuntimeError(
+                        f"Error loading the contents of {run_result_str} as json."
+                    )
+
+                ret = result_contents.get("result")
+                result_str: str = json.dumps(ret, indent=4)
+                if ret is not None or returncode == 0:
+                    try:
+                        output_validator(ret)
+                    except Exception as e:
+                        show_str = result_str
+                        if ret is None:
+                            show_str = "None"
+                        raise RuntimeError(
+                            f"Inconsistent value returned from action: {e} -- i.e.: the returned value ({show_str}) does not match the expected output schema ({output_schema_dict})."
+                        )
+
                 if returncode == 0:
-                    try:
-                        result: str = result_json.read_text("utf-8", "replace")
-                    except Exception:
-                        raise RuntimeError(
-                            "It was not possible to collect the contents of the "
-                            "result (json not created)."
+                    _set_run_as_finished_ok(run, result_str, initial_time)
+                    return ret
+
+                else:
+                    if ret:
+                        # We have a return even with a failure. This means it's
+                        # something as a Response(error=error_msg)
+                        _set_run_as_finished_failed_with_response(
+                            run, result_str, initial_time
                         )
-                    try:
-                        _set_run_as_finished_ok(run, result, initial_time)
-                        ret = json.loads(result)
-                    except Exception:
-                        raise RuntimeError(
-                            "Error loading the contents of {result_json} as json."
-                        )
-                    else:
-                        try:
-                            output_validator(ret)
-                        except Exception as e:
-                            raise RuntimeError(
-                                f"Inconsistent value returned from action: {e} -- i.e.: the returned value ({ret!r}) does not match the expected output schema ({output_schema_dict})."
-                            )
                         return ret
 
-                raise RuntimeError(
-                    f"Error: the process did not complete successfully when "
-                    f"running. returncode: {returncode}"
-                )
+                raise RuntimeError(result_contents.get("message", "Internal error"))
 
             except BaseException as e:
                 _set_run_as_finished_failed(run, str(e), initial_time)

@@ -38,6 +38,7 @@ from typing import Callable, Optional, overload
 from ._fixtures import setup, teardown
 from ._protocols import IAction, Status
 from ._request import Request
+from ._response import ActionError, Response
 from ._secret import OAuth2Secret, Secret
 
 __version__ = "0.7.0"
@@ -190,10 +191,12 @@ def get_current_action() -> Optional[IAction]:
 
 
 __all__ = [
+    "ActionError",
     "IAction",
-    "Request",
-    "Secret",
     "OAuth2Secret",
+    "Request",
+    "Response",
+    "Secret",
     "Status",
     "action",
     "action_cache",

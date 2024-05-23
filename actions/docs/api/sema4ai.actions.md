@@ -62,7 +62,7 @@ python -m sema4ai.actions run actions.py -a enter_user
 - <b>`is_consequential`</b>:  Whether the action is consequential or not. This will add `x-openai-isConsequential: true` to the action metadata and shown in OpenApi spec.
 - <b>`display_name`</b>:  A name to be displayed for this action. If given will be used as the openapi.json summary for this action.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/__init__.py#L59)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/__init__.py#L60)
 
 ```python
 action(*args, **kwargs)
@@ -82,7 +82,7 @@ The function may be either a generator with a single yield (so, the first yielde
 
 - <b>`func`</b>:  wrapped function.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/__init__.py#L147)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/__init__.py#L148)
 
 ```python
 action_cache(func)
@@ -94,7 +94,7 @@ ______________________________________________________________________
 
 Provides the action which is being currently run or None if not currently running an action.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/__init__.py#L182)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/__init__.py#L183)
 
 ```python
 get_current_action() → Optional[IAction]
@@ -106,7 +106,7 @@ ______________________________________________________________________
 
 Provide the output directory being used for the run or None if there's no output dir configured.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/__init__.py#L169)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/__init__.py#L170)
 
 ```python
 get_output_dir() → Optional[Path]
@@ -126,7 +126,7 @@ The function may be either a generator with a single yield (so, the first yielde
 
 - <b>`func`</b>:  wrapped function.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/__init__.py#L125)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/__init__.py#L126)
 
 ```python
 session_cache(func)
@@ -437,6 +437,28 @@ model_validate(dct: dict) → Request
 
 ______________________________________________________________________
 
+# Class `Response`
+
+The response class provides a way for the user to signal that the action completed successfully with a given result or the action completed with some error (which the LLM can later show).
+
+## Properties
+
+- `model_extra`
+
+Get extra fields set during validation.
+
+**Returns:**
+A dictionary of extra fields, or `None` if `config.extra` is not set to `"allow"`.
+
+- `model_fields_set`
+
+Returns the set of fields that have been explicitly set on this model instance.
+
+**Returns:**
+A set of strings representing the fields that have been set, i.e. that were not filled from defaults.
+
+______________________________________________________________________
+
 # Class `Secret`
 
 This class should be used to receive secrets.
@@ -499,6 +521,25 @@ Note: the model_validate method is used for compatibility with the pydantic API.
 
 ```python
 model_validate(value: str) → Secret
+```
+
+# Exceptions
+
+______________________________________________________________________
+
+## `ActionError`
+
+This is a custom error which actions returning a `Response` are expected to raise if an "expected" exception happens.
+
+When this exception is raised sema4ai-actions will automatically convert it to an "expected" where its error message is the exception.
+
+i.e.: sema4ai-actions does something as:
+
+```python
+try
+    ...
+except ActionError as e:
+    return Response(error=e.message)
 ```
 
 # Enums
