@@ -257,7 +257,7 @@ def make_exe():
             ## START DEPS
             "aiohttp~=3.9",
             "cryptography~=42.0",
-            "fastapi~=0.110",
+            "fastapi-slim~=0.111",
             "fastjsonschema~=2.19",
             "jsonschema~=4.19",
             "msgspec~=0.18",
@@ -265,7 +265,7 @@ def make_exe():
             "pydantic~=2.4",
             "pyyaml>=6,<7",
             "requests>=2,<3",
-            "sema4ai-actions~=0.6",
+            "sema4ai-actions~=0.8",
             "termcolor~=2.4",
             "uvicorn~=0.23",
             "websockets~=12.0",

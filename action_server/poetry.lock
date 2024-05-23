@@ -112,13 +112,13 @@ frozenlist = ">=1.1.0"
 
 [[package]]
 name = "annotated-types"
-version = "0.6.0"
+version = "0.7.0"
 description = "Reusable constraint types to use with typing.Annotated"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "annotated_types-0.6.0-py3-none-any.whl", hash = "sha256:0641064de18ba7a25dee8f96403ebc39113d0cb953a01429249d5c7564666a43"},
-    {file = "annotated_types-0.6.0.tar.gz", hash = "sha256:563339e807e53ffd9c267e99fc6d9ea23eb8443c08f112651963e24e22f84a5d"},
+    {file = "annotated_types-0.7.0-py3-none-any.whl", hash = "sha256:1f02e8b43a8fbbc3f3e0d4f0f4bfc8131bcb4eebe8849b8e5c773f3a1c582a53"},
+    {file = "annotated_types-0.7.0.tar.gz", hash = "sha256:aff07c09a53a08bc8cfccb9c85b05f1aa9a2a6f23728d790723543408344ce89"},
 ]
 
 [[package]]
@@ -500,14 +500,14 @@ files = [
 testing = ["hatch", "pre-commit", "pytest", "tox"]
 
 [[package]]
-name = "fastapi"
-version = "0.110.3"
+name = "fastapi-slim"
+version = "0.111.0"
 description = "FastAPI framework, high performance, easy to learn, fast to code, ready for production"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "fastapi-0.110.3-py3-none-any.whl", hash = "sha256:fd7600612f755e4050beb74001310b5a7e1796d149c2ee363124abdfa0289d32"},
-    {file = "fastapi-0.110.3.tar.gz", hash = "sha256:555700b0159379e94fdbfc6bb66a0f1c43f4cf7060f25239af3d84b63a656626"},
+    {file = "fastapi_slim-0.111.0-py3-none-any.whl", hash = "sha256:6e4b04a555496e5a2590031fcae3ef8e364ad4901b340033e2e1d8136471aca2"},
+    {file = "fastapi_slim-0.111.0.tar.gz", hash = "sha256:100720e4362ec4de97dee83a579b970e79fb5bf48073b37c9ce9b0e63dda4bec"},
 ]
 
 [package.dependencies]
@@ -516,7 +516,8 @@ starlette = ">=0.37.2,<0.38.0"
 typing-extensions = ">=4.8.0"
 
 [package.extras]
-all = ["email_validator (>=2.0.0)", "httpx (>=0.23.0)", "itsdangerous (>=1.1.0)", "jinja2 (>=2.11.2)", "orjson (>=3.2.1)", "pydantic-extra-types (>=2.0.0)", "pydantic-settings (>=2.0.0)", "python-multipart (>=0.0.7)", "pyyaml (>=5.3.1)", "ujson (>=4.0.1,!=4.0.2,!=4.1.0,!=4.2.0,!=4.3.0,!=5.0.0,!=5.1.0)", "uvicorn[standard] (>=0.12.0)"]
+all = ["email_validator (>=2.0.0)", "fastapi-cli (>=0.0.2)", "httpx (>=0.23.0)", "itsdangerous (>=1.1.0)", "jinja2 (>=2.11.2)", "orjson (>=3.2.1)", "pydantic-extra-types (>=2.0.0)", "pydantic-settings (>=2.0.0)", "python-multipart (>=0.0.7)", "pyyaml (>=5.3.1)", "ujson (>=4.0.1,!=4.0.2,!=4.1.0,!=4.2.0,!=4.3.0,!=5.0.0,!=5.1.0)", "uvicorn[standard] (>=0.12.0)"]
+standard = ["email_validator (>=2.0.0)", "fastapi-cli (>=0.0.2)", "httpx (>=0.23.0)", "jinja2 (>=2.11.2)", "orjson (>=3.2.1)", "python-multipart (>=0.0.7)", "ujson (>=4.0.1,!=4.0.2,!=4.1.0,!=4.2.0,!=4.3.0,!=5.0.0,!=5.1.0)", "uvicorn[standard] (>=0.12.0)"]
 
 [[package]]
 name = "fastjsonschema"
@@ -1535,13 +1536,13 @@ rpds-py = ">=0.7.0"
 
 [[package]]
 name = "requests"
-version = "2.31.0"
+version = "2.32.2"
 description = "Python HTTP for Humans."
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 files = [
-    {file = "requests-2.31.0-py3-none-any.whl", hash = "sha256:58cd2187c01e70e6e26505bca751777aa9f2ee0b7f4300988b709f44e013003f"},
-    {file = "requests-2.31.0.tar.gz", hash = "sha256:942c5a758f98d790eaed1a29cb6eefc7ffb0d1cf7af05c3d2791656dbd6ad1e1"},
+    {file = "requests-2.32.2-py3-none-any.whl", hash = "sha256:fc06670dd0ed212426dfeb94fc1b983d917c4f9847c863f313c9dfaaffb7c23c"},
+    {file = "requests-2.32.2.tar.gz", hash = "sha256:dd951ff5ecf3e3b3aa26b40703ba77495dab41da839ae72ef3c8e5d8e2433289"},
 ]
 
 [package.dependencies]
@@ -1749,19 +1750,20 @@ files = [
 
 [[package]]
 name = "sema4ai-actions"
-version = "0.6.0"
+version = "0.8.0"
 description = "Sema4AI Actions"
 optional = false
 python-versions = "<4.0,>=3.10"
 files = [
-    {file = "sema4ai_actions-0.6.0-py3-none-any.whl", hash = "sha256:f9633efca3abc1fc9c4b7b5ff77cd628e490ba07a114df774b91e7e2c9b1b95a"},
-    {file = "sema4ai_actions-0.6.0.tar.gz", hash = "sha256:b1eedc6b43db8a119e20ffa8e99a8f346e4cd3429fe6ede48acaad97a7222ebb"},
+    {file = "sema4ai_actions-0.8.0-py3-none-any.whl", hash = "sha256:605b5d514e71d062d278645425d7fcfebf4f57064eb2d71b3717217f563354a7"},
+    {file = "sema4ai_actions-0.8.0.tar.gz", hash = "sha256:bf31a3cb8539f42ca2c43aa986163d3b74f89eebb3e0cd49358975f93df38085"},
 ]
 
 [package.dependencies]
 cryptography = ">=42.0.5,<43.0.0"
 docstring_parser_fork = ">=0.0.5,<0.0.6"
 psutil = ">=5.0,<6.0"
+pydantic = ">=2.0,<3.0"
 robocorp-log = ">=2.4,<3"
 robocorp-truststore = ">=0.8.0"
 
@@ -1953,13 +1955,13 @@ files = [
 
 [[package]]
 name = "types-requests"
-version = "2.31.0.20240406"
+version = "2.32.0.20240523"
 description = "Typing stubs for requests"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "types-requests-2.31.0.20240406.tar.gz", hash = "sha256:4428df33c5503945c74b3f42e82b181e86ec7b724620419a2966e2de604ce1a1"},
-    {file = "types_requests-2.31.0.20240406-py3-none-any.whl", hash = "sha256:6216cdac377c6b9a040ac1c0404f7284bd13199c0e1bb235f4324627e8898cf5"},
+    {file = "types-requests-2.32.0.20240523.tar.gz", hash = "sha256:26b8a6de32d9f561192b9942b41c0ab2d8010df5677ca8aa146289d11d505f57"},
+    {file = "types_requests-2.32.0.20240523-py3-none-any.whl", hash = "sha256:f19ed0e2daa74302069bbbbf9e82902854ffa780bc790742a810a9aaa52f65ec"},
 ]
 
 [package.dependencies]
@@ -2292,4 +2294,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "20e3fafc8ba7885dbd30a86f0d8ad274645f1418989355608db0a55aa93bb6ed"
+content-hash = "a5c3ce9dfff9688ee7eed1abd391bef70152cee51ef165608a4decd26571d490"
