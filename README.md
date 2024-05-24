@@ -1,6 +1,6 @@
 ![Sema4ai](./docs/include/header.svg)
 
-<samp>[Docs](https://robocorp.com/docs) | [Blog](https://medium.com/sema4-ai) | [Examples](https://github.com/sema4ai/cookbook) | [CodeGen](https://chat.robocorp.com) | [Slack](https://robocorp-developers.slack.com/) | [Youtube](https://www.youtube.com/@Robocorp) | [𝕏](https://twitter.com/sema4ai)</samp>
+<samp>[Docs](https://robocorp.com/docs) | [Blog](https://medium.com/sema4-ai) | [Examples](https://github.com/sema4ai/cookbook) | [CodeGen](https://chat.robocorp.com) | [Slack](https://sema4ai-users.slack.com/) | [Youtube](https://www.youtube.com/@Robocorp) | [𝕏](https://twitter.com/sema4ai)</samp>
 
 [![PyPI - Version](https://img.shields.io/pypi/v/sema4ai-actions?label=sema4ai-actions&color=%23733CFF)](https://pypi.org/project/sema4ai-actions)
 [![PyPI - Version](https://img.shields.io/pypi/v/sema4ai-action-server?label=sema4ai-action-server&color=%23733CFF)](https://pypi.org/project/sema4ai-action-server)
@@ -263,7 +263,7 @@ Check out these example projects for inspiration.
 - 🖥️ [Securely fetch contents of `.txt` and `.pdf` files from your local machine's folder in real time.](https://github.com/Sema4AI/cookbook/tree/main/actions/desktop-files)
 - 📝 [Read and write with local Excel file.](https://github.com/Sema4AI/cookbook/tree/main/actions/excel-local)
 
-Build more `@actions` and be awesome! We'd love to hear and see what have you built. Join our [Slack community](https://robocorp-developers.slack.com/) to share your work.
+Build more `@actions` and be awesome! We'd love to hear and see what have you built. Join our [Slack community](https://sema4ai-users.slack.com/) to share your work.
 
 <div id="contribute"></div>
 
@@ -272,9 +272,9 @@ Build more `@actions` and be awesome! We'd love to hear and see what have you bu
 > ⭐️ First, please star the repo - your support is highly appreciated!
 
 - 🚩 Issues – our [GitHub Issues](https://github.com/Sema4AI/actions/issues) is kept up to date with bugs, improvements, and feature requests
-- 🙋 Help - you are welcome to [join our Community Slack](https://robocorp-developers.slack.com/) if you experience any difficulty getting setup
+- 🙋 Help - you are welcome to [join our Community Slack](https://sema4ai-users.slack.com/) if you experience any difficulty getting setup
 - 🌟 Contribution and recognition – Start [here](https://github.com/Sema4AI/actions/blob/master/CONTRIBUTING.md), [PR's](https://github.com/Sema4AI/actions/pulls) are welcome!
-- 🔐 Refer to our [Security policy](https://robocorp.com/.well-known/security.txt) for details
+- 🔐 Refer to our [Security policy](https://sema4.ai/.well-known/security.txt) for details
 
 ### Contributors
 
