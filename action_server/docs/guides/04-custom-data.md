@@ -4,12 +4,12 @@ Starting with `sema4ai-actions 0.0.8` and `Action Server 0.0.28`, custom
 pydantic models may be used to define a schema containing complex objects as
 the input/output of a an `@action`.
 
-Without using custom models, the allowd Action input and output datatypes are: `str`, `int`, `float`, `bool`.
+Without using custom models, the allowed Action input and output datatypes are: `str`, `int`, `float`, `bool`.
 
 ## Example
 
 To define a custom data model, pydantic classes must be used to define the shape
-of the data. 
+of the data.
 
 Below is an example which defines an `@action` with a custom input and output:
 
@@ -34,5 +34,6 @@ def accept_data(data: InputData) -> OutputData:
 
 ## Note
 
-Note: `pydantic` is not a hard dependency of `sema4ai-actions` and must
-be included as a custom dependency in projects that require custom data models.
+From `sema4ai-actions 0.8.0`, `pydantic v2` is a required dependency. On previous
+versions `pydantic v2` needed to be included as a custom dependency in projects
+that require custom data models.
