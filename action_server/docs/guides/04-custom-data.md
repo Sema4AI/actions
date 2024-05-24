@@ -1,10 +1,10 @@
 # Dealing with custom data models
 
-Starting with `robocorp-actions 0.0.8` and `Action Server 0.0.28`, custom
+Starting with `sema4ai-actions 0.0.8` and `Action Server 0.0.28`, custom
 pydantic models may be used to define a schema containing complex objects as
 the input/output of a an `@action`.
 
--- previous versions supported just `str`, `int`, `float`, `bool`.
+Without using custom models, the allowd Action input and output datatypes are: `str`, `int`, `float`, `bool`.
 
 ## Example
 
@@ -34,5 +34,5 @@ def accept_data(data: InputData) -> OutputData:
 
 ## Note
 
-Note: `pydantic` is not a hard dependency of `robocorp-actions` and must
+Note: `pydantic` is not a hard dependency of `sema4ai-actions` and must
 be included as a custom dependency in projects that require custom data models.
