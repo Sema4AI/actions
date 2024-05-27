@@ -8,3 +8,6 @@ temp/
 *.pyc
 *.zip
 .env
+.project
+.pydevproject
+.env
