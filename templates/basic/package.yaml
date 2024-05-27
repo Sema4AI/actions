@@ -1,6 +1,5 @@
-
 # Required: A short name for the action package
-name: Package name
+name: Basic Template Package
 
 # Required: A description of what's in the action package.
 description: Action package description
@@ -10,14 +9,13 @@ documentation: https://github.com/...
 
 dependencies:
   conda-forge:
-  - python=3.10.12
-  - uv=0.1.37
+  - python=3.10.14
+  - uv=0.2.4
   pypi:
+  - sema4ai-actions=0.8.0
   - robocorp-browser=2.3.3
-  - sema4ai-actions=0.5.0
 
-packaging:
-  # This section is optional.
+packaging:  
   # By default, all files and folders in this directory are packaged when uploaded.
   # Add exclusion rules below (expects glob format: https://docs.python.org/3/library/glob.html)
   exclude:
@@ -25,8 +23,9 @@ packaging:
     - ./.vscode/**
     - ./devdata/**
     - ./output/**
-    - ./.DS_store/**
     - ./venv/**
     - ./.venv/**
+    - ./.DS_store/**
+    - ".*" # Excludes all hidden files
     - ./**/*.pyc
     - ./**/*.zip
