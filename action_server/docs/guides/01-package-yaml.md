@@ -6,32 +6,29 @@ The `package.yaml` file is the base file which defines everything related to the
 actions available in the action package.
 
 > Note: previous versions of the action server used a `conda.yaml` or `action-server.yaml`,
-which are not directly compatible to `package.yaml` (so, they can't be just renamed
-directly and some changes are expected in how to define the environment).
+> which are not directly compatible to `package.yaml` (so, they can't be just renamed
+> directly and some changes are expected in how to define the environment).
 
 > Running: `action-server package update` can be used to automatically
-upgrade a package in an older version to the new expected format.
+> upgrade a package in an older version to the new expected format.
 
 An example `package.yaml` would be something as:
 
 ```yaml
     # Required: Defines the name of the action package.
-    name: My awesome cookie maker  
+    name: My awesome cookie maker
 
     # Required: A description of what's in the action package.
-    description: This does cookies  
-
-    # Required: A link to where the documentation on the package lives.
-    documentation: https://github.com/robocorp/actions-cookbook/blob/master/database-postgres/README.md
+    description: This does cookies
 
     # Required:
-    # Defines the Python dependencies which should be used to launch the 
+    # Defines the Python dependencies which should be used to launch the
     # actions.
     # The action server will automatically create a new python environment
     # based on this specification.
     # Note that at this point the only operator supported is `=`.
     dependencies:
-      conda-forge: 
+      conda-forge:
         # This section is required: at least the python version must be specified.
         - python=3.10.12
         - pip=23.2.1
@@ -52,7 +49,7 @@ An example `package.yaml` would be something as:
         - pytz=2023.3
 
     post-install:
-        # This can be used to run custom commands which will still affect the 
+        # This can be used to run custom commands which will still affect the
         # environment after it is created (the changes to the environment will
         # be cached).
         - python -m robocorp.browser install chrome --isolated
@@ -65,3 +62,9 @@ An example `package.yaml` would be something as:
        - *.temp
        - .vscode/**
 ```
+
+See also:
+
+- [Package](./06-package.md) for more information on the `Action Package` structure (such as documentation, icon and building an action package).
+
+- [Structuring Actions](./09-structuring-actions.md) for more information on how to structure python code in an `Action Package`.

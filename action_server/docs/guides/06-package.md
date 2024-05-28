@@ -9,23 +9,21 @@ To share these Action Packages the action server has the following command:
 `action-server package build`
 
 This will build a `.zip` containing the files from the Action Package. By
-default all the files from the Action Package directory are recursively added 
+default all the files from the Action Package directory are recursively added
 to the `.zip`, and it's possible to customize files which shouldn't be added
 to the action server by specifying them in the `package.yaml` in the
-`packaging/exclude` section (entries are based on the 
+`packaging/exclude` section (entries are based on the
 [glob format](https://docs.python.org/3/library/glob.html).
 
 Example:
 
 ```yaml
-name: CRM automation  
+name: CRM automation
 
 description: Automates dealing with the CRM.
 
-documentation: https://github.com/robocorp/actions-cookbook/blob/master/database-postgres/README.md
-
 dependencies:
-  conda-forge: 
+  conda-forge:
     - python=3.10.12
     - pip=23.2.1
     - robocorp-truststore=0.8.0
@@ -37,17 +35,34 @@ dependencies:
 
 packaging:
   exclude:
-    - "*.pyc"  # Excludes .pyc files anywhere
-    - "./devdata/**"  # Excludes the `devdata` directory in the current dir
-    - "**/secret/**"  # Excludes any `secret` folder anywhere
+    - "*.pyc" # Excludes .pyc files anywhere
+    - "./devdata/**" # Excludes the `devdata` directory in the current dir
+    - "**/secret/**" # Excludes any `secret` folder anywhere
 ```
 
 Note: using `action-server package build` with the `package.yaml` above will
 create a `.zip` named: `crm-automation.zip` in the current directory.
 
+# Documentation for the action package
+
+An action package is expected to have a `README.md` in the root of the folder, right next to the
+`package.yaml`.
+
+Note that it's possible to use links and images in the README.md pointing to other files inside the action package.
+
+Example:
+
+- Link syntax: `[link to others readme](./docs/others.md)`
+- Image syntax: `![plot image](./images/plot image.png)`
+
+# Icon for the action package
+
+To define an icon for the action package, add a `package.png` in the root of the folder, right next to
+the `package.yaml`.
+
 # Extracting zip with Action Package:
 
-To extract the Action Package from the `crm-automation.zip` 
+To extract the Action Package from the `crm-automation.zip`
 previously created, it's possible to use:
 
 `action-server package extract crm-automation.zip --output-dir=v023`
@@ -72,17 +87,16 @@ in the future).
 Note: logging may still be written to `stderr` and if the process returns with
 a non-zero value the `stderr` should have information on what failed.
 
-From action-server `0.3.0` onwards, data on the expected secrets is also available 
+From action-server `0.3.0` onwards, data on the expected secrets is also available
 in the returned metadata.
 
 The full structure given in the output is something as:
 
-```
-openapi.json:
-    <OpenAPI Contents>
+```yaml
+openapi.json: <OpenAPI Contents>
 
-metadata:  # Note: optional as no additional metadata may be needed
-  secrets:  # Note: optional as secrets may not be there
+metadata: # Note: optional as no additional metadata may be needed
+  secrets: # Note: optional as secrets may not be there
     <url-for-secret>:
       action: <action-name>
       actionPackage: <action-package-name>
