@@ -16,6 +16,7 @@
     - push, upload the action package to Control Room
     - status, query the action package publish status
     - set-changelog, update the action package changelog to Control Room
+- `sema4ai.link` is now used on `--expose`
 
 ## 0.11.0 - 2024-05-23
 
@@ -86,7 +87,6 @@
   ```
 
   - See the secrets guide for more information.
-  folder to store the `action-server` directory information.
 
 ## 0.8.1 - 2024-05-09
 
@@ -100,13 +100,8 @@
 - Fixed brew reference to `sema4ai/tools/action-server` in conda wrapper.
 - The internal database (which keeps information on the runs, etc) is now auto-migrated, so, the
   separate `migrate` command does not need to be manually called.
-<<<<<<< HEAD
   - Note: The action server will now check the internal database version and if it's newer than
     the current expected version it'll notify the user and abort the startup.
-=======
-    - Note: The action server will now check the internal database version and if it's newer than
-      the current expected version it'll notify the user and abort the startup.
->>>>>>> Update changelog
 
 ## 0.7.0 - 2024-05-06
 
@@ -428,7 +423,7 @@ action-server start --actions-sync=false --datadir=c:/temp/datadir
 
 - UI now uses websockets to provide updates on runs in real-time.
 - The static assets are bundled into the application so that the distributed version has access to it.
-- It's possible to `--expose` the server on the public web using a 'robocorp.link'.
+- It's possible to `--expose` the server on the public web using a 'sema4ai.link'.
 - A text showing the trace header is now available in the logs.
 - Other UI improvements.
 

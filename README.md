@@ -94,7 +94,7 @@ action-server start --expose
 
 👉 You should now have an Action Server running locally at: http://localhost:8080, to open the web UI.
 
-👉 Using the --expose -flag, you also get a public internet-facing URL (something like _twently-cuddly-dinosaurs.robocorp.link_) and an API key. These are the details that you need to configure your AI Agent.
+👉 Using the --expose -flag, you also get a public internet-facing URL (something like _twently-cuddly-dinosaurs.sema4ai.link_) and an API key. These are the details that you need to configure your AI Agent.
 
 Head over to [Action Server docs](./action_server/README.md) for more.
 
@@ -113,11 +113,11 @@ documentation: https://github.com/...
 
 dependencies:
   conda-forge:
-  - python=3.10.12
-  - uv=0.1.37
+    - python=3.10.12
+    - uv=0.1.37
   pypi:
-  - sema4ai-actions=0.3.1
-  - pytz=2024.1
+    - sema4ai-actions=0.3.1
+    - pytz=2024.1
 ```
 
 <details>
@@ -167,7 +167,7 @@ Once you have started the Action Server with `--expose` flag, you’ll get a URL
 ```sh
 ...
 Uvicorn running on http://localhost:8080 (Press CTRL+C to quit)
-🌍 URL: https://seventy-six-helpless-dragonflies.robocorp.link
+🌍 URL: https://seventy-six-helpless-dragonflies.sema4ai.link
 🔑 Add following header api authorization header to run actions: { "Authorization": "Bearer xxx_xxx" }
 ```
 

@@ -246,8 +246,8 @@ async def listen_for_requests(
 
     headers = _headers_from_session_payload(session_payload) if session_payload else {}
 
-    # In testing wss:// is added (in production it's just robocorp.link and
-    # we connect to wss://client.robocorp.link and when we receive the session
+    # In testing wss:// is added (in production it's just sema4ai.link and
+    # we connect to wss://client.sema4ai.link and when we receive the session
     # id/secret we print it as: https://{session_payload.sessionId}.{expose_url}).
     if not expose_url.startswith("wss://") and not expose_url.startswith("ws://"):
         use_url = f"wss://client.{expose_url}"
@@ -465,7 +465,7 @@ def main(
             The port to where the data should be forwarded.
 
         expose_url:
-            The url for the expose (usually "robocorp.link").
+            The url for the expose (usually "sema4ai.link").
 
             Note that the protocol here is that it'll connect to something as:
 
