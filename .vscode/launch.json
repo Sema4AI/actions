@@ -5,8 +5,9 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Template for running tests",
       "type": "pydevd",
-      "purpose": "test-template",
+      "request": "test-template",
       "args": ["--verbose", "-n", "0", "--assert=plain"]
       // "env": {
       //   "PYDEVD_DEBUG": "1",

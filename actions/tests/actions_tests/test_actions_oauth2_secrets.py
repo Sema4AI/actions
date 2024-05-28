@@ -77,6 +77,41 @@ def test_actions_oauth2_secret_run_with_input(datadir: Path):
     assert json.loads(json_output.read_text()) == secret_data
 
 
+def test_actions_oauth2_secret_run_with_input_not_full(datadir: Path):
+    import json
+
+    from devutils.fixtures import sema4ai_actions_run
+
+    datadir = datadir / "good"
+
+    # Specifies the request in the json input.
+    json_output = datadir / "json.output"
+    # Just the access_token should be enough
+    secret_data = {
+        "access_token": "this-is-the-access-token",
+    }
+    json_input_contents = {"message": "some-message", "google_secret": secret_data}
+
+    input_json = datadir / "json.input"
+    input_json.write_text(json.dumps(json_input_contents))
+
+    args = [
+        "run",
+        "-a",
+        "action_check_oauth2",
+        datadir,
+        f"--json-input={input_json}",
+    ]
+
+    sema4ai_actions_run(args, returncode=0, cwd=str(datadir))
+    assert json.loads(json_output.read_text()) == {
+        "access_token": "this-is-the-access-token",
+        "provider": "<unavailable>",
+        "metadata": None,
+        "scopes": [],
+    }
+
+
 def test_actions_oauth2_secret_list(datadir, data_regression):
     import json
 
