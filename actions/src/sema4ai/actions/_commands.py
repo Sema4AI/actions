@@ -659,6 +659,9 @@ def _validate_and_convert_kwargs(
     from typing import get_type_hints
 
     from sema4ai.actions._exceptions import InvalidArgumentsError
+    from sema4ai.actions._variables_scope import (
+        create_validate_and_convert_kwargs_scope,
+    )
 
     target_method = action.method
     sig = inspect.signature(target_method)
@@ -677,44 +680,47 @@ def _validate_and_convert_kwargs(
             else:
                 param_type = str
 
-        if param.default is inspect.Parameter.empty:
-            # It's required, so, let's see if it's in the kwargs.
-            if not is_managed_param:
-                if param_name not in kwargs:
-                    raise InvalidArgumentsError(
-                        f"Error. The parameter `{param_name}` was not defined in the input."
-                    )
-
-        passed_value = kwargs.get(param_name, inspect.Parameter.empty)
-
-        if passed_value is not inspect.Parameter.empty:
-            if param_type not in SUPPORTED_TYPES_IN_SCHEMA:
-                model_validate = getattr(param_type, "model_validate", None)
-                if model_validate is not None:
-                    # Support for pydantic models.
-                    try:
-                        created = model_validate(passed_value)
-                    except Exception as e:
-                        msg = f"(error converting received json contents to pydantic model: {e}."
+        with create_validate_and_convert_kwargs_scope(
+            param_name=param_name, param_type=param_type
+        ):
+            if param.default is inspect.Parameter.empty:
+                # It's required, so, let's see if it's in the kwargs.
+                if not is_managed_param:
+                    if param_name not in kwargs:
                         raise InvalidArgumentsError(
-                            f"It's not possible to call: '{method_name}' because the passed arguments don't match the expected signature.\n{msg}"
+                            f"Error. The parameter `{param_name}` was not defined in the input."
                         )
-                    new_kwargs[param_name] = created
-                    continue
-                else:
+
+            passed_value = kwargs.get(param_name, inspect.Parameter.empty)
+
+            if passed_value is not inspect.Parameter.empty:
+                if param_type not in SUPPORTED_TYPES_IN_SCHEMA:
+                    model_validate = getattr(param_type, "model_validate", None)
+                    if model_validate is not None:
+                        # Support for pydantic models.
+                        try:
+                            created = model_validate(passed_value)
+                        except Exception as e:
+                            msg = f"Error converting received json contents to pydantic model: {e}."
+                            raise InvalidArgumentsError(
+                                f"It's not possible to call: '{method_name}' because the passed arguments don't match the expected signature.\n{msg}"
+                            )
+                        new_kwargs[param_name] = created
+                        continue
+                    else:
+                        raise InvalidArgumentsError(
+                            f"Error. The param type '{param_type.__name__}' in '{method_name}' is not supported. Supported parameter types: str, int, float, bool and pydantic.Model."
+                        )
+
+                check_type = param_type
+                if param_type == float:
+                    check_type = (float, int)
+                if not isinstance(passed_value, check_type):
                     raise InvalidArgumentsError(
-                        f"Error. The param type '{param_type.__name__}' in '{method_name}' is not supported. Supported parameter types: str, int, float, bool and pydantic.Model."
+                        f"Error. Expected the parameter: `{param_name}` to be of type: {param_type.__name__}. Found type: {type(passed_value).__name__}."
                     )
 
-            check_type = param_type
-            if param_type == float:
-                check_type = (float, int)
-            if not isinstance(passed_value, check_type):
-                raise InvalidArgumentsError(
-                    f"Error. Expected the parameter: `{param_name}` to be of type: {param_type.__name__}. Found type: {type(passed_value).__name__}."
-                )
-
-            new_kwargs[param_name] = passed_value
+                new_kwargs[param_name] = passed_value
 
     new_kwargs = _inject_managed_params(pm, sig, new_kwargs, kwargs)
     error_message = ""

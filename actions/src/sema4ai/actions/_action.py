@@ -18,6 +18,80 @@ _map_python_type_to_user_type = {
 }
 
 
+def get_provider_and_scope_from_annotation_args(
+    annotation_args, filename: str, name: str
+) -> tuple[str, list[str]]:
+    from typing import get_args, get_origin
+
+    from sema4ai.actions._exceptions import ActionsCollectError
+
+    error_message = f"""
+Invalid OAuth2Secret annotation found.
+
+The OAuth2Secret must be parametrized with 2 arguments, 
+the first being a Literal with the provider name 
+(i.e.: `Literal["google"]`) 
+and the second a list with one Literal with the (multiple) scopes that are required
+(i.e.: `list[Literal["scope1", "scope2", ...]])
+
+Full Example for a parameter named `google_secret` requiring google sheets 
+and google drive scopes:
+
+google_secret: OAuth2Secret[
+    Literal["google"],
+    list[
+        Literal[
+            "https://www.googleapis.com/auth/drive.readonly",
+            "https://www.googleapis.com/auth/spreadsheets.readonly",
+        ]
+    ],
+]
+
+File with @action: {filename}
+@action name: {name}
+"""
+    if not annotation_args or len(annotation_args) != 2:
+        raise ActionsCollectError(error_message)
+
+    provider = annotation_args[0]
+    scopes = annotation_args[1]
+    if get_origin(provider) != Literal:
+        raise ActionsCollectError(f"First parameter is not a Literal.\n{error_message}")
+    if get_origin(scopes) not in (list, List):
+        raise ActionsCollectError(f"Second parameter is not a list.\n{error_message}")
+    provider_args = get_args(provider)
+    if not provider_args or len(provider_args) != 1:
+        raise ActionsCollectError(
+            f"First parameter does not have a single provider argument.\n{error_message}"
+        )
+    provider_str = provider_args[0]
+    if not isinstance(provider_str, str):
+        raise ActionsCollectError(
+            f"First parameter Literal does not have a string.\n{error_message}"
+        )
+
+    scope_args = get_args(scopes)
+    if not scope_args or len(scope_args) != 1:
+        raise ActionsCollectError(
+            f"Second parameter is not a list with a single Literal.\n{error_message}"
+        )
+
+    scope_args_literal = scope_args[0]
+    if get_origin(scope_args_literal) != Literal:
+        raise ActionsCollectError(
+            f"Second parameter is not a list with a single Literal.\n{error_message}"
+        )
+
+    scope_strs = get_args(scope_args_literal)
+    for entry in scope_strs:
+        if not isinstance(entry, str):
+            raise ActionsCollectError(
+                f"Second parameter is not a list with a literal with strings.\n{error_message}"
+            )
+
+    return provider_str, list(scope_strs)
+
+
 class Action:
     def __init__(
         self,
@@ -108,10 +182,9 @@ class Action:
 
     @property
     def managed_params_schema(self) -> Dict[str, Any]:
-        from typing import get_args, get_origin
+        from typing import get_args
 
         from sema4ai.actions._commands import _get_managed_param_type, _is_managed_param
-        from sema4ai.actions._exceptions import ActionsCollectError
 
         managed_params_schema: Dict[str, Any] = {}
         sig = inspect.signature(self.method)
@@ -126,76 +199,13 @@ class Action:
                     # In this case we need to make some introspection to get additional information
                     # on the type (provider, scopes, ...)
                     annotation_args = get_args(param.annotation)
-                    error_message = f"""
-Invalid OAuth2Secret annotation found.
-
-The OAuth2Secret must be parametrized with 2 arguments, 
-the first being a Literal with the provider name 
-(i.e.: `Literal["google"]`) 
-and the second a list with one Literal with the (multiple) scopes that are required
-(i.e.: `list[Literal["scope1", "scope2", ...]])
-
-Full Example for a parameter named `google_secret` requiring google sheets 
-and google drive scopes:
-
-google_secret: OAuth2Secret[
-    Literal["google"],
-    list[
-        Literal[
-            "https://www.googleapis.com/auth/drive.readonly",
-            "https://www.googleapis.com/auth/spreadsheets.readonly",
-        ]
-    ],
-]
-
-File with @action: {self.filename}
-@action name: {self.name}
-"""
-                    if not annotation_args or len(annotation_args) != 2:
-                        raise ActionsCollectError(error_message)
-
-                    provider = annotation_args[0]
-                    scopes = annotation_args[1]
-                    if get_origin(provider) != Literal:
-                        raise ActionsCollectError(
-                            f"First parameter is not a Literal.\n{error_message}"
-                        )
-                    if get_origin(scopes) not in (list, List):
-                        raise ActionsCollectError(
-                            f"Second parameter is not a list.\n{error_message}"
-                        )
-                    provider_args = get_args(provider)
-                    if not provider_args or len(provider_args) != 1:
-                        raise ActionsCollectError(
-                            f"First parameter does not have a single provider argument.\n{error_message}"
-                        )
-                    provider_str = provider_args[0]
-                    if not isinstance(provider_str, str):
-                        raise ActionsCollectError(
-                            f"First parameter Literal does not have a string.\n{error_message}"
-                        )
-
+                    (
+                        provider_str,
+                        scope_strs,
+                    ) = get_provider_and_scope_from_annotation_args(
+                        annotation_args, self.filename, self.name
+                    )
                     dct["provider"] = provider_str
-
-                    scope_args = get_args(scopes)
-                    if not scope_args or len(scope_args) != 1:
-                        raise ActionsCollectError(
-                            f"Second parameter is not a list with a single Literal.\n{error_message}"
-                        )
-
-                    scope_args_literal = scope_args[0]
-                    if get_origin(scope_args_literal) != Literal:
-                        raise ActionsCollectError(
-                            f"Second parameter is not a list with a single Literal.\n{error_message}"
-                        )
-
-                    scope_strs = get_args(scope_args_literal)
-                    for entry in scope_strs:
-                        if not isinstance(entry, str):
-                            raise ActionsCollectError(
-                                f"Second parameter is not a list with a literal with strings.\n{error_message}"
-                            )
-
                     dct["scopes"] = scope_strs
 
                 desc = param_name_to_description.get(param.name)

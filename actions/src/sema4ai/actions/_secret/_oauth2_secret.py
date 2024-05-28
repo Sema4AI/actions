@@ -150,22 +150,41 @@ class _RawOauth2Secret(_BaseInternalOAuth2Secret):
         Args:
             value: A dict with the values meant to be wrapped in this class.
         """
+        from sema4ai.actions._action import get_provider_and_scope_from_annotation_args
+        from sema4ai.actions._variables_scope import (
+            get_validate_and_convert_kwargs_scope,
+        )
 
         access_token = value.get("access_token")
         if not access_token:
             raise KeyError(
                 "Error. The `access_token` key is required to build an OAuth2Secret, but it wasn't passed."
             )
+
+        validate_and_convert_scope = get_validate_and_convert_kwargs_scope()
+
         provider = value.get("provider")
-        if not provider:
-            raise KeyError(
-                "Error. The `provider` key is required to build an OAuth2Secret, but it wasn't passed."
-            )
         scopes = value.get("scopes")
-        if not scopes:
-            raise KeyError(
-                "Error. The `scopes` key is required to build an OAuth2Secret, but it wasn't passed."
-            )
+        if not scopes or not provider:
+            if validate_and_convert_scope is not None:
+                from typing import get_args
+
+                # Use default values from the type hints.
+                args = get_args(validate_and_convert_scope.param_type)
+                (
+                    provider_from_args,
+                    scopes_from_args,
+                ) = get_provider_and_scope_from_annotation_args(
+                    args, "<unavailable>", "<unavailable>"
+                )
+
+                if not provider:
+                    provider = provider_from_args
+
+                if not scopes:
+                    scopes = scopes_from_args
 
         metadata = value.get("metadata")  # This is optional
-        super().__init__(provider, scopes, access_token, metadata)
+        super().__init__(
+            provider or "<unavailable>", scopes or [], access_token, metadata
+        )
