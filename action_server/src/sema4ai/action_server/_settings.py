@@ -109,7 +109,7 @@ class Settings:
     port: int = 8080
     verbose: bool = False
     db_file: str = "server.db"
-    expose_url: str = "robocorp.link"
+    expose_url: str = "sema4ai.link"
     server_url: str = "http://localhost:8080"
 
     min_processes: int = 2
