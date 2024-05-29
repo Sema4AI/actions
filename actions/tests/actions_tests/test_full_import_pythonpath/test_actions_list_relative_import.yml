@@ -1,0 +1,14 @@
+- docs: "\n    This is the docstring\n    "
+  file: my_action.py
+  input_schema:
+    properties: {}
+    type: object
+  line: 8
+  managed_params_schema: {}
+  name: my_action
+  options:
+    display_name: null
+    is_consequential: null
+  output_schema:
+    description: ''
+    type: string

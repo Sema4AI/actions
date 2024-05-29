@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- The folder containing the `package.yaml` is now always added to the PYTHONPATH (if running without
+  a `package.yaml` for tests the `cwd` is considered the root and is added to the PYTHONPATH).
+
 ## 0.9.0 - 2024-05-29
 
 - `pydantic` models can now be used as default values in `@action`.
