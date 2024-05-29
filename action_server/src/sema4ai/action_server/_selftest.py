@@ -480,11 +480,15 @@ def check_new_template(
         if verbose:
             print("Using post to call action.")
 
-        # open_api = client.get_openapi_json()
-        # decoded = json.loads(open_api)
+        open_api = client.get_openapi_json()
+        decoded = json.loads(open_api)
+        paths = decoded["paths"]
+        assert len(paths) == 1, f"Expected a single path. Found: {tuple(paths.keys())}"
         # print(json.dumps(decoded, indent=4))
+        run_path = list(paths.keys())[0]
+        assert run_path.endswith("/run")
 
-        found = client.post_get_str("/api/actions/package-name/greet/run", {})
+        found = client.post_get_str(run_path, {})
         assert "Hello world" in found
 
         if verbose:
