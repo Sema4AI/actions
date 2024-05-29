@@ -8,7 +8,14 @@
       "name": "Template for running tests",
       "type": "pydevd",
       "request": "test-template",
-      "args": ["--verbose", "-n", "0", "--assert=plain"]
+      "args": [
+        "--verbose",
+        "-n",
+        "0",
+        "--assert=plain",
+        "--force-regen",
+        "--capture=no"
+      ]
       // "env": {
       //   "PYDEVD_DEBUG": "1",
       //   "PYDEVD_DEBUG_FILE": "C:/temp/pydevdLogs.txt"

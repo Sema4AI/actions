@@ -1,0 +1,49 @@
+- docs: ''
+  file: action_with_pydantic.py
+  input_schema:
+    properties:
+      header:
+        default:
+          cells: []
+        properties:
+          cells:
+            description: Row cells
+            items:
+              type: string
+            title: Cells
+            type: array
+        required:
+        - cells
+        title: Header
+        type: object
+    type: object
+  line: 17
+  managed_params_schema: {}
+  name: add_rows
+  options:
+    display_name: null
+    is_consequential: true
+  output_schema:
+    properties:
+      error:
+        anyOf:
+        - type: string
+        - type: 'null'
+        default: null
+        description: The error message if the action failed for some reason
+        title: Error
+      result:
+        anyOf:
+        - properties:
+            ok:
+              title: Ok
+              type: boolean
+          required:
+          - ok
+          title: CustomResponse
+          type: object
+        - type: 'null'
+        default: null
+        description: The result for the action if it ran successfully
+    title: Response[CustomResponse]
+    type: object
