@@ -42,5 +42,5 @@ jobs:
       - name: Update to S3
         run: |
           cd templates/packaging/temp
-          aws s3 cp action-templates.zip s3://${env:AWS_S3_BUCKET_NAME}/action-templates/action-templates.zip --cache-control 'max-age=120'
-          aws s3 cp action-templates.yaml s3://${env:AWS_S3_BUCKET_NAME}/action-templates/action-templates.yaml --cache-control 'max-age=120'
+          aws s3 cp action-templates.zip s3://$AWS_S3_BUCKET_NAME/action-templates/action-templates.zip --cache-control 'max-age=120'
+          aws s3 cp action-templates.yaml s3://$AWS_S3_BUCKET_NAME/action-templates/action-templates.yaml --cache-control 'max-age=120'
