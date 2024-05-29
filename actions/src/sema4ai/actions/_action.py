@@ -451,7 +451,7 @@ class Context:
                     kind=self.KIND_TRACEBACK,
                 )
 
-        if self._print_result and action.status == Status.PASS:
+        if self._print_result and result is not None:
             show("result:", kind=self.KIND_IMPORTANT)
             try:
                 dump = result
