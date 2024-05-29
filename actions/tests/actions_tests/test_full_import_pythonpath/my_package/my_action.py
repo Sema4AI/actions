@@ -1,4 +1,4 @@
-from my_package import my_lib
+from my_package import my_lib  # type: ignore
 
 from sema4ai.actions import action
 
