@@ -6,7 +6,7 @@ import keyring
 log = getLogger(__name__)
 
 
-DEFAULT_CR_HOSTNAME = "https://cloud.robocorp.com"
+DEFAULT_CR_HOSTNAME = "https://us1.robocorp.com"
 
 KEYRING_SERVICE_NAME = "ACTION_SERVER_LOGIN"
 KEYRING_KEY_HOSTNAME = "hostname"
