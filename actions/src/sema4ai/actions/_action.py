@@ -261,7 +261,11 @@ class Action:
             if param.default is inspect.Parameter.empty:
                 required.append(param.name)
             else:
-                param_properties["default"] = param.default
+                default = param.default
+                if hasattr(default, "model_dump"):
+                    # Support for pydantic
+                    default = default.model_dump()
+                param_properties["default"] = default
 
         if required:
             schema["required"] = required

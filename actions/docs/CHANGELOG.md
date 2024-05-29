@@ -2,21 +2,23 @@
 
 ## Unreleased
 
+- `pydantic` models can now be used as default values in `@action`.
+
 ## 0.8.0 - 2024-05-23
 
 - API used from pydantic changed (using `model_dump` instead of `model_dump_json`).
 - `pydantic v2` (onwards) is now a required dependency of `sema4ai-actions`.
 - Improved support for error conditions:
-    - A new class is now available in the public API: `sema4ai.actions.ActionError`
-        - Raising an error of this type can be used to provide a custom message in case some error happens.
-    - If an error of a different type is raised, the error type is now shown 
-      (without more details on the error to avoid possibly showing private information).
+  - A new class is now available in the public API: `sema4ai.actions.ActionError`
+    - Raising an error of this type can be used to provide a custom message in case some error happens.
+  - If an error of a different type is raised, the error type is now shown
+    (without more details on the error to avoid possibly showing private information).
 - A new class is now available in the public API: `sema4ai.actions.Response(result, error)` for
   more control over errors shown.
 - See: [Structuring actions guide](./guides/09-structuring-actions.md) for more information.
 - **Backward incompatible** change: only one action can be run at a time and an error is
   raised if more than one action would be run (the action server would only expect that
-  a single action is run at a time and if more than one action would actually be run this 
+  a single action is run at a time and if more than one action would actually be run this
   should be an error).
 
 ## 0.7.0 - 2024-05-22
