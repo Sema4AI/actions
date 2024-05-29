@@ -180,3 +180,125 @@ def test_package_metadata_api(datadir, data_regression):
     action_package_dir = Path(datadir / "pack_secrets")
     found = api.package_metadata(action_package_dir, datadir=Path(datadir / "data"))
     data_regression.check(fix_metadata(found))
+    data_regression.check(found)
+
+
+def test_package_upload(datadir, data_regression):
+    import json
+
+    from sema4ai.action_server._selftest import robocorp_action_server_run
+
+    # Build the action package first
+    output = robocorp_action_server_run(
+        [
+            "package",
+            "build",
+            "--output-dir",
+            str(datadir),
+            "--datadir",
+            str(datadir / "data"),
+        ],
+        returncode=0,
+        cwd=datadir / "pack1",
+    )
+    zip_name = "pack1-name.zip"
+    zip_path = Path(datadir, zip_name)
+    assert os.path.exists(zip_path)
+
+    output = robocorp_action_server_run(
+        [
+            "package",
+            "upload",
+            "--package-path",
+            str(zip_path),
+            "--organization-id",
+            "6e49f3b9-9d25-4904-b22d-3b5e672f4d7b",
+            "--access-credentials",
+            os.environ.get("ACTION_SERVER_TEST_ACCESS_CREDENTIALS"),
+            "--hostname",
+            os.environ.get("ACTION_SERVER_TEST_HOSTNAME", "https://ci.robocorp.dev"),
+            "--json",
+        ],
+        returncode=0,
+    )
+
+    output = json.loads(output.stdout)
+    regression_check = {
+        "error": output["error"],
+        "name": output["name"],
+        "status": output["status"],
+    }
+    data_regression.check(regression_check)
+
+
+def test_package_status(data_regression):
+    import json
+
+    from sema4ai.action_server._selftest import robocorp_action_server_run
+
+    output = robocorp_action_server_run(
+        [
+            "package",
+            "status",
+            "--package-id",
+            "21a4a0ea-7ada-4754-8a62-ed9d17dedb1d",
+            "--organization-id",
+            "6e49f3b9-9d25-4904-b22d-3b5e672f4d7b",
+            "--access-credentials",
+            os.environ.get("ACTION_SERVER_TEST_ACCESS_CREDENTIALS"),
+            "--hostname",
+            os.environ.get("ACTION_SERVER_TEST_HOSTNAME", "https://ci.robocorp.dev"),
+            "--json",
+        ],
+        returncode=0,
+    )
+
+    output = json.loads(output.stdout)
+
+    # assert output["status"] in ["pending", "validating", "completed"]
+
+    regression_check = {
+        "changes": output["changes"],
+        "error": output["error"],
+        "id": output["id"],
+        "name": output["name"],
+        "url": output["url"],
+        "status": output["status"],
+    }
+
+    data_regression.check(regression_check)
+
+
+def test_package_set_changelog(data_regression):
+    import json
+
+    from sema4ai.action_server._selftest import robocorp_action_server_run
+
+    output = robocorp_action_server_run(
+        [
+            "package",
+            "set-changelog",
+            "--package-id",
+            "fdd0e9da-0508-499b-8020-0dd7c94b0a8c",
+            "--organization-id",
+            "6e49f3b9-9d25-4904-b22d-3b5e672f4d7b",
+            "--change-log",
+            "Testing",
+            "--access-credentials",
+            os.environ.get("ACTION_SERVER_TEST_ACCESS_CREDENTIALS"),
+            "--hostname",
+            os.environ.get("ACTION_SERVER_TEST_HOSTNAME", "https://ci.robocorp.dev"),
+            "--json",
+        ],
+        returncode=0,
+    )
+
+    output = json.loads(output.stdout)
+    regression_check = {
+        "changes": output["changes"],
+        "error": output["error"],
+        "id": output["id"],
+        "name": output["name"],
+        "url": output["url"],
+    }
+    data_regression.check(regression_check)

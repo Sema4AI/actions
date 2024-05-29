@@ -60,6 +60,8 @@ class BaseTests:
             "GITHUB_ACTIONS_MATRIX_NAME": "${{ matrix.name }}",
             "CI_CREDENTIALS": "${{ secrets.CI_CREDENTIALS }}",
             "CI_ENDPOINT": "${{ secrets.CI_ENDPOINT }}",
+            "ACTION_SERVER_TEST_ACCESS_CREDENTIALS": "${{ secrets.ACTION_SERVER_TEST_ACCESS_CREDENTIALS }}",
+            "ACTION_SERVER_TEST_HOSTNAME": "${{ secrets.ACTION_SERVER_TEST_HOSTNAME }}",
         },
         "run": "inv test",
     }

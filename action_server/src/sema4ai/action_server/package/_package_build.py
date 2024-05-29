@@ -107,9 +107,9 @@ def build_package(
     """
     import yaml
 
+    from sema4ai.action_server._ask_user import ask_user_input_to_proceed
     from sema4ai.action_server._cli_impl import _main_retcode
     from sema4ai.action_server._slugify import slugify
-    from sema4ai.action_server.package._ask_user import ask_user_input_to_proceed
 
     from .._errors_action_server import ActionServerValidationError
 

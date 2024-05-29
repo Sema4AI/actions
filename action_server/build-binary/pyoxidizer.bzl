@@ -260,6 +260,7 @@ def make_exe():
             "fastapi-slim~=0.111",
             "fastjsonschema~=2.19",
             "jsonschema~=4.19",
+            "keyring~=25.2",
             "msgspec~=0.18",
             "psutil>=5,<6",
             "pydantic~=2.4",

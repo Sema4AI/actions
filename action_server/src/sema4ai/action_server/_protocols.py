@@ -104,7 +104,15 @@ class ArgumentsNamespace(Protocol):
     """
 
     command: Literal[
-        "download-rcc", "package", "import", "start", "version", "new", "migrate", "env"
+        "download-rcc",
+        "package",
+        "import",
+        "start",
+        "version",
+        "new",
+        "migrate",
+        "env",
+        "cloud",
     ]
     verbose: bool
 
@@ -192,3 +200,69 @@ class ArgumentsNamespaceStart(ArgumentsNamespaceBaseImportOrStart):
     expose: bool
     expose_allow_reuse: bool
     api_key: str
+
+
+class ArgumentsNamespacePackagePush(ArgumentsNamespace):
+    command: Literal["package"]
+    package_command: Literal["publish"]
+    access_credentials: Optional[str]
+    hostname: Optional[str]
+    organization_id: str
+    package_path: str
+    json: bool
+
+
+class ArgumentsNamespacePackageStatus(ArgumentsNamespace):
+    command: Literal["package"]
+    package_command: Literal["state"]
+    access_credentials: Optional[str]
+    hostname: Optional[str]
+    organization_id: str
+    package_id: str
+    json: bool
+
+
+class ArgumentsNamespacePackageChangelog(ArgumentsNamespace):
+    command: Literal["package"]
+    package_command: Literal["set-changelog"]
+    access_credentials: Optional[str]
+    organization_id: str
+    package_id: str
+    json: bool
+    change_log: str
+
+
+class ArgumentsNamespacePackagePublish(ArgumentsNamespace):
+    command: Literal["package"]
+    package_command: Literal["publish"]
+    organization_name: Optional[str]
+    access_credentials: Optional[str]
+    hostname: Optional[str]
+    package_path: str
+    change_log: str
+
+
+class ArgumentsNamespaceCloud(ArgumentsNamespace):
+    command: Literal["cloud"]
+    cloud_command: Literal["login"]
+
+
+class ArgumentsNamespaceCloudlogin(ArgumentsNamespace):
+    command: Literal["cloud"]
+    cloud_command: Literal["login"]
+    access_credentials: Optional[str]
+    hostname: Optional[str]
+
+
+class ArgumentsNamespaceCloudVerifyLogin(ArgumentsNamespace):
+    command: Literal["cloud"]
+    cloud_command: Literal["verify-login"]
+    json: bool
+
+
+class ArgumentsNamespaceCloudOrganizations(ArgumentsNamespace):
+    command: Literal["cloud"]
+    cloud_command: Literal["list-organizations"]
+    access_credentials: Optional[str]
+    hostname: Optional[str]
+    json: bool
