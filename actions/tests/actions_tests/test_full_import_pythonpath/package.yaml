@@ -1,0 +1,19 @@
+name: Test action package
+
+# Required: A description of what's in the action package.
+description: Action package description
+
+dependencies:
+  conda-forge:
+  - python=3.11
+  - uv=0.1.38
+  pypi:
+  - sema4ai-actions=0.9.0
+  - pydantic=2.7.1
+
+
+packaging:
+  exclude:
+    - "*.pyc"  # Excludes .pyc files anywhere
+    - "./devdata/**"  # Excludes the `devdata` directory in the current dir
+    - "**/secret/**"  # Excludes any `secret` folder anywhere

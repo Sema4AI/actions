@@ -49,6 +49,8 @@ def list_actions(
     from sema4ai.actions._exceptions import ActionsCollectError
     from sema4ai.actions._protocols import ActionsListActionTypedDict
 
+    from ._collect_actions import update_pythonpath
+
     p = Path(path)
     context = Context()
     if not p.exists():
@@ -64,6 +66,7 @@ def list_actions(
     else:
         write_to = original_stdout
 
+    update_pythonpath(p.absolute())
     with redirect_stdout(sys.stderr):
         try:
             action: IAction
@@ -240,6 +243,7 @@ def run(
         0 if everything went well.
         1 if there was some error running the action.
     """
+    from sema4ai.actions._collect_actions import update_pythonpath
     from sema4ai.actions._response import ActionError, Response
 
     # If it's set it'll only consider files under the ROBOT_ROOT to contain user code
@@ -412,6 +416,7 @@ def run(
             json_loaded_arguments = arguments
 
     retcode = 22  # Something went off if this was kept until the end.
+    update_pythonpath(p.absolute())
     try:
         with set_config(run_config), setup_cli_auto_logging(
             # Note: we can't customize what's a "project" file or a "library" file,

@@ -184,7 +184,6 @@ def collect_actions(
     with _hooks.on_action_func_found.register(on_func_found):
         if path.is_dir():
             root = _get_root(path, is_dir=True)
-            sys.path.insert(0, str(root))
             with _add_to_sys_path_0(root):
                 package_init = path / "__init__.py"
                 lst = []
@@ -233,6 +232,27 @@ def collect_actions(
 
         if accept_action(action):
             yield action
+
+
+def update_pythonpath(path: Path) -> None:
+    check_path = path
+    while True:
+        # If a `package.yaml`` is found, that should be the used path.
+        if (check_path / "package.yaml").exists():
+            add = str(check_path)
+            if add not in sys.path:
+                sys.path.insert(0, add)
+            return
+
+        new_path = check_path.parent
+        if not new_path or new_path == check_path:
+            # Did not find a package.yaml: add the cwd to the pythonpath
+            add = os.path.abspath(".")
+            if add not in sys.path:
+                sys.path.insert(0, add)
+            return
+        else:
+            check_path = new_path
 
 
 def _get_root(path: Path, is_dir: bool) -> Path:
