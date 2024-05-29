@@ -1,4 +1,4 @@
-name: Deploy Beta Template Actions for Action Server
+name: Deploy Beta Action Templates for Action Server
 on:
   workflow_dispatch:
 
