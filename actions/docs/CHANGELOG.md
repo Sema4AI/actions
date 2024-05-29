@@ -3,6 +3,7 @@
 ## Unreleased
 
 - `pydantic` models can now be used as default values in `@action`.
+- If there's an error, still print the result if there's a result (which is the case when using `sema4ai.actions.Response`).
 
 ## 0.8.0 - 2024-05-23
 
