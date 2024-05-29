@@ -35,7 +35,7 @@ jobs:
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: eu-west-1
-          role-to-assume: arn:aws:iam::710450854638:role/github-action-packaging
+          role-to-assume: arn:aws:iam::710450854638:role/github-action-action-templates
           # ExternalID does not seem to work with AssumeRoleWithWebIdentity
           # role-external-id: ${{ secrets.AWS_ROLE_EXTERNAL_ID }}
 
