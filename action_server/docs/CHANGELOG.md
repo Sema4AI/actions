@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.12.0 - 2024-05-29
+
 - Add new command: cloud
   - Subcommand: login
     - Save the Control Room login information to keyring, the access credentials and the hostname
