@@ -1,6 +1,11 @@
 name: Deploy Beta Action Templates for Action Server
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - master
+    paths:
+      - 'templates/**'
 
 # These permissions are needed to interact with GitHub's OIDC Token endpoint.
 permissions:
