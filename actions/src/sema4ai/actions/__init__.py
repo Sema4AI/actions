@@ -41,7 +41,7 @@ from ._request import Request
 from ._response import ActionError, Response
 from ._secret import OAuth2Secret, Secret
 
-__version__ = "0.8.0"
+__version__ = "0.9.0"
 version_info = [int(x) for x in __version__.split(".")]
 
 

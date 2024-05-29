@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sema4ai-actions"
-version = "0.8.0"
+version = "0.9.0"
 description = "Sema4AI Actions"
 authors = [
 	"Fabio Z. <fabio@robocorp.com>",
