@@ -44,3 +44,6 @@ jobs:
           cd templates/packaging/temp
           aws s3 cp action-templates.zip s3://$AWS_S3_BUCKET_NAME/action-templates/action-templates.zip --cache-control 'max-age=120'
           aws s3 cp action-templates.yaml s3://$AWS_S3_BUCKET_NAME/action-templates/action-templates.yaml --cache-control 'max-age=120'
+        
+      - name: CloudFront Invalidation
+        run: aws cloudfront create-invalidation --distribution-id ${AWS_CLOUDFRONT_DISTRIBUTION_ID} --paths "/action-templates/*"
