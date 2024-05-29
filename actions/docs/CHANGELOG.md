@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.9.1 - 2024-05-29
+
 - The folder containing the `package.yaml` is now always added to the PYTHONPATH (if running without
   a `package.yaml` for tests the `cwd` is considered the root and is added to the PYTHONPATH).
 
