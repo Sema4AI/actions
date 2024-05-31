@@ -1,7 +1,17 @@
+import sys
 import typing
 from logging import getLogger
 
 import keyring
+
+if sys.platform == "win32":
+    keyring.core.set_keyring(
+        keyring.core.load_keyring("keyring.backends.Windows.WinVaultKeyring")
+    )
+elif sys.platform == "darwin":
+    keyring.core.set_keyring(
+        keyring.core.load_keyring("keyring.backends.macOS.Keyring")
+    )
 
 log = getLogger(__name__)
 
