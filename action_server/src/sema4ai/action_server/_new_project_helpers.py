@@ -13,10 +13,10 @@ from pydantic.main import BaseModel
 from ._settings import get_default_settings_dir
 
 TEMPLATES_METADATA_URL = (
-    "https://cdn.sema4.ai/action-templates/beta/action-templates.yaml"
+    "https://cdn.sema4.ai/action-templates/action-templates.yaml"
 )
 TEMPLATES_PACKAGE_URL = (
-    "https://cdn.sema4.ai/action-templates/beta/action-templates.zip"
+    "https://cdn.sema4.ai/action-templates/action-templates.zip"
 )
 
 ACTION_TEMPLATES_METADATA_FILENAME = "action-templates.yaml"
