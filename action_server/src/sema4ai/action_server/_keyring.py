@@ -4,6 +4,8 @@ from logging import getLogger
 
 import keyring
 
+# By default in Windows and MacOS the keyring backend is not loaded
+# https://github.com/jaraco/keyring/issues/359
 if sys.platform == "win32":
     keyring.core.set_keyring(
         keyring.core.load_keyring("keyring.backends.Windows.WinVaultKeyring")
