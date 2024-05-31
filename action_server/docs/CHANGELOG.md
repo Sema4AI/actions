@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Fix Windows issue loading keyring
+
 ## 0.12.1 - 2024-05-31
 
 - Fix issue where keyring backend was not loaded properly with Windows and MacOS

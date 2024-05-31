@@ -38,6 +38,7 @@ uvicorn = "^0.23.2"
 websockets = "^12.0"
 cryptography = "^42.0.5"
 keyring = "^25.2.0"
+pywin32 = "^306"
 
 
 [tool.poetry.group.dev.dependencies]
