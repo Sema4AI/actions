@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Fix issue where keyring backend was not loaded properly with Windows and MacOS
+
 ## 0.12.0 - 2024-05-29
 
 - Add new command: cloud
