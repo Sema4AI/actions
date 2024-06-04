@@ -264,6 +264,8 @@ def make_exe():
             "msgspec~=0.18",
             "psutil>=5,<6",
             "pydantic~=2.4",
+            "pywin32-ctypes~=0.2",
+            "pywin32>=306,<307",
             "pyyaml>=6,<7",
             "requests>=2,<3",
             "sema4ai-actions~=0.8",
@@ -300,6 +302,25 @@ def make_exe():
         resource.add_location = "filesystem-relative:lib"
         resource.add_source = True
         exe.add_python_resource(resource)
+
+    # Add pywin32 system files manually
+    pywin32_system32_resources = "c:\\Users\\matti\\repos\\actions\\action_server\\.venv\\Lib\\site-packages\\pywin32_system32"
+    #    module_name="pywin32_system32"
+    #)
+    #for resource in pywin32_system32_resources:
+    #resource.add_location = "filesystem-relative:lib"
+    #resource.add_source = True
+    # exe.add_python_resource(exe, resource=pywin32_system32_resources, add_location="filesystem-relative:lib", add_source=True)
+    exe.add_file(source=pywin32_system32_resources, dest="lib/pywin32_system32")
+
+    # Add pywintypes manually
+    #pywintypes_resources = dist.find_python_resources(
+    #    module_name="pywintypes"
+    #)
+    #for resource in pywintypes_resources:
+    #    resource.add_location = "filesystem-relative:lib"
+    #    resource.add_source = True
+    #    exe.add_python_resource(resource)
 
     # Discover Python files from a virtualenv and add them to our embedded
     # context.
@@ -374,7 +395,6 @@ def register_code_signers():
 
     # Activate your signer so it gets called automatically.
     # signer.activate()
-
 
 # Call our function to set up automatic code signers.
 register_code_signers()
