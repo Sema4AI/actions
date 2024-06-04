@@ -89,7 +89,7 @@ def ask_user_for_hostname() -> str:
     """
     from urllib.parse import urlparse
 
-    from sema4ai.action_server._keyring import get_hostname
+    from sema4ai.action_server._storage import get_hostname
     from sema4ai.action_server.vendored_deps.termcolors import bold_red
 
     while True:

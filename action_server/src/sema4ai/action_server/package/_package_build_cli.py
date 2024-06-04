@@ -239,7 +239,7 @@ def add_package_command(command_subparser, defaults):
 def handle_package_command(base_args: ArgumentsNamespace):
     from sema4ai.action_server._ask_user import ask_user_input_to_proceed
     from sema4ai.action_server._errors_action_server import ActionServerValidationError
-    from sema4ai.action_server._keyring import get_access_credentials, get_hostname
+    from sema4ai.action_server._storage import get_access_credentials, get_hostname
     from sema4ai.action_server.vendored_deps.termcolors import bold_red
 
     package_args: ArgumentsNamespacePackage = typing.cast(

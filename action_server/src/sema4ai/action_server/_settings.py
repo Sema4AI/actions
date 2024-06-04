@@ -83,10 +83,10 @@ def get_default_settings_dir() -> Path:
 instead of:
 {old_dir}
 
-If you want to keep data on old runs, consider moving 
+If you want to keep data on old runs, consider moving
 the contents of {old_dir} to {default_settings_dir}
 
--- otherwise, please remove: 
+-- otherwise, please remove:
 {old_dir}
 
 so that this message is no longer shown.
@@ -96,6 +96,22 @@ so that this message is no longer shown.
 
     default_settings_dir.mkdir(parents=True, exist_ok=True)
     return default_settings_dir
+
+
+@lru_cache
+def get_user_sema4_path() -> Path:
+    if sys.platform == "win32":
+        localappdata = os.environ.get("LOCALAPPDATA")
+        if not localappdata:
+            raise RuntimeError("Error. LOCALAPPDATA not defined in environment!")
+        home = Path(localappdata) / "sema4ai"
+    else:
+        # Linux/Mac
+        home = Path("~/.sema4ai").expanduser()
+
+    user_sema4_path = home / "action-server"
+    user_sema4_path.mkdir(parents=True, exist_ok=True)
+    return user_sema4_path
 
 
 @dataclass(slots=True, kw_only=True)
