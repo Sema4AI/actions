@@ -11,6 +11,8 @@ from fastapi import HTTPException, Request, Response
 from fastapi.exceptions import RequestValidationError
 from starlette.concurrency import run_in_threadpool
 
+from ._gen_ids import gen_uuid
+
 if typing.TYPE_CHECKING:
     from ._models import Action, ActionPackage, Run
 
@@ -142,6 +144,7 @@ def _set_run_as_running(run: "Run", initial_time: float):
 def _run_action_in_thread(
     action_package: "ActionPackage",
     action: "Action",
+    run_id: str,
     input_schema_dict: dict,
     output_schema_dict: dict,
     input_validator: Callable[[dict], None],
@@ -158,7 +161,6 @@ def _run_action_in_thread(
     We have to take care of making a run with the proper environment,
     creating the run, collecting output info, etc.
     """
-    from sema4ai.action_server._gen_ids import gen_uuid
     from sema4ai.action_server._settings import get_settings
 
     from ._actions_process_pool import get_actions_process_pool
@@ -190,7 +192,6 @@ def _run_action_in_thread(
         reuse_process = settings.reuse_processes
 
         with actions_process_pool.obtain_process_for_action(action) as process_handle:
-            run_id = gen_uuid("run")
             response.headers["X-Action-Server-Run-Id"] = run_id
             relative_artifacts_path: str = _create_run_artifacts_dir(action, run_id)
             run: Run = _create_run(action, run_id, inputs, relative_artifacts_path)
@@ -298,6 +299,8 @@ def generate_func_from_action(
     Returns:
         Function/Open API spec for the function
     """
+    from ._protocols import AsyncActionCallResult
+    
     input_schema_dict = json.loads(action.input_schema)
     output_schema_dict = json.loads(action.output_schema)
 
@@ -349,13 +352,39 @@ def generate_func_from_action(
     # The returned function must be async because we have to request the `body`
 
     async def func(response: Response, request: Request):
+        run_id = gen_uuid("run")
+        
         body = await request.body()
+        
+        if action.is_async:
+            import asyncio
+            
+            asyncio.create_task(run_in_threadpool(partial(
+                _run_action_in_thread,
+                action_package,
+                action,
+                run_id,
+                input_schema_dict,
+                output_schema_dict,
+                input_validator,
+                output_validator,
+                body,
+                response,
+                request,
+            )))
 
+            result: AsyncActionCallResult = {
+                'run_id': run_id
+            }
+
+            return result
+        
         return await run_in_threadpool(
             partial(
                 _run_action_in_thread,
                 action_package,
                 action,
+                run_id,
                 input_schema_dict,
                 output_schema_dict,
                 input_validator,

@@ -479,6 +479,7 @@ cli.main(["list"])
                     output_schema=json.dumps(action_fields["output_schema"]),
                     enabled=True,
                     is_consequential=options.get("is_consequential", None),
+                    is_async=options.get("is_async", None),
                     managed_params_schema=managed_params_str,
                     options=json.dumps(options),
                 )

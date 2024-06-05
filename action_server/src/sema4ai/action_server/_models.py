@@ -57,6 +57,7 @@ class Action:  # Table name: action
     enabled: bool = True
 
     is_consequential: Optional[bool] = None
+    is_async: Optional[bool] = None
 
     # The json content for the managed params schema
     managed_params_schema: Optional[str] = None

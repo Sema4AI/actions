@@ -152,7 +152,10 @@ def start_server(
         )
         if action.is_consequential is not None:
             openapi_extra["x-openai-isConsequential"] = action.is_consequential
-
+            
+        if action.is_async is not None:
+            openapi_extra["isAsync"] = action.is_async
+            
         app.add_api_route(
             build_url_api_run(action_package.name, action.name),
             func,

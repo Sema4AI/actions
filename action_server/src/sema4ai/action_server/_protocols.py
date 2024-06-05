@@ -266,3 +266,7 @@ class ArgumentsNamespaceCloudOrganizations(ArgumentsNamespace):
     access_credentials: Optional[str]
     hostname: Optional[str]
     json: bool
+
+
+class AsyncActionCallResult(TypedDict):
+    run_id: str

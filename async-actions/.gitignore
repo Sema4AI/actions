@@ -1,0 +1,13 @@
+output/
+venv/
+.venv/
+temp/
+.use
+.vscode
+.DS_Store
+*.pyc
+*.zip
+.env
+.project
+.pydevproject
+.env

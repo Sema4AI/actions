@@ -52,7 +52,10 @@ def action(func: Callable) -> Callable:
 
 @overload
 def action(
-    *, is_consequential: Optional[bool] = None, display_name: Optional[str] = None
+    *,
+    is_consequential: Optional[bool] = None,
+    display_name: Optional[str] = None,
+    is_async: Optional[bool] = None,
 ) -> Callable:
     ...
 
@@ -100,10 +103,15 @@ def action(*args, **kwargs):
         if display_name is not None:
             if not isinstance(display_name, str):
                 raise ValueError("Expected 'display_name' argument to be a str.")
+            
+        is_async = kwargs.pop("is_async", None)
+        if is_async is not None:
+            if not isinstance(is_async, bool):
+                raise ValueError("Expected 'is_async' argument to be a boolean.")
 
         if kwargs:
             raise ValueError(
-                f"Arguments accepted by @action: ['is_consequential']. Received arguments: {list(kwargs.keys())}"
+                f"Arguments accepted by @action: ['is_consequential', 'is_async']. Received arguments: {list(kwargs.keys())}"
             )
 
         # When an action is found, register it in the framework as a target for execution.
@@ -112,6 +120,7 @@ def action(*args, **kwargs):
             options={
                 "is_consequential": is_consequential,
                 "display_name": display_name,
+                "is_async": is_async,
             },
         )
 
