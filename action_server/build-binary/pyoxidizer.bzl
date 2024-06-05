@@ -264,8 +264,6 @@ def make_exe():
             "msgspec~=0.18",
             "psutil>=5,<6",
             "pydantic~=2.4",
-            "pywin32-ctypes~=0.2",
-            "pywin32>=306,<307",
             "pyyaml>=6,<7",
             "requests>=2,<3",
             "sema4ai-actions~=0.8",
@@ -311,7 +309,7 @@ def make_exe():
     #resource.add_location = "filesystem-relative:lib"
     #resource.add_source = True
     # exe.add_python_resource(exe, resource=pywin32_system32_resources, add_location="filesystem-relative:lib", add_source=True)
-    exe.add_file(source=pywin32_system32_resources, dest="lib/pywin32_system32")
+    # exe.add_file(source=pywin32_system32_resources, dest="lib/pywin32_system32")
 
     # Add pywintypes manually
     #pywintypes_resources = dist.find_python_resources(
@@ -334,6 +332,104 @@ def make_exe():
     # referenced by other consumers of this target.
     return exe
 
+
+def resource_callback(policy, resource):
+    if type(resource) in ("File"):
+        if "pywin" in resource.path or "pypiwin" in resource.path:
+            print("is file: ", resource.path)
+            resource.add_location = "filesystem-relative:lib"
+            resource.add_include = True
+    if type(resource) in ("PythonExtensionModule"):
+        if resource.name in ["_ssl", "win32.win32file", "win32.win32pipe"]:
+            print("is PythonExtensionModule: ", resource.name)
+            resource.add_location = "filesystem-relative:lib"
+            resource.add_include = True
+    elif type(resource) in ("PythonModuleSource", "PythonPackageResource", "PythonPackageDistributionResource"):
+        if resource.name in ["pywin32_bootstrap", "pythoncom", "pypiwin32", "pywin32", "pythonwin", "win32", "win32com", "win32comext", "pywintypes"]:
+            print("is resource: ", resource.name)
+            resource.add_location = "filesystem-relative:lib"
+            resource.add_include = True
+
+
+def make_win_exe():
+    dist = default_python_distribution()
+
+    policy = dist.make_python_packaging_policy()
+    policy.resources_location = "in-memory"
+    policy.resources_location_fallback = "filesystem-relative:lib"
+    policy.allow_in_memory_shared_library_loading = True
+    policy.bytecode_optimize_level_one = True
+    policy.extension_module_filter = "all"
+    policy.include_file_resources = True
+    policy.include_test = False
+    policy.allow_files = True
+    policy.file_scanner_emit_files = True
+    policy.register_resource_callback(resource_callback)
+
+    python_config = dist.make_python_interpreter_config()
+    python_config.module_search_paths = ["$ORIGIN", "$ORIGIN/lib"]
+    python_config.run_module = "sema4ai.action_server"
+
+    exe = dist.to_python_executable(
+        name="action-server",
+        packaging_policy=policy,
+        config=python_config,
+    )
+
+    for resource in exe.pip_install(
+        [
+            ## START DEPS
+            "aiohttp~=3.9",
+            "cryptography~=42.0",
+            "fastapi-slim~=0.111",
+            "fastjsonschema~=2.19",
+            "jsonschema~=4.19",
+            "keyring~=25.2",
+            "msgspec~=0.18",
+            "psutil>=5,<6",
+            "pydantic~=2.4",
+            "pywin32-ctypes~=0.2",
+            "pywin32>=306,<307",
+            "pyyaml>=6,<7",
+            "requests>=2,<3",
+            "sema4ai-actions~=0.8",
+            "termcolor~=2.4",
+            "uvicorn~=0.23",
+            "websockets~=12.0",
+            ## END DEPS
+        ]
+    ):
+        if not type(resource) == "File" and (resource.name in ("py.typed",) or resource.name.endswith(".pyi")):
+            continue
+
+        if not type(resource) == "File" and ("psutil.tests" in resource.name):
+            continue
+
+        if str(type(resource)) == "PythonModuleSource":
+            resource.add_location = "in-memory"
+            resource.add_source = False
+        else:
+            # print(">>", resource.name, str(type(resource)), resource)
+            resource.add_location = "filesystem-relative:lib"
+            resource.add_source = True
+        exe.add_python_resource(resource)
+
+    for resource in exe.read_package_root(
+        path="../src",
+        packages=["sema4ai.action_server"],
+    ):
+        if "bin/rcc" in resource.name:
+            # We'll download it after the build is done (because I couldn't
+            # find a way to make the executable bit be kept by pyoxidizer).
+            continue
+
+        resource.add_location = "filesystem-relative:lib"
+        resource.add_source = True
+        exe.add_python_resource(resource)
+
+    exe.windows_runtime_dlls_mode = "always"
+
+    return exe
 
 def make_embedded_resources(exe):
     return exe.to_embedded_resources()
@@ -400,7 +496,8 @@ def register_code_signers():
 register_code_signers()
 
 # Tell PyOxidizer about the build targets defined above.
-register_target("exe", make_exe)
+register_target("exe", make_win_exe)
+# register_target("winexe", make_win_exe)
 register_target(
     "resources", make_embedded_resources, depends=["exe"], default_build_script=True
 )
