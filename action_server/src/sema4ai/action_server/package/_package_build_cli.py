@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 import time
@@ -144,6 +145,7 @@ def add_package_command(command_subparser, defaults):
     )
     add_data_args(build_parser, defaults)
     add_verbose_args(build_parser, defaults)
+    add_json_output_args(build_parser)
 
     ### Extract
 
@@ -275,20 +277,23 @@ def handle_package_command(base_args: ArgumentsNamespace):
 
         # action-server package build --output-dir=<zipfile> --datadir=<directory> <source-directory>:
         try:
-            retcode = build_package(
+            result = build_package(
                 Path(".").absolute(),
                 output_dir=package_build_args.output_dir,
                 datadir=package_build_args.datadir,
                 override=package_build_args.override,
             )
+
+            if package_build_args.json:
+                print(json.dumps({"package_path": result.package_path}))
         except ActionServerValidationError as e:
             log.critical(
                 bold_red(
                     f"\nUnable to build action package. Please fix the error below and retry.\n{e}",
                 )
             )
-            retcode = 1
-        return retcode
+            return 1
+        return result.return_code
 
     elif package_command == "extract":
         package_extract_args: ArgumentsNamespacePackageExtract = typing.cast(

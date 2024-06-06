@@ -1,3 +1,4 @@
+import json
 import os
 import re
 import zipfile
@@ -35,6 +36,7 @@ def test_package_zip(datadir):
             str(datadir),
             "--datadir",
             str(datadir / "data"),
+            "--json",
             # "-v",
         ],
         returncode=0,
@@ -46,6 +48,7 @@ def test_package_zip(datadir):
 
     target_zip = datadir / zip_name
     assert os.path.exists(target_zip)
+    assert json.loads(output.stdout) == {"package_path": str(target_zip)}
 
     with zipfile.ZipFile(target_zip, "r") as zip_file:
         file_names = set(zip_file.namelist())

@@ -158,6 +158,7 @@ class ArgumentsNamespacePackageBuild(ArgumentsNamespace):
     output_dir: str
     datadir: str
     override: bool
+    json: bool
 
 
 class ArgumentsNamespacePackageExtract(ArgumentsNamespace):
