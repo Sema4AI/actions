@@ -9,6 +9,7 @@ The `Sema4.ai Action Server` automatically generates an OpenAPI spec for your Py
 ## 1. Install Action Server
 
 Action Server is available as a stand-alone fully signed executable and via `pip install sema4ai-action-server`.
+
 > We recommend the executable to prevent confusion in case you have multiple/crowded Python environments, etc.
 
 #### For macOS
@@ -16,14 +17,14 @@ Action Server is available as a stand-alone fully signed executable and via `pip
 ```sh
 # Install Sema4.ai Action Server
 brew update
-brew install sema4ai/tools/action-server 
+brew install sema4ai/tools/action-server
 ```
 
 #### For Windows
 
 ```sh
 # Download Sema4.ai Action Server
-curl -o action-server.exe https://sema4.ai/cdn/downloads/action-server/releases/latest/windows64/action-server.exe
+curl -o action-server.exe https://cdn.sema4.ai/action-server/releases/latest/windows64/action-server.exe
 
 # Add to PATH or move to a folder that is in PATH
 setx PATH=%PATH%;%CD%
@@ -33,7 +34,7 @@ setx PATH=%PATH%;%CD%
 
 ```sh
 # Download Sema4.ai Action Server
-curl -o action-server https://sema4.ai/cdn/downloads/action-server/releases/latest/linux64/action-server
+curl -o action-server https://cdn.sema4.ai/action-server/releases/latest/linux64/action-server
 chmod a+x action-server
 
 # Add to PATH or move to a folder that is in PATH
@@ -47,7 +48,7 @@ sudo mv action-server /usr/local/bin/
 # You'll be prompted for the name of the project (directory):
 action-server new
 
-# Start Action Server 
+# Start Action Server
 cd my-project
 action-server start --expose
 ```

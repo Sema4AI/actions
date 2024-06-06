@@ -19,7 +19,7 @@ import (
 var content embed.FS
 
 // Constants
-const ACTION_SERVER_LATEST_BASE_URL = "https://sema4.ai/cdn/downloads/action-server/releases/latest/"
+const ACTION_SERVER_LATEST_BASE_URL = "https://cdn.sema4.ai/action-server/releases/latest/"
 const VERSION_LATEST_URL = ACTION_SERVER_LATEST_BASE_URL + "version.txt"
 
 type ColorType struct{}

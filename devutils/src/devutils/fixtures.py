@@ -125,7 +125,7 @@ def _download_rcc(location: str, force: bool = False) -> None:
                 else:
                     relative_path = "/linux32/rcc"
 
-            prefix = f"https://sema4.ai/cdn/downloads/rcc/releases/{RCC_VERSION}"
+            prefix = f"https://cdn.sema4.ai/rcc/releases/{RCC_VERSION}"
             url = prefix + relative_path
 
             # log.info(f"Downloading rcc from: {url} to: {location}.")
