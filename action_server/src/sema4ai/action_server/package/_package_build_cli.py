@@ -132,6 +132,12 @@ def add_package_command(command_subparser, defaults):
         help="Creates a .zip with the contents of the action package so that it can be deployed",
     )
     build_parser.add_argument(
+        "--input-dir",
+        dest="input_dir",
+        help="The source directory for the action package",
+        default=".",
+    )
+    build_parser.add_argument(
         "--output-dir",
         dest="output_dir",
         help="The output file for saving the action package built file",
@@ -175,6 +181,12 @@ def add_package_command(command_subparser, defaults):
     extract_parser = package_subparsers.add_parser(
         "metadata",
         help="Collects metadata from the action package in the current cwd and prints it to stdout",
+    )
+    extract_parser.add_argument(
+        "--input-dir",
+        dest="input_dir",
+        help="The source directory for the action package",
+        default=".",
     )
     extract_parser.add_argument(
         "--output-file",
@@ -278,7 +290,7 @@ def handle_package_command(base_args: ArgumentsNamespace):
         # action-server package build --output-dir=<zipfile> --datadir=<directory> <source-directory>:
         try:
             result = build_package(
-                Path(".").absolute(),
+                input_dir=Path(package_build_args.input_dir).absolute(),
                 output_dir=package_build_args.output_dir,
                 datadir=package_build_args.datadir,
                 override=package_build_args.override,
@@ -341,7 +353,7 @@ def handle_package_command(base_args: ArgumentsNamespace):
         retcode = 0
         try:
             package_metadata_or_returncode: str | int = collect_package_metadata(
-                Path(".").absolute(),
+                package_dir=Path(package_metadata_args.input_dir).absolute(),
                 datadir=package_metadata_args.datadir,
             )
             if isinstance(package_metadata_or_returncode, str):

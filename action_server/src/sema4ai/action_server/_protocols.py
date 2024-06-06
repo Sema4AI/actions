@@ -155,6 +155,7 @@ class ArgumentsNamespacePackageUpdate(ArgumentsNamespace):
 class ArgumentsNamespacePackageBuild(ArgumentsNamespace):
     command: Literal["package"]
     package_command: Literal["build"]
+    input_dir: str
     output_dir: str
     datadir: str
     override: bool
@@ -172,6 +173,7 @@ class ArgumentsNamespacePackageMetadata(ArgumentsNamespace):
     command: Literal["package"]
     package_command: Literal["metadata"]
     output_file: Optional[str]
+    input_dir: str
 
 
 class ArgumentsNamespaceMigrateImportOrStart(ArgumentsNamespace):

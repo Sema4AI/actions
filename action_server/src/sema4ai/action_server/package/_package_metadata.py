@@ -20,7 +20,7 @@ def collect_package_metadata(package_dir: Path, datadir: str) -> str | int:
     from sema4ai.action_server._errors_action_server import ActionServerValidationError
     from sema4ai.action_server._models import Action, ActionPackage, create_db
 
-    args = ["start", "--db-file", ":memory:"]
+    args = ["start", "--db-file", ":memory:", "--dir", str(package_dir)]
     if datadir:
         args.extend(["--datadir", datadir])
 
