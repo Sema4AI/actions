@@ -258,6 +258,7 @@ def make_exe():
             "aiohttp~=3.9",
             "cryptography~=42.0",
             "fastapi-slim~=0.111",
+            "jsonschema-specifications~=2023.12",
             "jsonschema~=4.22",
             "keyring~=25.2",
             "msgspec~=0.18",
@@ -278,7 +279,13 @@ def make_exe():
         if "psutil.tests" in resource.name:
             continue
 
-        if str(type(resource)) == "PythonModuleSource":
+        if "jsonschema_specifications.tests" in resource.name:
+            continue
+
+        if (
+            str(type(resource)) == "PythonModuleSource"
+            and "jsonschema_specifications" not in resource.name
+        ):
             resource.add_location = "in-memory"
             resource.add_source = False
         else:

@@ -537,7 +537,7 @@ def make_client(
 
 
 def do_selftest():
-    print("Running selftest...")
+    print(f"Running selftest on python: {sys.version}")
     retcode = 0
 
     from sema4ai.action_server._download_rcc import get_default_rcc_location

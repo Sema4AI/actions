@@ -368,7 +368,39 @@ def generate_func_from_action(
     return func, openapi_extra
 
 
+def _iter_jsonschema_specifications():
+    from pathlib import Path
+
+    import jsonschema_specifications  # type: ignore
+    from referencing import Resource
+
+    parent = Path(jsonschema_specifications._core.__file__).absolute().parent
+
+    for version in (parent / "schemas").iterdir():
+        if version.name.startswith("."):
+            continue
+        for child in version.iterdir():
+            children = [child] if child.is_file() else child.iterdir()
+            for path in children:
+                if path.name.startswith("."):
+                    continue
+                contents = json.loads(path.read_text(encoding="utf-8"))
+                yield Resource.from_contents(contents)
+
+
+def _fix_jsonschema_specifications():
+    import jsonschema_specifications  # type: ignore
+    from referencing.jsonschema import EMPTY_REGISTRY as _EMPTY_REGISTRY
+
+    REGISTRY = (_iter_jsonschema_specifications() @ _EMPTY_REGISTRY).crawl()
+    jsonschema_specifications.REGISTRY = REGISTRY
+
+
 def _get_json_validator(schema: dict):
+    # Dirty hack to make jsonschema_specifications work with pyoxidizer.
+    # see: https://github.com/python-jsonschema/jsonschema-specifications/issues/61
+    _fix_jsonschema_specifications()
+
     from jsonschema.validators import validator_for
 
     cls = validator_for(schema)
