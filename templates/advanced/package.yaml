@@ -4,9 +4,6 @@ name: Advanced Template Package
 # Required: A description of what's in the action package.
 description: Action package description
 
-# Required: Point to main documentation markdown file for the package.
-documentation: README.md
-
 # Package version number, recommend using semver.org
 version: 0.0.1
 
