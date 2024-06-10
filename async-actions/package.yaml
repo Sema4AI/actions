@@ -1,8 +1,8 @@
 # Required: A short name for the action package
-name: Minimal Template Package
+name: Async Actions Package
 
 # Required: A description of what's in the action package.
-description: Action package description
+description: Package containing a showcase of an async Action
 
 # Required: A link to where the documentation on the package lives.
 documentation: https://github.com/...
