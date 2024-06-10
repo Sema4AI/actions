@@ -489,6 +489,8 @@ def build_common_tasks(
 
         if not previous_version:
             print(f"No previous release for {package_name}")
+        elif previous_version == "beta":
+            print(f"Previous release was beta for {package_name}")
         elif semver.compare(current_version, previous_version) <= 0:
             sys.stderr.write(
                 f"Current version older/same than previous:"
