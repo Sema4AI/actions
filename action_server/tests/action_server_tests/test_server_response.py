@@ -107,3 +107,40 @@ def test_return_response_ok_action(
             assert future.result() is None
 
     executor.shutdown(wait=False)
+
+
+def test_action_package_json(
+    action_server_process: ActionServerProcess, client: ActionServerClient, tmpdir
+):
+    from pathlib import Path
+
+    calculator = Path(tmpdir) / "calculator" / "action_calculator.py"
+    calculator.parent.mkdir(parents=True, exist_ok=True)
+    calculator.write_text(
+        """
+from sema4ai.actions import action, Response
+from pydantic import BaseModel, Extra
+from datetime import datetime
+
+class Document(BaseModel, extra=Extra.ignore):
+    title: str
+    document_id: str
+    date: datetime
+    
+
+@action
+def calculator_sum(v1: float, v2: float) -> Response[Document]:
+    return Response(result=Document(
+        title="asd123", 
+        document_id="Some Document ID", 
+        date=datetime.now()))
+"""
+    )
+
+    action_server_process.start(
+        actions_sync=True, cwd=Path(tmpdir / "calculator"), db_file="server.db"
+    )
+    found = client.post_get_str(
+        "api/actions/calculator/calculator-sum/run", {"v1": 1.0, "v2": 2.0}
+    )
+    print(found)

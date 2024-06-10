@@ -115,7 +115,7 @@ def handle_list_organizations_command(base_args: ArgumentsNamespace) -> int:
         organizations = list_organizations(access_credentials, hostname)
 
         if cloud_organizations_args.json:
-            print(json.dumps([org.model_dump() for org in organizations]))
+            print(json.dumps([org.model_dump(mode="json") for org in organizations]))
         else:
             for organization in organizations:
                 log.info(f"Organization: {organization}")

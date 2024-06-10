@@ -264,7 +264,7 @@ class Action:
                 default = param.default
                 if hasattr(default, "model_dump"):
                     # Support for pydantic
-                    default = default.model_dump()
+                    default = default.model_dump(mode="json")
                 param_properties["default"] = default
 
         if required:
@@ -457,7 +457,7 @@ class Context:
                 dump = result
                 if hasattr(result, "model_dump"):
                     # Support for pydantic
-                    dump = result.model_dump()
+                    dump = result.model_dump(mode="json")
 
                 result_as_json_str = json.dumps(dump, indent=4)
             except Exception:

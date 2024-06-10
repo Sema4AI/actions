@@ -20,7 +20,7 @@ def on_teardown_save_result(action: IAction):
         dump = result
         if hasattr(result, "model_dump"):
             # Support for pydantic
-            dump = result.model_dump()
+            dump = result.model_dump(mode="json")
 
         contents_to_write = {
             "result": dump,

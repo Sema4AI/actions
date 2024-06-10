@@ -111,7 +111,9 @@ def handle_list_templates(output_json: bool = False) -> int:
         templates: list[ActionTemplate] = metadata.templates if metadata else []
 
         if output_json:
-            print(json.dumps([template.model_dump() for template in templates]))
+            print(
+                json.dumps([template.model_dump(mode="json") for template in templates])
+            )
         else:
             if len(templates) == 0:
                 log.info("No templates available.")

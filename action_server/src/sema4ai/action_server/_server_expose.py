@@ -65,7 +65,7 @@ def write_expose_session_json(
     log.debug(f"🗂️ Writing expose_session.json path={expose_session_path}")
     with open(expose_session_path, "w") as f:
         json.dump(
-            expose_session_json.model_dump(),
+            expose_session_json.model_dump(mode="json"),
             f,
             indent=2,
         )

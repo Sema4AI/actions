@@ -24,8 +24,7 @@ action-server = "sema4ai.action_server.cli:main"
 # Use 'inv update-pyoxidizer-versions'.
 aiohttp = "^3.9.3"
 fastapi-slim = "^0.111.0"
-fastjsonschema = "^2.19.1"
-jsonschema = "^4.19.2"
+jsonschema = "^4.22.0"
 msgspec = "^0.18"
 psutil = "^5"
 pydantic = "^2.4.2"
@@ -47,6 +46,7 @@ types-PyYAML = "^6"
 robocorp-log-pytest = "^0.0.2"
 types-psutil = "^5"
 pyoxidizer = "^0.24.0"
+types-jsonschema = "^4.22.0"
 
 
 [tool.mypy]
