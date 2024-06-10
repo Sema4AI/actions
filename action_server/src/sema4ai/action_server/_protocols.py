@@ -200,6 +200,7 @@ class ArgumentsNamespaceStart(ArgumentsNamespaceBaseImportOrStart):
     expose: bool
     expose_allow_reuse: bool
     api_key: str
+    parent_pid: int
 
 
 class ArgumentsNamespacePackagePush(ArgumentsNamespace):

@@ -172,6 +172,15 @@ def _add_start_server_command(command_parser, defaults):
         "available will be defined in the public OpenAPI specification.",
     )
 
+    start_parser.add_argument(
+        "--parent-pid",
+        type=int,
+        help=(
+            "The parent pid for the action server (when the parent pid exits, the action server will automatically exit)."
+        ),
+        default=0,
+    )
+
     add_data_args(start_parser, defaults)
     add_verbose_args(start_parser, defaults)
     _add_whitelist_args(start_parser, defaults)
@@ -626,6 +635,9 @@ def _make_import_migrate_or_start(
     use_db: Optional["Database"] = None,
     before_start: Sequence[IBeforeStartCallback] = (),
 ) -> int:
+    from sema4ai.action_server._preload_actions.preload_actions_autoexit import (
+        exit_when_pid_exists,
+    )
     from sema4ai.action_server.migrations import MigrationStatus
 
     from ._robo_utils.system_mutex import SystemMutex
@@ -744,6 +756,15 @@ information from this datadir.
                 log.debug("Synchronize actions: %s", start_args.actions_sync)
 
                 setup_info.rcc.feedack_metric("action-server.started", __version__)
+
+                parent_pid = start_args.parent_pid
+                if parent_pid:
+                    exit_when_pid_exists(parent_pid)
+
+                # This is for subprocesses to automatically exit too (inherited
+                # by the preload actions modules) -- when the action server exits,
+                # all the running actions processes should exit too.
+                os.environ["SEMA4AI_ACTION_SERVER_PARENT_PID"] = str(os.getpid())
 
                 if start_args.actions_sync:
                     code = _import_actions(

@@ -495,13 +495,16 @@ def main(
             The api key that should be passed to the action server along with
             the forwarded messages so that the action server accepts it.
     """
-    from sema4ai.action_server._robo_utils.process import exit_when_pid_exists
 
     if config_logging:
         _setup_logging(verbose)
 
     if parent_pid:
-        exit_when_pid_exists(int(parent_pid))
+        from sema4ai.action_server._preload_actions.preload_actions_autoexit import (
+            exit_when_pid_exists,
+        )
+
+        exit_when_pid_exists(parent_pid)
 
     try:
         asyncio.run(
