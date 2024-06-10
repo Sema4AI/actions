@@ -81,6 +81,9 @@ def _verify_prev_acquired_in_thread(mutex_name):
 
 def _collect_mutex_allocation_msg(mutex_name):
     try:
+        # Note: the first line of the file used as a mutex MUST always have the
+        # format: PID: <pid>\n
+        # (other tools may rely on that to show information to the user).
         write_contents = []
         try:
             write_contents.append(f"PID: {os.getpid()}")
@@ -96,10 +99,12 @@ def _collect_mutex_allocation_msg(mutex_name):
         write_contents.append(s.getvalue())
         return "\n".join(write_contents)
     except BaseException:
+        # If something fails getting the stack, try to at least get the pid
+        # to the file (using the same format above).
         try:
-            return str(os.getpid())
+            return f"PID: {os.getpid()}\n"
         except Exception:
-            return "<unable to get pid>"
+            return "PID: unable to get pid\n"
 
 
 if sys.platform == "win32":
@@ -239,6 +244,7 @@ else:  # Linux
                         try:
                             with open(filename, "r") as stream:
                                 curr_pid = stream.readline().strip()[-1]
+                                curr_pid.replace("PID:", "").strip()
                         except BaseException:
                             log.exception("Unable to get locking pid.")
                             curr_pid = "<unable to get locking pid>"
