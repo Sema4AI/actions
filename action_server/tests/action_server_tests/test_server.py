@@ -54,8 +54,9 @@ def test_bad_return_on_no_conda(
     found = client.post_error("api/actions/calculator/bad-return-none/run", 500)
     message = found.json()["message"]
     assert message == (
-        "Inconsistent value returned from action: data must be string -- i.e.: the returned "
-        "value (None) does not match the expected output schema ({'type': 'string', 'description': ''})."
+        "Inconsistent value returned from action: None is not of type 'string'\n\n"
+        "Failed validating 'type' in schema:\n    {'description': '', 'type': 'string'}\n\n"
+        "On instance:\n    None -- i.e.: the returned value (None) does not match the expected output schema ({'type': 'string', 'description': ''})."
     )
 
 
@@ -478,7 +479,7 @@ def test_full_run(
             runs = db.all(Run)
             assert len(runs) == 2
             assert runs[0].status == RunStatus.PASSED
-            assert runs[0].inputs == '{"name": "Foo", "title": "Mr."}'
+            assert runs[0].inputs == '{"name": "Foo"}'
             assert runs[0].result == '"Hello Mr. Foo."'
 
             assert runs[1].status == RunStatus.FAILED

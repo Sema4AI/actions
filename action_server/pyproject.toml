@@ -25,6 +25,9 @@ action-server = "sema4ai.action_server.cli:main"
 aiohttp = "^3.9.3"
 fastapi-slim = "^0.111.0"
 jsonschema = "^4.22.0"
+# This one needs a `_fix_jsonschema_specifications` hack
+# See: https://github.com/python-jsonschema/jsonschema-specifications/issues/61
+jsonschema-specifications = "^2023.12.1"
 msgspec = "^0.18"
 psutil = "^5"
 pydantic = "^2.4.2"
