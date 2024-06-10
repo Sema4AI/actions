@@ -304,6 +304,14 @@ def main(args=None):
     else:
         rfile, wfile = binary_stdio()
 
+    try:
+        import preload_actions_autoexit  # type: ignore
+    except ImportError:
+        from . import preload_actions_autoexit  # noqa
+
+    pid = os.environ.get("SEMA4AI_ACTION_SERVER_PARENT_PID", 0)
+    if pid:
+        preload_actions_autoexit.exit_when_pid_exists(pid)
     server = MessagesHandler(rfile, wfile)
     server.start()
 

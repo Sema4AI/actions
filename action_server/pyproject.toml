@@ -81,5 +81,5 @@ ignore_missing_imports = true
 [tool.robocorp.log]
 default_library_filter_kind = "exclude"
 log_filter_rules = [
-    {name = "sema4ai", kind = "full"},
+    {name = "sema4ai", kind = "full_log"},
 ]
