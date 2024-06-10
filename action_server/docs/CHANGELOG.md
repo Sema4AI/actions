@@ -5,6 +5,7 @@
 - A new argument: `--parent-pid` can be passed to the action server. When passed,
   the action server will automatically exit when the given parent pid is no longer
   alive (it's meant to be used when the action server is embedded into another app).
+- Standardized the lock file to always start with `PID: {os.getpid()}\n`.
 
 ## 0.12.1 - 2024-05-31
 
