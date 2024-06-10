@@ -6,7 +6,6 @@ import typing
 from functools import partial
 from typing import Any, Callable, Dict, Tuple
 
-import fastjsonschema  # type: ignore
 from fastapi import HTTPException, Request, Response
 from fastapi.exceptions import RequestValidationError
 from starlette.concurrency import run_in_threadpool
@@ -20,7 +19,7 @@ log = logging.getLogger(__name__)
 # Note: for pydantic models, the following APIs are used:
 # cls.model_validate(dict)
 # cls.model_json_schema()
-# obj.model_dump()
+# obj.model_dump(mode="json")
 #
 # Besides pydantic, the following basic types are accepted:
 _spec_api_type_to_python_type = {
@@ -334,13 +333,13 @@ def generate_func_from_action(
     }
 
     try:
-        input_validator = fastjsonschema.compile(input_schema_dict)
+        input_validator = _get_json_validator(input_schema_dict)
     except Exception:
         raise RuntimeError(
             f"Error making validator for input schema: {input_schema_dict}"
         )
     try:
-        output_validator = fastjsonschema.compile(output_schema_dict)
+        output_validator = _get_json_validator(output_schema_dict)
     except Exception:
         raise RuntimeError(
             f"Error making validator for output schema: {output_schema_dict}"
@@ -367,3 +366,12 @@ def generate_func_from_action(
         )
 
     return func, openapi_extra
+
+
+def _get_json_validator(schema: dict):
+    from jsonschema.validators import validator_for
+
+    cls = validator_for(schema)
+    cls.check_schema(schema)
+    instance = cls(schema)
+    return instance.validate

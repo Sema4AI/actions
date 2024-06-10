@@ -6,6 +6,9 @@
   the action server will automatically exit when the given parent pid is no longer
   alive (it's meant to be used when the action server is embedded into another app).
 - Standardized the lock file to always start with `PID: {os.getpid()}\n`.
+- Accept `datetime.datetime` objects in pydantic models:
+    - `mode="json"` used in `model_dump`
+    - Using `jsonschema` to validate schema instead of `fastjsonschema` (because it didn't deal with dates properly).
 
 ## 0.12.1 - 2024-05-31
 

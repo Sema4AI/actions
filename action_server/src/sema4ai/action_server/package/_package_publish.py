@@ -87,7 +87,7 @@ def upload_package(
     mark_upload_completed(
         organization_id, package.id, access_credentials, hostname, s3_object_key
     )
-    return ActionPackageEntity.model_validate(package.model_dump())
+    return ActionPackageEntity.model_validate(package.model_dump(mode="json"))
 
 
 def get_package_status(
@@ -101,7 +101,7 @@ def get_package_status(
         organization_id, package_id, access_credentials, hostname
     )
 
-    return ActionPackageEntity.model_validate(package.model_dump())
+    return ActionPackageEntity.model_validate(package.model_dump(mode="json"))
 
 
 def update_package_changelog(
@@ -119,4 +119,4 @@ def update_package_changelog(
         organization_id, package_id, access_credentials, changelog, hostname
     )
 
-    return ActionPackageEntity.model_validate(package.model_dump())
+    return ActionPackageEntity.model_validate(package.model_dump(mode="json"))
