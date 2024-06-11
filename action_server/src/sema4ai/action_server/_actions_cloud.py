@@ -13,8 +13,8 @@ def handle_login_command(args: ArgumentsNamespace) -> int:
         ask_user_for_hostname,
         ask_user_to_provide_access_credentials,
     )
-    from sema4ai.action_server._keyring import store_access_credentials, store_hostname
     from sema4ai.action_server._protocols import ArgumentsNamespaceCloudlogin
+    from sema4ai.action_server._storage import store
 
     cloud_login_args: ArgumentsNamespaceCloudlogin = typing.cast(
         ArgumentsNamespaceCloudlogin, args
@@ -33,8 +33,7 @@ def handle_login_command(args: ArgumentsNamespace) -> int:
             else ask_user_for_hostname()
         )
 
-        store_hostname(hostname)
-        store_access_credentials(access_credentials)
+        store(access_credentials, hostname)
 
     except Exception as e:
         log.critical(
@@ -48,8 +47,8 @@ def handle_login_command(args: ArgumentsNamespace) -> int:
 
 
 def handle_verify_login_command(base_args: ArgumentsNamespace) -> int:
-    from sema4ai.action_server._keyring import get_access_credentials, get_hostname
     from sema4ai.action_server._protocols import ArgumentsNamespaceCloudVerifyLogin
+    from sema4ai.action_server._storage import get_access_credentials, get_hostname
 
     verify_login_args: ArgumentsNamespaceCloudVerifyLogin = typing.cast(
         ArgumentsNamespaceCloudVerifyLogin, base_args
@@ -86,8 +85,8 @@ def handle_verify_login_command(base_args: ArgumentsNamespace) -> int:
 
 def handle_list_organizations_command(base_args: ArgumentsNamespace) -> int:
     from sema4ai.action_server._errors_action_server import ActionServerValidationError
-    from sema4ai.action_server._keyring import get_access_credentials, get_hostname
     from sema4ai.action_server._protocols import ArgumentsNamespaceCloudOrganizations
+    from sema4ai.action_server._storage import get_access_credentials, get_hostname
     from sema4ai.action_server.package._package_publish import list_organizations
 
     cloud_organizations_args: ArgumentsNamespaceCloudOrganizations = typing.cast(

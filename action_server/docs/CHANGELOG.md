@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Encrypt-at-rest sensitive storage data to the file system instead of using keyring to store it
+
 ## 0.13.0 - 2024-06-10
 
 - A new argument: `--parent-pid` can be passed to the action server. When passed,

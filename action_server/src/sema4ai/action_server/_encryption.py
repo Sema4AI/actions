@@ -35,7 +35,7 @@ def _get_str_list_from_env(env_name: str, env) -> List[str]:
     return lst_info_to_decrypt
 
 
-def _decrypt(key: bytes, iv: bytes, ciphertext: bytes, tag: bytes) -> bytes:
+def decrypt(key: bytes, iv: bytes, ciphertext: bytes, tag: bytes) -> bytes:
     from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
     decryptor = Cipher(
@@ -231,7 +231,7 @@ class MaybeEncryptedJsonData:
 
         for key in keys:
             try:
-                raw_data = _decrypt(
+                raw_data = decrypt(
                     key,
                     iv_decoded_base_64,
                     cipher_decoded_base_64,
