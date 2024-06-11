@@ -204,6 +204,8 @@ def build_package(
     args_metadata = [
         "package",
         "metadata",
+        "--input-dir",
+        str(input_dir),
         "--db-file",
         ":memory:",
         "--output-file",

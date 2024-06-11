@@ -32,6 +32,8 @@ def test_package_zip(datadir):
         [
             "package",
             "build",
+            "--input-dir",
+            str(Path(datadir, "pack1")),
             "--output-dir",
             str(datadir),
             "--datadir",
@@ -132,6 +134,8 @@ def test_package_metadata(datadir, data_regression):
         [
             "package",
             "metadata",
+            "--input-dir",
+            str(Path(datadir, "pack1")),
             "--datadir",
             str(datadir / "data"),
         ],
