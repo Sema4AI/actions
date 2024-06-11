@@ -149,9 +149,9 @@ def get_access_credentials() -> typing.Optional[str]:
         return decrypt_value(storage.cloud.access_credentials)
     except Exception as e:
         log.error(bold_red(f"Failed to get stored access credentials\n{e}"))
-        raise e
-
-    return None
+        raise Exception(
+            f"Unable to decrypt the values in storage, please remove: {get_storage_path()}"
+        )
 
 
 def get_hostname() -> str:
