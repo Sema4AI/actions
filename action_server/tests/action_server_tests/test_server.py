@@ -935,3 +935,66 @@ def calculator_sum(v1: float, v2: float) -> float:
     assert list(openapi2["paths"].keys()) == [
         "/api/actions/calculator-new/calculator-sum/run"
     ]
+
+
+def test_action_package_cwd(
+    action_server_process: ActionServerProcess, client: ActionServerClient, tmpdir
+):
+    def create_action(package_dir: Path):
+        from sema4ai.action_server._selftest import robocorp_action_server_run
+
+        package_dir.mkdir(parents=True, exist_ok=True)
+        (package_dir / "action.py").write_text(
+            """
+from sema4ai.actions import action
+from pathlib import Path
+import os
+
+curdir = Path(__file__).absolute().parent
+
+@action
+def do_it() -> str:
+    '''
+    Returns 'Ok'
+    '''
+    assert Path('.').absolute() == curdir
+    os.chdir(curdir.parent)
+    assert Path('.').absolute() == curdir.parent
+    print('pid', os.getpid())
+    return 'Ok'
+"""
+        )
+
+        robocorp_action_server_run(
+            [
+                "import",
+                f"--dir={package_dir}",
+                "--db-file=server.db",
+                "-v",
+                "--datadir",
+                action_server_datadir,
+            ],
+            returncode=0,
+        )
+
+    action_server_datadir = action_server_process.datadir
+    package_dir1 = Path(tmpdir) / "package1"
+    create_action(package_dir1)
+
+    package_dir2 = Path(tmpdir) / "package2"
+    create_action(package_dir2)
+
+    action_server_process.start(
+        actions_sync=False,
+        cwd=action_server_datadir,
+        db_file="server.db",
+        reuse_processes=True,
+        min_processes=2,
+        max_processes=2,
+    )
+
+    for _ in range(2):
+        found1 = client.post_get_str("api/actions/package1/do-it/run", {})
+        found2 = client.post_get_str("api/actions/package2/do-it/run", {})
+        assert found1 == '"Ok"'
+        assert found2 == '"Ok"'
