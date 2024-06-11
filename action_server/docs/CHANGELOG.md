@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Package build command to print package path to stdout in json format if --json argument is provided
 - Encrypt-at-rest sensitive storage data to the file system instead of using keyring to store it
 
 ## 0.13.0 - 2024-06-10

@@ -3,9 +3,16 @@ import glob
 import os
 from logging import getLogger
 from pathlib import Path
-from typing import Iterator, List, Tuple
+from typing import Iterator, List, Optional, Tuple
+
+from pydantic import BaseModel
 
 log = getLogger(__name__)
+
+
+class BuildResult(BaseModel):
+    return_code: int
+    package_path: Optional[str]
 
 
 def _check_matches(patterns, paths):
@@ -88,7 +95,7 @@ def _collect_files_excluding_patterns(
 
 def build_package(
     input_dir: Path, output_dir: str, datadir: str, override: bool
-) -> int:
+) -> BuildResult:
     """
     Builds an action package.
 
@@ -103,7 +110,7 @@ def build_package(
         override: Whether an existing .zip can be overridden.
 
     Returns:
-        The return code for the process (0 for success).
+        The return code for the process (0 for success) and package path.
     """
     import yaml
 
@@ -137,12 +144,12 @@ def build_package(
     slugified_name = slugify(name)
     target_zip_name = f"{slugified_name}.zip"
 
-    output_file = Path(output_dir) / target_zip_name
+    output_file = Path(output_dir, target_zip_name)
     if not override and output_file.exists():
         if not ask_user_input_to_proceed(
             f"It seems that {target_zip_name} already exists. Do you want to override it? (y/n)\n"
         ):
-            return 1
+            return BuildResult(return_code=1, package_path=None)
 
     packaging: dict = {}
 
@@ -207,7 +214,7 @@ def build_package(
 
     returncode = _main_retcode(args_metadata, is_subcommand=True)
     if returncode != 0:
-        return returncode
+        return BuildResult(return_code=returncode, package_path=None)
 
     # Ok, it seems we're good to go. Package everything based on the
     # package.yaml exclude rules.
@@ -229,4 +236,5 @@ def build_package(
         os.remove("__action_server_metadata__.json")
     except OSError:
         pass
-    return 0
+
+    return BuildResult(return_code=0, package_path=str(output_file))
