@@ -141,6 +141,7 @@ class ProcessHandle:
             cwd=cwd,
             env=env,
         )
+        self._cwd: str = str(cwd)
 
         def _process_stream_reader(stderr_or_stdout):
             while True:
@@ -241,6 +242,10 @@ class ProcessHandle:
     def pid(self):
         return self._process.pid
 
+    @property
+    def cwd(self) -> str:
+        return self._cwd
+
     def is_alive(self) -> bool:
         from ._robo_utils.process import is_process_alive
 
@@ -284,6 +289,7 @@ class ProcessHandle:
             "headers": headers,
             "cookies": dict(request.cookies),
             "reuse_process": reuse_process,
+            "cwd": self._cwd,
         }
         self._writer.write(msg)
         queue = self._read_queue
@@ -334,7 +340,7 @@ def _get_process_handle_key(settings: Settings, action_package: ActionPackage) -
 
     env = tuple(sorted(json.loads(action_package.env_json).items()))
     cwd = get_action_package_cwd(settings, action_package)
-    return _Key((env, cwd))
+    return _Key((action_package.id, env, cwd))
 
 
 class ActionsProcessPool:

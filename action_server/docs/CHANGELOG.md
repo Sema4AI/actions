@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- The `cwd` is now always reset whenever an action is run (so, changes to the `cwd`
+  will not affect a new action run).
+
 ## 0.14.0 - 2024-06-11
 
 - Add package build argument `--input-dir` to choose the action package source directory

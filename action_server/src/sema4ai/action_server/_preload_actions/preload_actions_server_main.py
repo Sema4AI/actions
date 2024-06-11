@@ -193,6 +193,7 @@ class MessagesHandler:
                 headers = message["headers"]
                 cookies = message["cookies"]
                 reuse_process = message["reuse_process"]
+                cwd = message["cwd"]
 
                 os.environ["ROBOT_ARTIFACTS"] = robot_artifacts
                 os.environ["S4_ACTION_RESULT_LOCATION"] = result_json
@@ -230,6 +231,7 @@ class MessagesHandler:
                     action_file,
                     f"--json-input={input_json}",
                 ]
+                os.chdir(cwd)
 
                 returncode = cli.main(
                     args,
