@@ -3,9 +3,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ChangeEvent, FC, FormEvent, ReactNode, useCallback, useEffect, useState } from 'react';
 import {
+  Badge,
   Box,
   Button,
   Checkbox,
+  Dialog,
   Divider,
   Form,
   Input,
@@ -33,17 +35,14 @@ import { useActionRunMutation } from '~/queries/actions';
 import { Code } from '~/components/Code';
 import { ActionRunResult } from './ActionRunResult';
 import {
-  DEFAULT,
-  ICollectedOauth2Data,
+  ICollectedOauth2Tokens,
   IOAuth2UserSetting,
   IOauth2UserProvider,
   IRequiredOauth2Data,
-  OAUTH2_REDIRECT_URL,
   createClientFromSettings,
-  createOAuthProviderSettingsFromUserSettings,
-  getOauthProviderEnumFromStr,
 } from '~/lib/oauth2';
-import { OAuthClient, OAuthProvider, OAuthProviderSettings } from '@sema4ai/oauth-client';
+import { OAuthClient } from '@sema4ai/oauth-client';
+import { ErrorLogin } from './ErrorLogin';
 
 type Props = {
   action: Action;
@@ -124,12 +123,13 @@ export const ActionRun: FC<Props> = ({ action, actionPackage }) => {
 
   // Tokens obtained (persisted in the local storage).
   const [oauth2SecretsData, setOauth2SecretsData] = useLocalStorage<
-    Map<IOauth2UserProvider, ICollectedOauth2Data>
+    Map<IOauth2UserProvider, ICollectedOauth2Tokens>
   >('oauth2-tokens', new Map());
 
   const [useRawJSON, setUseRawJSON] = useState<boolean>(false);
   const [formRawJSON, setFormRawJSON] = useState<string>('');
   const [errorJSON, setErrorJSON] = useState<string>();
+  const [errorLogin, setErrorLogin] = useState<string>();
 
   useEffect(() => {
     if (action.managed_params_schema) {
@@ -345,7 +345,7 @@ export const ActionRun: FC<Props> = ({ action, actionPackage }) => {
               ev.preventDefault();
               const settings = oauth2Settings[key];
               const scopes = value.scopes;
-              onLogin(key, settings, scopes, setOauth2SecretsData);
+              onLogin(key, settings, scopes, setOauth2SecretsData, setErrorLogin);
             }}
           >
             Login {`${key}`}
@@ -356,8 +356,21 @@ export const ActionRun: FC<Props> = ({ action, actionPackage }) => {
 
     secretsFields = <Form.Fieldset>{secretsFieldsChildren}</Form.Fieldset>;
   }
+
+  console.log('errorLogin', errorLogin);
   return (
     <Form busy={isPending} onSubmit={onSubmit}>
+      {errorLogin ? (
+        <ErrorLogin
+          errorTitle={'Unable to login'}
+          errorMessage={errorLogin}
+          clearError={() => {
+            setErrorLogin(undefined);
+          }}
+        ></ErrorLogin>
+      ) : (
+        <></>
+      )}
       {serverConfig?.auth_enabled && (
         <Form.Fieldset>
           <Input
@@ -533,28 +546,33 @@ const onLogin = async (
   provider: IOauth2UserProvider,
   settings: IOAuth2UserSetting,
   scopes: string[],
-  setOauth2SecretsData: React.Dispatch<React.SetStateAction<Map<string, ICollectedOauth2Data>>>,
+  setOauth2SecretsData: React.Dispatch<React.SetStateAction<Map<string, ICollectedOauth2Tokens>>>,
+  setErrorLogin: React.Dispatch<React.SetStateAction<string | undefined>>,
 ) => {
-  const client: OAuthClient = createClientFromSettings(provider, settings);
+  try {
+    const client: OAuthClient = createClientFromSettings(provider, settings);
 
-  const stateVerifier = crypto.randomUUID();
-  const { uri, codeVerifier } = await client.getAuthorizationURI(scopes, stateVerifier);
+    const stateVerifier = crypto.randomUUID();
+    const { uri, codeVerifier } = await client.getAuthorizationURI(scopes, stateVerifier);
 
-  const authWindow = window.open(uri, undefined, 'width=800,height=800,popup=true');
-  if (authWindow) {
-    // The authWindow will call this function when it's finished.
-    window.finishOAuth2 = async function (data: IOAuth2CallbackInfo) {
-      authWindow.close();
+    const authWindow = window.open(uri, undefined, 'width=800,height=800,popup=true');
+    if (authWindow) {
+      // The authWindow will call this function when it's finished.
+      window.finishOAuth2 = async function (data: IOAuth2CallbackInfo) {
+        authWindow.close();
 
-      const url = data['url'];
-      const token = await client.getAccessTokenFromURI(url, codeVerifier, stateVerifier);
-      setOauth2SecretsData((curr) => {
-        return {
-          ...curr,
-          provider: token,
-        };
-      });
-    };
+        const url = data['url'];
+        const token = await client.getAccessTokenFromURI(url, codeVerifier, stateVerifier);
+        setOauth2SecretsData((curr) => {
+          return {
+            ...curr,
+            [provider]: token,
+          };
+        });
+      };
+    }
+  } catch (error: any) {
+    setErrorLogin(error.message);
   }
 };
 

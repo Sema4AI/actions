@@ -17,7 +17,7 @@ export interface IRequiredOauth2Data {
 /**
  * Used to define oauth tokens which were actually collected from the user.
  */
-export interface ICollectedOauth2Data {
+export interface ICollectedOauth2Tokens {
   scopes: string[];
   token: OAuth2Token;
 }
@@ -156,11 +156,13 @@ export const createOAuthProviderSettingsFromUserSettings = (
   settings: IOAuth2UserSetting,
 ): Partial<OAuthProviderSettings> => {
   if (!settings.clientId) {
-    throw new Error(`Unable to make login because the ${provider} "clientId" is not configured.`);
+    throw new Error(
+      `Unable to make login because the ${provider} "clientId" is not configured in the OAuth2 Settings.`,
+    );
   }
   if (!settings.clientSecret) {
     throw new Error(
-      `Unable to make login because the ${provider} "clientSecret" is not configured.`,
+      `Unable to make login because the ${provider} "clientSecret" is not configured in the OAuth2 Settings.`,
     );
   }
 
@@ -177,6 +179,26 @@ export const createOAuthProviderSettingsFromUserSettings = (
   }
   if (settings.authorizationEndpoint && settings.authorizationEndpoint !== DEFAULT) {
     ret.authorizationEndpoint = settings.authorizationEndpoint;
+  }
+
+  const oauthProvider = getOauthProviderEnumFromStr(provider);
+  if (oauthProvider === OAuthProvider.generic) {
+    // For generic ones we need a bit more info.
+    if (!ret.server) {
+      throw new Error(
+        `Unable to make login because the ${provider} "server" is not configured in the OAuth2 Settings (generic provider).`,
+      );
+    }
+    if (!ret.tokenEndpoint) {
+      throw new Error(
+        `Unable to make login because the ${provider} "tokenEndpoint" is not configured in the OAuth2 Settings (generic provider).`,
+      );
+    }
+    if (!ret.authorizationEndpoint) {
+      throw new Error(
+        `Unable to make login because the ${provider} "authorizationEndpoint" is not configured in the OAuth2 Settings (generic provider).`,
+      );
+    }
   }
   return ret;
 };

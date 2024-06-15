@@ -25,7 +25,7 @@ export const OAuth2Settings: FC<{}> = ({}) => {
 
   let useAsBuffer: string = '';
   if (!jsonBuffer || jsonBuffer.length === 0) {
-    useAsBuffer = JSON.stringify(oauth2Settings);
+    useAsBuffer = JSON.stringify(oauth2Settings, undefined, 4);
   } else {
     useAsBuffer = jsonBuffer;
   }

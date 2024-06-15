@@ -245,7 +245,12 @@ def start_server(
     async def serve_index(request: Request):
         return HTMLResponse(_index_contents())
 
-    index_routes = ["/", "/runs/{full_path:path}", "/actions/{full_path:path}"]
+    index_routes = [
+        "/",
+        "/runs/{full_path:path}",
+        "/actions/{full_path:path}",
+        "/oauth2-settings/{full_path:path}",
+    ]
     for index_route in index_routes:
         app.add_api_route(
             index_route,

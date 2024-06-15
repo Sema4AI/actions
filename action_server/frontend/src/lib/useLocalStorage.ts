@@ -49,9 +49,10 @@ const setToLocalStorage = async (key: string, payload: any): Promise<void> => {
     data = JSON.stringify({ __encrypted__: 1, encryptedData: encryptedData });
   }
 
-  console.log('set to local storage', key, data);
   window?.localStorage.setItem(key, data);
 };
+
+let initialLoadDone: Set<string> = new Set();
 
 export const useLocalStorage = <T>(
   key: string,
@@ -61,13 +62,17 @@ export const useLocalStorage = <T>(
   const [payload, setPayload] = useState<T>(initialValue);
 
   useEffect(() => {
-    async function update() {
-      const payload = await getFromLocalStorage(key, initialValue, merge);
-      console.log('gotten from local storage', payload);
+    if (!initialLoadDone.has(key)) {
+      initialLoadDone.add(key);
+      async function update() {
+        const payload = await getFromLocalStorage(key, initialValue, merge);
+        setPayload(payload);
+      }
+
+      update();
+    } else {
       setToLocalStorage(key, payload);
     }
-
-    update();
   }, [payload]);
 
   return [payload, setPayload];

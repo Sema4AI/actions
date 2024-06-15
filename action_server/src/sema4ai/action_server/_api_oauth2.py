@@ -32,4 +32,5 @@ In this case, please close this window and restart the login.<br/>
 </body>
 </html>
 """
+        % dict(code=code, state=state, scope=scope)
     )
