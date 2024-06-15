@@ -4,7 +4,7 @@ import os
 import socket
 import subprocess
 import sys
-from functools import partial
+from functools import lru_cache, partial
 from typing import Dict, Optional, Sequence
 
 from termcolor import colored
@@ -63,6 +63,7 @@ def start_server(
 
     from . import _actions_process_pool, _actions_run
     from ._api_action_package import action_package_api_router
+    from ._api_oauth2 import oauth2_api_router
     from ._api_run import run_api_router
     from ._api_secrets import secrets_api_router
     from ._app import get_app
@@ -190,6 +191,7 @@ def start_server(
     )
     app.include_router(websocket_api_router)
     app.include_router(secrets_api_router, include_in_schema=settings.full_openapi_spec)
+    app.include_router(oauth2_api_router, include_in_schema=settings.full_openapi_spec)
 
     @app.get("/config", include_in_schema=settings.full_openapi_spec)
     async def serve_config():
@@ -223,10 +225,25 @@ def start_server(
 
         return HTMLResponse(index.FILE_CONTENTS["index.html"])
 
-    async def serve_index(request: Request):
+    @lru_cache
+    def _index_contents() -> bytes:
+        import base64
+
+        from sema4ai.action_server._storage import get_key
+
         from ._static_contents import FILE_CONTENTS
 
-        return HTMLResponse(FILE_CONTENTS["index.html"])
+        index_html = FILE_CONTENTS["index.html"]
+
+        key = base64.b64encode(get_key()).decode("utf-8")
+        return index_html.replace(
+            b"<script",
+            f"<script>window.ENCRYPTION_KEY={key!r};</script><script".encode("utf-8"),
+            1,
+        )
+
+    async def serve_index(request: Request):
+        return HTMLResponse(_index_contents())
 
     index_routes = ["/", "/runs/{full_path:path}", "/actions/{full_path:path}"]
     for index_route in index_routes:

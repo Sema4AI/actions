@@ -21,6 +21,7 @@ export default defineConfig({
     alias: {
       '~': path.join(__dirname, 'src'),
     },
+    mainFields: ['module', 'main', 'browser'],
   },
   plugins: [react(), viteSingleFile()],
 });

@@ -1,6 +1,7 @@
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useMutation } from '@tanstack/react-query';
+import { ICollectedOauth2Data } from '~/lib/oauth2';
 
 export type ActionRunPayload = {
   actionPackageName: string;
@@ -8,6 +9,7 @@ export type ActionRunPayload = {
   args: object;
   apiKey?: string;
   secretsData?: Map<string, string>;
+  oauth2SecretsData?: Map<string, ICollectedOauth2Data>;
 };
 
 export const useActionRunMutation = () => {
@@ -18,6 +20,7 @@ export const useActionRunMutation = () => {
       actionName,
       apiKey,
       secretsData,
+      oauth2SecretsData,
     }: ActionRunPayload) => {
       const headers: Record<string, string> = {
         Authorization: `Bearer ${apiKey}`,
