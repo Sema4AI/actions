@@ -553,8 +553,8 @@ def _main_retcode(
         download_rcc(target=download_args.file, force=True)
         return 0
 
-    from sema4ai.action_server._rcc import initialize_rcc
     from sema4ai.action_server._download_rcc import download_rcc
+    from sema4ai.action_server._rcc import initialize_rcc
     from sema4ai.action_server._session import initialize_session
 
     with initialize_rcc(download_rcc(), None) as rcc:
@@ -593,9 +593,9 @@ def _main_retcode(
         )
 
         if command == "new":
-            from ._new_project import handle_new_command
-
             from sema4ai.action_server._download_rcc import download_rcc
+
+            from ._new_project import handle_new_command
 
             return handle_new_command(base_args)
 

@@ -1,7 +1,8 @@
-import requests
-import os
 import json
+import os
 import typing
+
+import requests
 
 if typing.TYPE_CHECKING:
     from sema4ai.action_server._rcc import Rcc
@@ -19,7 +20,7 @@ def initialize_session(rcc: "Rcc"):
     global session
 
     result = rcc.get_network_settings()
-    if result.success:
+    if result.success and result.result:
         network_settings = json.loads(result.result)
     else:
         raise Exception("Failed to load RCC profile settings")
