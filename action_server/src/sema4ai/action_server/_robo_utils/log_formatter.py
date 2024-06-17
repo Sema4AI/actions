@@ -50,3 +50,15 @@ class UvicornLogFilter(Filter):
         else:
             accept = not (record.name.startswith("uvicorn") and len(record.args) != 5)
         return accept
+
+
+class UvicornAccessDisableOAuth2LogFilter(Filter):
+    def filter(self, record):
+        if record.name == "uvicorn.access":
+            # Hide logging for /oauth2 redirect urls.
+            if len(record.args) == 5 and record.args[2].startswith("/oauth2/redirect"):
+                args = list(record.args)
+                args[2] = "/oauth2/redirect?..."
+                record.args = tuple(args)
+                return True
+        return True

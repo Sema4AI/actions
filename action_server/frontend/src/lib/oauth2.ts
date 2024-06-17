@@ -39,13 +39,13 @@ export interface IOAuth2UserSetting {
   // redirectUri?: string;
 }
 
-// We define an IOauth2UserProvider instead of using the OAuthProvider because in the app we consider
+// We define an IOAuth2UserProvider instead of using the OAuthProvider because in the app we consider
 // any name valid (and if a name -- say "yahoo", isn't in the pre-defined providers,
 // we need to map it as OAuthProvider.generic to the library when needed).
-export type IOauth2UserProvider = string;
+export type IOAuth2UserProvider = string;
 
 export interface IOAuth2UserSettings {
-  [key: IOauth2UserProvider]: IOAuth2UserSetting;
+  [key: IOAuth2UserProvider]: IOAuth2UserSetting;
 }
 
 const useAsBase = baseUrl ? baseUrl : `${window.location.protocol}//${window.location.host}`;
@@ -60,7 +60,7 @@ const oauthProviderMap: { [key: string]: OAuthProvider } = {
   slack: OAuthProvider.slack,
 };
 
-export const getOauthProviderEnumFromStr = (provider: IOauth2UserProvider): OAuthProvider => {
+export const getOauthProviderEnumFromStr = (provider: IOAuth2UserProvider): OAuthProvider => {
   const found = oauthProviderMap[provider];
   if (found) {
     return found;
@@ -72,48 +72,7 @@ export const getOauthProviderEnumFromStr = (provider: IOauth2UserProvider): OAut
 export const DEFAULT = '<default>';
 
 export const DEFAULT_OAUTH2_SETTINGS: IOAuth2UserSettings = {
-  google: {
-    clientId: '',
-    clientSecret: '',
-    server: DEFAULT,
-    tokenEndpoint: DEFAULT,
-    authorizationEndpoint: DEFAULT,
-  },
-  slack: {
-    clientId: '',
-    clientSecret: '',
-    server: DEFAULT,
-    tokenEndpoint: DEFAULT,
-    authorizationEndpoint: DEFAULT,
-  },
-  zendesk: {
-    clientId: '',
-    clientSecret: '',
-    server: DEFAULT,
-    tokenEndpoint: DEFAULT,
-    authorizationEndpoint: DEFAULT,
-  },
-  hubspot: {
-    clientId: '',
-    clientSecret: '',
-    server: DEFAULT,
-    tokenEndpoint: DEFAULT,
-    authorizationEndpoint: DEFAULT,
-  },
-  github: {
-    clientId: '',
-    clientSecret: '',
-    server: DEFAULT,
-    tokenEndpoint: DEFAULT,
-    authorizationEndpoint: DEFAULT,
-  },
-  microsoft: {
-    clientId: '',
-    clientSecret: '',
-    server: DEFAULT,
-    tokenEndpoint: DEFAULT,
-    authorizationEndpoint: DEFAULT,
-  },
+  google: { clientId: '', clientSecret: '' },
 };
 
 export function asOAuth2Settings(settings: any): IOAuth2UserSettings {
@@ -144,6 +103,9 @@ export function asOAuth2Settings(settings: any): IOAuth2UserSettings {
       if (settingKeys.includes('redirectUri') && typeof setting.redirectUri !== 'string') {
         throw new Error(`Expected "redirectUri" to be a string in settings for ${provider}`);
       }
+
+      // Just to see if it raises...
+      createOAuthProviderSettingsFromUserSettings(provider as IOAuth2UserProvider, setting);
     } else {
       throw new Error(`Expected ${provider} to be a string.`);
     }
@@ -152,17 +114,15 @@ export function asOAuth2Settings(settings: any): IOAuth2UserSettings {
 }
 
 export const createOAuthProviderSettingsFromUserSettings = (
-  provider: IOauth2UserProvider,
+  provider: IOAuth2UserProvider,
   settings: IOAuth2UserSetting,
 ): Partial<OAuthProviderSettings> => {
   if (!settings.clientId) {
-    throw new Error(
-      `Unable to make login because the ${provider} "clientId" is not configured in the OAuth2 Settings.`,
-    );
+    throw new Error(`Error: "clientId" is not configured in the OAuth2 Settings for ${provider}.`);
   }
   if (!settings.clientSecret) {
     throw new Error(
-      `Unable to make login because the ${provider} "clientSecret" is not configured in the OAuth2 Settings.`,
+      `Error: "clientSecret" is not configured in the OAuth2 Settings for ${provider}.`,
     );
   }
 
@@ -184,19 +144,36 @@ export const createOAuthProviderSettingsFromUserSettings = (
   const oauthProvider = getOauthProviderEnumFromStr(provider);
   if (oauthProvider === OAuthProvider.generic) {
     // For generic ones we need a bit more info.
+    if (ret.server === undefined) {
+      throw new Error(
+        `Error: "server" is not configured in the OAuth2 Settings for ${provider} (generic provider).`,
+      );
+    }
     if (!ret.server) {
       throw new Error(
-        `Unable to make login because the ${provider} "server" is not configured in the OAuth2 Settings (generic provider).`,
+        `Error: "server" is not empty in the OAuth2 Settings for ${provider} (generic provider).`,
+      );
+    }
+
+    if (ret.tokenEndpoint === undefined) {
+      throw new Error(
+        `Error: "tokenEndpoint" is not configured in the OAuth2 Settings for ${provider} (generic provider).`,
       );
     }
     if (!ret.tokenEndpoint) {
       throw new Error(
-        `Unable to make login because the ${provider} "tokenEndpoint" is not configured in the OAuth2 Settings (generic provider).`,
+        `Error: "tokenEndpoint" is not empty in the OAuth2 Settings for ${provider} (generic provider).`,
+      );
+    }
+
+    if (ret.authorizationEndpoint === undefined) {
+      throw new Error(
+        `Error: "authorizationEndpoint" is not configured in the OAuth2 Settings for ${provider} (generic provider).`,
       );
     }
     if (!ret.authorizationEndpoint) {
       throw new Error(
-        `Unable to make login because the ${provider} "authorizationEndpoint" is not configured in the OAuth2 Settings (generic provider).`,
+        `Error: "authorizationEndpoint" is not empty in the OAuth2 Settings for ${provider} (generic provider).`,
       );
     }
   }
@@ -204,7 +181,7 @@ export const createOAuthProviderSettingsFromUserSettings = (
 };
 
 export const createClientFromSettings = (
-  provider: IOauth2UserProvider,
+  provider: IOAuth2UserProvider,
   settings: IOAuth2UserSetting,
 ): OAuthClient => {
   const client = new OAuthClient(

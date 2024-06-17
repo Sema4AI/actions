@@ -1,7 +1,35 @@
+import { Box, Button, Header, Link } from '@robocorp/components';
 import { FC, useCallback, useState } from 'react';
 import { Code } from '~/components/Code';
 import { useActionServerContext } from '~/lib/actionServerContext';
-import { asOAuth2Settings } from '~/lib/oauth2';
+import { IOAuth2UserSettings, asOAuth2Settings } from '~/lib/oauth2';
+
+const getProviderName = (oauth2Settings: IOAuth2UserSettings): string => {
+  const baseName = 'provider-';
+  for (let index = 0; index < 1000; index++) {
+    const name = baseName + index;
+    if (!oauth2Settings[name]) {
+      return name;
+    }
+  }
+  return 'provider';
+};
+
+const addProvider = (jsonBuffer: string, setJsonBuffer: any, newContents: any) => {
+  let loadedSettings = undefined;
+  try {
+    loadedSettings = JSON.parse(jsonBuffer);
+  } catch (error) {
+    alert(
+      'Unable to add provider because the current contents are not valid as JSON. Please fix the syntax error(s) and retry.',
+    );
+  }
+  if (loadedSettings !== undefined) {
+    const newName = getProviderName(loadedSettings);
+    loadedSettings[newName] = newContents;
+    setJsonBuffer(JSON.stringify(loadedSettings, undefined, 4));
+  }
+};
 
 export const OAuth2Settings: FC<{}> = ({}) => {
   const [errorJSON, setErrorJSON] = useState<string>();
@@ -30,16 +58,81 @@ export const OAuth2Settings: FC<{}> = ({}) => {
     useAsBuffer = jsonBuffer;
   }
 
+  const onAddSupported = useCallback(() => {
+    addProvider(jsonBuffer, setJsonBuffer, { clientId: '', clientSecret: '' });
+  }, [jsonBuffer, setJsonBuffer]);
+
+  const onAddGeneric = useCallback(() => {
+    addProvider(jsonBuffer, setJsonBuffer, {
+      clientId: '',
+      clientSecret: '',
+      server: '',
+      tokenEndpoint: '',
+      authorizationEndpoint: '',
+    });
+  }, [jsonBuffer, setJsonBuffer]);
+
   return (
-    <Code
-      lang="json"
-      aria-label="OAuth2 Settings"
-      value={useAsBuffer}
-      onChange={onCodeChange}
-      error={errorJSON}
-      readOnly={false}
-      lineNumbers
-      autoFocus
-    />
+    <>
+      <Header>
+        <Header.Title title="OAuth2 Settings" />
+      </Header>
+      <p>Configure the OAuth2 Settings so that authentication using OAuth2 is possible.</p>
+      <br />
+      <p>
+        <strong>See:</strong>
+        <br />
+        <Link
+          href={
+            'https://github.com/Sema4AI/actions/blob/master/action_server/docs/guides/07-secrets.md#oauth2-secrets'
+          }
+          fontWeight="medium"
+        >
+          OAuth2 Secrets Guide
+        </Link>{' '}
+        on how to create an <strong>@action</strong> that accepts OAuth2 Secrets.
+      </p>
+      <br />
+      <p>
+        <strong>Note:</strong>
+      </p>
+      <p>
+        The providers supported out of the box (<strong>google</strong>, <strong>github</strong>,{' '}
+        <strong>microsoft</strong>, <strong>slack</strong>, <strong>zendesk</strong> and{' '}
+        <strong>hubspot</strong>) require <strong>clientId</strong> and{' '}
+        <strong>clientSecret</strong> to be specified).
+      </p>
+      <br />
+      <p>
+        Any other provider besides those also needs to specify <strong>server</strong>,{' '}
+        <strong>tokenEndpoint</strong> and <strong>authorizationEndpoint</strong>.
+      </p>
+      <br />
+      <Button onClick={onAddSupported} variant="secondary">
+        Add known provider
+      </Button>
+      <Button onClick={onAddGeneric} variant="secondary">
+        Add generic provider
+      </Button>
+      <Box
+        borderColor={errorJSON ? 'border.error' : 'background.primary'}
+        p="$8"
+        borderRadius="$16"
+        borderWidth={'3px'}
+      >
+        <Code
+          key={'oauth2'}
+          lang="json"
+          aria-label="OAuth2 Settings"
+          value={useAsBuffer}
+          onChange={onCodeChange}
+          error={errorJSON}
+          readOnly={false}
+          lineNumbers={true}
+          autoFocus={true}
+          rows={30}
+        />
+      </Box>
+    </>
   );
 };

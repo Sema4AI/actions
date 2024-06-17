@@ -37,7 +37,7 @@ import { ActionRunResult } from './ActionRunResult';
 import {
   ICollectedOauth2Tokens,
   IOAuth2UserSetting,
-  IOauth2UserProvider,
+  IOAuth2UserProvider,
   IRequiredOauth2Data,
   createClientFromSettings,
 } from '~/lib/oauth2';
@@ -118,12 +118,12 @@ export const ActionRun: FC<Props> = ({ action, actionPackage }) => {
   // This is the information on the data required for oauth2 (not the actually obtained
   // tokens which must be collected based on it).
   const [requiredOauth2SecretsData, setRequiredOauth2SecretsData] = useState<
-    Map<IOauth2UserProvider, IRequiredOauth2Data>
+    Map<IOAuth2UserProvider, IRequiredOauth2Data>
   >(new Map());
 
   // Tokens obtained (persisted in the local storage).
   const [oauth2SecretsData, setOauth2SecretsData] = useLocalStorage<
-    Map<IOauth2UserProvider, ICollectedOauth2Tokens>
+    Map<IOAuth2UserProvider, ICollectedOauth2Tokens>
   >('oauth2-tokens', new Map());
 
   const [useRawJSON, setUseRawJSON] = useState<boolean>(false);
@@ -543,7 +543,7 @@ interface IOAuth2CallbackInfo {
 }
 
 const onLogin = async (
-  provider: IOauth2UserProvider,
+  provider: IOAuth2UserProvider,
   settings: IOAuth2UserSetting,
   scopes: string[],
   setOauth2SecretsData: React.Dispatch<React.SetStateAction<Map<string, ICollectedOauth2Tokens>>>,

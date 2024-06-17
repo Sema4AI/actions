@@ -371,6 +371,10 @@ def _create_parser():
 def _setup_stderr_logging(log_level):
     from logging import StreamHandler
 
+    from sema4ai.action_server._robo_utils.log_formatter import (
+        UvicornAccessDisableOAuth2LogFilter,
+    )
+
     # stderr is the default, but make it explicit.
     stream_handler = StreamHandler(sys.stderr)
     stream_handler.setLevel(log_level)
@@ -385,6 +389,7 @@ def _setup_stderr_logging(log_level):
         formatter = FormatterStdout("%(message)s", datefmt="[%X]")
         stream_handler.addFilter(UvicornLogFilter())
 
+    stream_handler.addFilter(UvicornAccessDisableOAuth2LogFilter())
     stream_handler.setFormatter(formatter)
     logger = logging.root
     logger.addHandler(stream_handler)
@@ -393,6 +398,10 @@ def _setup_stderr_logging(log_level):
 def _setup_logging(datadir: Path, log_level):
     from logging.handlers import RotatingFileHandler
 
+    from sema4ai.action_server._robo_utils.log_formatter import (
+        UvicornAccessDisableOAuth2LogFilter,
+    )
+
     from ._robo_utils.log_formatter import FormatterNoColor
 
     log_file = str(datadir / "server_log.txt")
@@ -400,6 +409,7 @@ def _setup_logging(datadir: Path, log_level):
     rotating_handler = RotatingFileHandler(
         log_file, maxBytes=1_000_000, backupCount=3, encoding="utf-8"
     )
+    rotating_handler.addFilter(UvicornAccessDisableOAuth2LogFilter())
     rotating_handler.setLevel(log_level)
     rotating_handler.setFormatter(
         FormatterNoColor(
