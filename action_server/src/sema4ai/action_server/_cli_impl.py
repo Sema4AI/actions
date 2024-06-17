@@ -553,54 +553,63 @@ def _main_retcode(
         download_rcc(target=download_args.file, force=True)
         return 0
 
-    if command == "package":
-        from sema4ai.action_server.package._package_build_cli import (
-            handle_package_command,
+    from sema4ai.action_server._rcc import initialize_rcc
+    from sema4ai.action_server._download_rcc import download_rcc
+    from sema4ai.action_server._session import initialize_session
+
+    with initialize_rcc(download_rcc(), None) as rcc:
+        initialize_session(rcc)
+
+        if command == "package":
+            from sema4ai.action_server.package._package_build_cli import (
+                handle_package_command,
+            )
+
+            return handle_package_command(base_args)
+
+        if command == "env":
+            from sema4ai.action_server.env import handle_env_command
+
+            return handle_env_command(base_args)
+
+        if command == "cloud":
+            from sema4ai.action_server._actions_cloud import handle_cloud_command
+
+            return handle_cloud_command(base_args)
+
+        if command not in (
+            "migrate",
+            "import",
+            "start",
+            "new",
+            "cloud",
+        ):
+            log.critical(f"Unexpected command: {command}.")
+            return 1
+
+        log.info(
+            colored("\n  ⚡️ Starting Action Server... ", attrs=["bold"])
+            + colored(f"v{__version__}\n", attrs=["dark"])
         )
 
-        return handle_package_command(base_args)
+        if command == "new":
+            from ._new_project import handle_new_command
 
-    if command == "env":
-        from sema4ai.action_server.env import handle_env_command
+            from sema4ai.action_server._download_rcc import download_rcc
 
-        return handle_env_command(base_args)
+            return handle_new_command(base_args)
 
-    if command == "cloud":
-        from sema4ai.action_server._actions_cloud import handle_cloud_command
-
-        return handle_cloud_command(base_args)
-
-    if command not in (
-        "migrate",
-        "import",
-        "start",
-        "new",
-        "cloud",
-    ):
-        log.critical(f"Unexpected command: {command}.")
-        return 1
-
-    log.info(
-        colored("\n  ⚡️ Starting Action Server... ", attrs=["bold"])
-        + colored(f"v{__version__}\n", attrs=["dark"])
-    )
-
-    if command == "new":
-        from ._new_project import handle_new_command
-
-        return handle_new_command(base_args)
-
-    migrate_import_or_start_args = typing.cast(
-        ArgumentsNamespaceMigrateImportOrStart, base_args
-    )
-    with _basic_setup(migrate_import_or_start_args) as setup_info:
-        return _make_import_migrate_or_start(
-            migrate_import_or_start_args,
-            command,
-            setup_info,
-            use_db=use_db,
-            before_start=before_start,
+        migrate_import_or_start_args = typing.cast(
+            ArgumentsNamespaceMigrateImportOrStart, base_args
         )
+        with _basic_setup(migrate_import_or_start_args, rcc) as setup_info:
+            return _make_import_migrate_or_start(
+                migrate_import_or_start_args,
+                command,
+                setup_info,
+                use_db=use_db,
+                before_start=before_start,
+            )
 
 
 @dataclass
@@ -612,20 +621,14 @@ class _SetupInfo:
 @contextmanager
 def _basic_setup(
     base_args: ArgumentsNamespaceMigrateImportOrStart,
+    rcc: "Rcc",
 ):
-    from ._download_rcc import download_rcc
-    from ._rcc import initialize_rcc
     from ._settings import setup_settings
 
     with setup_settings(base_args) as settings:
         settings.datadir.mkdir(parents=True, exist_ok=True)
-        # No longer set ROBOCORP_HOME inside of the datadir.
-        # robocorp_home = settings.datadir / ".robocorp_home"
-        # robocorp_home.mkdir(parents=True, exist_ok=True)
-        robocorp_home = None
 
-        with initialize_rcc(download_rcc(force=False), robocorp_home) as rcc:
-            yield _SetupInfo(rcc=rcc, settings=settings)
+        yield _SetupInfo(rcc=rcc, settings=settings)
 
 
 def _make_import_migrate_or_start(
