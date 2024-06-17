@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.9.2 - 2024-06-17
+
 - Accept `datetime.datetime` objects in pydantic models:
   - `mode="json"` used in `model_dump`
 
