@@ -453,16 +453,18 @@ class Context:
 
         if self._print_result and result is not None:
             show("result:", kind=self.KIND_IMPORTANT)
+            use_pydantic = False
             try:
                 dump = result
-                if hasattr(result, "model_dump"):
+                use_pydantic = hasattr(result, "model_dump")
+                if use_pydantic:
                     # Support for pydantic
                     dump = result.model_dump(mode="json")
 
                 result_as_json_str = json.dumps(dump, indent=4)
             except Exception:
                 raise RuntimeError(
-                    "The resulting value: {result} cannot be converted to JSON."
+                    f"The resulting value: {result} cannot be converted to JSON. Using pydantic: {use_pydantic}."
                 )
 
             show(

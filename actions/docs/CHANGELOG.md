@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Accept `datetime.datetime` objects in pydantic models:
+  - `mode="json"` used in `model_dump`
+
 ## 0.9.1 - 2024-05-29
 
 - The folder containing the `package.yaml` is now always added to the PYTHONPATH (if running without
