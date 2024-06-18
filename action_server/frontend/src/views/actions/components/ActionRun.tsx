@@ -3,11 +3,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ChangeEvent, FC, FormEvent, ReactNode, useCallback, useEffect, useState } from 'react';
 import {
-  Badge,
   Box,
   Button,
   Checkbox,
-  Dialog,
   Divider,
   Form,
   Input,
@@ -16,7 +14,7 @@ import {
   Switch,
   Typography,
 } from '@robocorp/components';
-import { IconBolt, IconLogIn } from '@robocorp/icons/iconic';
+import { IconBolt, IconLogIn, IconLogOut } from '@robocorp/icons/iconic';
 
 import { Action, ActionPackage } from '~/lib/types';
 import { toKebabCase } from '~/lib/helpers';
@@ -40,9 +38,12 @@ import {
   IOAuth2UserProvider,
   IRequiredOauth2Data,
   createClientFromSettings,
+  IProviderToCollectedOauth2Tokens,
+  isOAuthTokenExpired,
+  IOAuth2UserSettings,
 } from '~/lib/oauth2';
 import { OAuthClient } from '@sema4ai/oauth-client';
-import { ErrorLogin } from './ErrorLogin';
+import { ErrorDialog, ErrorDialogInfo } from './ErrorDialog';
 
 type Props = {
   action: Action;
@@ -122,14 +123,13 @@ export const ActionRun: FC<Props> = ({ action, actionPackage }) => {
   >(new Map());
 
   // Tokens obtained (persisted in the local storage).
-  const [oauth2SecretsData, setOauth2SecretsData] = useLocalStorage<
-    Map<IOAuth2UserProvider, ICollectedOauth2Tokens>
-  >('oauth2-tokens', new Map());
+  const [oauth2SecretsData, setOauth2SecretsData] =
+    useLocalStorage<IProviderToCollectedOauth2Tokens>('oauth2-tokens', {});
 
   const [useRawJSON, setUseRawJSON] = useState<boolean>(false);
   const [formRawJSON, setFormRawJSON] = useState<string>('');
   const [errorJSON, setErrorJSON] = useState<string>();
-  const [errorLogin, setErrorLogin] = useState<string>();
+  const [errorDialogMessage, setErrorDialogMessage] = useState<ErrorDialogInfo>();
 
   useEffect(() => {
     if (action.managed_params_schema) {
@@ -147,7 +147,7 @@ export const ActionRun: FC<Props> = ({ action, actionPackage }) => {
           const description: string = val.description;
           const existing = requiredOauth2.get(provider);
           if (!existing) {
-            requiredOauth2.set(provider, { scopes, description });
+            requiredOauth2.set(provider, { scopes, description, paramNames: [key] });
           } else {
             for (const s of scopes) {
               // Just update the existing scopes (in practice I guess this shouldn't even
@@ -228,27 +228,47 @@ export const ActionRun: FC<Props> = ({ action, actionPackage }) => {
   };
 
   const onSubmit = useCallback(
-    (e: FormEvent) => {
+    async (e: FormEvent) => {
       e.preventDefault();
       let args;
       try {
         args = useRawJSON ? JSON.parse(formRawJSON) : formDataToPayload(formData);
       } catch (err) {
-        // TODO: Use some better component from the design system.
-        // eslint-disable-next-line no-alert
-        alert(
-          'Unable to run action because the input is not valid (the input cannot be converted to JSON).',
-        );
+        setErrorDialogMessage({
+          errorMessage: 'Invalid input (the input cannot be converted to JSON).',
+          errorTitle: 'Unable to run',
+        });
         return;
       }
-      runAction({
-        actionPackageName: toKebabCase(actionPackage.name),
-        actionName: toKebabCase(action.name),
-        args,
-        apiKey: serverConfig?.auth_enabled ? apiKey : undefined,
-        secretsData,
-        oauth2SecretsData,
-      });
+
+      try {
+        const newOauth2SecretsData = await refreshTokens(
+          requiredOauth2SecretsData,
+          oauth2SecretsData,
+          oauth2Settings,
+        );
+        let useOauth2SecretsData = oauth2SecretsData;
+        if (newOauth2SecretsData) {
+          useOauth2SecretsData = newOauth2SecretsData;
+          setOauth2SecretsData(newOauth2SecretsData);
+        }
+
+        runAction({
+          actionPackageName: toKebabCase(actionPackage.name),
+          actionName: toKebabCase(action.name),
+          args,
+          apiKey: serverConfig?.auth_enabled ? apiKey : undefined,
+          secretsData,
+          oauth2SecretsData: useOauth2SecretsData,
+          requiredOauth2SecretsData,
+        });
+      } catch (error) {
+        setErrorDialogMessage({
+          errorMessage: (error as Error).message,
+          errorTitle: 'Unable to run',
+        });
+        return;
+      }
     },
     [
       action,
@@ -332,42 +352,72 @@ export const ActionRun: FC<Props> = ({ action, actionPackage }) => {
       for (const [key, value] of requiredOauth2SecretsData.entries()) {
         i += 1;
 
-        secretsFieldsChildren.push(
-          <Link
-            key={`oauthSecret-${i}`}
-            icon={IconLogIn}
-            href="#"
-            target="_blank"
-            rel="noopener"
-            variant="subtle"
-            fontWeight="medium"
-            onClick={(ev) => {
-              ev.preventDefault();
-              const settings = oauth2Settings[key];
-              const scopes = value.scopes;
-              onLogin(key, settings, scopes, setOauth2SecretsData, setErrorLogin);
-            }}
-          >
-            Login {`${key}`}
-          </Link>,
-        );
+        const currentCollectedTokens: ICollectedOauth2Tokens | undefined = oauth2SecretsData[key];
+        let loginRequired = !currentCollectedTokens;
+        if (currentCollectedTokens) {
+          for (const scope of value.scopes) {
+            if (!currentCollectedTokens.scopes.includes(scope)) {
+              loginRequired = true;
+            }
+          }
+        }
+
+        if (loginRequired) {
+          secretsFieldsChildren.push(
+            <Link
+              key={`oauthSecret-${i}`}
+              icon={IconLogIn}
+              href="#"
+              target="_blank"
+              rel="noopener"
+              variant="subtle"
+              fontWeight="medium"
+              onClick={(ev) => {
+                ev.preventDefault();
+                const settings = oauth2Settings[key];
+                const scopes = value.scopes;
+                onLogin(key, settings, scopes, setOauth2SecretsData, setErrorDialogMessage);
+              }}
+            >
+              Login {`${key}`}
+            </Link>,
+          );
+        } else {
+          secretsFieldsChildren.push(
+            <Link
+              key={`oauthSecret-${i}`}
+              icon={IconLogOut}
+              href="#"
+              target="_blank"
+              rel="noopener"
+              variant="subtle"
+              fontWeight="medium"
+              onClick={(ev) => {
+                ev.preventDefault();
+                const settings = oauth2Settings[key];
+                const scopes = value.scopes;
+                onLogout(key, settings, scopes, setOauth2SecretsData, setErrorDialogMessage);
+              }}
+            >
+              Logout {`${key}`}
+            </Link>,
+          );
+        }
       }
     }
 
     secretsFields = <Form.Fieldset>{secretsFieldsChildren}</Form.Fieldset>;
   }
 
-  console.log('errorLogin', errorLogin);
   return (
     <Form busy={isPending} onSubmit={onSubmit}>
-      {errorLogin ? (
-        <ErrorLogin
-          errorTitle={'Unable to login'}
-          errorMessage={errorLogin}
+      {errorDialogMessage ? (
+        <ErrorDialog
+          info={errorDialogMessage}
           clearError={() => {
-            setErrorLogin(undefined);
+            setErrorDialogMessage(undefined);
           }}
-        ></ErrorLogin>
+        ></ErrorDialog>
       ) : (
         <></>
       )}
@@ -546,8 +596,8 @@ const onLogin = async (
   provider: IOAuth2UserProvider,
   settings: IOAuth2UserSetting,
   scopes: string[],
-  setOauth2SecretsData: React.Dispatch<React.SetStateAction<Map<string, ICollectedOauth2Tokens>>>,
-  setErrorLogin: React.Dispatch<React.SetStateAction<string | undefined>>,
+  setOauth2SecretsData: React.Dispatch<React.SetStateAction<IProviderToCollectedOauth2Tokens>>,
+  setErrorDialogMessage: React.Dispatch<React.SetStateAction<ErrorDialogInfo | undefined>>,
 ) => {
   try {
     const client: OAuthClient = createClientFromSettings(provider, settings);
@@ -564,15 +614,20 @@ const onLogin = async (
         const url = data['url'];
         const token = await client.getAccessTokenFromURI(url, codeVerifier, stateVerifier);
         setOauth2SecretsData((curr) => {
-          return {
+          const ret: IProviderToCollectedOauth2Tokens = {
             ...curr,
-            [provider]: token,
           };
+          let foundScopes = scopes;
+          if (data.scope) {
+            foundScopes = data.scope.split(' ');
+          }
+          ret[provider] = { token, scopes: foundScopes };
+          return ret;
         });
       };
     }
   } catch (error: any) {
-    setErrorLogin(error.message);
+    setErrorDialogMessage({ errorMessage: error.message, errorTitle: 'Unable to Login' });
   }
 };
 
@@ -580,4 +635,49 @@ declare global {
   interface Window {
     finishOAuth2: (url: any) => void;
   }
+}
+
+const onLogout = async (
+  provider: IOAuth2UserProvider,
+  settings: IOAuth2UserSetting,
+  scopes: string[],
+  setOauth2SecretsData: React.Dispatch<React.SetStateAction<IProviderToCollectedOauth2Tokens>>,
+  setErrorDialogMessage: React.Dispatch<React.SetStateAction<ErrorDialogInfo | undefined>>,
+) => {
+  try {
+    setOauth2SecretsData((curr) => {
+      const cp = {
+        ...curr,
+      };
+      delete cp[provider];
+      return cp;
+    });
+  } catch (error: any) {}
+};
+
+/**
+ * @returns a new "oauth2SecretsData" instance with the tokens refreshed.
+ */
+async function refreshTokens(
+  requiredOauth2SecretsData: Map<string, IRequiredOauth2Data>,
+  oauth2SecretsData: IProviderToCollectedOauth2Tokens,
+  oauth2Settings: IOAuth2UserSettings,
+): Promise<IProviderToCollectedOauth2Tokens | undefined> {
+  let newOauth2SecretsData: IProviderToCollectedOauth2Tokens | undefined = undefined;
+  for (const [requiredProvider, info] of requiredOauth2SecretsData.entries()) {
+    const tokenInfo = oauth2SecretsData[requiredProvider];
+    if (!tokenInfo) {
+      throw new Error(`Login must be made for provider: ${requiredProvider}`);
+    }
+
+    if (isOAuthTokenExpired(tokenInfo.token.expiresAt)) {
+      // Get new token info
+      const settings = oauth2Settings[requiredProvider];
+      const client: OAuthClient = createClientFromSettings(requiredProvider, settings);
+      const newToken = await client.refreshAccessToken(tokenInfo.token);
+      newOauth2SecretsData = { ...oauth2SecretsData };
+      newOauth2SecretsData[requiredProvider] = { token: newToken, scopes: tokenInfo.scopes };
+    }
+  }
+  return newOauth2SecretsData;
 }

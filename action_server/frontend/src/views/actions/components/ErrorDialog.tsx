@@ -1,9 +1,13 @@
 import { Button, Dialog } from '@robocorp/components';
 import { FC } from 'react';
 
-export const ErrorLogin: FC<{ errorTitle: string; errorMessage: string; clearError: any }> = ({
-  errorTitle,
-  errorMessage,
+export interface ErrorDialogInfo {
+  errorTitle: string;
+  errorMessage: string;
+}
+
+export const ErrorDialog: FC<{ info: ErrorDialogInfo; clearError: any }> = ({
+  info,
   clearError,
 }) => {
   return (
@@ -15,9 +19,9 @@ export const ErrorLogin: FC<{ errorTitle: string; errorMessage: string; clearErr
       size="medium"
     >
       <Dialog.Header>
-        <Dialog.Header.Description>{errorTitle}</Dialog.Header.Description>
+        <Dialog.Header.Description>{info.errorTitle}</Dialog.Header.Description>
       </Dialog.Header>
-      <Dialog.Content>{errorMessage}</Dialog.Content>
+      <Dialog.Content>{info.errorMessage}</Dialog.Content>
       <Dialog.Actions>
         <Button
           onClick={() => {

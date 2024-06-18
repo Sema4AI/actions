@@ -225,22 +225,39 @@ def start_server(
 
         return HTMLResponse(index.FILE_CONTENTS["index.html"])
 
-    @lru_cache
-    def _index_contents() -> bytes:
+    IN_DEV = False  # Set to True to auto-reload the action server UI on each new request.
+
+    def _index_contents(_cache={}) -> bytes:
+        if IN_DEV:
+            # No caching in dev mode
+            _cache.pop("cached", None)
+
+        try:
+            return _cache["cached"]
+        except KeyError:
+            pass
+
         import base64
 
         from sema4ai.action_server._storage import get_key
 
-        from ._static_contents import FILE_CONTENTS
+        from . import _static_contents
 
-        index_html = FILE_CONTENTS["index.html"]
+        if IN_DEV:
+            # Always reload in dev mode.
+            from importlib import reload
+
+            _static_contents = reload(_static_contents)
+
+        index_html = _static_contents.FILE_CONTENTS["index.html"]
 
         key = base64.b64encode(get_key()).decode("utf-8")
-        return index_html.replace(
+        _cache["cached"] = index_html.replace(
             b"<script",
             f"<script>window.ENCRYPTION_KEY={key!r};</script><script".encode("utf-8"),
             1,
         )
+        return _cache["cached"]
 
     async def serve_index(request: Request):
         return HTMLResponse(_index_contents())

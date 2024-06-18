@@ -12,6 +12,7 @@ import { baseUrl } from '~/lib/requestData';
 export interface IRequiredOauth2Data {
   scopes: string[];
   description: string;
+  paramNames: string[];
 }
 
 /**
@@ -20,6 +21,10 @@ export interface IRequiredOauth2Data {
 export interface ICollectedOauth2Tokens {
   scopes: string[];
   token: OAuth2Token;
+}
+
+export interface IProviderToCollectedOauth2Tokens {
+  [key: IOAuth2UserProvider]: ICollectedOauth2Tokens;
 }
 
 /**

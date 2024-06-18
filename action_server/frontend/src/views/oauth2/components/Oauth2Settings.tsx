@@ -2,7 +2,7 @@ import { Box, Button, Header, Link } from '@robocorp/components';
 import { FC, useCallback, useState } from 'react';
 import { Code } from '~/components/Code';
 import { useActionServerContext } from '~/lib/actionServerContext';
-import { IOAuth2UserSettings, asOAuth2Settings } from '~/lib/oauth2';
+import { IOAuth2UserSettings, OAUTH2_REDIRECT_URL, asOAuth2Settings } from '~/lib/oauth2';
 
 const getProviderName = (oauth2Settings: IOAuth2UserSettings): string => {
   const baseName = 'provider-';
@@ -91,6 +91,14 @@ export const OAuth2Settings: FC<{}> = ({}) => {
           OAuth2 Secrets Guide
         </Link>{' '}
         on how to create an <strong>@action</strong> that accepts OAuth2 Secrets.
+      </p>
+      <br />
+      <p>
+        <strong>Important:</strong>
+      </p>
+      <p>
+        The <strong>redirectUri</strong> callback registered in the related provider must be:{' '}
+        <strong>{OAUTH2_REDIRECT_URL}</strong>
       </p>
       <br />
       <p>

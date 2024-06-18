@@ -52,28 +52,39 @@ const setToLocalStorage = async (key: string, payload: any): Promise<void> => {
   window?.localStorage.setItem(key, data);
 };
 
-let initialLoadDone: Set<string> = new Set();
-
+/**
+ * Saves/loads the values from the local storage based on the given key.
+ *
+ * Important: as values need to be saved in the local storage, they're converted
+ * back and forth as json. As such, only objects convertable are supported
+ * (i.e.: no Map, Set, etc. should be used).
+ *
+ * @param key The key to be used to save in the local storage
+ * @param initialValue The initial value in case the value was never added to the local storage
+ * @param merge A flag to identify whether the value in the local storage should be loaded with the initialValue
+ */
 export const useLocalStorage = <T>(
   key: string,
   initialValue: T,
-  merge = false,
+  merge: boolean = false,
 ): [T, Dispatch<SetStateAction<T>>] => {
   const [payload, setPayload] = useState<T>(initialValue);
+  const [loaded, setLoaded] = useState<boolean>(false);
 
   useEffect(() => {
-    if (!initialLoadDone.has(key)) {
-      initialLoadDone.add(key);
-      async function update() {
-        const payload = await getFromLocalStorage(key, initialValue, merge);
-        setPayload(payload);
-      }
+    async function loadInitial() {
+      const payload = await getFromLocalStorage(key, initialValue, merge);
+      setPayload(payload);
+      setLoaded(true);
+    }
+    loadInitial();
+  }, []);
 
-      update();
-    } else {
+  useEffect(() => {
+    if (loaded) {
       setToLocalStorage(key, payload);
     }
-  }, [payload]);
+  }, [payload, loaded]);
 
   return [payload, setPayload];
 };
