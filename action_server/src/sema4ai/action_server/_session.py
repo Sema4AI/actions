@@ -42,7 +42,13 @@ def initialize_session(rcc: "Rcc"):
 
     result = rcc.get_network_settings()
     if result.success and result.result:
-        settings = RccSettings.model_validate_json(result.result, strict=False)
+        try:
+            settings = RccSettings.model_validate_json(result.result, strict=False)
+        except ValueError:
+            log.critical(
+                bold_red(f"Failed to read RCC profile settings: {result.result}")
+            )
+            return
     else:
         log.critical(bold_red("Failed to load RCC profile settings"))
         return
