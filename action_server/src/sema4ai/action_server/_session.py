@@ -19,6 +19,7 @@ class RccCertificateSettings(BaseModel):
 class RccNetworkSettings(BaseModel):
     http_proxy: Optional[str] = Field(default=None, alias="http-proxy")
     https_proxy: Optional[str] = Field(default=None, alias="https-proxy")
+    no_proxy: Optional[str] = Field(default=None, alias="no-proxy")
 
 
 class RccSettings(BaseModel):
@@ -55,6 +56,7 @@ def initialize_session(rcc: "Rcc"):
 
     http_proxy = settings.network.http_proxy if settings.network else None
     https_proxy = settings.network.https_proxy if settings.network else None
+    no_proxy = settings.network.no_proxy if settings.network else None
     verify_ssl = (
         settings.certificates.verify_ssl
         if settings.certificates is not None
@@ -71,6 +73,9 @@ def initialize_session(rcc: "Rcc"):
         os.environ["https_proxy"] = https_proxy
         os.environ["HTTPS_PROXY"] = https_proxy
         session.proxies["https"] = https_proxy
+
+    if no_proxy:
+        os.environ["NO_PROXY"] = no_proxy
 
     if not verify_ssl:
         os.environ["REQUESTS_CA_BUNDLE"] = ""
