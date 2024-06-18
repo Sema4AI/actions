@@ -225,7 +225,9 @@ def start_server(
 
         return HTMLResponse(index.FILE_CONTENTS["index.html"])
 
-    IN_DEV = False  # Set to True to auto-reload the action server UI on each new request.
+    IN_DEV = (
+        True  # Set to True to auto-reload the action server UI on each new request.
+    )
 
     def _index_contents(_cache={}) -> bytes:
         if IN_DEV:

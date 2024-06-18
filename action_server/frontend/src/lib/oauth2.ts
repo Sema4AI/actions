@@ -53,7 +53,7 @@ export interface IOAuth2UserSettings {
   [key: IOAuth2UserProvider]: IOAuth2UserSetting;
 }
 
-const useAsBase = baseUrl ? baseUrl : `${window.location.protocol}//${window.location.host}`;
+const useAsBase = baseUrl ? baseUrl : `https://${window.location.host}`;
 export const OAUTH2_REDIRECT_URL = `${useAsBase}/oauth2/redirect/`;
 
 const oauthProviderMap: { [key: string]: OAuthProvider } = {

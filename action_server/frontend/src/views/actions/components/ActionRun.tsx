@@ -17,7 +17,7 @@ import {
 import { IconBolt, IconLogIn, IconLogOut } from '@robocorp/icons/iconic';
 
 import { Action, ActionPackage } from '~/lib/types';
-import { toKebabCase } from '~/lib/helpers';
+import { logError, toKebabCase } from '~/lib/helpers';
 import { useActionServerContext } from '~/lib/actionServerContext';
 import { useLocalStorage } from '~/lib/useLocalStorage';
 import {
@@ -607,24 +607,69 @@ const onLogin = async (
 
     const authWindow = window.open(uri, undefined, 'width=800,height=800,popup=true');
     if (authWindow) {
-      // The authWindow will call this function when it's finished.
-      window.finishOAuth2 = async function (data: IOAuth2CallbackInfo) {
-        authWindow.close();
+      async function waitForRedirect() {
+        while (authWindow) {
+          try {
+            const url = authWindow.location.href; // This fails due to "Cross-Origin-Opener-Policy policy would block the window.location call."
+            const urlParams = new URLSearchParams(url);
 
-        const url = data['url'];
-        const token = await client.getAccessTokenFromURI(url, codeVerifier, stateVerifier);
-        setOauth2SecretsData((curr) => {
-          const ret: IProviderToCollectedOauth2Tokens = {
-            ...curr,
-          };
-          let foundScopes = scopes;
-          if (data.scope) {
-            foundScopes = data.scope.split(' ');
+            if (urlParams.has('code')) {
+              const authorizationCode = urlParams.get('code');
+              if (authorizationCode) {
+                authWindow.close();
+
+                const token = await client.getAccessToken(
+                  authorizationCode,
+                  codeVerifier,
+                  stateVerifier,
+                );
+                setOauth2SecretsData((curr) => {
+                  const ret: IProviderToCollectedOauth2Tokens = {
+                    ...curr,
+                  };
+                  let foundScopes = scopes;
+                  if (urlParams.has('scope')) {
+                    const s = urlParams.get('scope');
+                    if (s) {
+                      foundScopes = s.split(' ');
+                    }
+                  }
+                  ret[provider] = { token, scopes: foundScopes };
+                  return ret;
+                });
+
+                return; // Exit the loop when code is found
+              }
+            }
+          } catch (error) {
+            logError(error);
+            // Handle potential errors accessing a closed window
+            return;
           }
-          ret[provider] = { token, scopes: foundScopes };
-          return ret;
-        });
-      };
+
+          // Introduce a small delay to avoid excessive CPU usage
+          await new Promise((resolve) => setTimeout(resolve, 100));
+        }
+      }
+      waitForRedirect();
+      // The authWindow will call this function when it's finished.
+      // window.finishOAuth2 = async function (data: IOAuth2CallbackInfo) {
+      //   authWindow.close();
+
+      //   const url = data['url'];
+      //   const token = await client.getAccessTokenFromURI(url, codeVerifier, stateVerifier);
+      //   setOauth2SecretsData((curr) => {
+      //     const ret: IProviderToCollectedOauth2Tokens = {
+      //       ...curr,
+      //     };
+      //     let foundScopes = scopes;
+      //     if (data.scope) {
+      //       foundScopes = data.scope.split(' ');
+      //     }
+      //     ret[provider] = { token, scopes: foundScopes };
+      //     return ret;
+      //   });
+      // };
     }
   } catch (error: any) {
     setErrorDialogMessage({ errorMessage: error.message, errorTitle: 'Unable to Login' });
