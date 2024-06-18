@@ -1,11 +1,30 @@
-import json
+import logging
 import os
-import typing
+from typing import TYPE_CHECKING, Optional
 
 import requests
+from pydantic import BaseModel, Field
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from sema4ai.action_server._rcc import Rcc
+
+
+log = logging.getLogger(__name__)
+
+
+class RccCertificateSettings(BaseModel):
+    verify_ssl: Optional[bool] = Field(default=None, alias="verify-ssl")
+
+
+class RccNetworkSettings(BaseModel):
+    http_proxy: Optional[str] = Field(default=None, alias="http-proxy")
+    https_proxy: Optional[str] = Field(default=None, alias="https-proxy")
+
+
+class RccSettings(BaseModel):
+    certificates: Optional[RccCertificateSettings] = None
+    network: Optional[RccNetworkSettings] = None
+
 
 session = requests.Session()
 
@@ -17,26 +36,23 @@ def initialize_session(rcc: "Rcc"):
     Args:
         rcc: Rcc instance to load the profiles from.
     """
+    from sema4ai.action_server.vendored_deps.termcolors import bold_red
+
     global session
 
     result = rcc.get_network_settings()
     if result.success and result.result:
-        network_settings = json.loads(result.result)
+        settings = RccSettings.model_validate_json(result.result, strict=False)
     else:
-        raise Exception("Failed to load RCC profile settings")
+        log.critical(bold_red("Failed to load RCC profile settings"))
+        return
 
-    network = network_settings["network"] if "network" in network_settings else None
-    http_proxy = network["http-proxy"] if network and "http-proxy" in network else None
-    https_proxy = (
-        network["https-proxy"] if network and "https-proxy" in network else None
-    )
-
-    certificates = (
-        network_settings["certificates"] if "certificates" in network_settings else None
-    )
+    http_proxy = settings.network.http_proxy if settings.network else None
+    https_proxy = settings.network.https_proxy if settings.network else None
     verify_ssl = (
-        certificates["verify-ssl"]
-        if certificates and "verify-ssl" in certificates
+        settings.certificates.verify_ssl
+        if settings.certificates is not None
+        and settings.certificates.verify_ssl is not None
         else True
     )
 
