@@ -1,9 +1,11 @@
 import logging
 import os
+import ssl
 from typing import TYPE_CHECKING, Optional
 
 import requests
 from pydantic import BaseModel, Field
+from requests.adapters import HTTPAdapter
 
 if TYPE_CHECKING:
     from sema4ai.action_server._rcc import Rcc
@@ -14,6 +16,9 @@ log = logging.getLogger(__name__)
 
 class RccCertificateSettings(BaseModel):
     verify_ssl: Optional[bool] = Field(default=None, alias="verify-ssl")
+    legacy_renegotiation_allowed: Optional[bool] = Field(
+        default=None, alias="legacy-renegotiation-allowed"
+    )
 
 
 class RccNetworkSettings(BaseModel):
@@ -27,7 +32,38 @@ class RccSettings(BaseModel):
     network: Optional[RccNetworkSettings] = None
 
 
+class _SSLAdapter(HTTPAdapter):
+    def __init__(self, ssl_context=None, **kwargs):
+        self.ssl_context = ssl_context
+        super().__init__(**kwargs)
+
+    def init_poolmanager(self, *args, **kwargs):
+        kwargs["ssl_context"] = self.ssl_context
+        return super().init_poolmanager(*args, **kwargs)
+
+
 session = requests.Session()
+
+
+def _create_ssl_adapter(legacy_renegotiation_allowed: bool) -> _SSLAdapter:
+    custom_ssl_context = ssl.create_default_context()
+
+    if legacy_renegotiation_allowed:
+        if hasattr(ssl, "OP_LEGACY_SERVER_CONNECT"):
+            custom_ssl_context.options |= ssl.OP_LEGACY_SERVER_CONNECT
+        else:
+            log.error(
+                "Legacy renegotiation not enabled, the SSL module does not support the option"
+            )
+    else:
+        if hasattr(ssl, "OP_NO_RENEGOTIATION"):
+            custom_ssl_context.options |= ssl.OP_NO_RENEGOTIATION
+        else:
+            log.debug(
+                "legacy renegotiation not disabled, the ssl module does not support the option"
+            )
+
+    return _SSLAdapter(ssl_context=custom_ssl_context)
 
 
 def initialize_session(rcc: "Rcc"):
@@ -63,6 +99,11 @@ def initialize_session(rcc: "Rcc"):
         and settings.certificates.verify_ssl is not None
         else True
     )
+    legacy_renegotiation_allowed = (
+        settings.certificates.legacy_renegotiation_allowed
+        if settings.certificates
+        else False
+    )
 
     if http_proxy:
         os.environ["http_proxy"] = http_proxy
@@ -82,3 +123,6 @@ def initialize_session(rcc: "Rcc"):
         os.environ["CURL_CA_BUNDLE"] = ""
 
     session.verify = verify_ssl
+
+    ssl_adapter = _create_ssl_adapter(legacy_renegotiation_allowed)
+    session.mount("https://", ssl_adapter)
