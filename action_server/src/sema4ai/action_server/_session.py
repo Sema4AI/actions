@@ -32,38 +32,7 @@ class RccSettings(BaseModel):
     network: Optional[RccNetworkSettings] = None
 
 
-class _SSLAdapter(HTTPAdapter):
-    def __init__(self, ssl_context=None, **kwargs):
-        self.ssl_context = ssl_context
-        super().__init__(**kwargs)
-
-    def init_poolmanager(self, *args, **kwargs):
-        kwargs["ssl_context"] = self.ssl_context
-        return super().init_poolmanager(*args, **kwargs)
-
-
 session = requests.Session()
-
-
-def _create_ssl_adapter(legacy_renegotiation_allowed: bool) -> _SSLAdapter:
-    custom_ssl_context = ssl.create_default_context()
-
-    if legacy_renegotiation_allowed:
-        if hasattr(ssl, "OP_LEGACY_SERVER_CONNECT"):
-            custom_ssl_context.options |= ssl.OP_LEGACY_SERVER_CONNECT
-        else:
-            log.error(
-                "Legacy renegotiation not enabled, the SSL module does not support the option"
-            )
-    else:
-        if hasattr(ssl, "OP_NO_RENEGOTIATION"):
-            custom_ssl_context.options |= ssl.OP_NO_RENEGOTIATION
-        else:
-            log.debug(
-                "legacy renegotiation not disabled, the ssl module does not support the option"
-            )
-
-    return _SSLAdapter(ssl_context=custom_ssl_context)
 
 
 def initialize_session(rcc: "Rcc"):
@@ -125,5 +94,8 @@ def initialize_session(rcc: "Rcc"):
 
     session.verify = verify_ssl
 
-    ssl_adapter = _create_ssl_adapter(legacy_renegotiation_allowed)
-    session.mount("https://", ssl_adapter)
+    if legacy_renegotiation_allowed:
+        # The robocorp-truststore package uses this environment variable to
+        # check if the legacy renegotiation is allowed and will enable it for
+        # all requests
+        os.environ["RC_TLS_LEGACY_RENEGOTIATION_ALLOWED"] = True
