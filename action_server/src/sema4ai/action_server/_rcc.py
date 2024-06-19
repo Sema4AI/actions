@@ -360,6 +360,9 @@ _rcc: Optional["Rcc"] = None
 def initialize_rcc(rcc_location: Path, robocorp_home: Optional[Path]) -> Iterator[Rcc]:
     global _rcc
 
+    if _rcc:
+        raise Exception("RCC already initialized")
+
     rcc = Rcc(rcc_location, robocorp_home)
     _rcc = rcc
     try:

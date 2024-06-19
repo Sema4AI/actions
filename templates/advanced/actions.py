@@ -8,6 +8,7 @@ https://github.com/sema4ai/actions/blob/master/README.md
 
 from sema4ai.actions import action, Secret
 from pydantic import BaseModel, Field
+import requests
 
 
 class RepositoryInfo(BaseModel):
@@ -30,12 +31,10 @@ def get_repository_commits(
     Returns:
         A list of commit messages.
     """
-    from sema4ai.action_server._session import session
-
     if limit < 1 or limit > 100:
         return "Limit must be between 1 and 100"
 
-    response = session.get(
+    response = requests.get(
         f"https://api.github.com/repos/{repository_info.owner_id}/{repository_info.name}/commits?per_page={limit}",
         headers={
             "Authorization": "Bearer " + github_access_token.value,
