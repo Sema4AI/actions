@@ -102,6 +102,7 @@ def initialize_session(rcc: "Rcc"):
     legacy_renegotiation_allowed = (
         settings.certificates.legacy_renegotiation_allowed
         if settings.certificates
+        and settings.certificates.legacy_renegotiation_allowed is not None
         else False
     )
 
