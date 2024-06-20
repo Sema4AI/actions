@@ -126,13 +126,19 @@ class Settings:
     verbose: bool = False
     db_file: str = "server.db"
     expose_url: str = "sema4ai.link"
-    server_url: str = "http://localhost:8080"
+    server_url: str = "<generated -- i.e.: http://localhost:8080>"
 
     min_processes: int = 2
     max_processes: int = 20
     reuse_processes: bool = False
 
     full_openapi_spec: bool = False
+
+    use_https: bool = False
+
+    ssl_self_signed: bool = False
+    ssl_keyfile: str = ""  # The path to the server.key
+    ssl_certfile: str = ""  # The path to the certificate.pem (contains the public key)
 
     @classmethod
     def defaults(cls):
@@ -147,6 +153,10 @@ class Settings:
 
     @classmethod
     def _create(cls, args: ArgumentsNamespaceMigrateImportOrStart) -> "Settings":
+        from sema4ai.action_server._errors_action_server import (
+            ActionServerValidationError,
+        )
+
         user_specified_datadir = args.datadir
         if not user_specified_datadir:
             import hashlib
@@ -179,28 +189,92 @@ class Settings:
             "max_processes",
             "reuse_processes",
             "full_openapi_spec",
+            "ssl_self_signed",
+            "ssl_keyfile",
+            "ssl_certfile",
         ):
             assert hasattr(settings, attr)
             if hasattr(args, attr):
                 setattr(settings, attr, getattr(args, attr))
 
+        if hasattr(args, "https"):
+            settings.use_https = args.https
+
+        protocol = "https" if settings.use_https else "http"
+
+        if settings.use_https:
+            if not settings.ssl_self_signed:
+                if not settings.ssl_keyfile or not settings.ssl_certfile:
+                    raise ActionServerValidationError(
+                        "When --https is used, either `--ssl-self-signed` must be passed or the `--ssl-keyfile` and `--ssl-certfile` arguments must be provided."
+                    )
+            else:
+                if settings.ssl_keyfile or settings.ssl_certfile:
+                    raise ActionServerValidationError(
+                        "When `--ssl-self-signed`is passed `--ssl-keyfile` and `--ssl-certfile` should not be provided (a key/certificate will be generated in the default location)."
+                    )
+
         if hasattr(args, "server_url") and args.server_url is not None:
             settings.server_url = args.server_url
         else:
-            settings.server_url = f"http://{settings.address}:{settings.port}"
+            settings.server_url = f"{protocol}://{settings.address}:{settings.port}"
 
         # Used in either import or start commands.
         settings.verbose = args.verbose
         settings.db_file = args.db_file
+
+        if args.command == "start":
+            # At this point, if using a self-signed certificate, it'll be
+            # created and ssl_keyfile/ssl_certfile will be set.
+            if settings.use_https:
+                if settings.ssl_self_signed:
+                    from sema4ai.action_server import _gen_certificate
+                    from sema4ai.action_server.vendored_deps.termcolors import bold
+
+                    user_path = get_user_sema4_path()
+
+                    private_path = user_path / "action-server-private-keyfile.pem"
+                    public_path = user_path / "action-server-public-certfile.pem"
+
+                    if not private_path.exists() or not public_path.exists():
+                        from sema4ai.action_server._storage import KEY_FILE_PERMISSIONS
+
+                        public, private = _gen_certificate.gen_self_signed_certificate()
+
+                        public_path.write_bytes(public)
+                        private_path.write_bytes(private)
+                        private_path.chmod(KEY_FILE_PERMISSIONS)
+
+                    log.info(
+                        f"Self-signed certificate being used at: {bold(public_path)}\n  Note: accessing the `Action Server` with browser will require adding an exception in the browser unless the certificate is manually imported in the system."
+                    )
+
+                    settings.ssl_keyfile = str(private_path)
+                    settings.ssl_certfile = str(public_path)
+                else:
+                    # Note: this was already previously checked.
+                    assert settings.ssl_keyfile and settings.ssl_certfile
+
         return settings
 
-    def to_uvicorn(self):
-        return {
+    def to_uvicorn(self) -> dict:
+        """
+        Provides keyword arguments that will later be used
+        to create a `uvicorn.Config` instance.
+        """
+
+        ret = {
             "host": self.address,
             "port": self.port,
             "reload": False,
             "log_config": None,
         }
+
+        if self.use_https:
+            ret["ssl_keyfile"] = self.ssl_keyfile
+            ret["ssl_certfile"] = self.ssl_certfile
+
+        return ret
 
 
 _global_settings: Optional[Settings] = None

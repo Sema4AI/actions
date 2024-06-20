@@ -9,9 +9,9 @@ import {
   Timestamp,
   Code,
 } from '~/components';
-import { useActionRunsContext } from './context';
 import { baseUrl } from '~/lib/requestData';
 import { IconFileText } from '@robocorp/icons/iconic';
+import { useActionRunsContext } from './context';
 
 export const ActionRunDetails: FC = () => {
   const { showRun: run, setShowRun } = useActionRunsContext();

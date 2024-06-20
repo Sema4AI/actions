@@ -17,7 +17,6 @@ T = TypeVar("T")
 
 
 def wait_for_expose_session_info(action_server_process):
-    import time
     from json import JSONDecodeError
 
     timeout_at = time.time() + 15
@@ -32,15 +31,18 @@ def wait_for_expose_session_info(action_server_process):
     raise AssertionError(f"The file: {target} was not generated in the given timeout.")
 
 
-def manual_test_server_expose(
-    datadir,
-    action_server_process: ActionServerProcess,
-    data_regression,
+@pytest.mark.parametrize("use_https", [True, False])
+def test_server_expose(
+    datadir, action_server_process: ActionServerProcess, data_regression, use_https
 ):
     """
     Tests the action server --expose against the real server.
     """
     from sema4ai.action_server._selftest import ActionServerClient
+
+    additional_args = ["--expose"]
+    if use_https:
+        additional_args.append("--ssl-self-signed")
 
     action_server_process.start(
         db_file="server.db",
@@ -51,7 +53,8 @@ def manual_test_server_expose(
         min_processes=2,
         max_processes=2,
         reuse_processes=True,
-        additional_args=["--expose"],
+        use_https=use_https,
+        additional_args=additional_args,
     )
 
     expose_session_info = wait_for_expose_session_info(action_server_process)

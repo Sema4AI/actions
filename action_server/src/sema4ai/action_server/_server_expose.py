@@ -226,8 +226,7 @@ class EventTaskListenForRequestsFinished(ServerEvent):
 
 
 async def listen_for_requests(
-    port: int,
-    host: str,
+    server_url: str,
     expose_url: str,
     datadir: str,
     expose_session: str | None = None,
@@ -235,8 +234,8 @@ async def listen_for_requests(
     api_key: str | None = None,
     on_event: Callable[[ServerEvent], None] | None = None,
 ) -> None:
+    import aiohttp
     import websockets
-    from aiohttp import ClientSession
 
     pong_queue: asyncio.Queue = asyncio.Queue(maxsize=1)
 
@@ -272,8 +271,38 @@ async def listen_for_requests(
         return use_ws
 
     try:
+        https_info = os.environ.get("SEMA4AI-SERVER-HTTPS-INFO")
+        connector: Optional[aiohttp.BaseConnector] = None
+        if https_info:
+            try:
+                loaded = json.loads(https_info)
+            except Exception:
+                raise RuntimeError(
+                    f'Unable to load "SEMA4AI-SERVER-HTTPS-INFO" env var: {https_info}'
+                )
+
+            if loaded.get("use_https"):
+                ssl_certfile = loaded.get("ssl_certfile")
+
+                if not ssl_certfile:
+                    raise RuntimeError(
+                        "Using https but `ssl_certfile` is not available."
+                    )
+
+                if not os.path.exists(ssl_certfile):
+                    raise RuntimeError(f"ssl_certfile: {ssl_certfile} does not exist.")
+
+                import ssl
+                from ssl import Purpose
+
+                ctx = ssl.create_default_context(Purpose.SERVER_AUTH)
+                ctx.load_verify_locations(
+                    ssl_certfile,
+                )
+                connector = aiohttp.TCPConnector(ssl=ctx)
+
         ws: websockets.WebSocketClientProtocol
-        async with ClientSession() as session:
+        async with aiohttp.ClientSession(connector=connector) as session:
             async for ws in websockets.connect(
                 use_url,
                 extra_headers=headers,
@@ -341,7 +370,7 @@ async def listen_for_requests(
                                             session,
                                             get_ws_coro(),
                                             body_payload,
-                                            f"http://{host}:{port}",
+                                            server_url,
                                         )
                                     )
                                 except ValidationError as e:
@@ -378,8 +407,7 @@ async def listen_for_requests(
 
 
 async def expose_server(
-    port: int,
-    host: str,
+    server_url: str,
     expose_url: str,
     datadir: str,
     expose_session: str | None = None,
@@ -396,8 +424,7 @@ async def expose_server(
 
     task = asyncio.create_task(
         listen_for_requests(
-            port,
-            host,
+            server_url,
             expose_url,
             datadir,
             expose_session,
@@ -439,9 +466,8 @@ def _setup_logging(verbose="v", force=False):
 
 def main(
     parent_pid: str,
-    port: str,
+    server_url: str,
     verbose: str,
-    host: str,
     expose_url: str,
     datadir: str,
     expose_session: str,
@@ -458,11 +484,8 @@ def main(
             A string with `v` chars (currently a single `v` means debug, otherwise
             info).
 
-        host:
-            The host to where the data should be forwarded.
-
-        port:
-            The port to where the data should be forwarded.
+        server_url:
+            The url to where the data should be forwarded.
 
         expose_url:
             The url for the expose (usually "sema4ai.link").
@@ -509,8 +532,7 @@ def main(
     try:
         asyncio.run(
             expose_server(
-                port=int(port),
-                host=host,
+                server_url=server_url,
                 expose_url=expose_url,
                 datadir=datadir,
                 expose_session=expose_session if expose_session != "None" else None,
@@ -525,9 +547,8 @@ if __name__ == "__main__":
     try:
         (
             parent_pid,
-            port,
+            server_url,
             verbose,
-            host,
             expose_url,
             datadir,
             expose_session,
@@ -538,9 +559,8 @@ if __name__ == "__main__":
 
     main(
         parent_pid,
-        port,
+        server_url,
         verbose,
-        host,
         expose_url,
         datadir,
         expose_session,

@@ -226,7 +226,12 @@ class Rcc(object):
                 if contents:
                     loaded = json.loads(contents)
                     loaded["lastUsage"] = self._get_curr_time_as_str()
-                    return ActionResult(True, None, EnvInfo(loaded["environ"]))
+                    env_info = EnvInfo(loaded["environ"])
+                    python_exe = env_info.env.get("PYTHON_EXE")
+                    if not python_exe or not os.path.exists(python_exe):
+                        os.remove(env_info_cache_file)
+                    else:
+                        return ActionResult(True, None, env_info)
             except Exception:
                 return ActionResult(
                     success=False,
@@ -238,15 +243,15 @@ class Rcc(object):
                     ),
                 )
 
-        env_info = self._create_env_and_get_vars(conda_yaml, conda_hash)
-        if env_info.success:
-            assert isinstance(env_info.result, EnvInfo)
+        env_info_result = self._create_env_and_get_vars(conda_yaml, conda_hash)
+        if env_info_result.success:
+            assert isinstance(env_info_result.result, EnvInfo)
             dump = {
-                "environ": env_info.result.env,
+                "environ": env_info_result.result.env,
                 "lastUsage": self._get_curr_time_as_str(),
             }
             env_info_cache_file.write_text(json.dumps(dump), encoding="utf-8")
-        return env_info
+        return env_info_result
 
     def _get_curr_time_as_str(self):
         from datetime import datetime

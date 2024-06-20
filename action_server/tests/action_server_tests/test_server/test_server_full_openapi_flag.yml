@@ -427,6 +427,55 @@ paths:
               schema: {}
           description: Successful Response
       summary: Serve Config
+  /oauth2/redirect:
+    get:
+      operationId: oauth2_redirect_oauth2_redirect_get
+      parameters:
+      - in: query
+        name: code
+        required: false
+        schema:
+          default: ''
+          title: Code
+          type: string
+      - in: query
+        name: state
+        required: false
+        schema:
+          default: ''
+          title: State
+          type: string
+      - in: query
+        name: scope
+        required: false
+        schema:
+          default: ''
+          title: Scope
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Oauth2 Redirect
+  /oauth2/settings/{full_path}:
+    get:
+      operationId: serve_index_oauth2_settings__full_path__get
+      responses:
+        '200':
+          content:
+            text/html:
+              schema:
+                type: string
+          description: Successful Response
+      summary: Serve Index
   /runs/{full_path}:
     get:
       operationId: serve_index_runs__full_path__get

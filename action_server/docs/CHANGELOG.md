@@ -5,6 +5,14 @@
 - The `cwd` is now always reset whenever an action is run (so, changes to the `cwd`
   will not affect a new action run).
 - Use RCC network profile when doing requests
+- If the python executable for an environment is no longer available, the environment
+  is properly recreated when the action server is started.
+- `OAuth2` authentication is now available in the action server UI.
+  - Note: if a given provider only accepts `https` as a redirect uri (such as `Slack`), then the action server must be started with `--https`.
+- `--https` can now be used when starting the `Action Server` to serve using `ssl`, either using a self-signed certificate or a custom certificate.
+- To use a self-signed certificate, `--https --ssl-self-signed` is required (it'll generate a self-signed certificate and use it).
+  - Note: when using a self-signed certificate you may need to manually add an exception in the browser or import the self-signed certificate into the system.
+- To use a custom certificate `--https --ssl-keyfile <path> --ssl-certfile <path>` needs to be used.
 
 ## 0.14.0 - 2024-06-11
 
@@ -19,8 +27,8 @@
   alive (it's meant to be used when the action server is embedded into another app).
 - Standardized the lock file to always start with `PID: {os.getpid()}\n`.
 - Accept `datetime.datetime` objects in pydantic models:
-    - `mode="json"` used in `model_dump`
-    - Using `jsonschema` to validate schema instead of `fastjsonschema` (because it didn't deal with dates properly).
+  - `mode="json"` used in `model_dump`
+  - Using `jsonschema` to validate schema instead of `fastjsonschema` (because it didn't deal with dates properly).
 
 ## 0.12.1 - 2024-05-31
 
