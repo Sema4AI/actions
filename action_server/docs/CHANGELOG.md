@@ -4,6 +4,7 @@
 
 - The `cwd` is now always reset whenever an action is run (so, changes to the `cwd`
   will not affect a new action run).
+- Use RCC network profile when doing requests
 
 ## 0.14.0 - 2024-06-11
 

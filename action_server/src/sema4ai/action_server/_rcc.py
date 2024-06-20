@@ -348,6 +348,10 @@ class Rcc(object):
         self._add_config_to_args(args)
         self._run_rcc(args, timeout=600, show_interactive_output=True)
 
+    def get_network_settings(self) -> ActionResult:
+        args = ["config", "settings", "--json"]
+        return self._run_rcc(args)
+
 
 _rcc: Optional["Rcc"] = None
 
@@ -355,6 +359,10 @@ _rcc: Optional["Rcc"] = None
 @contextmanager
 def initialize_rcc(rcc_location: Path, robocorp_home: Optional[Path]) -> Iterator[Rcc]:
     global _rcc
+
+    if _rcc:
+        yield _rcc
+        return
 
     rcc = Rcc(rcc_location, robocorp_home)
     _rcc = rcc

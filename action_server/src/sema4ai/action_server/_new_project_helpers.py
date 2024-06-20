@@ -6,7 +6,6 @@ import zipfile
 from pathlib import Path
 from typing import Optional, TypedDict
 
-import requests
 import yaml
 from pydantic.main import BaseModel
 
@@ -43,13 +42,15 @@ def _ensure_latest_templates() -> None:
     # Ensures the existence of the latest templates package.
     # It downloads the latest templates metadata file, and compares the hash with the metadata held locally (if exists).
     # If there is no match (or metadata is not available locally), it will download the templates package.
+    from sema4ai.action_server._session import session
+
     action_templates_dir_path = _get_action_templates_dir_path()
 
     os.makedirs(action_templates_dir_path, exist_ok=True)
 
     local_metadata = _get_local_templates_metadata()
 
-    response = requests.get(TEMPLATES_METADATA_URL)
+    response = session.get(TEMPLATES_METADATA_URL)
     response.raise_for_status()
 
     new_metadata_content = response.text
@@ -68,7 +69,9 @@ def _ensure_latest_templates() -> None:
 
 
 def _download_and_unzip_templates(action_templates_dir: Path) -> None:
-    templates_response = requests.get(TEMPLATES_PACKAGE_URL)
+    from sema4ai.action_server._session import session
+
+    templates_response = session.get(TEMPLATES_PACKAGE_URL)
 
     with zipfile.ZipFile(io.BytesIO(templates_response.content)) as zip_ref:
         zip_ref.extractall(action_templates_dir)

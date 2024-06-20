@@ -148,6 +148,8 @@ def get_nonce() -> str:
 def create_package(
     organization_id: str, name: str, access_credentials: str, hostname: str
 ) -> ActionPackageEntityResponse:
+    from sema4ai.action_server._session import session
+
     log.debug(f"Creating action package entity: {name}")
 
     url = parse_url(
@@ -174,7 +176,7 @@ def create_package(
     }
 
     try:
-        r = requests.post(url.geturl(), data=data, headers=headers)
+        r = session.post(url.geturl(), data=data, headers=headers)
     except requests.exceptions.ConnectionError as e:
         raise ActionServerValidationError(f"Failed to call Controm Room API: {e}")
 
@@ -196,6 +198,8 @@ def create_package(
 def get_upload_url(
     organization_id: str, package_id: str, access_credentials: str, hostname: str
 ) -> str:
+    from sema4ai.action_server._session import session
+
     log.debug(f"Getting upload URL for: {package_id}")
 
     url = parse_url(
@@ -224,7 +228,7 @@ def get_upload_url(
     }
 
     try:
-        r = requests.post(url.geturl(), data=data, headers=headers)
+        r = session.post(url.geturl(), data=data, headers=headers)
     except requests.exceptions.ConnectionError as e:
         raise ActionServerValidationError(f"Failed to call Controm Room API: {e}")
 
@@ -244,10 +248,12 @@ def get_upload_url(
 
 
 def upload_file(url: str, pkg_path: Path) -> None:
+    from sema4ai.action_server._session import session
+
     log.debug(f"Uploading file: {pkg_path.resolve()}")
 
     with open(pkg_path, "rb") as f:
-        r = requests.put(url, data=f)
+        r = session.put(url, data=f)
 
         if r.ok:
             log.debug("File uploaded successfully")
@@ -260,6 +266,8 @@ def upload_file(url: str, pkg_path: Path) -> None:
 def request_package_status(
     organization_id: str, package_id: str, access_credentials: str, hostname: str
 ) -> ActionPackageEntityResponse:
+    from sema4ai.action_server._session import session
+
     log.debug(f"Getting action package publish status: {package_id}")
 
     url = parse_url(
@@ -288,7 +296,7 @@ def request_package_status(
     }
 
     try:
-        r = requests.get(url.geturl(), headers=headers)
+        r = session.get(url.geturl(), headers=headers)
     except requests.exceptions.ConnectionError as e:
         raise ActionServerValidationError(f"Failed to call Controm Room API: {e}")
 
@@ -308,6 +316,8 @@ def request_package_status(
 
 
 def request_organizations(url: str, access_credentials: str) -> OrganizationsResponse:
+    from sema4ai.action_server._session import session
+
     parsed_url = parse_url(url)
 
     api_key_id, secret = split_access_credentials(access_credentials)
@@ -331,7 +341,7 @@ def request_organizations(url: str, access_credentials: str) -> OrganizationsRes
     }
 
     try:
-        r = requests.get(parsed_url.geturl(), headers=headers)
+        r = session.get(parsed_url.geturl(), headers=headers)
     except requests.exceptions.ConnectionError as e:
         raise ActionServerValidationError(f"Failed to call Controm Room API: {e}")
 
@@ -357,6 +367,8 @@ def mark_upload_completed(
     hostname: str,
     s3_object_key: str,
 ) -> None:
+    from sema4ai.action_server._session import session
+
     url = parse_url(
         UPLOAD_COMPLETED_URL.substitute(
             HOSTNAME=hostname, ORG_ID=organization_id, ACTION_PACKAGE_ID=package_id
@@ -384,7 +396,7 @@ def mark_upload_completed(
     }
 
     try:
-        r = requests.post(url.geturl(), data=data, headers=headers)
+        r = session.post(url.geturl(), data=data, headers=headers)
     except requests.exceptions.ConnectionError as e:
         raise ActionServerValidationError(f"Failed to call Controm Room API: {e}")
 
@@ -401,6 +413,8 @@ def request_package_changelog_update(
     changelog: str,
     hostname: str,
 ) -> ActionPackageEntityResponse:
+    from sema4ai.action_server._session import session
+
     url = parse_url(
         UPDATE_CHANGELOG_URL.substitute(
             HOSTNAME=hostname, ORG_ID=organization_id, ACTION_PACKAGE_ID=package_id
@@ -428,7 +442,7 @@ def request_package_changelog_update(
     }
 
     try:
-        r = requests.post(url.geturl(), data=data, headers=headers)
+        r = session.post(url.geturl(), data=data, headers=headers)
     except requests.exceptions.ConnectionError as e:
         raise ActionServerValidationError(f"Failed to call Controm Room API: {e}")
 
