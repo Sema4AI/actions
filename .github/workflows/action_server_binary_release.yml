@@ -58,11 +58,11 @@ jobs:
         if: matrix.os == 'windows-2019'
         env:
           NODE_AUTH_TOKEN: ${{secrets.GH_PAT_READ_PACKAGES}}
-          VAULT_URL: ${{secrets.WIN_SIGN_AZURE_KEY_VAULT_URL}}
-          CLIENT_ID: ${{secrets.WIN_SIGN_AZURE_KEY_VAULT_CLIENT_ID}}
-          TENANT_ID: ${{secrets.WIN_SIGN_AZURE_KEY_VAULT_TENANT_ID}}
-          CLIENT_SECRET: ${{secrets.WIN_SIGN_AZURE_KEY_VAULT_CLIENT_SECRET}}
-          CERTIFICATE: ${{secrets.WIN_SIGN_AZURE_KEY_VAULT_CERTIFICATE_NAME}}
+          VAULT_URL: ${{secrets.WIN_SIGN_AZURE_KEY_VAULT_URL_SEMA4AI}}
+          CLIENT_ID: ${{secrets.WIN_SIGN_AZURE_KEY_VAULT_CLIENT_ID_SEMA4AI}}
+          TENANT_ID: ${{secrets.WIN_SIGN_AZURE_KEY_VAULT_TENANT_ID_SEMA4AI}}
+          CLIENT_SECRET: ${{secrets.WIN_SIGN_AZURE_KEY_VAULT_CLIENT_SECRET_SEMA4AI}}
+          CERTIFICATE: ${{secrets.WIN_SIGN_AZURE_KEY_VAULT_CERTIFICATE_NAME_SEMA4AI}}
         run: |
           dotnet tool install --global AzureSignTool --version 3.0.0
           azuresigntool sign --description-url "https://robocorp.com" --file-digest sha256 --azure-key-vault-url $Env:VAULT_URL --azure-key-vault-client-id $Env:CLIENT_ID --azure-key-vault-tenant-id $Env:TENANT_ID --azure-key-vault-client-secret $Env:CLIENT_SECRET --azure-key-vault-certificate $Env:CERTIFICATE --timestamp-rfc3161 http://timestamp.digicert.com --timestamp-digest sha256 build-binary\build\x86_64-pc-windows-msvc\release\install\action-server.exe
@@ -149,11 +149,12 @@ jobs:
 
       - name: Action Server Signing [macOS]
         env:
-          APPLEID: ${{ secrets.MACOS_APP_ID_FOR_SIGNING }}
-          APPLEIDPASS: ${{ secrets.MACOS_APP_ID_PASS_FOR_SIGNING }}
-          APPLETEAMID: ${{ secrets.MACOS_TEAM_ID_FOR_NOTARIZATION }}
-          MACOS_SIGNING_CERT: ${{ secrets.MACOS_SIGNING_CERT }}
-          MACOS_SIGNING_CERT_PASSWORD: ${{ secrets.MACOS_SIGNING_CERT_PASSWORD }}
+          APPLEID: ${{ secrets.MACOS_APP_ID_FOR_NOTARIZATION_SEMA4AI }}
+          APPLEIDPASS: ${{ secrets.MACOS_APP_ID_PASSWORD_FOR_NOTARIZATION_SEMA4AI }}
+          APPLETEAMID: ${{ secrets.MACOS_TEAM_ID_FOR_NOTARIZATION_SEMA4AI }}
+          MACOS_SIGNING_CERT: ${{ secrets.MACOS_SIGNING_CERT_SEMA4AI }}
+          MACOS_SIGNING_CERT_PASSWORD: ${{ secrets.MACOS_SIGNING_CERT_PASSWORD_SEMA4AI }}
+          MACOS_SIGNING_CERT_NAME: ${{ secrets.MACOS_SIGNING_CERT_NAME_SEMA4AI }}
         run: |
           # sign MacOS binary
           security create-keychain -p "$MACOS_SIGNING_CERT_PASSWORD" build.keychain
@@ -163,7 +164,7 @@ jobs:
           security import cert.p12 -A -P $MACOS_SIGNING_CERT_PASSWORD
           security set-key-partition-list -S apple-tool:,apple: -s -k "$MACOS_SIGNING_CERT_PASSWORD" build.keychain
           ls -la build/
-          codesign --verbose=4 --entitlements entitlements.mac.plist --deep --force -o runtime -s "Robocorp Technologies, Inc." --timestamp build/action-server-unsigned
+          codesign --verbose=4 --entitlements entitlements.mac.plist --deep --force -o runtime -s "$MACOS_SIGNING_CERT_NAME" --timestamp build/action-server-unsigned
           codesign --verify --deep --verbose=2 build/action-server-unsigned
           codesign -v --verbose=4 --display build/action-server-unsigned
           # notarize MacOS binary (zipped because notarization does not allow executable files)
@@ -196,11 +197,11 @@ jobs:
       - name: Action Server Signing [Windows]
         env:
           NODE_AUTH_TOKEN: ${{secrets.GH_PAT_READ_PACKAGES}}
-          VAULT_URL: ${{secrets.WIN_SIGN_AZURE_KEY_VAULT_URL}}
-          CLIENT_ID: ${{secrets.WIN_SIGN_AZURE_KEY_VAULT_CLIENT_ID}}
-          TENANT_ID: ${{secrets.WIN_SIGN_AZURE_KEY_VAULT_TENANT_ID}}
-          CLIENT_SECRET: ${{secrets.WIN_SIGN_AZURE_KEY_VAULT_CLIENT_SECRET}}
-          CERTIFICATE: ${{secrets.WIN_SIGN_AZURE_KEY_VAULT_CERTIFICATE_NAME}}
+          VAULT_URL: ${{secrets.WIN_SIGN_AZURE_KEY_VAULT_URL_SEMA4AI}}
+          CLIENT_ID: ${{secrets.WIN_SIGN_AZURE_KEY_VAULT_CLIENT_ID_SEMA4AI}}
+          TENANT_ID: ${{secrets.WIN_SIGN_AZURE_KEY_VAULT_TENANT_ID_SEMA4AI}}
+          CLIENT_SECRET: ${{secrets.WIN_SIGN_AZURE_KEY_VAULT_CLIENT_SECRET_SEMA4AI}}
+          CERTIFICATE: ${{secrets.WIN_SIGN_AZURE_KEY_VAULT_CERTIFICATE_NAME_SEMA4AI}}
         run: |
           dotnet tool install --global AzureSignTool --version 3.0.0
           mv build\action-server-unsigned build\action-server.exe
