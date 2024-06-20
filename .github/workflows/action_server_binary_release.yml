@@ -150,7 +150,7 @@ jobs:
       - name: Action Server Signing [macOS]
         env:
           APPLEID: ${{ secrets.MACOS_APP_ID_FOR_NOTARIZATION_SEMA4AI }}
-          APPLEIDPASS: ${{ secrets.MACOS_APP_ID_PASS_FOR_NOTARIZATION_SEMA4AI }}
+          APPLEIDPASS: ${{ secrets.MACOS_APP_ID_PASSWORD_FOR_NOTARIZATION_SEMA4AI }}
           APPLETEAMID: ${{ secrets.MACOS_TEAM_ID_FOR_NOTARIZATION_SEMA4AI }}
           MACOS_SIGNING_CERT: ${{ secrets.MACOS_SIGNING_CERT_SEMA4AI }}
           MACOS_SIGNING_CERT_PASSWORD: ${{ secrets.MACOS_SIGNING_CERT_PASSWORD_SEMA4AI }}
@@ -169,9 +169,6 @@ jobs:
           codesign -v --verbose=4 --display build/action-server-unsigned
           # notarize MacOS binary (zipped because notarization does not allow executable files)
           zip action-server.zip build/action-server-unsigned
-          ls -la .
-          ls -la build
-          echo xcrun notarytool submit --apple-id $APPLEID --team-id $APPLETEAMID --password $APPLEIDPASS action-server.zip
           xcrun notarytool submit --apple-id $APPLEID --team-id $APPLETEAMID --password $APPLEIDPASS action-server.zip
           unzip -o action-server.zip -d build/
           mv build/action-server-unsigned build/action-server
