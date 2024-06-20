@@ -154,7 +154,7 @@ jobs:
           APPLETEAMID: ${{ secrets.MACOS_TEAM_ID_FOR_NOTARIZATION_SEMA4AI }}
           MACOS_SIGNING_CERT: ${{ secrets.MACOS_SIGNING_CERT_SEMA4AI }}
           MACOS_SIGNING_CERT_PASSWORD: ${{ secrets.MACOS_SIGNING_CERT_PASSWORD_SEMA4AI }}
-          MACOS_SIGNING_CERT_NAME: ${{ secrests.MACOS_SIGNING_CERT_NAME_SEMA4AI }}
+          MACOS_SIGNING_CERT_NAME: ${{ secrets.MACOS_SIGNING_CERT_NAME_SEMA4AI }}
         run: |
           # sign MacOS binary
           security create-keychain -p "$MACOS_SIGNING_CERT_PASSWORD" build.keychain
