@@ -94,6 +94,7 @@ class ActionServerProcess:
         env: Optional[Dict[str, str]] = None,
         port=0,
         verbose="-v",
+        use_https: bool = False,
     ) -> None:
         from sema4ai.action_server._robo_utils.process import Process
         from sema4ai.action_server._settings import is_frozen
@@ -126,6 +127,9 @@ class ActionServerProcess:
         if verbose:
             new_args.append(verbose)
 
+        if use_https:
+            new_args.append("--https")
+
         if not lint:
             new_args.append("--skip-lint")
 
@@ -144,7 +148,10 @@ class ActionServerProcess:
             use_env.update(env)
         process = self._process = Process(new_args, cwd=cwd, env=use_env)
 
-        compiled = re.compile(r"Local Action Server: http://([\w.-]+):(\d+)")
+        if use_https:
+            compiled = re.compile(r"Local Action Server: https://([\w.-]+):(\d+)")
+        else:
+            compiled = re.compile(r"Local Action Server: http://([\w.-]+):(\d+)")
         future: Future[Tuple[str, str]] = Future()
 
         def collect_port_from_stdout(line):
@@ -213,7 +220,11 @@ class ActionServerClient:
     _base_url: Optional[str]
     action_server_process: Optional[ActionServerProcess]
 
-    def __init__(self, action_server_process_or_base_url: ActionServerProcess | str):
+    def __init__(
+        self,
+        action_server_process_or_base_url: ActionServerProcess | str,
+        use_https: bool = False,
+    ):
         if isinstance(action_server_process_or_base_url, str):
             self._base_url = action_server_process_or_base_url
             assert not self._base_url.endswith("/")
@@ -221,6 +232,7 @@ class ActionServerClient:
         else:
             self.action_server_process = action_server_process_or_base_url
             self._base_url = None
+        self._use_https = use_https
 
     @property
     def base_url(self):
@@ -230,12 +242,29 @@ class ActionServerClient:
 
         host = self.action_server_process.host
         port = self.action_server_process.port
-        return f"http://{host}:{port}"
+        if self._use_https:
+            return f"https://{host}:{port}"
+        else:
+            return f"http://{host}:{port}"
 
     def build_full_url(self, url: str) -> str:
         if url.startswith("/"):
             url = url[1:]
         return f"{self.base_url}/{url}"
+
+    def requests_kwargs(self) -> dict:
+        """
+        Provides the default kwargs that should be used for a requests call.
+        """
+        from sema4ai.action_server._settings import get_user_sema4_path
+
+        kwargs: dict = dict(timeout=self._get_default_timeout())
+        if self._use_https:
+            kwargs["verify"] = str(
+                get_user_sema4_path() / "action-server-public-certfile.pem"
+            )
+
+        return kwargs
 
     def get_str(self, url, params: Optional[dict] = None) -> str:
         import requests
@@ -243,7 +272,7 @@ class ActionServerClient:
         result = requests.get(
             self.build_full_url(url),
             params=(params or {}),
-            timeout=self._get_default_timeout(),
+            **self.requests_kwargs(),
         )
         result.raise_for_status()
         return result.text
@@ -291,7 +320,7 @@ class ActionServerClient:
             json=data,
             cookies=cookies,
             params=params,
-            timeout=self._get_default_timeout(),
+            **self.requests_kwargs(),
         )
         result.raise_for_status()
         return result
@@ -302,13 +331,13 @@ class ActionServerClient:
         result = requests.post(
             self.build_full_url(url),
             json=data or {},
-            timeout=self._get_default_timeout(),
+            **self.requests_kwargs(),
         )
         if result.status_code != status_code:
             raise AssertionError(
                 (
-                    f"Expected: {result.status_code}.\n"
-                    f"Found: {status_code}\n"
+                    f"Expected: {status_code}.\n"
+                    f"Found: {result.status_code}\n"
                     f"Text: {result.text}\n"
                 )
             )
@@ -318,7 +347,8 @@ class ActionServerClient:
         import requests
 
         result = requests.get(
-            self.build_full_url(url), timeout=self._get_default_timeout()
+            self.build_full_url(url),
+            **self.requests_kwargs(),
         )
         assert result.status_code == status_code
 

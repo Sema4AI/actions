@@ -3,6 +3,8 @@ import { Code as BaseCode, Box, EditorView } from '@robocorp/components';
 import { StreamLanguage } from '@codemirror/language';
 import { shell } from '@codemirror/legacy-modes/mode/shell';
 import { json } from '@codemirror/lang-json';
+import { keymap } from '@codemirror/view';
+import { history, historyKeymap } from '@codemirror/commands';
 
 import { CopyToClipboard } from '~/components';
 
@@ -35,7 +37,7 @@ export const Code: FC<CodeProps> = ({
   }, [copyValue, value]);
 
   const extensions = useMemo(() => {
-    const extensionList = [];
+    const extensionList = [keymap.of(historyKeymap), history()];
 
     if (lineWrapping) {
       extensionList.push(EditorView.lineWrapping);

@@ -12,6 +12,7 @@ from typing import Literal, Optional, Sequence, Union
 from termcolor import colored
 
 from sema4ai.action_server._protocols import IBeforeStartCallback
+from sema4ai.action_server.vendored_deps.termcolors import bold_red
 
 from . import __version__
 from ._errors_action_server import ActionServerValidationError
@@ -94,7 +95,7 @@ def _add_start_server_command(command_parser, defaults):
     start_parser.add_argument(
         "--server-url",
         help=(
-            "Explicit server url to be defined in the OpenAPI spec 'servers' section."
+            "Explicit server url to be defined in the OpenAPI spec 'servers' section. "
             "Defaults to the localhost url."
         ),
         default=None,
@@ -179,6 +180,33 @@ def _add_start_server_command(command_parser, defaults):
             "The parent pid for the action server (when the parent pid exits, the action server will automatically exit)."
         ),
         default=0,
+    )
+
+    start_parser.add_argument(
+        "--https",
+        action="store_true",
+        help="Starts the action server using https. If no certificate is provided, a self "
+        "signed certificate will be created and used.",
+    )
+
+    start_parser.add_argument(
+        "--ssl-self-signed",
+        action="store_true",
+        help="When using `--https`, a self-signed certificate will be created and used.",
+    )
+
+    start_parser.add_argument(
+        "--ssl-keyfile",
+        metavar="PATH",
+        help="When using `--https` can be used to specify the key file containing the private key for the SSL.",
+        nargs="?",
+    )
+
+    start_parser.add_argument(
+        "--ssl-certfile",
+        metavar="PATH",
+        help="When using `--https` can be used to specify the certificate (which contains the public key for the SSL).",
+        nargs="?",
     )
 
     add_data_args(start_parser, defaults)
@@ -371,6 +399,10 @@ def _create_parser():
 def _setup_stderr_logging(log_level):
     from logging import StreamHandler
 
+    from sema4ai.action_server._robo_utils.log_formatter import (
+        UvicornAccessDisableOAuth2LogFilter,
+    )
+
     # stderr is the default, but make it explicit.
     stream_handler = StreamHandler(sys.stderr)
     stream_handler.setLevel(log_level)
@@ -385,6 +417,7 @@ def _setup_stderr_logging(log_level):
         formatter = FormatterStdout("%(message)s", datefmt="[%X]")
         stream_handler.addFilter(UvicornLogFilter())
 
+    stream_handler.addFilter(UvicornAccessDisableOAuth2LogFilter())
     stream_handler.setFormatter(formatter)
     logger = logging.root
     logger.addHandler(stream_handler)
@@ -393,6 +426,10 @@ def _setup_stderr_logging(log_level):
 def _setup_logging(datadir: Path, log_level):
     from logging.handlers import RotatingFileHandler
 
+    from sema4ai.action_server._robo_utils.log_formatter import (
+        UvicornAccessDisableOAuth2LogFilter,
+    )
+
     from ._robo_utils.log_formatter import FormatterNoColor
 
     log_file = str(datadir / "server_log.txt")
@@ -400,6 +437,7 @@ def _setup_logging(datadir: Path, log_level):
     rotating_handler = RotatingFileHandler(
         log_file, maxBytes=1_000_000, backupCount=3, encoding="utf-8"
     )
+    rotating_handler.addFilter(UvicornAccessDisableOAuth2LogFilter())
     rotating_handler.setLevel(log_level)
     rotating_handler.setFormatter(
         FormatterNoColor(
@@ -424,7 +462,6 @@ def _import_actions(
     Returns: 0 if everything is correct and some other number if some error happened
         while importing the actions.
     """
-    from sema4ai.action_server.vendored_deps.termcolors import bold_red
 
     from . import _actions_import
 
@@ -490,9 +527,8 @@ def _main_retcode(
         try:
             (
                 expose_server_parent_pid,
-                expose_server_port,
+                expose_server_url,
                 expose_server_verbose,
-                expose_server_host,
                 expose_server_expose_url,
                 expose_server_datadir,
                 expose_server_expose_session,
@@ -503,9 +539,8 @@ def _main_retcode(
 
         _server_expose.main(
             expose_server_parent_pid,
-            expose_server_port,
+            expose_server_url,
             expose_server_verbose,
-            expose_server_host,
             expose_server_expose_url,
             expose_server_datadir,
             expose_server_expose_session,
@@ -544,72 +579,76 @@ def _main_retcode(
     #     _write_schema(file)
     #     return
 
+    from ._download_rcc import download_rcc
+
     if command == "download-rcc":
         download_args: ArgumentsNamespaceDownloadRcc = typing.cast(
             ArgumentsNamespaceDownloadRcc, base_args
         )
-        from ._download_rcc import download_rcc
 
         download_rcc(target=download_args.file, force=True)
         return 0
 
-    from sema4ai.action_server._download_rcc import download_rcc
     from sema4ai.action_server._rcc import initialize_rcc
     from sema4ai.action_server._session import initialize_session
 
-    with initialize_rcc(download_rcc(), None) as rcc:
-        initialize_session(rcc)
+    try:
+        with initialize_rcc(download_rcc(), None) as rcc:
+            initialize_session(rcc)
 
-        if command == "package":
-            from sema4ai.action_server.package._package_build_cli import (
-                handle_package_command,
+            if command == "package":
+                from sema4ai.action_server.package._package_build_cli import (
+                    handle_package_command,
+                )
+
+                return handle_package_command(base_args)
+
+            if command == "env":
+                from sema4ai.action_server.env import handle_env_command
+
+                return handle_env_command(base_args, rcc)
+
+            if command == "cloud":
+                from sema4ai.action_server._actions_cloud import handle_cloud_command
+
+                return handle_cloud_command(base_args)
+
+            if command not in (
+                "migrate",
+                "import",
+                "start",
+                "new",
+                "cloud",
+            ):
+                log.critical(f"Unexpected command: {command}.")
+                return 1
+
+            log.info(
+                colored("\n  ⚡️ Starting Action Server... ", attrs=["bold"])
+                + colored(f"v{__version__}\n", attrs=["dark"])
             )
 
-            return handle_package_command(base_args)
+            if command == "new":
+                from ._new_project import handle_new_command
 
-        if command == "env":
-            from sema4ai.action_server.env import handle_env_command
+                return handle_new_command(base_args)
 
-            return handle_env_command(base_args, rcc)
-
-        if command == "cloud":
-            from sema4ai.action_server._actions_cloud import handle_cloud_command
-
-            return handle_cloud_command(base_args)
-
-        if command not in (
-            "migrate",
-            "import",
-            "start",
-            "new",
-            "cloud",
-        ):
-            log.critical(f"Unexpected command: {command}.")
-            return 1
-
-        log.info(
-            colored("\n  ⚡️ Starting Action Server... ", attrs=["bold"])
-            + colored(f"v{__version__}\n", attrs=["dark"])
-        )
-
-        if command == "new":
-            from sema4ai.action_server._download_rcc import download_rcc
-
-            from ._new_project import handle_new_command
-
-            return handle_new_command(base_args)
-
-        migrate_import_or_start_args = typing.cast(
-            ArgumentsNamespaceMigrateImportOrStart, base_args
-        )
-        with _basic_setup(migrate_import_or_start_args, rcc) as setup_info:
-            return _make_import_migrate_or_start(
-                migrate_import_or_start_args,
-                command,
-                setup_info,
-                use_db=use_db,
-                before_start=before_start,
+            migrate_import_or_start_args = typing.cast(
+                ArgumentsNamespaceMigrateImportOrStart, base_args
             )
+
+            with _basic_setup(migrate_import_or_start_args, rcc) as setup_info:
+                return _make_import_migrate_or_start(
+                    migrate_import_or_start_args,
+                    command,
+                    setup_info,
+                    use_db=use_db,
+                    before_start=before_start,
+                )
+    except ActionServerValidationError as e:
+        log.critical(bold_red(str(e)))
+        return 1
+    return 0
 
 
 @dataclass

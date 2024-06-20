@@ -63,6 +63,7 @@ def start_server(
 
     from . import _actions_process_pool, _actions_run
     from ._api_action_package import action_package_api_router
+    from ._api_oauth2 import oauth2_api_router
     from ._api_run import run_api_router
     from ._api_secrets import secrets_api_router
     from ._app import get_app
@@ -190,6 +191,7 @@ def start_server(
     )
     app.include_router(websocket_api_router)
     app.include_router(secrets_api_router, include_in_schema=settings.full_openapi_spec)
+    app.include_router(oauth2_api_router, include_in_schema=settings.full_openapi_spec)
 
     @app.get("/config", include_in_schema=settings.full_openapi_spec)
     async def serve_config():
@@ -223,12 +225,51 @@ def start_server(
 
         return HTMLResponse(index.FILE_CONTENTS["index.html"])
 
+    IN_DEV = (
+        False  # Set to True to auto-reload the action server UI on each new request.
+    )
+
+    def _index_contents(_cache={}) -> bytes:
+        if IN_DEV:
+            # No caching in dev mode
+            _cache.pop("cached", None)
+
+        try:
+            return _cache["cached"]
+        except KeyError:
+            pass
+
+        import base64
+
+        from sema4ai.action_server._storage import get_key
+
+        from . import _static_contents
+
+        if IN_DEV:
+            # Always reload in dev mode.
+            from importlib import reload
+
+            _static_contents = reload(_static_contents)
+
+        index_html = _static_contents.FILE_CONTENTS["index.html"]
+
+        key = base64.b64encode(get_key()).decode("utf-8")
+        _cache["cached"] = index_html.replace(
+            b"<script",
+            f"<script>window.ENCRYPTION_KEY={key!r};</script><script".encode("utf-8"),
+            1,
+        )
+        return _cache["cached"]
+
     async def serve_index(request: Request):
-        from ._static_contents import FILE_CONTENTS
+        return HTMLResponse(_index_contents())
 
-        return HTMLResponse(FILE_CONTENTS["index.html"])
-
-    index_routes = ["/", "/runs/{full_path:path}", "/actions/{full_path:path}"]
+    index_routes = [
+        "/",
+        "/runs/{full_path:path}",
+        "/actions/{full_path:path}",
+        "/oauth2/settings/{full_path:path}",
+    ]
     for index_route in index_routes:
         app.add_api_route(
             index_route,
@@ -257,7 +298,10 @@ def start_server(
             if len(sockets_ipv4) == 0:
                 raise Exception("Unable to find a port to expose")
             sockname = sockets_ipv4[0].getsockname()
-            host = sockname[0]
+            # Note: the host is kept the original one passed
+            # (i.e.: if it was 'localhost', we don't want to get 127.0.0.1 instead
+            # because if we're using https://localhost then 127.0.0.1 may not work).
+            # host = sockname[0]
             port = sockname[1]
 
         return (host, port)
@@ -272,6 +316,7 @@ def start_server(
             return
 
         (host, port) = _get_currrent_host()
+        url = f"{protocol}://{host}:{port}"
 
         parent_pid = os.getpid()
 
@@ -289,22 +334,29 @@ def start_server(
         args += [
             "server-expose",
             str(parent_pid),
-            str(port),
+            url,
             "" if not settings.verbose else "v",
-            host,
             settings.expose_url,
             settings.datadir,
             str(expose_session),
             api_key,
         ]
-        expose_subprocess = subprocess.Popen(args)
+        settings.use_https
+        env = os.environ.copy()
+        env["SEMA4AI-SERVER-HTTPS-INFO"] = json.dumps(
+            {"use_https": settings.use_https, "ssl_certfile": settings.ssl_certfile}
+        )
+        expose_subprocess = subprocess.Popen(args, env=env)
+
+    protocol = "https" if settings.use_https else "http"
 
     def _on_started_message(self, **kwargs):
         (host, port) = _get_currrent_host()
+        url = f"{protocol}://{host}:{port}"
 
         log.info(
             colored("\n  ⚡️ Local Action Server: ", "green", attrs=["bold"])
-            + colored(f"http://{settings.address}:{port}", "light_blue")
+            + colored(url, "light_blue")
         )
 
         if not expose:

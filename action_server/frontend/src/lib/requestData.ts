@@ -7,8 +7,12 @@ import { Counter, copyArrayAndInsertElement, logError } from './helpers';
 import { CachedModel, ModelContainer, ModelType } from './modelContainer';
 import { WebsocketConn } from './websocketConn';
 
+let wsProtocol = 'ws:';
+if (window.location.protocol === 'https:') {
+  wsProtocol = 'wss:';
+}
 export const baseUrl = '';
-export const baseUrlWs = `ws://${window.location.host}`;
+export const baseUrlWs = `${wsProtocol}//${window.location.host}`;
 // export const baseUrl = 'http://localhost:8080';
 // export const baseUrlWs = 'ws://localhost:8080';
 

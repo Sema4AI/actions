@@ -204,6 +204,12 @@ class ArgumentsNamespaceStart(ArgumentsNamespaceBaseImportOrStart):
     expose_allow_reuse: bool
     api_key: str
     parent_pid: int
+    port: bool
+    server_url: str
+    https: bool
+    ssl_self_signed: bool
+    ssl_keyfile: str
+    ssl_certfile: str
 
 
 class ArgumentsNamespacePackagePush(ArgumentsNamespace):
