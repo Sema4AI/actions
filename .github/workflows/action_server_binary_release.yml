@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-11]
+        os: [ubuntu-20.04, windows-2019, macos-11]
     steps:
       - uses: actions/checkout@v4
 
@@ -180,37 +180,37 @@ jobs:
           name: action-server-signed-macos
           path: action_server/build/action-server
 
-  # sign-windows:
-  #   needs:
-  #     - build
-  #   defaults:
-  #     run:
-  #       working-directory: ./action_server
-  #   runs-on: windows-latest
+  sign-windows:
+    needs:
+      - build
+    defaults:
+      run:
+        working-directory: ./action_server
+    runs-on: windows-latest
 
-  #   steps:
-  #     - uses: actions/checkout@v4
+    steps:
+      - uses: actions/checkout@v4
 
-  #     - uses: actions/download-artifact@v4
-  #       with:
-  #         name: Windows-action-server-unsigned
-  #         path: action_server/build
+      - uses: actions/download-artifact@v4
+        with:
+          name: Windows-action-server-unsigned
+          path: action_server/build
 
-  #     - name: Action Server Signing [Windows]
-  #       env:
-  #         NODE_AUTH_TOKEN: ${{secrets.GH_PAT_READ_PACKAGES}}
-  #         VAULT_URL: ${{secrets.WIN_SIGN_AZURE_KEY_VAULT_URL_SEMA4AI}}
-  #         CLIENT_ID: ${{secrets.WIN_SIGN_AZURE_KEY_VAULT_CLIENT_ID_SEMA4AI}}
-  #         TENANT_ID: ${{secrets.WIN_SIGN_AZURE_KEY_VAULT_TENANT_ID_SEMA4AI}}
-  #         CLIENT_SECRET: ${{secrets.WIN_SIGN_AZURE_KEY_VAULT_CLIENT_SECRET_SEMA4AI}}
-  #         CERTIFICATE: ${{secrets.WIN_SIGN_AZURE_KEY_VAULT_CERTIFICATE_NAME_SEMA4AI}}
-  #       run: |
-  #         dotnet tool install --global AzureSignTool --version 3.0.0
-  #         mv build\action-server-unsigned build\action-server.exe
-  #         azuresigntool sign --description-url "https://robocorp.com" --file-digest sha256 --azure-key-vault-url $Env:VAULT_URL --azure-key-vault-client-id $Env:CLIENT_ID --azure-key-vault-tenant-id $Env:TENANT_ID --azure-key-vault-client-secret $Env:CLIENT_SECRET --azure-key-vault-certificate $Env:CERTIFICATE --timestamp-rfc3161 http://timestamp.digicert.com --timestamp-digest sha256 build\action-server.exe
-  #       shell: powershell
+      - name: Action Server Signing [Windows]
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.GH_PAT_READ_PACKAGES}}
+          VAULT_URL: ${{secrets.WIN_SIGN_AZURE_KEY_VAULT_URL_SEMA4AI}}
+          CLIENT_ID: ${{secrets.WIN_SIGN_AZURE_KEY_VAULT_CLIENT_ID_SEMA4AI}}
+          TENANT_ID: ${{secrets.WIN_SIGN_AZURE_KEY_VAULT_TENANT_ID_SEMA4AI}}
+          CLIENT_SECRET: ${{secrets.WIN_SIGN_AZURE_KEY_VAULT_CLIENT_SECRET_SEMA4AI}}
+          CERTIFICATE: ${{secrets.WIN_SIGN_AZURE_KEY_VAULT_CERTIFICATE_NAME_SEMA4AI}}
+        run: |
+          dotnet tool install --global AzureSignTool --version 3.0.0
+          mv build\action-server-unsigned build\action-server.exe
+          azuresigntool sign --description-url "https://robocorp.com" --file-digest sha256 --azure-key-vault-url $Env:VAULT_URL --azure-key-vault-client-id $Env:CLIENT_ID --azure-key-vault-tenant-id $Env:TENANT_ID --azure-key-vault-client-secret $Env:CLIENT_SECRET --azure-key-vault-certificate $Env:CERTIFICATE --timestamp-rfc3161 http://timestamp.digicert.com --timestamp-digest sha256 build\action-server.exe
+        shell: powershell
 
-  #     - uses: actions/upload-artifact@v4
-  #       with:
-  #         name: action-server-signed-windows
-  #         path: action_server/build/action-server.exe
+      - uses: actions/upload-artifact@v4
+        with:
+          name: action-server-signed-windows
+          path: action_server/build/action-server.exe
