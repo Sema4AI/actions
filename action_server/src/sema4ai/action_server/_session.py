@@ -98,4 +98,4 @@ def initialize_session(rcc: "Rcc"):
         # The robocorp-truststore package uses this environment variable to
         # check if the legacy renegotiation is allowed and will enable it for
         # all requests
-        os.environ["RC_TLS_LEGACY_RENEGOTIATION_ALLOWED"] = True
+        os.environ["RC_TLS_LEGACY_RENEGOTIATION_ALLOWED"] = "True"

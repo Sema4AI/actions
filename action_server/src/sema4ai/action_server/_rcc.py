@@ -362,14 +362,14 @@ def initialize_rcc(rcc_location: Path, robocorp_home: Optional[Path]) -> Iterato
 
     if _rcc:
         yield _rcc
+        return
 
-    if not _rcc:
-        rcc = Rcc(rcc_location, robocorp_home)
-        _rcc = rcc
-        try:
-            yield rcc
-        finally:
-            _rcc = None
+    rcc = Rcc(rcc_location, robocorp_home)
+    _rcc = rcc
+    try:
+        yield rcc
+    finally:
+        _rcc = None
 
 
 def get_rcc() -> Rcc:
