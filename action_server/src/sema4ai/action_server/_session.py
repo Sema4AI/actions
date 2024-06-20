@@ -1,11 +1,9 @@
 import logging
 import os
-import ssl
 from typing import TYPE_CHECKING, Optional
 
 import requests
 from pydantic import BaseModel, Field
-from requests.adapters import HTTPAdapter
 
 if TYPE_CHECKING:
     from sema4ai.action_server._rcc import Rcc
