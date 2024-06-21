@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Fixed issue where OAuth2 settings would not be loaded properly from the Action Server UI.
+
 ## 0.15.0 - 2024-06-21
 
 - The `cwd` is now always reset whenever an action is run (so, changes to the `cwd`

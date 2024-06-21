@@ -35,9 +35,12 @@ const addProvider = (jsonBuffer: string, setJsonBuffer: any, newContents: any) =
 };
 
 export const OAuth2Settings: FC = () => {
-  const [errorJSON, setErrorJSON] = useState<string>();
-  const [jsonBuffer, setJsonBuffer] = useState<string>('');
+  const [errorJSON, setErrorJSON] = useState<string | undefined>();
+  const [jsonBuffer, setJsonBuffer] = useState<string | undefined>(undefined);
   const { oauth2Settings, setOAuth2Settings } = useActionServerContext();
+  const [lastOauth2Settings, setLastOAuth2Settings] = useState<IOAuth2UserSettings | undefined>(
+    undefined,
+  );
 
   const onCodeChange = useCallback(
     (value: string) => {
@@ -54,22 +57,18 @@ export const OAuth2Settings: FC = () => {
     [setOAuth2Settings, setErrorJSON, setJsonBuffer],
   );
 
-  let useAsBuffer = '';
-  if (!jsonBuffer || jsonBuffer.length === 0) {
-    useAsBuffer = JSON.stringify(oauth2Settings, undefined, 4);
-    if (useAsBuffer !== jsonBuffer) {
-      setJsonBuffer(useAsBuffer);
-    }
-  } else {
-    useAsBuffer = jsonBuffer;
+  if (lastOauth2Settings != oauth2Settings && oauth2Settings) {
+    const useAsBuffer = JSON.stringify(oauth2Settings, undefined, 4);
+    setJsonBuffer(useAsBuffer);
+    setLastOAuth2Settings(oauth2Settings);
   }
 
   const onAddSupported = useCallback(() => {
-    addProvider(jsonBuffer, setJsonBuffer, { clientId: '', clientSecret: '' });
+    addProvider(jsonBuffer || '{}', setJsonBuffer, { clientId: '', clientSecret: '' });
   }, [jsonBuffer, setJsonBuffer]);
 
   const onAddGeneric = useCallback(() => {
-    addProvider(jsonBuffer, setJsonBuffer, {
+    addProvider(jsonBuffer || '{}', setJsonBuffer, {
       clientId: '',
       clientSecret: '',
       server: '',
@@ -138,7 +137,7 @@ export const OAuth2Settings: FC = () => {
           key="oauth2"
           lang="json"
           aria-label="OAuth2 Settings"
-          value={useAsBuffer}
+          value={jsonBuffer !== undefined ? jsonBuffer : '{}'}
           onChange={onCodeChange}
           error={errorJSON}
           readOnly={false}
