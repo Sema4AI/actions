@@ -2,7 +2,7 @@
 # by checking duck-typing for the APIs below:
 #
 # `cls.model_validate(dict)`
-# `cls.model_json_schema()`
+# `cls.model_json_schema(by_alias=False)`
 # `obj.model_dump(mode="json")`
 SUPPORTED_TYPES_IN_SCHEMA = (str, int, float, bool)
 

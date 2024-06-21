@@ -1,6 +1,7 @@
 import inspect
 import typing
 from contextlib import contextmanager
+from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional, Tuple, get_type_hints
 
 from robocorp.log import ConsoleMessageKind, console_message
@@ -157,7 +158,7 @@ class Action:
                     # because this schema can be added as a part of a larger schema
                     # and in doing so the position of the references will reference
                     # an invalid path.
-                    ret = replace_refs(param_type.model_json_schema())
+                    ret = replace_refs(param_type.model_json_schema(by_alias=False))
                     ret.pop("$defs", None)
                     if description:
                         ret["description"] = description
@@ -349,9 +350,12 @@ class Context:
     # Some user message which was being sent to the stderr.
     KIND_STDERR = ConsoleMessageKind.STDERR
 
-    def __init__(self, print_result: bool = False):
+    def __init__(
+        self, print_result: bool = False, json_output_file: Optional[str] = None
+    ):
         self._msg_len_target = 80
         self._print_result = print_result
+        self._json_output_file = json_output_file
 
     def _show_header(self, parts: List[Tuple[str, str]]) -> int:
         """
@@ -451,17 +455,32 @@ class Context:
                     kind=self.KIND_TRACEBACK,
                 )
 
-        if self._print_result and result is not None:
+        contents_to_write = {}
+        print_result = bool(self._print_result and result is not None)
+
+        if print_result or self._json_output_file:
+            result = action.result
+            dump = result
+            if hasattr(result, "model_dump"):
+                # Support for pydantic
+                dump = result.model_dump(mode="json")
+
+            contents_to_write = {
+                "result": dump,
+                "message": action.message,
+                "status": action.status.value,
+            }
+
+        if self._json_output_file:
+            p = Path(self._json_output_file)
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_text(json.dumps(contents_to_write))
+
+        if print_result:
             show("result:", kind=self.KIND_IMPORTANT)
             use_pydantic = False
             try:
-                dump = result
-                use_pydantic = hasattr(result, "model_dump")
-                if use_pydantic:
-                    # Support for pydantic
-                    dump = result.model_dump(mode="json")
-
-                result_as_json_str = json.dumps(dump, indent=4)
+                result_as_json_str = json.dumps(contents_to_write["result"], indent=4)
             except Exception:
                 raise RuntimeError(
                     f"The resulting value: {result} cannot be converted to JSON. Using pydantic: {use_pydantic}."
