@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.15.1 - 2024-06-21
+
 - Fixed issue where OAuth2 settings would not be loaded properly from the Action Server UI.
 
 ## 0.15.0 - 2024-06-21
