@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- A model returned with a `pydantic` field with a `validation_alias` will no longer break.
+  - `cls.model_json_schema(by_alias=False)` is now used to get the pydantic schema.
+- A new `--json-output=<path>` can be used to dump the action result to a file when
+  calling the `run` command.
+  - Note: the dumped result will be a JSON object with `"result", "message" and "status"`
+
 ## 0.9.2 - 2024-06-17
 
 - Accept `datetime.datetime` objects in pydantic models:

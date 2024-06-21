@@ -4,6 +4,7 @@ usage: sema4ai.actions run [-h] [--glob GLOB] [-a ACTION_NAME] [-o OUTPUT_DIR]
                            [--console-colors {auto,plain,ansi}]
                            [--log-output-to-stdout {no,json}]
                            [--json-input JSON_INPUT]
+                           [--json-output JSON_OUTPUT]
                            [--preload-module PRELOAD_MODULE] [--no-status-rc]
                            [--teardown-dump-threads-timeout TEARDOWN_DUMP_THREADS_TIMEOUT]
                            [--teardown-interrupt-timeout TEARDOWN_INTERRUPT_TIMEOUT]
@@ -44,6 +45,10 @@ options:
                         loading the arguments from a file (defined as a json
                         object, where keys are the arguments names and the
                         values are the values to be set to the arguments).
+  --json-output JSON_OUTPUT
+                        May be used to save the result of running the action
+                        in json format (object with "result", "message" and
+                        "status")
   --preload-module PRELOAD_MODULE
                         May be used to load a module(s) as the first step when
                         collecting actions.

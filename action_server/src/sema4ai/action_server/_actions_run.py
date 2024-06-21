@@ -18,7 +18,7 @@ log = logging.getLogger(__name__)
 
 # Note: for pydantic models, the following APIs are used:
 # cls.model_validate(dict)
-# cls.model_json_schema()
+# cls.model_json_schema(by_alias=False)
 # obj.model_dump(mode="json")
 #
 # Besides pydantic, the following basic types are accepted:

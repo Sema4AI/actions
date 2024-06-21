@@ -17,7 +17,7 @@
         title: Header
         type: object
     type: object
-  line: 17
+  line: 20
   managed_params_schema: {}
   name: add_rows
   options:
@@ -35,11 +35,16 @@
       result:
         anyOf:
         - properties:
+            document_id:
+              description: The ID of the document.
+              title: Document Id
+              type: string
             ok:
               title: Ok
               type: boolean
           required:
           - ok
+          - document_id
           title: CustomResponse
           type: object
         - type: 'null'

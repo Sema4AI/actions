@@ -12,6 +12,7 @@ def test_pydantic_models(datadir):
 
     input_json = datadir / "json.input"
     input_json.write_text(json.dumps(json_input_contents))
+    output_json = datadir / "json.output"
 
     args = [
         "run",
@@ -21,11 +22,18 @@ def test_pydantic_models(datadir):
         f"--json-input={input_json}",
         "--print-input",
         "--print-result",
+        f"--json-output={output_json}",
     ]
 
     result = sema4ai_actions_run(args, returncode=0, cwd=str(datadir))
     output = result.stdout.decode("utf-8")
-    assert '"ok": true' in output
+    loaded = json.loads(output_json.read_text())
+    assert loaded == {
+        "result": {"result": {"ok": True, "document_id": "doc-id"}, "error": None},
+        "message": "",
+        "status": "PASS",
+    }
+    assert '"ok": true' in output  # i.e.: it's printed
 
 
 def _fix_file(entry):

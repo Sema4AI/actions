@@ -12,8 +12,11 @@ class Row(BaseModel):
 
 class CustomResponse(BaseModel):
     ok: bool
+    document_id: Annotated[
+        str, Field(description="The ID of the document.", validation_alias="documentId")
+    ]
 
 
 @action(is_consequential=True)
 def add_rows(header: Row = Row(cells=[])) -> Response[CustomResponse]:
-    return Response(result=CustomResponse(ok=True))
+    return Response(result=CustomResponse(ok=True, documentId="doc-id"))  # type: ignore

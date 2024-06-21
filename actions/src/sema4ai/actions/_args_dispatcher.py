@@ -109,6 +109,11 @@ class _ArgDispatcher:
             dest="json_input",
         )
         run_parser.add_argument(
+            "--json-output",
+            help='May be used to save the result of running the action in json format (object with "result", "message" and "status")',
+            dest="json_output",
+        )
+        run_parser.add_argument(
             "--preload-module",
             action="append",
             help="May be used to load a module(s) as the first step when collecting actions.",
