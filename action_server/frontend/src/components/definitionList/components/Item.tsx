@@ -1,7 +1,7 @@
 import { FC, ReactNode } from 'react';
-import { Box, Typography } from '@robocorp/components';
-import { styled } from '@robocorp/theme';
-import { IconType } from '@robocorp/icons';
+import { Box, Typography } from '@sema4ai/components';
+import { styled } from '@sema4ai/theme';
+import { IconType } from '@sema4ai/icons';
 
 type Props = {
   children?: ReactNode;

@@ -1,4 +1,4 @@
-import { Drawer, Header, Link } from '@robocorp/components';
+import { Drawer, Header, Link } from '@sema4ai/components';
 import { FC, useCallback, useMemo } from 'react';
 import { logError } from '~/lib/helpers';
 import {
@@ -10,7 +10,7 @@ import {
   Code,
 } from '~/components';
 import { baseUrl } from '~/lib/requestData';
-import { IconFileText } from '@robocorp/icons/iconic';
+import { IconFileText } from '@sema4ai/icons';
 import { useActionRunsContext } from './context';
 
 export const ActionRunDetails: FC = () => {

@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { Box, Header, Typography } from '@robocorp/components';
+import { Box, Header, Typography } from '@sema4ai/components';
 
 import { Code } from '~/components';
 

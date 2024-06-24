@@ -1,14 +1,14 @@
-import { SideNavigation, Box, Link, Scroll, useSystemTheme } from '@robocorp/components';
+import { SideNavigation, Box, Link, Scroll, useSystemTheme } from '@sema4ai/components';
 import { MouseEvent, StrictMode, useCallback, useEffect, useMemo, useState } from 'react';
-import { ThemeOverrides, ThemeProvider, styled } from '@robocorp/theme';
+import { ThemeOverrides, ThemeProvider, styled } from '@sema4ai/theme';
 import {
   IconAvatarHexagonal,
   IconBolt,
   IconGlobe,
   IconShare,
   IconUnorderedList,
-} from '@robocorp/icons/iconic';
-import { IconLogoRobocorp } from '@robocorp/icons/logos';
+} from '@sema4ai/icons';
+import { IconSema4 } from '@sema4ai/icons/logos';
 import {
   Outlet,
   RouterProvider,
@@ -233,7 +233,7 @@ const Root = () => {
               </ContentScroll>
 
               <Box display="flex" alignItems="center" ml={24} mt={8} color="content.subtle.light">
-                <IconLogoRobocorp size={24} />
+                <IconSema4 size={24} />
                 <Box ml={8} fontSize={12}>
                   Powered by Sema4.ai
                 </Box>

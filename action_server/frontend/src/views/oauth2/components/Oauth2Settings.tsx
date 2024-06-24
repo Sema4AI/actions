@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-alert */
 
-import { Box, Button, Header, Link } from '@robocorp/components';
+import { Box, Button, Header, Link } from '@sema4ai/components';
 import { FC, useCallback, useState } from 'react';
 import { Code } from '~/components/Code';
 import { useActionServerContext } from '~/lib/actionServerContext';
@@ -57,10 +57,15 @@ export const OAuth2Settings: FC = () => {
     [setOAuth2Settings, setErrorJSON, setJsonBuffer],
   );
 
-  if (lastOauth2Settings != oauth2Settings && oauth2Settings) {
-    const useAsBuffer = JSON.stringify(oauth2Settings, undefined, 4);
-    setJsonBuffer(useAsBuffer);
-    setLastOAuth2Settings(oauth2Settings);
+  if (oauth2Settings) {
+    const stringifyLast = JSON.stringify(lastOauth2Settings, undefined, 4);
+    const stringifyNew = JSON.stringify(oauth2Settings, undefined, 4);
+
+    if (stringifyLast !== stringifyNew) {
+      const useAsBuffer = stringifyNew;
+      setJsonBuffer(useAsBuffer);
+      setLastOAuth2Settings(oauth2Settings);
+    }
   }
 
   const onAddSupported = useCallback(() => {

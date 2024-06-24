@@ -1,7 +1,7 @@
 /* eslint-disable styled-components-a11y/no-static-element-interactions */
 /* eslint-disable styled-components-a11y/click-events-have-key-events */
-import { Box, Typography } from '@robocorp/components';
-import { Color, styled } from '@robocorp/theme';
+import { Box, Typography } from '@sema4ai/components';
+import { Color, styled } from '@sema4ai/theme';
 
 const Card = styled.div<{ $color: Color }>`
   position: relative;
@@ -69,7 +69,7 @@ const Card = styled.div<{ $color: Color }>`
 
     .badge {
       color: ${({ theme }) => theme.color('grey100', 'grey100')};
-      background: ${({ theme }) => theme.color('grey0', 'grey0')};
+      background: ${({ theme }) => theme.color('grey10', 'grey10')};
     }
   }
 `;

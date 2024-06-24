@@ -1,6 +1,6 @@
 {
   "root": true,
-  "extends": ["@robocorp/eslint-config-frontend"],
+  "extends": ["@sema4ai/eslint-config-frontend"],
   "settings": {
     "import/resolver": {
       "alias": {

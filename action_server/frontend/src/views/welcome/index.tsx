@@ -1,6 +1,6 @@
 import { FC } from 'react';
-import { Box, Typography } from '@robocorp/components';
-import { styled } from '@robocorp/theme';
+import { Box, Typography } from '@sema4ai/components';
+import { styled } from '@sema4ai/theme';
 
 import { Code } from '~/components';
 

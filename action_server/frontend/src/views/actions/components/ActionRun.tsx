@@ -17,8 +17,8 @@ import {
   Select,
   Switch,
   Typography,
-} from '@robocorp/components';
-import { IconBolt, IconLogIn, IconLogOut } from '@robocorp/icons/iconic';
+} from '@sema4ai/components';
+import { IconBolt, IconLogIn, IconLogOut } from '@sema4ai/icons';
 
 import { Action, ActionPackage } from '~/lib/types';
 import { toKebabCase } from '~/lib/helpers';

@@ -1,7 +1,7 @@
 import { FC, useEffect, useState } from 'react';
 import { collectRunArtifacts } from '~/lib/requestData';
 import { LoadedArtifacts } from '~/lib/types';
-import { Progress } from '@robocorp/components';
+import { Progress } from '@sema4ai/components';
 import { Code } from '~/components';
 
 type Props = {

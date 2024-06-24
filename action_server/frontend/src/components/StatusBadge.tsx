@@ -1,5 +1,5 @@
 import { FC, useMemo } from 'react';
-import { Badge } from '@robocorp/components';
+import { Badge } from '@sema4ai/components';
 
 import { RunStatus } from '~/lib/types';
 

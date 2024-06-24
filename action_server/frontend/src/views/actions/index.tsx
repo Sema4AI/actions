@@ -1,12 +1,12 @@
 import { FC, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Badge, Column, Header, Table, TableRowProps } from '@robocorp/components';
-import { IconExpand } from '@robocorp/icons';
+import { Badge, Column, Header, Table, TableRowProps } from '@sema4ai/components';
 
 import { useActionServerContext } from '~/lib/actionServerContext';
 import { Action, ActionPackage, Run } from '~/lib/types';
 import { ViewError, ViewLoader } from '~/components';
 
+import { IconPlay, IconUnorderedList } from '@sema4ai/icons';
 import { ActionDetails } from './components/ActionDetails';
 import { Welcome } from '../welcome';
 
@@ -36,7 +36,16 @@ const ActionRow: FC<TableRowProps<Action, { packages: ActionPackage[]; runs: Run
 
   return (
     <Table.Row onClick={onClickAction}>
-      <Table.Cell>{action.name}</Table.Cell>
+      <Table.Cell>
+        <Badge
+          onClick={onClickAction}
+          iconVisible
+          forwardedAs="button"
+          variant="primary"
+          iconAfter={IconPlay}
+          label={action.name}
+        />
+      </Table.Cell>
       <Table.Cell>
         {action.file}:{action.lineno}
       </Table.Cell>
@@ -44,9 +53,10 @@ const ActionRow: FC<TableRowProps<Action, { packages: ActionPackage[]; runs: Run
       <Table.Cell controls>
         <Badge
           onClick={onOpenRuns}
+          iconVisible
           forwardedAs="button"
           variant="primary"
-          iconAfter={IconExpand}
+          iconAfter={IconUnorderedList}
           label={runCount}
         />
       </Table.Cell>

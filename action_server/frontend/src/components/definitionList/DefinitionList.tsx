@@ -1,6 +1,6 @@
-import { ComponentProps } from 'react';
-import { componentWithRef, Grid } from '@robocorp/components';
-import { styled } from '@robocorp/theme';
+import { ComponentProps, RefObject } from 'react';
+import { componentWithRef, Grid } from '@sema4ai/components';
+import { styled } from '@sema4ai/theme';
 import { DefinitionListKey, DefinitionListValue } from './components/Item';
 
 const compoundComponents = {
@@ -29,6 +29,14 @@ export const DefinitionList = componentWithRef<
   HTMLDivElement,
   typeof compoundComponents
 >(
-  (props, forwardedRef) => <Container columns={2} gap={0} py="$16" ref={forwardedRef} {...props} />,
+  (props, forwardedRef) => (
+    <Container
+      columns={2}
+      gap={0}
+      py="$16"
+      ref={forwardedRef as RefObject<HTMLElement>}
+      {...props}
+    />
+  ),
   compoundComponents,
 );

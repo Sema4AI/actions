@@ -1,5 +1,5 @@
 import { FC, useEffect, useState } from 'react';
-import { Box, Progress } from '@robocorp/components';
+import { Box, Progress } from '@sema4ai/components';
 
 type Props = {
   /**

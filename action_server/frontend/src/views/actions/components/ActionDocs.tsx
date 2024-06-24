@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { Header } from '@robocorp/components';
+import { Header } from '@sema4ai/components';
 
 import { Code } from '~/components';
 import { prettyPrint } from '~/lib/helpers';

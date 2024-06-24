@@ -1,5 +1,5 @@
 import { FC, ReactNode } from 'react';
-import { Box, Typography } from '@robocorp/components';
+import { Box, Typography } from '@sema4ai/components';
 
 type Props = {
   children: ReactNode;

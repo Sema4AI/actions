@@ -1,7 +1,7 @@
 import { FC, useCallback } from 'react';
-import { Box, Typography, usePopover } from '@robocorp/components';
-import { IconGlobe, IconLink } from '@robocorp/icons/iconic';
-import { styled } from '@robocorp/theme';
+import { Box, Typography, usePopover } from '@sema4ai/components';
+import { IconGlobe, IconLink } from '@sema4ai/icons';
+import { styled } from '@sema4ai/theme';
 
 import { useActionServerContext } from '~/lib/actionServerContext';
 import { ActionServerLogo } from './Logo';

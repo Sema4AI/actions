@@ -14,14 +14,14 @@ import {
   Table,
   TableRowProps,
   Tooltip,
-} from '@robocorp/components';
-import { IconExpand } from '@robocorp/icons';
+} from '@sema4ai/components';
 import {
   IconArrowUpRight,
+  IconExpandSmall,
   IconFileText,
   IconInformation,
   IconSearch,
-} from '@robocorp/icons/iconic';
+} from '@sema4ai/icons';
 
 import { RunStatus, RunTableEntry } from '~/lib/types';
 import { useActionServerContext } from '~/lib/actionServerContext';
@@ -55,7 +55,7 @@ const RunRow: FC<TableRowProps<RunTableEntry>> = ({ rowData: run }) => {
     <Table.Row onClick={onClickRun}>
       <Table.Cell>#{run.numbered_id}</Table.Cell>
       <Table.Cell>
-        <Button onClick={onClickAction} variant="ghost" size="small" iconAfter={IconExpand}>
+        <Button onClick={onClickAction} variant="ghost" size="small" iconAfter={IconExpandSmall}>
           {run.action?.name}
         </Button>
       </Table.Cell>

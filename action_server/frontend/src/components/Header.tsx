@@ -1,7 +1,7 @@
 import { FC, useCallback } from 'react';
-import { Box, Button } from '@robocorp/components';
-import { styled } from '@robocorp/theme';
-import { IconMenu, IconSun } from '@robocorp/icons/iconic';
+import { Box, Button } from '@sema4ai/components';
+import { styled } from '@sema4ai/theme';
+import { IconMenu, IconSun } from '@sema4ai/icons';
 import { useActionServerContext } from '~/lib/actionServerContext';
 
 const StyledTopNavigationButton = styled(Button)`

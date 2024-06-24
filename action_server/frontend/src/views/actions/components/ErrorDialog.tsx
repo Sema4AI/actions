@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { Button, Dialog } from '@robocorp/components';
+import { Button, Dialog } from '@sema4ai/components';
 import { FC } from 'react';
 
 export interface ErrorDialogInfo {
