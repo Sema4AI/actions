@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Fixed issue where metadata was not created in package zip when `--input-dir` was provided.
+
 ## 0.15.1 - 2024-06-21
 
 - Fixed issue where OAuth2 settings would not be loaded properly from the Action Server UI.

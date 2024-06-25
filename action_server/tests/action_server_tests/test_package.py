@@ -42,7 +42,7 @@ def test_package_zip(datadir):
             # "-v",
         ],
         returncode=0,
-        cwd=datadir / "pack1",
+        cwd=datadir,
     )
     zip_name = "pack1-name.zip"
     escaped = re.escape(zip_name)

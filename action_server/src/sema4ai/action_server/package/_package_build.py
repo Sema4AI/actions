@@ -201,6 +201,7 @@ def build_package(
     # in-memory it should not affect existing data. We still need the system
     # mutex lock on the datadir due to environment updates that can't happen in
     # parallel.
+    metadata_file = input_dir / "__action_server_metadata__.json"
     args_metadata = [
         "package",
         "metadata",
@@ -209,7 +210,7 @@ def build_package(
         "--db-file",
         ":memory:",
         "--output-file",
-        "__action_server_metadata__.json",
+        str(metadata_file),
     ]
     if datadir:
         args_metadata.extend(["--datadir", datadir])
@@ -235,7 +236,7 @@ def build_package(
     log.info(f"Created {output_file}")
     try:
         # Remove temporary file that was created.
-        os.remove("__action_server_metadata__.json")
+        os.remove(metadata_file)
     except OSError:
         pass
 
