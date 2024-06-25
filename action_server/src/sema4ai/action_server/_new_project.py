@@ -90,7 +90,7 @@ def handle_new_project(directory: str = ".", template_name: str = "") -> int:
 
 
 def handle_list_templates(output_json: bool = False) -> int:
-    """Lists availabe templates.
+    """Lists available templates.
 
     Args:
         output_json: If true, the output will be formatted as JSON.
