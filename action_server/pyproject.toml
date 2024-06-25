@@ -13,6 +13,7 @@ include = [
 	"src/sema4ai/action_server/_static_contents.py",
 	"src/sema4ai/action_server/bin/rcc*",
 ]
+homepage = "https://github.com/sema4ai/actions/"
 
 [tool.poetry.scripts]
 action-server = "sema4ai.action_server.cli:main"
