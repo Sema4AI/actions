@@ -2,7 +2,10 @@
 
 ## Unreleased
 
+## 0.15.2 - 2024-06-25
+
 - Fixed issue where metadata was not created in package zip when `--input-dir` was provided.
+- Now signed as `Sema4.ai`.
 
 ## 0.15.1 - 2024-06-21
 
