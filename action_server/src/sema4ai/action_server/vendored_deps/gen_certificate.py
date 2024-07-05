@@ -1,4 +1,11 @@
-def gen_self_signed_certificate():
+def gen_self_signed_certificate() -> tuple[bytes, bytes]:
+    """
+    Provides a key-pair suitable to be used as a self-signed certificate (in PEM
+    format).
+
+    Returns:
+        Returns a tuple with the bytes for the public and private key generated.
+    """
     import datetime
     import socket
 

@@ -325,6 +325,27 @@ class ActionServerClient:
         result.raise_for_status()
         return result
 
+    def get_get_response(
+        self,
+        url,
+        data,
+        headers: Optional[dict] = None,
+        cookies: Optional[dict] = None,
+        params: Optional[dict] = None,
+    ):
+        import requests
+
+        result = requests.get(
+            self.build_full_url(url),
+            headers=headers,
+            json=data,
+            cookies=cookies,
+            params=params,
+            **self.requests_kwargs(),
+        )
+        result.raise_for_status()
+        return result
+
     def post_error(self, url, status_code, data=None):
         import requests
 

@@ -210,6 +210,7 @@ class ArgumentsNamespaceStart(ArgumentsNamespaceBaseImportOrStart):
     ssl_self_signed: bool
     ssl_keyfile: str
     ssl_certfile: str
+    oauth2_settings: str
 
 
 class ArgumentsNamespacePackagePush(ArgumentsNamespace):

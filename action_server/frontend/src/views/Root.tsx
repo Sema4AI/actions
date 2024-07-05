@@ -30,7 +30,6 @@ import {
 } from '~/lib/requestData';
 import { useLocalStorage } from '~/lib/useLocalStorage';
 
-import { DEFAULT_OAUTH2_SETTINGS, IOAuth2UserSettings } from '~/lib/oauth2';
 import { ActionRuns } from './runs';
 import { ActionPackages } from './actions';
 import {
@@ -39,7 +38,6 @@ import {
   ViewSettings,
   defaultActionServerState,
 } from '../lib/actionServerContext';
-import { OAuth2Settings } from './oauth2/components/Oauth2Settings';
 
 const Main = styled.main<{ isCollapsed: boolean }>`
   background: ${({ theme }) => theme.colors.background.primary.color};
@@ -114,11 +112,6 @@ const Root = () => {
     theme: systemTheme,
   });
 
-  const [oauth2Settings, setOAuth2Settings] = useLocalStorage<IOAuth2UserSettings>(
-    'oauth2/settings',
-    DEFAULT_OAUTH2_SETTINGS,
-  );
-
   const [loadedRuns, setLoadedRuns] = useState<LoadedRuns>(defaultActionServerState.loadedRuns);
 
   const [loadedActions, setLoadedActions] = useState<LoadedActionsPackages>(
@@ -148,8 +141,6 @@ const Root = () => {
       loadedActions,
       setLoadedActions,
       serverConfig,
-      oauth2Settings,
-      setOAuth2Settings,
     }),
     [
       viewSettings,
@@ -159,8 +150,6 @@ const Root = () => {
       loadedActions,
       setLoadedActions,
       serverConfig,
-      oauth2Settings,
-      setOAuth2Settings,
     ],
   );
   const [showNavInSmallMode, setNavInSmallMode] = useState<boolean>(false);
@@ -219,14 +208,6 @@ const Root = () => {
                     Public URL
                   </SideNavigation.Link>
                 )}
-                <SideNavigation.Link
-                  aria-current={location.pathname.startsWith('/oauth2/settings')}
-                  href="/oauth2/settings"
-                  onClick={onNavigate('/oauth2/settings')}
-                  icon={<IconAvatarHexagonal />}
-                >
-                  OAuth2 Settings
-                </SideNavigation.Link>
                 <SideNavigation.Link href="/openapi.json" target="_blank" icon={<IconShare />}>
                   OpenAPI spec
                 </SideNavigation.Link>
@@ -267,10 +248,6 @@ export const ActionServerRoot = () => {
         {
           path: 'runs',
           element: <ActionRuns />,
-        },
-        {
-          path: 'oauth2/settings',
-          element: <OAuth2Settings />,
         },
         {
           path: '*',

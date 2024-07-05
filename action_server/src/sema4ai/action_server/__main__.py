@@ -3,9 +3,10 @@ if __name__ == "__main__":
 
     args = None
     # args = "start -v -p 8090".split()
-    # args = ["start"]
+    # args = ["start", "--full-openapi"]
     # import os
-    # os.chdir(r"X:\temp\check-action-server\action_package")
+
+    # os.chdir(r"d:\x\temp\check-action-server\oauth-google")
     # args = ["start", "--expose"]
 
     main(args)

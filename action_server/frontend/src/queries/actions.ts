@@ -42,10 +42,6 @@ export const useActionRunMutation = () => {
       }
 
       if (requiredOauth2SecretsData && requiredOauth2SecretsData.size > 0) {
-        if (!oauth2SecretsData) {
-          throw new Error('Required OAuth2 data is not available.');
-        }
-
         for (const [requiredProvider, requiredInfo] of requiredOauth2SecretsData.entries()) {
           const tokenInfo = oauth2SecretsData[requiredProvider];
           if (!tokenInfo) {

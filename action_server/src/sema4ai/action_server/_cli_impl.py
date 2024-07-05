@@ -209,6 +209,13 @@ def _add_start_server_command(command_parser, defaults):
         nargs="?",
     )
 
+    start_parser.add_argument(
+        "--oauth2-settings",
+        metavar="PATH",
+        help="A yaml file with the OAuth2 settings with a mapping from the provider name to the provider information (such as clientId and clientSecret).",
+        nargs="?",
+    )
+
     add_data_args(start_parser, defaults)
     add_verbose_args(start_parser, defaults)
     _add_whitelist_args(start_parser, defaults)
@@ -396,6 +403,12 @@ def _create_parser():
     return base_parser
 
 
+def _setup_global_logging():
+    # Always disable the debug for requests oauthlib (as it'll print
+    # refresh token information).
+    logging.getLogger("requests_oauthlib").setLevel(logging.INFO)
+
+
 def _setup_stderr_logging(log_level):
     from logging import StreamHandler
 
@@ -409,7 +422,8 @@ def _setup_stderr_logging(log_level):
     if log_level == logging.DEBUG:
         os.environ["NO_COLOR"] = "true"
         formatter = logging.Formatter(
-            "%(asctime)s [%(levelname)s] %(message)s", datefmt="[%Y-%m-%d %H:%M:%S]"
+            "%(asctime)s [%(name)s: %(levelname)s] %(message)s",
+            datefmt="[%Y-%m-%d %H:%M:%S]",
         )
     else:
         from ._robo_utils.log_formatter import FormatterStdout, UvicornLogFilter
@@ -514,6 +528,7 @@ def _main_retcode(
 
     Returns: The returncode for the process (0 means all was ok).
     """
+    _setup_global_logging()
 
     if args is None:
         args = sys.argv[1:]
