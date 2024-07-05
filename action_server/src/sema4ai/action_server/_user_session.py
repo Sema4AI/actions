@@ -210,9 +210,25 @@ class _BaseScopeContext:
 
 
 class ReferencedScopeContext(_BaseScopeContext):
-    def __init__(self, session_id: str, create: bool):
-        super().__init__(session_id=session_id)
-        assert not create, "TODO: Handle creation"
+    """
+    This scope is created from a manually created reference id (
+    i.e.: UserSession.external must be True).
+    """
+
+    def __init__(self, reference_id: str):
+        from sema4ai.action_server._models import get_db
+
+        super().__init__(session_id=reference_id)
+        db = get_db()
+        with db.connect():
+            user_session = _get_user_session_from_id(reference_id, db=db)
+
+        if user_session is None:
+            raise AssertionError(f"The given reference_id: {reference_id} is not valid")
+
+        if not user_session.external:
+            # Only a session that was externally created may be accessed from a reference_id.
+            raise AssertionError(f"The given reference_id: {reference_id} is not valid")
 
 
 class SessionScopeContext(_BaseScopeContext):
@@ -241,9 +257,7 @@ def session_scope(request: Request) -> Iterator[SessionScopeContext]:
 
 
 @contextmanager
-def referenced_session_scope(
-    reference_id: str, create: bool
-) -> Iterator[ReferencedScopeContext]:
-    scope = ReferencedScopeContext(reference_id, create=create)
+def referenced_session_scope(reference_id: str) -> Iterator[ReferencedScopeContext]:
+    scope = ReferencedScopeContext(reference_id)
 
     yield scope

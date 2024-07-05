@@ -146,7 +146,7 @@ def manual_test_oauth2_action_server_ui(
     request_info = fut_uri.result(60 * 5)
     assert request_info["body"]
     loaded = json.loads(request_info["body"])
-    print(loaded)
+    assert loaded
 
 
 def test_settings(tmpdir):

@@ -175,6 +175,10 @@ class OAuth2StatusResponseModel(BaseModel):
 async def oauth2_status(
     request: Request, response: "Response", reference_id: str = ""
 ) -> OAuth2StatusResponseModel:
+    """
+    Collects the current status for the OAuth2 (either for the
+    current session or the passed `reference_id`).
+    """
     from sema4ai.action_server._models import OAuth2UserData, get_db
     from sema4ai.action_server._user_session import (
         referenced_session_scope,
@@ -183,7 +187,9 @@ async def oauth2_status(
 
     use_session_scope: Any
     if reference_id:
-        use_session_scope = referenced_session_scope(reference_id, create=False)
+        # Note: will only be able to access a user session created with:
+        # create_user_session(external=True).
+        use_session_scope = referenced_session_scope(reference_id)
     else:
         use_session_scope = session_scope(request)
 
