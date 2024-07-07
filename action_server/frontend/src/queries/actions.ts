@@ -6,6 +6,7 @@ import {
   IProviderToCollectedOauth2Tokens,
   IRequiredOauth2Data,
 } from '~/lib/oauth2';
+import { AsyncLoaded } from '~/lib/types';
 
 export type ActionRunPayload = {
   actionPackageName: string;
@@ -13,7 +14,7 @@ export type ActionRunPayload = {
   args: object;
   apiKey?: string;
   secretsData?: Map<string, string>;
-  oauth2SecretsData?: IProviderToCollectedOauth2Tokens;
+  oauth2SecretsData?: AsyncLoaded<IProviderToCollectedOauth2Tokens>;
   requiredOauth2SecretsData: Map<IOAuth2UserProvider, IRequiredOauth2Data>;
 };
 
@@ -41,38 +42,41 @@ export const useActionRunMutation = () => {
         }
       }
 
-      if (requiredOauth2SecretsData && requiredOauth2SecretsData.size > 0) {
-        for (const [requiredProvider, requiredInfo] of requiredOauth2SecretsData.entries()) {
-          const tokenInfo = oauth2SecretsData[requiredProvider];
-          if (!tokenInfo) {
-            throw new Error(`Login must be made for provider: ${requiredProvider}`);
-          }
+      // When used directly from the Action Server UI the OAuth2 secrets are
+      // loaded/refreshed directly in the backend.
+      // 
+      // if (requiredOauth2SecretsData && requiredOauth2SecretsData.size > 0) {
+      //   for (const [requiredProvider, requiredInfo] of requiredOauth2SecretsData.entries()) {
+      //     const tokenInfo = oauth2SecretsData[requiredProvider];
+      //     if (!tokenInfo) {
+      //       throw new Error(`Login must be made for provider: ${requiredProvider}`);
+      //     }
 
-          for (const scope of requiredInfo.scopes) {
-            if (!tokenInfo.scopes.includes(scope)) {
-              throw new Error(
-                `The required scope: ${scope} is not available for ${requiredProvider}. Please logout and login again to access all scopes required.`,
-              );
-            }
-          }
+      //     for (const scope of requiredInfo.scopes) {
+      //       if (!tokenInfo.scopes.includes(scope)) {
+      //         throw new Error(
+      //           `The required scope: ${scope} is not available for ${requiredProvider}. Please logout and login again to access all scopes required.`,
+      //         );
+      //       }
+      //     }
 
-          // Data must be filled as:
-          // "my_oauth2_secret": {
-          //   "provider": "google",
-          //   "scopes": ["scope1", "scope2"],
-          //   "access_token": "<this-is-the-access-token>",
-          //   "metadata": { "any": "additional info" }
-          // }
-          for (const paramName of requiredInfo.paramNames) {
-            secretDataAsObject[paramName] = {
-              provider: requiredProvider,
-              access_token: tokenInfo.token.accessToken,
-              scopes: tokenInfo.scopes,
-              metadata: tokenInfo.metadata,
-            };
-          }
-        }
-      }
+      //     // Data must be filled as:
+      //     // "my_oauth2_secret": {
+      //     //   "provider": "google",
+      //     //   "scopes": ["scope1", "scope2"],
+      //     //   "access_token": "<this-is-the-access-token>",
+      //     //   "metadata": { "any": "additional info" }
+      //     // }
+      //     for (const paramName of requiredInfo.paramNames) {
+      //       secretDataAsObject[paramName] = {
+      //         provider: requiredProvider,
+      //         access_token: tokenInfo.token.accessToken,
+      //         scopes: tokenInfo.scopes,
+      //         metadata: tokenInfo.metadata,
+      //       };
+      //     }
+      //   }
+      // }
       headers['x-action-context'] = btoa(JSON.stringify({ secrets: secretDataAsObject }));
 
       const request = await fetch(`/api/actions/${actionPackageName}/${actionName}/run`, {

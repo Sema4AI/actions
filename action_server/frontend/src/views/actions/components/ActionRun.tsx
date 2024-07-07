@@ -20,7 +20,7 @@ import {
 } from '@sema4ai/components';
 import { IconBolt, IconLogIn, IconLogOut } from '@sema4ai/icons';
 
-import { Action, ActionPackage } from '~/lib/types';
+import { Action, ActionPackage, AsyncLoaded } from '~/lib/types';
 import { toKebabCase } from '~/lib/helpers';
 import { useActionServerContext } from '~/lib/actionServerContext';
 import { useLocalStorage } from '~/lib/useLocalStorage';
@@ -43,6 +43,7 @@ import {
 } from '~/lib/oauth2';
 import { ActionRunResult } from './ActionRunResult';
 import { ErrorDialog, ErrorDialogInfo } from './ErrorDialog';
+import { collectOAuth2Status } from '~/lib/requestData';
 
 type Props = {
   action: Action;
@@ -119,12 +120,19 @@ export const ActionRun: FC<Props> = ({ action, actionPackage }) => {
   >(new Map());
 
   // Information on the secrets collected (by the backend).
-  const [oauth2SecretsData, setOauth2SecretsData] = useState<IProviderToCollectedOauth2Tokens>({});
+  const [oauth2SecretsData, setOauth2SecretsData] = useState<
+    AsyncLoaded<IProviderToCollectedOauth2Tokens>
+  >({ data: {}, isPending: false, errorMessage: undefined });
 
   const [useRawJSON, setUseRawJSON] = useState<boolean>(false);
   const [formRawJSON, setFormRawJSON] = useState<string>('');
   const [errorJSON, setErrorJSON] = useState<string>();
   const [errorDialogMessage, setErrorDialogMessage] = useState<ErrorDialogInfo>();
+  const [collectOAuth2Mtime, setCollectOAuth2Mtime] = useState<number>(0);
+
+  useEffect(() => {
+    collectOAuth2Status(setOauth2SecretsData, {});
+  }, [collectOAuth2Mtime]);
 
   useEffect(() => {
     if (action.managed_params_schema) {
@@ -334,8 +342,15 @@ export const ActionRun: FC<Props> = ({ action, actionPackage }) => {
       i = 0;
       for (const [key, value] of requiredOauth2SecretsData.entries()) {
         i += 1;
+        if (oauth2SecretsData.isPending) {
+          continue;
+        }
+        const useData = oauth2SecretsData.data;
 
-        const currentCollectedTokens: ICollectedOauth2Tokens | undefined = oauth2SecretsData[key];
+        const currentCollectedTokens: ICollectedOauth2Tokens | undefined = !useData
+          ? undefined
+          : useData[key];
+
         let loginRequired = !currentCollectedTokens;
         if (currentCollectedTokens) {
           for (const scope of value.scopes) {
@@ -359,7 +374,7 @@ export const ActionRun: FC<Props> = ({ action, actionPackage }) => {
               onClick={(ev) => {
                 ev.preventDefault();
                 const { scopes } = value;
-                onLogin(key, scopes, setOauth2SecretsData, setErrorDialogMessage);
+                onLogin(key, scopes, setCollectOAuth2Mtime, setErrorDialogMessage);
               }}
             >
               Login {`${key}`}
@@ -377,9 +392,7 @@ export const ActionRun: FC<Props> = ({ action, actionPackage }) => {
               fontWeight="medium"
               onClick={(ev) => {
                 ev.preventDefault();
-                const settings = oauth2Settings[key];
-                const { scopes } = value;
-                onLogout(key, settings, scopes, setOauth2SecretsData, setErrorDialogMessage);
+                onLogout(key, setCollectOAuth2Mtime, setErrorDialogMessage);
               }}
             >
               Logout {`${key}`}
@@ -573,30 +586,19 @@ interface IOAuth2CallbackInfo {}
 const onLogin = async (
   provider: IOAuth2UserProvider,
   scopes: string[],
-  setOauth2SecretsData: React.Dispatch<React.SetStateAction<IProviderToCollectedOauth2Tokens>>,
+  setCollectOAuth2Mtime: React.Dispatch<React.SetStateAction<number>>,
   setErrorDialogMessage: React.Dispatch<React.SetStateAction<ErrorDialogInfo | undefined>>,
 ) => {
   try {
-    const uri = `/oauth2/login?provider=${provider}`;
+    const uri = `/oauth2/login?provider=${provider}&scopes=${scopes.join(',')}`;
 
     const authWindow = window.open(uri, undefined, 'width=800,height=800,popup=true');
     if (authWindow) {
       // The authWindow will call this function when it's finished.
       window.finishOAuth2 = async (data: IOAuth2CallbackInfo) => {
         authWindow.close();
-
-        const { url } = data;
-        const token = await client.getAccessTokenFromURI(url, codeVerifier, stateVerifier);
-        setOauth2SecretsData((curr) => {
-          const ret: IProviderToCollectedOauth2Tokens = {
-            ...curr,
-          };
-          let foundScopes = scopes;
-          if (data.scope) {
-            foundScopes = data.scope.split(' ');
-          }
-          ret[provider] = { token, scopes: foundScopes, metadata: client.getOauthSecretMetadata() };
-          return ret;
+        setCollectOAuth2Mtime((curr) => {
+          return curr + 1;
         });
       };
     }
@@ -613,8 +615,29 @@ declare global {
 
 const onLogout = async (
   provider: IOAuth2UserProvider,
-  scopes: string[],
+  setCollectOAuth2Mtime: React.Dispatch<React.SetStateAction<number>>,
   setErrorDialogMessage: React.Dispatch<React.SetStateAction<ErrorDialogInfo | undefined>>,
 ) => {
-  // TODO: For logout call proper API in the action server
+  async function doLogOut() {
+    let requestURL = '/oauth2/logout';
+    const params = { provider };
+    if (params) {
+      requestURL += `?${new URLSearchParams(params)}`;
+    }
+    const method = 'GET';
+
+    const fetchArgs: RequestInit = {
+      method,
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+    };
+    await fetch(requestURL, fetchArgs);
+
+    setCollectOAuth2Mtime((curr) => {
+      return curr + 1;
+    });
+  }
+  doLogOut();
 };

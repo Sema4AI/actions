@@ -16,6 +16,7 @@ export interface IRequiredOauth2Data {
  */
 export interface ICollectedOauth2Tokens {
   scopes: string[];
+  expires_at: string;
 }
 
 export interface IProviderToCollectedOauth2Tokens {
