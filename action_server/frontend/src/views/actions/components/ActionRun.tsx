@@ -18,7 +18,7 @@ import {
   Switch,
   Typography,
 } from '@sema4ai/components';
-import { IconBolt, IconLogIn, IconLogOut } from '@sema4ai/icons';
+import { IconBolt, IconLoading, IconLogIn, IconLogOut } from '@sema4ai/icons';
 
 import { Action, ActionPackage, AsyncLoaded } from '~/lib/types';
 import { toKebabCase } from '~/lib/helpers';
@@ -131,10 +131,6 @@ export const ActionRun: FC<Props> = ({ action, actionPackage }) => {
   const [collectOAuth2Mtime, setCollectOAuth2Mtime] = useState<number>(0);
 
   useEffect(() => {
-    collectOAuth2Status(setOauth2SecretsData, {});
-  }, [collectOAuth2Mtime]);
-
-  useEffect(() => {
     if (action.managed_params_schema) {
       const managedParams: ManagedParams = JSON.parse(action.managed_params_schema);
 
@@ -169,6 +165,12 @@ export const ActionRun: FC<Props> = ({ action, actionPackage }) => {
       setSecretsData(new Map());
     }
   }, [action, actionPackage]);
+
+  useEffect(() => {
+    if (requiredOauth2SecretsData.size > 0) {
+      collectOAuth2Status(setOauth2SecretsData, {});
+    }
+  }, [requiredOauth2SecretsData, collectOAuth2Mtime]);
 
   useEffect(() => {
     setFormData(propertiesToFormData(JSON.parse(action.input_schema)));
@@ -343,6 +345,19 @@ export const ActionRun: FC<Props> = ({ action, actionPackage }) => {
       for (const [key, value] of requiredOauth2SecretsData.entries()) {
         i += 1;
         if (oauth2SecretsData.isPending) {
+          secretsFieldsChildren.push(
+            <Link
+              key={`oauthSecret-${i}`}
+              icon={IconLoading}
+              href="#"
+              target="_blank"
+              rel="noopener"
+              variant="subtle"
+              fontWeight="medium"
+            >
+              Loading {`${key}`}
+            </Link>,
+          );
           continue;
         }
         const useData = oauth2SecretsData.data;
