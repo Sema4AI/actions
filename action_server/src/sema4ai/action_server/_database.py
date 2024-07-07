@@ -293,6 +293,10 @@ class Database:
             values.append(value)
         return (sql, values)
 
+    def delete_where(self, cls: Type, where: str, values: list[Any]):
+        table_name = _make_table_name(cls)
+        self.execute(f"DELETE FROM {table_name} WHERE {where}", values)
+
     def delete(self, instance, keys: Sequence[str]):
         """
         Deletes the given instance from the db given the keys given.

@@ -573,6 +573,7 @@ interface IOAuth2CallbackInfo {}
 const onLogin = async (
   provider: IOAuth2UserProvider,
   scopes: string[],
+  setOauth2SecretsData: React.Dispatch<React.SetStateAction<IProviderToCollectedOauth2Tokens>>,
   setErrorDialogMessage: React.Dispatch<React.SetStateAction<ErrorDialogInfo | undefined>>,
 ) => {
   try {

@@ -29,7 +29,7 @@ def _verify_oauth2_settings() -> Path:
     return yaml_location
 
 
-def manual_test_oauth2_vscode(
+def test_oauth2_vscode(
     action_server_process: ActionServerProcess, client: ActionServerClient, tmpdir
 ):
     """
@@ -81,7 +81,7 @@ def manual_test_oauth2_vscode(
         new=1,
     )
 
-    # At this point we have to manually make the login (5 seconds to do it).
+    # At this point we have to manually make the login (5 minutes to do it).
     request_info = fut_uri.result(60 * 5)
     assert request_info["body"]
     loaded = json.loads(request_info["body"])
@@ -90,15 +90,48 @@ def manual_test_oauth2_vscode(
     assert "expires_at" in loaded
     assert "scopes" in loaded
 
-    status = client.get_json("/oauth2/status", params={"reference_id": reference_id})
+    status = client.get_json(
+        "/oauth2/status",
+        params={
+            "reference_id": reference_id,
+            "provide_access_token": True,
+            "refresh_tokens": True,
+            "force_refresh": True,
+        },
+    )
     assert status
 
     provider_to_status = status["provider_to_status"]
 
     assert set(provider_to_status.keys()) == {"google"}
     info = provider_to_status["google"]
-    assert set(info.keys()) == {"scopes", "expires_at"}
+
+    assert set(info.keys()) == {"scopes", "access_token", "expires_at"}
     assert iso_to_datetime(info["expires_at"])
+    assert info["access_token"] != loaded["access_token"]
+
+    # Now, logout
+    status = client.get_json(
+        "/oauth2/logout",
+        params={
+            "provider": "google",
+            "reference_id": reference_id,
+        },
+    )
+
+    status = client.get_json(
+        "/oauth2/status",
+        params={
+            "reference_id": reference_id,
+            "provide_access_token": True,
+            "refresh_tokens": True,
+            "force_refresh": True,
+        },
+    )
+    assert status
+
+    provider_to_status = status["provider_to_status"]
+    assert not provider_to_status, "It should be empty as we've logged out already!"
 
 
 def manual_test_oauth2_action_server_ui(
@@ -152,12 +185,12 @@ def manual_test_oauth2_action_server_ui(
 def test_settings(tmpdir):
     import yaml
 
-    from sema4ai.action_server._api_oauth2 import _get_oauthlib_settings
+    from sema4ai.action_server._api_oauth2 import _get_oauthlib2_provider_settings
 
     oauth2_settings_file = Path(tmpdir) / "oauth2_settings.yaml"
 
     with pytest.raises(RuntimeError):  # File does not exist
-        _get_oauthlib_settings("google", str(oauth2_settings_file))
+        _get_oauthlib2_provider_settings("google", str(oauth2_settings_file))
 
     oauth2_settings_file.write_text(
         yaml.safe_dump(
@@ -166,11 +199,20 @@ def test_settings(tmpdir):
                     "clientId": "foo",
                     "clientSecret": "bar",
                     "tokenEndpoint": "<end>",
-                }
+                },
+                custom={
+                    "clientId": "f",
+                    "clientSecret": "b",
+                    "tokenEndpoint": "/end",
+                    "authorizationEndpoint": "/auth",
+                    "server": "http://server/",
+                },
             )
         )
     )
-    google_settings = _get_oauthlib_settings("google", str(oauth2_settings_file))
+    google_settings = _get_oauthlib2_provider_settings(
+        "google", str(oauth2_settings_file)
+    )
     assert google_settings.clientId == "foo"
     assert google_settings.clientSecret == "bar"
 
@@ -178,4 +220,12 @@ def test_settings(tmpdir):
     assert google_settings.tokenEndpoint == "<end>"
 
     # i.e.: the default ones should be loaded too.
-    assert google_settings.server == "https://accounts.google.com"
+    assert google_settings.server == "https://oauth2.googleapis.com"
+
+    custom_settings = _get_oauthlib2_provider_settings(
+        "custom", str(oauth2_settings_file)
+    )
+    assert custom_settings.clientId == "f"
+    assert custom_settings.clientSecret == "b"
+
+    assert custom_settings.tokenEndpoint == "http://server/end"
