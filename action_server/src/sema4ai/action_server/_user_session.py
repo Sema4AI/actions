@@ -82,7 +82,7 @@ def create_user_session(external: bool) -> "UserSession":
         return created
 
 
-def _get_user_session_from_id(
+def get_user_session_from_id(
     session_id: str, db: "Database"
 ) -> "Optional[UserSession]":
     from sema4ai.action_server._models import UserSession
@@ -106,7 +106,7 @@ def _get_session_id(request: Request) -> str:
         else:
             # There is a session id in the request. Let's check if it's still
             # valid.
-            user_session = _get_user_session_from_id(session_id, db)
+            user_session = get_user_session_from_id(session_id, db)
             if user_session is None:
                 # Cookie is there, but the session isn't in the db, we need to
                 # create a new one.
@@ -221,7 +221,7 @@ class ReferencedScopeContext(_BaseScopeContext):
         super().__init__(session_id=reference_id)
         db = get_db()
         with db.connect():
-            user_session = _get_user_session_from_id(reference_id, db=db)
+            user_session = get_user_session_from_id(reference_id, db=db)
 
         if user_session is None:
             raise AssertionError(f"The given reference_id: {reference_id} is not valid")

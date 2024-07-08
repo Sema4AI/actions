@@ -276,5 +276,6 @@ export const collectOAuth2Status = async (
   const data = await loadAsync(`${baseUrl}/oauth2/status`, 'GET', {
     params,
   });
+  console.log('loaded', data);
   setLoaded(data);
 };

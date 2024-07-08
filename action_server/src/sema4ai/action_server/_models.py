@@ -142,9 +142,16 @@ class OAuth2UserData:
 
     refresh_token: str
     access_token: str
-    expires_at: str  # date in isoformat
+
+    # date in isoformat or an
+    # empty string if not available
+    expires_at: str
+
     token_type: str
-    scopes: str  # Actually a json-blob of list[str]
+
+    # Actually a json-blob of list[str] or an
+    # empty string if it is not available.
+    scopes: str
 
 
 class RunStatus:

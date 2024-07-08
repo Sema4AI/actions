@@ -266,12 +266,20 @@ class ActionServerClient:
 
         return kwargs
 
-    def get_str(self, url, params: Optional[dict] = None) -> str:
+    def get_str(
+        self,
+        url,
+        params: Optional[dict] = None,
+        headers: Optional[dict] = None,
+        cookies: Optional[dict] = None,
+    ) -> str:
         import requests
 
         result = requests.get(
             self.build_full_url(url),
             params=(params or {}),
+            headers=headers,
+            cookies=cookies,
             **self.requests_kwargs(),
         )
         result.raise_for_status()
@@ -285,8 +293,14 @@ class ActionServerClient:
     def get_openapi_json(self, params: Optional[dict] = None):
         return self.get_str("openapi.json", params=params)
 
-    def get_json(self, url, params: Optional[dict] = None):
-        contents = self.get_str(url, params=params)
+    def get_json(
+        self,
+        url,
+        params: Optional[dict] = None,
+        headers: Optional[dict] = None,
+        cookies: Optional[dict] = None,
+    ):
+        contents = self.get_str(url, params=params, headers=headers, cookies=cookies)
         try:
             return json.loads(contents)
         except Exception:

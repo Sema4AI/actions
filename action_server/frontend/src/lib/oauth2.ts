@@ -15,7 +15,7 @@ export interface IRequiredOauth2Data {
  * Used to define oauth tokens which were actually collected from the user.
  */
 export interface ICollectedOauth2Tokens {
-  scopes: string[];
+  scopes: string[] | undefined | null;
   expires_at: string;
 }
 

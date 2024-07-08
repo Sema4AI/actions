@@ -367,7 +367,7 @@ export const ActionRun: FC<Props> = ({ action, actionPackage }) => {
           : useData[key];
 
         let loginRequired = !currentCollectedTokens;
-        if (currentCollectedTokens) {
+        if (currentCollectedTokens && currentCollectedTokens.scopes) {
           for (const scope of value.scopes) {
             if (!currentCollectedTokens.scopes.includes(scope)) {
               loginRequired = true;
@@ -605,7 +605,7 @@ const onLogin = async (
   setErrorDialogMessage: React.Dispatch<React.SetStateAction<ErrorDialogInfo | undefined>>,
 ) => {
   try {
-    const uri = `/oauth2/login?provider=${provider}&scopes=${scopes.join(',')}`;
+    const uri = `/oauth2/login?provider=${provider}&scopes=${scopes.join(' ')}`;
 
     const authWindow = window.open(uri, undefined, 'width=800,height=800,popup=true');
     if (authWindow) {

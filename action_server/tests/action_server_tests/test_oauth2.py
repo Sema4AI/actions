@@ -29,7 +29,7 @@ def _verify_oauth2_settings() -> Path:
     return yaml_location
 
 
-def test_oauth2_vscode(
+def manual_test_oauth2_vscode(
     action_server_process: ActionServerProcess, client: ActionServerClient, tmpdir
 ):
     """
@@ -38,13 +38,14 @@ def test_oauth2_vscode(
     """
     import webbrowser
 
-    from sema4ai.action_server._user_session import iso_to_datetime
+    from sema4ai.action_server._encryption import make_unencrypted_data_envelope
+    from sema4ai.action_server._user_session import COOKIE_SESSION_ID, iso_to_datetime
     from sema4ai.action_server.vendored_deps.url_callback_server import (
         start_server_in_thread,
     )
 
     _verify_oauth2_settings()
-    pack = get_in_resources("no_conda", "greeter")
+    pack = get_in_resources("no_conda", "oauth2")
 
     action_server_process.start(
         actions_sync=True,
@@ -74,7 +75,7 @@ def test_oauth2_vscode(
         client.build_full_url(
             "/oauth2/login?"
             "provider=google&"
-            "scopes=https://www.googleapis.com/auth/drive.readonly&"
+            "scopes=openid,https://www.googleapis.com/auth/userinfo.email,https://www.googleapis.com/auth/userinfo.profile&"
             f"reference_id={reference_id}"
             f"&callback_url={callback_url}"
         ),
@@ -109,6 +110,19 @@ def test_oauth2_vscode(
     assert set(info.keys()) == {"scopes", "access_token", "expires_at"}
     assert iso_to_datetime(info["expires_at"])
     assert info["access_token"] != loaded["access_token"]
+
+    # Ok, we're logged in. Call an action that requires it.
+    found1 = client.post_get_str(
+        "api/actions/oauth2/greet-user-oauth2/run",
+        {},
+        cookies={COOKIE_SESSION_ID: reference_id},
+        headers={
+            "x-action-context": make_unencrypted_data_envelope(
+                {"secrets": {"regular_secret": "some-secret"}}
+            )
+        },
+    )
+    assert found1.startswith('"Hello: ')
 
     # Now, logout
     status = client.get_json(
@@ -170,7 +184,7 @@ def manual_test_oauth2_action_server_ui(
     webbrowser.open(
         client.build_full_url(
             "/oauth2/login?provider=google&"
-            "scopes=https://www.googleapis.com/auth/drive.readonly&"
+            "scopes=openid"
             f"callback_url={callback_url}"
         ),
         new=1,

@@ -7,8 +7,9 @@ import sys
 import threading
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Dict, Iterator, List, Optional, Set
+from typing import Any, Dict, Iterator, List, Optional, Set
 
+from sema4ai.actions._action_context import ActionContext
 from starlette.requests import Request
 from termcolor import colored
 
@@ -273,11 +274,103 @@ class ProcessHandle:
         request: Request,
         reuse_process: bool,
     ) -> int:
+        from sema4ai.action_server._api_oauth2 import refresh_tokens
         from sema4ai.action_server._api_secrets import IN_MEMORY_SECRETS
+        from sema4ai.action_server._encryption import (
+            get_encryption_keys,
+            make_encrypted_data_envelope,
+            make_unencrypted_data_envelope,
+        )
+        from sema4ai.action_server._models import OAuth2UserData, get_db
+        from sema4ai.action_server._user_session import (
+            COOKIE_SESSION_ID,
+            get_user_session_from_id,
+        )
 
-        headers = dict(request.headers)
+        headers = dict((x[0].lower(), x[1]) for x in request.headers.items())
 
         headers = IN_MEMORY_SECRETS.update_headers(action_package, action, headers)
+
+        session_id = request.cookies.get(COOKIE_SESSION_ID)
+        if session_id:
+            db = get_db()
+            with db.connect():
+                user_session = get_user_session_from_id(session_id, db)
+                if user_session:
+                    # Verify whether we need to add OAuth2 secrets from the current
+                    # user session.
+                    where, values = db.where_from_dict({"user_session_id": session_id})
+
+                    required_providers = set()
+
+                    param_name_to_provider: dict[str, str] = {}
+                    managed_params_schema = action.managed_params_schema
+                    if managed_params_schema:
+                        loaded = json.loads(managed_params_schema)
+                        for param_name, param_info in loaded.items():
+                            if param_info.get("type") == "OAuth2Secret":
+                                provider = param_info.get("provider")
+                                if provider:
+                                    param_name_to_provider[param_name] = provider
+                                    required_providers.add(provider)
+
+                    # Note: if it's not there it's not a blocker (it may've
+                    # been passed in the x-action-context header or in the
+                    # input json).
+                    provider_to_access_data: dict[str, OAuth2UserData] = {}
+                    for user_data in db.all(OAuth2UserData, where=where, values=values):
+                        if user_data.provider in required_providers:
+                            provider_to_access_data[user_data.provider] = user_data
+
+                    # Now that we have the information needed, refresh it.
+                    if provider_to_access_data:
+                        new_oauth2_data = refresh_tokens(
+                            session_id, provider_to_access_data.values()
+                        )
+                        provider_to_access_data = dict(
+                            (d.provider, d) for d in new_oauth2_data
+                        )
+
+                        base: Optional[Any] = None
+
+                        x_action_context_key = "x-action-context"
+                        x_action_context = headers.get(x_action_context_key)
+
+                        if x_action_context:
+                            action_context = ActionContext(x_action_context)
+                            base = action_context.value
+
+                        data = {}
+
+                        if base:
+                            data.update(base)
+
+                        for param_name, provider in param_name_to_provider.items():
+                            access_data = provider_to_access_data.get(provider)
+                            if access_data:
+                                # i.e.: if it's not there, don't add it, let the
+                                # action itself fail and provide the needed info.
+                                ctx = data.setdefault("secrets", {})
+                                ctx[param_name] = {
+                                    "provider": provider,
+                                    "access_token": access_data.access_token,
+                                }
+
+                        # No context passed: create one now
+                        keys = get_encryption_keys()
+                        if keys:
+                            # Data must be filled as:
+                            # "my_oauth2_secret": {
+                            #   "provider": "google",
+                            #   "scopes": ["scope1", "scope2"],
+                            #   "access_token": "<this-is-the-access-token>",
+                            #   "metadata": { "any": "additional info" }
+                            # }
+                            header_value = make_encrypted_data_envelope(keys[0], data)
+                        else:
+                            header_value = make_unencrypted_data_envelope(data)
+
+                        headers[x_action_context_key] = header_value
 
         msg = {
             "command": "run_action",

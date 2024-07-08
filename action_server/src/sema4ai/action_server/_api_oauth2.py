@@ -28,7 +28,7 @@ import os
 import typing
 from functools import lru_cache, partial
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Iterable, Optional
 
 import requests
 from fastapi.routing import APIRouter
@@ -105,7 +105,7 @@ _DEFAULT_OAUTH2_SETTINGS: dict[str, OAuth2ProviderSettings] = {
 _in_flight_state: dict = {}
 
 
-class StatusResponse(BaseModel):
+class StatusResponseModel(BaseModel):
     success: bool
     error_message: Optional[str] = ""
 
@@ -114,8 +114,9 @@ class StatusResponse(BaseModel):
 async def oauth2_logout(
     provider: str,
     request: Request,
+    response: Response,
     reference_id: str = "",
-) -> StatusResponse:
+) -> StatusResponseModel:
     from sema4ai.action_server._models import OAuth2UserData, get_db
     from sema4ai.action_server._user_session import (
         referenced_session_scope,
@@ -136,6 +137,7 @@ async def oauth2_logout(
     db = get_db()
 
     with use_session_scope as session, db.connect():
+        session.response = response
         where, values = db.where_from_dict(
             dict(user_session_id=session.session_id, provider=provider)
         )
@@ -168,10 +170,9 @@ async def oauth2_logout(
                         f"Failed to revoke token. Status code: {p.status_code}, Response: {p.text}"
                     )
 
-        response = StatusResponse(success=True)
-        session.response = response
+        response_model = StatusResponseModel(success=True)
 
-    return response
+    return response_model
 
 
 @oauth2_api_router.get("/login")
@@ -185,10 +186,11 @@ async def oauth2_login(
     """
     Args:
         provider: The provider (google, github, etc)
-        scopes: A comma-separated list of scopes requested.
+        scopes: A space-separated list of scopes requested.
         reference_id: If given the authentication info will later on be accessible through
             the given `reference_id`
     """
+    log.info("/oauth2/login. Provider: %s, Scopes: %s", provider, scopes)
     from requests_oauthlib import OAuth2Session  # type: ignore
 
     from sema4ai.action_server._database import Database
@@ -230,7 +232,7 @@ async def oauth2_login(
         auth_url = settings.authorizationEndpoint
 
         oauth2_session = OAuth2Session(
-            client_id=client_id, redirect_uri=redirect_uri, scope=scopes
+            client_id=client_id, redirect_uri=redirect_uri, scope=scopes.split(" ")
         )
 
         params = settings.authParams or {}
@@ -252,13 +254,9 @@ async def oauth2_login(
 
 
 class OAuth2StatusResponseForProvider(BaseModel):
-    scopes: list[str]
-    expires_at: str  # iso-formatted datetime
+    scopes: Optional[list[str]]
+    expires_at: str  # iso-formatted datetime or empty string
     access_token: Optional[str]  # Only available if not an automatic id
-
-
-class OAuth2StatusResponseModel(BaseModel):
-    provider_to_status: dict[str, OAuth2StatusResponseForProvider]
 
 
 @oauth2_api_router.get("/status")
@@ -269,7 +267,7 @@ async def oauth2_status(
     refresh_tokens: bool = False,
     force_refresh: bool = False,
     provide_access_token: bool = False,
-) -> OAuth2StatusResponseModel:
+) -> dict[str, OAuth2StatusResponseForProvider]:
     """
     Collects the current status for the OAuth2 (either for the
     current session or the passed `reference_id`).
@@ -303,7 +301,7 @@ async def oauth2_status(
         where, values = db.where_from_dict(dict(user_session_id=session.session_id))
 
         current_oauth2_user_data = db.all(OAuth2UserData, where=where, values=values)
-        must_renew: list[OAuth2UserData]
+        must_renew: list[OAuth2UserData] = []
         if refresh_tokens:
             if force_refresh:
                 must_renew = current_oauth2_user_data
@@ -326,20 +324,43 @@ async def oauth2_status(
                 OAuth2UserData, where=where, values=values
             )
 
-        for oauth_user_data in db.all(OAuth2UserData, where=where, values=values):
+        for oauth_user_data in current_oauth2_user_data:
             access_token = None
             if provide_access_token:
                 access_token = oauth_user_data.access_token
             provider_to_status[
                 oauth_user_data.provider
             ] = OAuth2StatusResponseForProvider(
-                expires_at=oauth_user_data.expires_at,
-                scopes=json.loads(oauth_user_data.scopes),
+                expires_at=oauth_user_data.expires_at,  # may be empty
+                scopes=json.loads(oauth_user_data.scopes)
+                if oauth_user_data.scopes
+                else None,
                 access_token=access_token,
             )
 
-    status = OAuth2StatusResponseModel(provider_to_status=provider_to_status)
-    return status
+    return provider_to_status
+
+
+def refresh_tokens(
+    use_id: str, oauth2_user_data_lst: Iterable["OAuth2UserData"]
+) -> list["OAuth2UserData"]:
+    """
+    Args:
+        use_id: The id of the session to which the tokens are related to.
+        oauth2_user_data_lst: The OAuth2 information that should have the
+            access_token refreshed.
+    """
+    new_lst: list["OAuth2UserData"] = []
+
+    for oauth2_user_data in oauth2_user_data_lst:
+        assert oauth2_user_data.user_session_id == use_id
+
+        if _should_renew(oauth2_user_data):
+            new_lst.append(_refresh_token(use_id, oauth2_user_data))
+        else:
+            new_lst.append(oauth2_user_data)
+
+    return new_lst
 
 
 def _refresh_token(use_id: str, oauth2_user_data: "OAuth2UserData") -> "OAuth2UserData":
@@ -365,10 +386,24 @@ def _refresh_token(use_id: str, oauth2_user_data: "OAuth2UserData") -> "OAuth2Us
     return _update_db_with_token(use_id, oauth2_user_data.provider, token)
 
 
-def _should_renew(status: "OAuth2UserData") -> bool:
+def _should_renew(oauth2_user_data: "OAuth2UserData") -> bool:
+    """
+    Args:
+        oauth2_user_data: The data to be checked
+
+    Returns:
+        True if the oauth2 access_token should be renewed and False otherwise.
+    """
     from sema4ai.action_server._user_session import iso_to_datetime
 
-    d = iso_to_datetime(status.expires_at)
+    if not oauth2_user_data.refresh_token:
+        # Unable to renew in this case as there's no refresh_token to renew.
+        return False
+
+    if not oauth2_user_data.expires_at:
+        return False
+
+    d = iso_to_datetime(oauth2_user_data.expires_at)
     now = datetime.datetime.now()
     refresh_newer_than = now - datetime.timedelta(minutes=10)
     return d > refresh_newer_than
@@ -417,11 +452,38 @@ def _update_db_with_token(use_id: str, provider: str, token) -> "OAuth2UserData"
     from sema4ai.action_server._user_session import datetime_to_iso
 
     access_token = token.get("access_token", "")
-    scopes = token.scopes
+
+    if not token.scope:  # It may not be available (Hubspot)
+        scopes = ""
+    else:
+        if " " in token.scope:
+            # This seems to be the correct in the RFC.
+            scopes_lst = token.scope.split(" ")
+        elif "," in token.scope:
+            # Slack gives this.
+            scopes_lst = token.scope.split(",")
+        else:
+            scopes_lst = [token.scope]
+        scopes = json.dumps(scopes_lst)
+
     refresh_token = token.get("refresh_token", "")
+    if not refresh_token:
+        log.info(
+            f"No `refresh_token` provided when authenticating with provider: {provider} (a refresh will not be possible)."
+        )
     expires_at = token.get("expires_at", "")
     if expires_at:
         expires_at = datetime_to_iso(expires_at)
+    else:
+        log.info(
+            f"No `expires_at` provided when authenticating with provider: {provider} (a refresh will not be possible)."
+        )
+
+        # TODO: Allow users to configure in config file if not available?
+        # https://www.rfc-editor.org/rfc/rfc6749.html says:
+        # expires_in: RECOMMENDED.
+        # If omitted, the authorization server SHOULD provide the
+        # expiration time via other means or document the default value
 
     token_type = token.get("token_type")
 
@@ -432,7 +494,7 @@ def _update_db_with_token(use_id: str, provider: str, token) -> "OAuth2UserData"
         access_token=access_token,
         expires_at=expires_at,
         token_type=token_type,
-        scopes=json.dumps(scopes),
+        scopes=scopes,
     )
 
     db: Database = get_db()
