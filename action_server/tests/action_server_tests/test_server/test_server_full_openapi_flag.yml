@@ -87,6 +87,15 @@ components:
       - size_in_bytes
       title: ArtifactInfo
       type: object
+    CreatedReferenceId:
+      properties:
+        reference_id:
+          title: Reference Id
+          type: string
+      required:
+      - reference_id
+      title: CreatedReferenceId
+      type: object
     HTTPValidationError:
       properties:
         errors:
@@ -95,6 +104,35 @@ components:
           title: Errors
           type: array
       title: HTTPValidationError
+      type: object
+    OAuth2StatusResponseForProvider:
+      properties:
+        access_token:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Access Token
+        expires_at:
+          title: Expires At
+          type: string
+        metadata:
+          anyOf:
+          - type: object
+          - type: 'null'
+          title: Metadata
+        scopes:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Scopes
+      required:
+      - scopes
+      - expires_at
+      - access_token
+      - metadata
+      title: OAuth2StatusResponseForProvider
       type: object
     Run:
       properties:
@@ -155,6 +193,21 @@ components:
       required:
       - data
       title: SetSecretData
+      type: object
+    StatusResponseModel:
+      properties:
+        error_message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: ''
+          title: Error Message
+        success:
+          title: Success
+          type: boolean
+      required:
+      - success
+      title: StatusResponseModel
       type: object
     ValidationError:
       properties:
@@ -427,30 +480,112 @@ paths:
               schema: {}
           description: Successful Response
       summary: Serve Config
-  /oauth2/redirect:
+  /oauth2/create-reference-id:
     get:
-      operationId: oauth2_redirect_oauth2_redirect_get
+      description: 'Creates a new reference ID (using this reference it''s later possible
+
+        to obtain the access_token and query the state of the OAuth2 authentication).'
+      operationId: create_reference_id_oauth2_create_reference_id_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedReferenceId'
+          description: Successful Response
+      summary: Create Reference Id
+  /oauth2/login:
+    get:
+      description: "Args:\n    provider: The provider (google, github, etc)\n    scopes:\
+        \ A space-separated list of scopes requested.\n    reference_id: If given\
+        \ the authentication info will later on be accessible through\n        the\
+        \ given `reference_id`"
+      operationId: oauth2_login_oauth2_login_get
       parameters:
       - in: query
-        name: code
+        name: provider
+        required: true
+        schema:
+          title: Provider
+          type: string
+      - in: query
+        name: scopes
+        required: true
+        schema:
+          title: Scopes
+          type: string
+      - in: query
+        name: reference_id
         required: false
         schema:
           default: ''
-          title: Code
+          title: Reference Id
           type: string
+      - in: query
+        name: callback_url
+        required: false
+        schema:
+          default: ''
+          title: Callback Url
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Oauth2 Login
+  /oauth2/logout:
+    get:
+      operationId: oauth2_logout_oauth2_logout_get
+      parameters:
+      - in: query
+        name: provider
+        required: true
+        schema:
+          title: Provider
+          type: string
+      - in: query
+        name: reference_id
+        required: false
+        schema:
+          default: ''
+          title: Reference Id
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusResponseModel'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Oauth2 Logout
+  /oauth2/redirect:
+    get:
+      description: 'Callback that should''ve been registered in the OAuth2 callback
+        to
+
+        complete the authentication flow.'
+      operationId: oauth2_redirect_oauth2_redirect_get
+      parameters:
       - in: query
         name: state
         required: false
         schema:
           default: ''
           title: State
-          type: string
-      - in: query
-        name: scope
-        required: false
-        schema:
-          default: ''
-          title: Scope
           type: string
       responses:
         '200':
@@ -476,6 +611,58 @@ paths:
                 type: string
           description: Successful Response
       summary: Serve Index
+  /oauth2/status:
+    get:
+      description: 'Collects the current status for the OAuth2 (either for the
+
+        current session or the passed `reference_id`).'
+      operationId: oauth2_status_oauth2_status_get
+      parameters:
+      - in: query
+        name: reference_id
+        required: false
+        schema:
+          default: ''
+          title: Reference Id
+          type: string
+      - in: query
+        name: refresh_tokens
+        required: false
+        schema:
+          default: false
+          title: Refresh Tokens
+          type: boolean
+      - in: query
+        name: force_refresh
+        required: false
+        schema:
+          default: false
+          title: Force Refresh
+          type: boolean
+      - in: query
+        name: provide_access_token
+        required: false
+        schema:
+          default: false
+          title: Provide Access Token
+          type: boolean
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  $ref: '#/components/schemas/OAuth2StatusResponseForProvider'
+                title: Response Oauth2 Status Oauth2 Status Get
+                type: object
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Oauth2 Status
   /runs/{full_path}:
     get:
       operationId: serve_index_runs__full_path__get

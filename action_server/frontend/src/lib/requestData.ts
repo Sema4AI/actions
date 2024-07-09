@@ -264,3 +264,17 @@ export const collectRunArtifacts = async (
   });
   setLoaded(data);
 };
+
+export const collectOAuth2Status = async (
+  setLoaded: Dispatch<SetStateAction<AsyncLoaded<any>>>,
+  params: any,
+) => {
+  setLoaded({
+    isPending: true,
+    data: undefined,
+  });
+  const data = await loadAsync(`${baseUrl}/oauth2/status`, 'GET', {
+    params,
+  });
+  setLoaded(data);
+};

@@ -37,25 +37,10 @@ to run the action along with a `count` parameter.
 ## Configuring OAuth2
 
 In this case, a developer must create an application in the proper service
-(say, `google` and `slack`), fill in the details in the `OAuth2 Settings`
+(say, `google` and `slack`), fill in the details in the `OAuth2 Settings YAML`
 and then do the proper `login` in the service in the `Run Action UI` to run the action.
 
-The image below shows an example of configuration where `slack` and `google`
-are configured.
-
-Note: the information is automatically saved when it's valid (incorrect
-data will not be persisted and will be lost if switching to a different tab).
-
-![Action Server OAuth2 Settings UI](./images/action-server-ui-oauth2-settings.png)
-
-Note: all the information entered (such as the OAuth2 data as well as secrets) is
-encrypted and persisted in the browser local storage (so, if you change the URL at
-which the Action Server is loaded or change from `http` to `https`, the data
-will need to be reentered).
-
-Also, while the information is encrypted, the key to decrypt the information is saved
-in the filesystem so that it's available from the Action Server, so, if an attacker
-is able to get into your computer he could have access to the key.
+See: ![OAuth2 Development](./12-oauth2-development.md)
 
 ## Runs
 

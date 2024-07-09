@@ -9,6 +9,7 @@ from typing import (
     Sequence,
     TypedDict,
     TypeVar,
+    Union,
 )
 
 if typing.TYPE_CHECKING:
@@ -210,6 +211,7 @@ class ArgumentsNamespaceStart(ArgumentsNamespaceBaseImportOrStart):
     ssl_self_signed: bool
     ssl_keyfile: str
     ssl_certfile: str
+    oauth2_settings: str
 
 
 class ArgumentsNamespacePackagePush(ArgumentsNamespace):
@@ -276,3 +278,8 @@ class ArgumentsNamespaceCloudOrganizations(ArgumentsNamespace):
     access_credentials: Optional[str]
     hostname: Optional[str]
     json: bool
+
+
+JSONValue = Union[
+    dict[str, "JSONValue"], list["JSONValue"], str, int, float, bool, None
+]

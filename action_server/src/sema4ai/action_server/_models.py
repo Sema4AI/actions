@@ -106,6 +106,58 @@ class Run:
     _db_rules.unique_indexes.add("Run.numbered_id")
 
 
+@dataclass
+class UserSession:
+    id: str  # primary key (uuid)
+    _db_rules.unique_indexes.add("UserSession.id")
+
+    created_at: str  # date in isoformat
+    accessed_at: str  # date in isoformat
+
+    external: bool  # Determines if it was requested to be created internally (automatically) or externally
+    _db_rules.indexes.add("UserSession.external")
+
+
+@dataclass
+class TempUserSessionData:
+    user_session_id: str  # foreign key (uuid)
+    _db_rules.foreign_keys.add("TempUserSessionData.user_session_id")
+    _db_rules.indexes.add("TempUserSessionData.user_session_id")
+
+    key: str
+    _db_rules.indexes.add("TempUserSessionData.key")
+
+    data: str  # A json-blob of data
+    expires_at: str  # date in isoformat
+
+
+@dataclass
+class OAuth2UserData:
+    user_session_id: str  # foreign key (uuid)
+    _db_rules.foreign_keys.add("OAuth2.user_session_id")
+    _db_rules.indexes.add("OAuth2.user_session_id")
+
+    provider: str
+    _db_rules.indexes.add("OAuth2.provider")
+
+    refresh_token: str
+    access_token: str
+
+    # date in isoformat or an
+    # empty string if not available
+    expires_at: str
+
+    token_type: str
+
+    # Actually a json-blob of list[str] or an
+    # empty string if it is not available.
+    scopes: str
+
+    # May be used to add metadata obtained from the OAuth2 flow into the
+    # model (for data which is not available in the above info already).
+    metadata: str = ""
+
+
 class RunStatus:
     NOT_RUN = 0
     RUNNING = 1
@@ -116,7 +168,16 @@ class RunStatus:
 def get_all_model_classes():
     from sema4ai.action_server.migrations import Migration
 
-    return [Migration, ActionPackage, Action, Run, Counter]
+    return [
+        Migration,
+        ActionPackage,
+        Action,
+        Run,
+        Counter,
+        UserSession,
+        TempUserSessionData,
+        OAuth2UserData,
+    ]
 
 
 def get_model_db_rules() -> DBRules:

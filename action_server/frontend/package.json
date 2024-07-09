@@ -31,7 +31,6 @@
     "@codemirror/view": "^6.28.1",
     "@sema4ai/components": "0.1.1",
     "@sema4ai/icons": "0.1.2",
-    "@sema4ai/oauth-client": "0.3.2",
     "@sema4ai/theme": "0.1.1-RC1",
     "@tanstack/react-query": "^5.28.0",
     "date-fns": "^2.30.0",

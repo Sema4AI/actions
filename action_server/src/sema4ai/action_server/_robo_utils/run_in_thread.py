@@ -1,3 +1,4 @@
+import asyncio.futures
 from concurrent import futures
 from typing import Callable, TypeVar
 
@@ -26,3 +27,17 @@ def run_in_thread(target: Callable[[], T], **kwargs) -> futures.Future[T]:
     t = threading.Thread(target=new_target, **kwargs)
     t.start()
     return fut
+
+
+def run_in_thread_asyncio(
+    target: Callable[[], T],
+    **kwargs,
+) -> asyncio.futures.Future[T]:
+    """
+    Runs a given target in a thread returning an asyncio Future which can be
+    awaited in an asyncio loop.
+    """
+    from asyncio.futures import wrap_future
+
+    fut = run_in_thread(target, **kwargs)
+    return wrap_future(fut)

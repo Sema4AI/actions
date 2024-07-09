@@ -140,6 +140,12 @@ class Settings:
     ssl_keyfile: str = ""  # The path to the server.key
     ssl_certfile: str = ""  # The path to the certificate.pem (contains the public key)
 
+    oauth2_settings: str = ""
+
+    # This is set after the server is started
+    # (so, even if the port is 0, it should map to the actually mapped port).
+    base_url: Optional[str] = None
+
     @classmethod
     def defaults(cls):
         fields = cls.__dataclass_fields__
@@ -192,6 +198,7 @@ class Settings:
             "ssl_self_signed",
             "ssl_keyfile",
             "ssl_certfile",
+            "oauth2_settings",
         ):
             assert hasattr(settings, attr)
             if hasattr(args, attr):
@@ -226,12 +233,12 @@ class Settings:
         if args.command == "start":
             # At this point, if using a self-signed certificate, it'll be
             # created and ssl_keyfile/ssl_certfile will be set.
+            user_path = get_user_sema4_path()
+
             if settings.use_https:
                 if settings.ssl_self_signed:
-                    from sema4ai.action_server import _gen_certificate
+                    from sema4ai.action_server.vendored_deps import gen_certificate
                     from sema4ai.action_server.vendored_deps.termcolors import bold
-
-                    user_path = get_user_sema4_path()
 
                     private_path = user_path / "action-server-private-keyfile.pem"
                     public_path = user_path / "action-server-public-certfile.pem"
@@ -239,7 +246,7 @@ class Settings:
                     if not private_path.exists() or not public_path.exists():
                         from sema4ai.action_server._storage import KEY_FILE_PERMISSIONS
 
-                        public, private = _gen_certificate.gen_self_signed_certificate()
+                        public, private = gen_certificate.gen_self_signed_certificate()
 
                         public_path.write_bytes(public)
                         private_path.write_bytes(private)
@@ -254,6 +261,9 @@ class Settings:
                 else:
                     # Note: this was already previously checked.
                     assert settings.ssl_keyfile and settings.ssl_certfile
+
+            if not settings.oauth2_settings:
+                settings.oauth2_settings = str(user_path / "oauth2-settings.yaml")
 
         return settings
 
