@@ -117,6 +117,7 @@ async def oauth2_logout(
     response: Response,
     reference_id: str = "",
 ) -> StatusResponseModel:
+    from sema4ai.action_server._encryption import decrypt_simple
     from sema4ai.action_server._models import OAuth2UserData, get_db
     from sema4ai.action_server._user_session import (
         referenced_session_scope,
@@ -154,7 +155,20 @@ async def oauth2_logout(
             revoke_url = settings.revocationEndpoint
             if revoke_url:
                 for user_data in current_oauth2_user_data:
-                    for token in [user_data.access_token, user_data.refresh_token]:
+                    for token_attr in ["access_token", "refresh_token"]:
+                        token = getattr(user_data, token_attr)
+                        if not token:
+                            continue
+                        try:
+                            token = typing.cast(str, decrypt_simple(token))
+                        except Exception:
+                            log.critical(
+                                f"It was not possible to decrypt the {token_attr}, secrets won't be revoked in server."
+                            )
+                            continue
+                        if not token:
+                            continue
+
                         payload = {"token": token}
                         headers = {
                             "Content-Type": "application/x-www-form-urlencoded",
@@ -277,6 +291,7 @@ async def oauth2_status(
     """
     import asyncio.futures
 
+    from sema4ai.action_server._encryption import decrypt_simple
     from sema4ai.action_server._models import OAuth2UserData, get_db
     from sema4ai.action_server._robo_utils.run_in_thread import run_in_thread_asyncio
     from sema4ai.action_server._user_session import (
@@ -331,8 +346,15 @@ async def oauth2_status(
             settings = _get_oauthlib2_provider_settings(oauth2_user_data.provider)
             access_token = None
             if provide_access_token:
-                access_token = oauth2_user_data.access_token
-
+                try:
+                    access_token = typing.cast(
+                        str, decrypt_simple(oauth2_user_data.access_token)
+                    )
+                except Exception:
+                    log.critical(
+                        "It was not possible to decrypt the access token, secrets won't be sent"
+                        "(the storage key has probably changed, so, a new login will be needed)."
+                    )
             metadata: dict = {}
             if settings.server:
                 # Always pass the server if it's available.
@@ -381,17 +403,32 @@ def _refresh_token(use_id: str, oauth2_user_data: "OAuth2UserData") -> "OAuth2Us
     Updates the information in the database and returns a new OAuth2UserData
     instance with the updated values (the input instance will be unchanged).
     """
+    from sema4ai.action_server._encryption import decrypt_simple
+
     settings = _get_oauthlib2_provider_settings(oauth2_user_data.provider)
     oauth2_session = _create_oauth2_session(oauth2_user_data.provider)
     client_secret = settings.clientSecret
     client_id = settings.clientId
     token_url = settings.tokenEndpoint
 
+    if not oauth2_user_data.refresh_token:
+        raise RuntimeError(
+            f"Unable to refresh token because a 'refresh_token' was not available. Provider: {oauth2_user_data.provider}."
+        )
+
+    try:
+        refresh_token = decrypt_simple(oauth2_user_data.refresh_token)
+    except Exception:
+        raise RuntimeError(
+            "It was not possible to decrypt the refresh_token "
+            "(the storage key has probably changed, so, a new login will be needed)."
+        )
+
     token = oauth2_session.refresh_token(
         token_url,
         client_id=client_id,
         client_secret=client_secret,
-        refresh_token=oauth2_user_data.refresh_token,
+        refresh_token=refresh_token,
     )
 
     return _update_db_with_token(use_id, oauth2_user_data.provider, token)
@@ -459,6 +496,7 @@ def _create_oauth2_session(
 
 def _update_db_with_token(use_id: str, provider: str, token) -> "OAuth2UserData":
     from sema4ai.action_server._database import Database
+    from sema4ai.action_server._encryption import encrypt_simple
     from sema4ai.action_server._models import OAuth2UserData, get_db
     from sema4ai.action_server._user_session import datetime_to_iso
 
@@ -501,8 +539,8 @@ def _update_db_with_token(use_id: str, provider: str, token) -> "OAuth2UserData"
     data = OAuth2UserData(
         user_session_id=use_id,
         provider=provider,
-        refresh_token=refresh_token,
-        access_token=access_token,
+        refresh_token=encrypt_simple(refresh_token) if refresh_token else refresh_token,
+        access_token=encrypt_simple(access_token) if access_token else access_token,
         expires_at=expires_at,
         token_type=token_type,
         scopes=scopes,
@@ -570,13 +608,14 @@ async def oauth2_redirect(request: Request, state: str = "") -> HTMLResponse:
 
         data = _update_db_with_token(use_id, provider, token)
 
-        if callback_url:
+        if reference_id and callback_url:
             result = requests.post(
                 callback_url,
                 headers=headers,
                 json={
                     "provider": provider,
-                    "access_token": data.access_token,
+                    "reference_id": reference_id,
+                    "access_token": token.get("access_token", ""),
                     "expires_at": data.expires_at,
                     "token_type": data.token_type,
                     "scopes": data.scopes,

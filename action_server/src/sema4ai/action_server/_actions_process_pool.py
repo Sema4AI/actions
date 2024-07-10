@@ -281,6 +281,7 @@ class ProcessHandle:
         )
         from sema4ai.action_server._api_secrets import IN_MEMORY_SECRETS
         from sema4ai.action_server._encryption import (
+            decrypt_simple,
             get_encryption_keys,
             make_encrypted_data_envelope,
             make_unencrypted_data_envelope,
@@ -351,20 +352,32 @@ class ProcessHandle:
 
                         for param_name, provider in param_name_to_provider.items():
                             access_data = provider_to_access_data.get(provider)
-                            if access_data:
-                                settings = _get_oauthlib2_provider_settings(provider)
-                                # i.e.: if it's not there, don't add it, let the
-                                # action itself fail and provide the needed info.
-                                metadata: dict[str, JSONValue] = {}
-                                if settings.server:
-                                    # Always pass the server if it's available.
-                                    metadata["server"] = settings.server
-                                ctx = data.setdefault("secrets", {})
-                                ctx[param_name] = {
-                                    "provider": provider,
-                                    "access_token": access_data.access_token,
-                                    "metadata": metadata,
-                                }
+                            if access_data and access_data.access_token:
+                                try:
+                                    access_token = decrypt_simple(
+                                        access_data.access_token
+                                    )
+                                except Exception:
+                                    log.critical(
+                                        "It was not possible to decrypt the access token, secrets won't be sent"
+                                        "(the storage key has probably changed, so, a new login will be needed)."
+                                    )
+                                else:
+                                    settings = _get_oauthlib2_provider_settings(
+                                        provider
+                                    )
+                                    # i.e.: if it's not there, don't add it, let the
+                                    # action itself fail and provide the needed info.
+                                    metadata: dict[str, JSONValue] = {}
+                                    if settings.server:
+                                        # Always pass the server if it's available.
+                                        metadata["server"] = settings.server
+                                    ctx = data.setdefault("secrets", {})
+                                    ctx[param_name] = {
+                                        "provider": provider,
+                                        "access_token": access_token,
+                                        "metadata": metadata,
+                                    }
 
                         # No context passed: create one now
                         keys = get_encryption_keys()

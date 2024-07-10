@@ -253,7 +253,7 @@ def start_server(
 
         index_html = _static_contents.FILE_CONTENTS["index.html"]
 
-        key = base64.b64encode(get_key()).decode("utf-8")
+        key = base64.b64encode(get_key("ui")).decode("utf-8")
         _cache["cached"] = index_html.replace(
             b"<script",
             f"<script>window.ENCRYPTION_KEY={key!r};</script><script".encode("utf-8"),

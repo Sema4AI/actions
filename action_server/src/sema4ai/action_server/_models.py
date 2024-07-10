@@ -140,8 +140,8 @@ class OAuth2UserData:
     provider: str
     _db_rules.indexes.add("OAuth2.provider")
 
-    refresh_token: str
-    access_token: str
+    refresh_token: str  # Data encrypted with storage key
+    access_token: str  # Data encrypted with storage key
 
     # date in isoformat or an
     # empty string if not available
