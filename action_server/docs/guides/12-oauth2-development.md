@@ -58,7 +58,7 @@ custom:
 # it was initialized.
 devServerInfo:
   datadir: "./oauth2-datadir"
-  redirectUri: "https://localhost:8033"
+  redirectUri: "https://localhost:4567"
   # If the redirectUri starts with `https`, ssl information is
   # needed. In this case it's possible to either set `sslSelfSigned`
   # to true to automatically create a self-signed certificate or

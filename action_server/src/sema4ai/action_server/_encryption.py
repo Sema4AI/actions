@@ -1,7 +1,7 @@
 import base64
 import json
 import os
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Dict, List, Optional
 
 from sema4ai.actions._protocols import JSONValue
 
