@@ -155,20 +155,18 @@ async def oauth2_logout(
             if revoke_url:
                 for user_data in current_oauth2_user_data:
                     for token in [user_data.access_token, user_data.refresh_token]:
-                        pass
+                        payload = {"token": token}
+                        headers = {
+                            "Content-Type": "application/x-www-form-urlencoded",
+                            "Authorization": f"Bearer {token}",
+                        }
 
-                payload = {"token": token}
-                headers = {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                    "Authorization": f"Bearer {token}",
-                }
+                        p = requests.post(revoke_url, data=payload, headers=headers)
 
-                p = requests.post(revoke_url, data=payload, headers=headers)
-
-                if p.status_code != 200:
-                    log.critical(
-                        f"Failed to revoke token. Status code: {p.status_code}, Response: {p.text}"
-                    )
+                        if p.status_code != 200:
+                            log.critical(
+                                f"Failed to revoke token. Status code: {p.status_code}, Response: {p.text}"
+                            )
 
         response_model = StatusResponseModel(success=True)
 
