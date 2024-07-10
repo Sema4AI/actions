@@ -116,7 +116,12 @@ class MaybeEncryptedJsonData:
 
     _encrypted: bool
 
-    def __init__(self, data: str, env: Optional[Dict[str, str]] = None):
+    def __init__(
+        self,
+        data: str,
+        env: Optional[Dict[str, str]] = None,
+        keys: Optional[tuple[bytes, ...]] = None,
+    ):
         """
         Args:
             data: The data requested from that source.
@@ -148,6 +153,7 @@ class MaybeEncryptedJsonData:
 
         """
         self._env = env
+        self._keys = keys
         loaded_data = json.loads(base64.b64decode(data.encode("ascii")).decode("utf-8"))
         if not isinstance(loaded_data, dict):
             raise RuntimeError("Expected data to have json content object as root.")
@@ -181,7 +187,11 @@ class MaybeEncryptedJsonData:
         if not self._encrypted:
             raise RuntimeError("Expected data to be encrypted if it reached here!")
 
-        keys: tuple[bytes, ...] = get_encryption_keys(env=self._env)
+        keys: tuple[bytes, ...]
+        if self._keys:
+            keys = self._keys
+        else:
+            keys = get_encryption_keys(env=self._env)
 
         if not keys:
             raise RuntimeError(
@@ -246,3 +256,38 @@ class MaybeEncryptedJsonData:
             )
 
         return json.loads(raw_data)
+
+
+def encrypt_simple(data: JSONValue, key: bytes = b"") -> str:
+    """
+    Encrypts a message by converting the entry to json and storing it
+    in a custom format.
+
+    If the key is not passed, the default storage key is used.
+
+    Returns:
+        A base-64 string with the encrypted contents.
+    """
+    from sema4ai.action_server._storage import get_key
+
+    if not key:
+        key = get_key()
+
+    encrypted = make_encrypted_data_envelope(key, data)
+    return encrypted
+
+
+def decrypt_simple(data: str, key: bytes = b"") -> JSONValue:
+    """
+    Decrypts a message (from a previous `encrypt_simple` call).
+
+    If the key is not passed, the default storage key is used.
+    """
+    from sema4ai.action_server._storage import get_key
+
+    if not key:
+        key = get_key()
+
+    d = MaybeEncryptedJsonData(data, keys=(key,))
+    assert d.encrypted
+    return d.value

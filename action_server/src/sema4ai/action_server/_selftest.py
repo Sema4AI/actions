@@ -266,12 +266,20 @@ class ActionServerClient:
 
         return kwargs
 
-    def get_str(self, url, params: Optional[dict] = None) -> str:
+    def get_str(
+        self,
+        url,
+        params: Optional[dict] = None,
+        headers: Optional[dict] = None,
+        cookies: Optional[dict] = None,
+    ) -> str:
         import requests
 
         result = requests.get(
             self.build_full_url(url),
             params=(params or {}),
+            headers=headers,
+            cookies=cookies,
             **self.requests_kwargs(),
         )
         result.raise_for_status()
@@ -285,8 +293,14 @@ class ActionServerClient:
     def get_openapi_json(self, params: Optional[dict] = None):
         return self.get_str("openapi.json", params=params)
 
-    def get_json(self, url, params: Optional[dict] = None):
-        contents = self.get_str(url, params=params)
+    def get_json(
+        self,
+        url,
+        params: Optional[dict] = None,
+        headers: Optional[dict] = None,
+        cookies: Optional[dict] = None,
+    ):
+        contents = self.get_str(url, params=params, headers=headers, cookies=cookies)
         try:
             return json.loads(contents)
         except Exception:
@@ -315,6 +329,27 @@ class ActionServerClient:
         import requests
 
         result = requests.post(
+            self.build_full_url(url),
+            headers=headers,
+            json=data,
+            cookies=cookies,
+            params=params,
+            **self.requests_kwargs(),
+        )
+        result.raise_for_status()
+        return result
+
+    def get_get_response(
+        self,
+        url,
+        data,
+        headers: Optional[dict] = None,
+        cookies: Optional[dict] = None,
+        params: Optional[dict] = None,
+    ):
+        import requests
+
+        result = requests.get(
             self.build_full_url(url),
             headers=headers,
             json=data,
@@ -363,6 +398,11 @@ def robocorp_action_server_run(
 ) -> CompletedProcess:
     from sema4ai.action_server._settings import is_frozen
 
+    for entry in cmdline:
+        if entry is None:
+            raise RuntimeError(
+                f"Unable to run because `None` items are in the command line: {cmdline}"
+            )
     if is_frozen():
         # i.e.: The entry point is our own executable.
         return run_command_line(

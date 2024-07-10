@@ -253,7 +253,7 @@ def start_server(
 
         index_html = _static_contents.FILE_CONTENTS["index.html"]
 
-        key = base64.b64encode(get_key()).decode("utf-8")
+        key = base64.b64encode(get_key("ui")).decode("utf-8")
         _cache["cached"] = index_html.replace(
             b"<script",
             f"<script>window.ENCRYPTION_KEY={key!r};</script><script".encode("utf-8"),
@@ -262,7 +262,12 @@ def start_server(
         return _cache["cached"]
 
     async def serve_index(request: Request):
-        return HTMLResponse(_index_contents())
+        from sema4ai.action_server._user_session import session_scope
+
+        with session_scope(request) as session:
+            response = HTMLResponse(_index_contents())
+            session.response = response
+        return response
 
     index_routes = [
         "/",
@@ -353,6 +358,8 @@ def start_server(
     def _on_started_message(self, **kwargs):
         (host, port) = _get_currrent_host()
         url = f"{protocol}://{host}:{port}"
+        settings = get_settings()
+        settings.base_url = url
 
         log.info(
             colored("\n  ⚡️ Local Action Server: ", "green", attrs=["bold"])

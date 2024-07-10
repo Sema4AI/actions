@@ -4,6 +4,7 @@ import typing
 from functools import lru_cache
 from logging import getLogger
 from pathlib import Path
+from typing import Literal
 
 from pydantic.main import BaseModel
 
@@ -14,9 +15,7 @@ from sema4ai.action_server._settings import (
 
 log = getLogger(__name__)
 
-STORAGE_FILE_NAME = "action_server_storage.json"
 
-KEY_FILE_NAME = ".storage.key"
 KEY_FILE_PERMISSIONS = 0o600
 
 AES_KEY_LEN = 32
@@ -41,17 +40,35 @@ class Storage(BaseModel):
 
 @lru_cache
 def get_storage_path() -> Path:
-    return get_default_settings_dir() / STORAGE_FILE_NAME
+    """
+    The path used to store (encrypted) access credentials.
+    """
+    return get_default_settings_dir() / "action_server_storage.json"
 
 
 @lru_cache
-def get_key_file_path() -> Path:
-    return get_user_sema4_path() / KEY_FILE_NAME
+def get_key_file_path(purpose: Literal["local", "ui"] = "local") -> Path:
+    if purpose == "local":
+        return get_user_sema4_path() / ".storage.key"
+    elif purpose == "ui":
+        return get_user_sema4_path() / ".ui.storage.key"
+
+    raise AssertionError(f"Unexpected purpose: {purpose}")
 
 
 @lru_cache
-def get_key() -> bytes:
-    key_file_path = get_key_file_path()
+def get_key(purpose: Literal["local", "ui"] = "local") -> bytes:
+    """
+    Args:
+        purpose: The purpose for the key
+            'local' means a key used to store settings in the action server locally
+            'ui' means a key used to store settings for the action server UI (running
+                in a different client).
+
+    Returns:
+        The bytes to be used for the key.
+    """
+    key_file_path = get_key_file_path(purpose)
     if key_file_path.exists():
         if key_file_path.is_file():
             if key_file_path.stat().st_size == AES_KEY_LEN:
@@ -72,10 +89,12 @@ def get_key() -> bytes:
     return key
 
 
-def encrypt_value(value: str) -> StorageEncryptedValue:
+def encrypt_value(
+    value: str, purpose: Literal["local", "ui"] = "local"
+) -> StorageEncryptedValue:
     from sema4ai.action_server._encryption import encrypt
 
-    key = get_key()
+    key = get_key(purpose)
 
     iv, encrypted_value, tag = encrypt(key, value.encode("utf-8"))
 
@@ -86,10 +105,12 @@ def encrypt_value(value: str) -> StorageEncryptedValue:
     return StorageEncryptedValue(iv=b64_iv, tag=b64_tag, value=b64_value)
 
 
-def decrypt_value(encrypted_value: StorageEncryptedValue) -> str:
+def decrypt_value(
+    encrypted_value: StorageEncryptedValue, purpose: Literal["local", "ui"] = "local"
+) -> str:
     from sema4ai.action_server._encryption import decrypt
 
-    key = get_key()
+    key = get_key(purpose)
 
     iv = base64.b64decode(encrypted_value.iv)
     tag = base64.b64decode(encrypted_value.tag)

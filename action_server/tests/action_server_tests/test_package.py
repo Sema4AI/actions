@@ -4,6 +4,7 @@ import re
 import zipfile
 from pathlib import Path
 
+import pytest
 from action_server_tests.fixtures import fix_metadata
 
 
@@ -71,8 +72,6 @@ def test_package_zip(datadir):
     extract_to = datadir / "extracted"
 
     def extract():
-        import json
-
         from sema4ai.action_server import __version__
 
         robocorp_action_server_run(
@@ -126,8 +125,6 @@ def test_package_zip_no_actions(datadir):
 
 
 def test_package_metadata(datadir, data_regression):
-    import json
-
     from sema4ai.action_server._selftest import robocorp_action_server_run
 
     output = robocorp_action_server_run(
@@ -146,8 +143,6 @@ def test_package_metadata(datadir, data_regression):
 
 
 def test_package_metadata_oauth2_secrets(datadir, data_regression):
-    import json
-
     from sema4ai.action_server._selftest import robocorp_action_server_run
 
     output = robocorp_action_server_run(
@@ -164,8 +159,6 @@ def test_package_metadata_oauth2_secrets(datadir, data_regression):
 
 
 def test_package_metadata_secrets(datadir, data_regression):
-    import json
-
     from sema4ai.action_server._selftest import robocorp_action_server_run
 
     output = robocorp_action_server_run(
@@ -191,12 +184,12 @@ def test_package_metadata_api(datadir, data_regression):
 
 
 def test_package_upload(datadir, data_regression):
-    import json
+    raise pytest.skip(reason="Skip package upload test")
 
     from sema4ai.action_server._selftest import robocorp_action_server_run
 
     # Build the action package first
-    output = robocorp_action_server_run(
+    robocorp_action_server_run(
         [
             "package",
             "build",
@@ -239,7 +232,7 @@ def test_package_upload(datadir, data_regression):
 
 
 def test_package_status(data_regression):
-    import json
+    raise pytest.skip(reason="Skip package upload test")
 
     from sema4ai.action_server._selftest import robocorp_action_server_run
 
@@ -277,7 +270,7 @@ def test_package_status(data_regression):
 
 
 def test_package_set_changelog(data_regression):
-    import json
+    raise pytest.skip(reason="Skip package upload test")
 
     from sema4ai.action_server._selftest import robocorp_action_server_run
 

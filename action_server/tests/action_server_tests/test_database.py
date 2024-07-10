@@ -88,7 +88,11 @@ def test_database_schema_evolution(str_regression) -> None:
         s.append(f"'''\n{db.create_table_sql(cls, model_db_rules).strip()}\n''',")
         s.extend(
             f"'''\n{x.strip()}\n''',"
-            for x in db.create_indexes_sql(cls, model_db_rules)
+            for x in db.create_unique_indexes_sql(cls, model_db_rules)
+        )
+        s.extend(
+            f"'''\n{x.strip()}\n''',"
+            for x in db.create_non_unique_indexes_sql(cls, model_db_rules)
         )
 
     new_lines = "\n\n\n"
@@ -201,7 +205,16 @@ def test_migrate(database_v0: Path, tmpdir) -> None:
     db = Database(db_path)
     with db.connect():
         assert sorted(db.list_table_names()) == sorted(
-            ["action", "action_package", "run", "migration", "counter"]
+            [
+                "action",
+                "action_package",
+                "counter",
+                "migration",
+                "o_auth2_user_data",
+                "run",
+                "temp_user_session_data",
+                "user_session",
+            ]
         )
         assert db.all(Migration) == [
             Migration(*x) for x in MIGRATION_ID_TO_NAME.items()
@@ -286,6 +299,34 @@ def test_database_update():
         with db.transaction():
             db.update(instance, "name")
         assert db.first(SomeActionPackage).name == "new_name"
+
+
+def test_database_insert_or_update():
+    db = Database(":memory:")
+    with db.connect():
+        # Note: in-memory, as soon as we close the connection, it's gone.
+        db.initialize([SomeActionPackage])
+        db.create_tables(_db_rules)
+
+        instance = SomeActionPackage(1, "my_name", "conda contents")
+        with db.transaction():
+            db.insert_or_update(instance)
+
+        assert str(db.first(SomeActionPackage)) == str(instance)
+
+        with db.transaction():
+            db.insert_or_update(instance, keys=["name"])
+        assert str(db.first(SomeActionPackage)) == str(instance)
+
+        instance_22 = SomeActionPackage(22, "my_name", "conda contents")
+        with db.transaction():
+            db.insert_or_update(instance_22, keys=["name"])
+        assert str(db.first(SomeActionPackage)) == str(instance_22)
+
+        instance_22_new_name = SomeActionPackage(22, "new_name", "conda contents")
+        with db.transaction():
+            db.insert_or_update(instance_22_new_name, keys=["id"])
+        assert str(db.first(SomeActionPackage)) == str(instance_22_new_name)
 
 
 def test_database_datetime(str_regression):

@@ -8,7 +8,19 @@ import threading
 from contextlib import closing, contextmanager
 from pathlib import Path
 from types import NoneType
-from typing import Any, Dict, Iterator, List, Optional, Set, Tuple, Type, TypeVar, Union
+from typing import (
+    Any,
+    Dict,
+    Iterator,
+    List,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+)
 
 log = logging.getLogger(__name__)
 
@@ -19,9 +31,13 @@ _RE_ALL_CAP = re.compile("([a-z0-9])([A-Z])")
 T = TypeVar("T")
 
 
-def _make_table_name(cls_name):
+def _make_table_name(cls: type):
+    cls_name = cls.__name__
     s1 = _RE_FIRST_CAP.sub(r"\1_\2", cls_name)
-    return _RE_ALL_CAP.sub(r"\1_\2", s1).lower()
+    ret = _RE_ALL_CAP.sub(r"\1_\2", s1).lower()
+
+    # At this point something as OAuth2UserData is `o_auth2_user_data`
+    return ret
 
 
 # Helper functions since we must store the datetime as str.
@@ -233,9 +249,87 @@ class Database:
                     self._tlocal.in_transaction == 0
                 ), "Error transaction nesting logic not correct!"
 
+    def where(self, instance, keys: Sequence[str]) -> tuple[str, list[Any]]:
+        """
+        Makes an sql which can be used in a where clause.
+
+        Example:
+            Something as:
+
+                sql,values = db.where(some_class, keys=['id', 'age'])
+
+                Will have as result:
+
+                'id=? AND age=?', [id_value, age_value])
+        """
+        sql = ""
+        values = []
+        for i, key in enumerate(keys):
+            if i != 0:
+                sql += " AND "
+            sql += f"{key} = ?"
+            values.append(getattr(instance, key))
+        return (sql, values)
+
+    def where_from_dict(self, dct: dict[str, Any]) -> tuple[str, list[Any]]:
+        """
+        Makes an sql which can be used in a where clause.
+
+        Example:
+            Something as:
+
+                sql,values = db.where_from_dict(some_class, keys=['id', 'age'])
+
+                Will have as result:
+
+                'id=? AND age=?', [id_value, age_value])
+        """
+        sql = ""
+        values = []
+        for i, (key, value) in enumerate(dct.items()):
+            if i != 0:
+                sql += " AND "
+            sql += f"{key} = ?"
+            values.append(value)
+        return (sql, values)
+
+    def delete_where(self, cls: Type, where: str, values: list[Any]):
+        table_name = _make_table_name(cls)
+        self.execute(f"DELETE FROM {table_name} WHERE {where}", values)
+
+    def delete(self, instance, keys: Sequence[str]):
+        """
+        Deletes the given instance from the db given the keys given.
+        """
+        table_name = _make_table_name(instance.__class__)
+        sql, values = self.where(instance, keys)
+
+        self.execute(f"DELETE FROM {table_name} WHERE {sql}", values)
+
+    def insert_or_update(self, instance, keys: Sequence[str] = ("id",)):
+        """
+        Updates database values from some instance given its id.
+        """
+        table_name = _make_table_name(instance.__class__)
+
+        where, values = self.where(instance, keys)
+        sql = f"SELECT * FROM {table_name} WHERE {where}"
+
+        try:
+            self.first(instance.__class__, sql, values)
+        except KeyError:
+            self.insert(instance)
+        else:
+            # Ok, instance found, update it.
+            self.update_by_fields(instance, keys)
+
     def update(self, instance, *fields: str):
         """
         Updates database values from some instance given its id.
+
+        Args:
+            fields: The name of the fields that should be updated
+                    (only the selected fields will be updated).
         """
         fields_dict: dict[str, Any] = {}
         for field in fields:
@@ -246,7 +340,7 @@ class Database:
         """
         Updates database values from some instance given its id.
         """
-        table_name = _make_table_name(cls.__name__)
+        table_name = _make_table_name(cls)
         set_fields = []
         values = []
         for name, value in fields.items():
@@ -257,11 +351,39 @@ class Database:
         sql = f"UPDATE {table_name} SET {', '.join(set_fields)} WHERE id=?"
         self.execute(sql, values)
 
+    def update_by_fields(self, instance, keys: Sequence[str]):
+        """
+        Updates all the database values from some instance.
+
+        Args:
+            instance: The instance with the values to be update.
+            keys: The keys for which the values should be updated.
+        """
+
+        set_placeholders: list[str] = []
+        set_values = []
+
+        where_placeholders: list[str] = []
+        where_values = []
+
+        for name, _field_cls in self._iter_name_and_name_cls_fields(instance.__class__):
+            if name in keys:
+                where_placeholders.append(f"{name}=?")
+                where_values.append(getattr(instance, name))
+            else:
+                set_placeholders.append(f"{name}=?")
+                set_values.append(getattr(instance, name))
+
+        table_name = _make_table_name(instance.__class__)
+
+        sql = f"UPDATE {table_name} SET {', '.join(set_placeholders)} WHERE {' AND '.join(where_placeholders)}"
+        self.execute(sql, set_values + where_values)
+
     def insert(
         self,
         instance,
     ) -> None:
-        table_name = _make_table_name(instance.__class__.__name__)
+        table_name = _make_table_name(instance.__class__)
 
         field_names = []
         values = []
@@ -287,11 +409,14 @@ VALUES
     def all(
         self,
         cls: Type[T],
+        *,
         offset: Optional[int] = None,
         limit: Optional[int] = None,
         order_by: Optional[str] = None,
+        where: Optional[str] = None,
+        values: Optional[list] = None,
     ) -> List[T]:
-        table_name = _make_table_name(cls.__name__)
+        table_name = _make_table_name(cls)
         if limit is not None:
             assert isinstance(limit, int)
         if offset is not None:
@@ -310,7 +435,10 @@ VALUES
         if offset:
             sql += f" OFFSET {offset}"
 
-        return self.select(cls, sql)
+        if where:
+            sql += f" WHERE {where}"
+
+        return self.select(cls, sql, values)
 
     def select(self, cls: Type[T], sql: str, values: Optional[list] = None):
         with self.cursor() as cursor:
@@ -345,7 +473,7 @@ VALUES
             KeyError if no entries were returned in the query.
         """
         if not query:
-            table_name = _make_table_name(cls.__name__)
+            table_name = _make_table_name(cls)
             query = f"SELECT * FROM {table_name}"
 
         with self.cursor() as cursor:
@@ -544,7 +672,7 @@ ORDER BY index_name,il.seq,ii.seqno""",
 
         self._classes = classes
         for cls in classes:
-            self._table_name_to_cls[_make_table_name(cls.__name__)] = cls
+            self._table_name_to_cls[_make_table_name(cls)] = cls
 
     def initialize(self, classes: List[Type]) -> None:
         """
@@ -563,15 +691,16 @@ ORDER BY index_name,il.seq,ii.seqno""",
             sql = self.create_table_sql(cls, db_rules)
             sqls.append(sql)
 
-            sqls.extend(self.create_indexes_sql(cls, db_rules))
+            sqls.extend(self.create_unique_indexes_sql(cls, db_rules))
+            sqls.extend(self.create_non_unique_indexes_sql(cls, db_rules))
 
         with self.connect():
             with self.transaction():
                 for sql in sqls:
                     self.execute(sql)
 
-    def create_indexes_sql(self, cls: Type, db_rules: DBRules) -> List[str]:
-        table_name = _make_table_name(cls.__name__)
+    def create_unique_indexes_sql(self, cls: Type, db_rules: DBRules) -> List[str]:
+        table_name = _make_table_name(cls)
 
         columns: List[str] = []
         for name in self._iter_name_fields(cls):
@@ -587,8 +716,25 @@ CREATE UNIQUE INDEX {table_name}_{column}_index ON {table_name}({column});
             ret.append(sql)
         return ret
 
+    def create_non_unique_indexes_sql(self, cls: Type, db_rules: DBRules) -> List[str]:
+        table_name = _make_table_name(cls)
+
+        columns: List[str] = []
+        for name in self._iter_name_fields(cls):
+            field_full_name = f"{cls.__name__}.{name}"
+            if field_full_name in db_rules.indexes:
+                columns.append(name)
+
+        ret: List[str] = []
+        for column in columns:
+            sql = f"""
+CREATE INDEX {table_name}_{column}_non_unique_index ON {table_name}({column});
+"""
+            ret.append(sql)
+        return ret
+
     def create_table_sql(self, cls: Type, db_rules: DBRules) -> str:
-        table_name = _make_table_name(cls.__name__)
+        table_name = _make_table_name(cls)
 
         fields = []
         foreign_keys = []
@@ -650,11 +796,15 @@ CREATE TABLE IF NOT EXISTS {table_name}(
             use = "INTEGER"
 
         elif field_cls == bool and not_null:
-            default_value = getattr(cls, name)
-            if default_value:
-                use = f"INTEGER CHECK({name} IN (0, 1)) NOT NULL DEFAULT 1"
-            else:
-                use = f"INTEGER CHECK({name} IN (0, 1)) NOT NULL DEFAULT 0"
+            try:
+                default_value = getattr(cls, name)
+                if default_value:
+                    use = f"INTEGER CHECK({name} IN (0, 1)) NOT NULL DEFAULT 1"
+                else:
+                    use = f"INTEGER CHECK({name} IN (0, 1)) NOT NULL DEFAULT 0"
+            except AttributeError:
+                # No default
+                use = f"INTEGER CHECK({name} IN (0, 1)) NOT NULL"
 
         elif field_cls == datetime.datetime:
             raise RuntimeError(
