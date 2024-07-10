@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.16.0 - 2024-07-10
+
 - OAuth2 is now defined in the server side and not in the client side.
   - The OAuth2 settings are now defined in a `.yaml`.
     - On Windows it's default location is `%LOCALAPPDATA%/sema4ai/action-server/oauth2-settings.yaml`.
