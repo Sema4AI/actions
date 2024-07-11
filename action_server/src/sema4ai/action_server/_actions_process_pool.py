@@ -276,7 +276,7 @@ class ProcessHandle:
         reuse_process: bool,
     ) -> int:
         from sema4ai.action_server._api_oauth2 import (
-            _get_oauthlib2_provider_settings,
+            get_resolved_provider_settings,
             refresh_tokens,
         )
         from sema4ai.action_server._api_secrets import IN_MEMORY_SECRETS
@@ -363,9 +363,7 @@ class ProcessHandle:
                                         "(the storage key has probably changed, so, a new login will be needed)."
                                     )
                                 else:
-                                    settings = _get_oauthlib2_provider_settings(
-                                        provider
-                                    )
+                                    settings = get_resolved_provider_settings(provider)
                                     # i.e.: if it's not there, don't add it, let the
                                     # action itself fail and provide the needed info.
                                     metadata: dict[str, JSONValue] = {}

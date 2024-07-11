@@ -24,10 +24,8 @@ We need to cover 2 use-cases here:
 import datetime
 import json
 import logging
-import os
 import typing
-from functools import lru_cache, partial
-from pathlib import Path
+from functools import partial
 from typing import Any, Iterable, Optional
 
 import requests
@@ -40,74 +38,41 @@ if typing.TYPE_CHECKING:
     from requests_oauthlib import OAuth2Session  # type: ignore
 
     from sema4ai.action_server._models import OAuth2UserData
+    from sema4ai.action_server.vendored_deps.oauth2_settings import (
+        OAuth2ProviderSettingsResolved,
+    )
 
 oauth2_api_router = APIRouter(prefix="/oauth2")
 
 log = logging.getLogger(__name__)
 
 
-class OAuth2ProviderSettings(BaseModel):
-    clientId: Optional[str] = None
-    clientSecret: Optional[str] = None
-    server: Optional[str] = None
-    tokenEndpoint: Optional[str] = None
-    revocationEndpoint: Optional[str] = None
-    authorizationEndpoint: Optional[str] = None
-    authParams: Optional[dict[str, str]] = None
-    additionalHeaders: Optional[dict[str, str]] = None
-
-
-class OAuth2ProviderSettingsResolved(OAuth2ProviderSettings):
-    # Same as OAuth2ProviderSettings, but signals that the
-    # settings are resolved at this point (i.e.: relative urls
-    # are absolute and validations were done).
-    pass
-
-
-_DEFAULT_OAUTH2_SETTINGS: dict[str, OAuth2ProviderSettings] = {
-    "hubspot": OAuth2ProviderSettings(
-        server="https://api.hubapi.com/oauth/v1",
-        tokenEndpoint="/token",
-        authorizationEndpoint="https://app-eu1.hubspot.com/oauth/authorize",
-    ),
-    "google": OAuth2ProviderSettings(
-        server="https://oauth2.googleapis.com",
-        tokenEndpoint="/token",
-        revocationEndpoint="/revoke",
-        authorizationEndpoint="https://accounts.google.com/o/oauth2/v2/auth",
-        authParams={
-            "access_type": "offline",  # Force Google OAuth API to return a refresh token https://developers.google.com/identity/protocols/oauth2/web-server#request-parameter-access_type
-            "prompt": "select_account",  # Force Google OAuth UI to display account choice https://developers.google.com/identity/protocols/oauth2/web-server#request-parameter-prompt
-        },
-    ),
-    "github": OAuth2ProviderSettings(
-        server="https://github.com",
-        authorizationEndpoint="/login/oauth/authorize",
-        tokenEndpoint="/login/oauth/access_token",
-    ),
-    "slack": OAuth2ProviderSettings(
-        server="https://slack.com",
-        tokenEndpoint="/api/oauth.v2.access",
-        authorizationEndpoint="/oauth/v2/authorize",
-    ),
-    "zendesk": OAuth2ProviderSettings(
-        tokenEndpoint="/oauth/tokens",
-        authorizationEndpoint="/oauth/authorizations/new",
-        # server=settings.server,
-    ),
-    "microsoft": OAuth2ProviderSettings(
-        authorizationEndpoint="/oauth2/v2.0/authorize",
-        tokenEndpoint="/oauth2/v2.0/token",
-        # server=settings.server,
-    ),
-}
-
-_in_flight_state: dict = {}
-
-
 class StatusResponseModel(BaseModel):
     success: bool
     error_message: Optional[str] = ""
+
+
+def get_resolved_provider_settings(provider: str) -> "OAuth2ProviderSettingsResolved":
+    import os
+
+    from sema4ai.action_server._settings import get_settings
+    from sema4ai.action_server.vendored_deps.oauth2_settings import (
+        get_oauthlib2_provider_settings,
+    )
+
+    app_settings = get_settings()
+    if not app_settings.use_https:
+        os.environ[
+            "OAUTHLIB_INSECURE_TRANSPORT"
+        ] = "1"  # allow localhost `http` redirects
+
+    oauth2_settings_file = app_settings.oauth2_settings
+
+    if not oauth2_settings_file:
+        raise RuntimeError(
+            "Unable to make OAuth2 login because the oauth2 settings file is not set."
+        )
+    return get_oauthlib2_provider_settings(provider, oauth2_settings_file)
 
 
 @oauth2_api_router.get("/logout")
@@ -151,7 +116,7 @@ async def oauth2_logout(
             db.delete_where(OAuth2UserData, where=where, values=values)
 
         if current_oauth2_user_data:
-            settings = _get_oauthlib2_provider_settings(provider)
+            settings = get_resolved_provider_settings(provider)
             revoke_url = settings.revocationEndpoint
             if revoke_url:
                 for user_data in current_oauth2_user_data:
@@ -202,6 +167,7 @@ async def oauth2_login(
         reference_id: If given the authentication info will later on be accessible through
             the given `reference_id`
     """
+
     log.info("/oauth2/login. Provider: %s, Scopes: %s", provider, scopes)
     if "," in scopes:
         log.info(
@@ -238,7 +204,7 @@ async def oauth2_login(
     db: Database = get_db()
 
     with db.connect(), db.transaction(), session_scope(request) as session:
-        settings = _get_oauthlib2_provider_settings(provider)
+        settings = get_resolved_provider_settings(provider)
         app_settings = get_settings()
         base_url = app_settings.base_url
         assert base_url, "Internal error: `base_url` not available from app settings."
@@ -343,7 +309,7 @@ async def oauth2_status(
             )
 
         for oauth2_user_data in current_oauth2_user_data:
-            settings = _get_oauthlib2_provider_settings(oauth2_user_data.provider)
+            settings = get_resolved_provider_settings(oauth2_user_data.provider)
             access_token = None
             if provide_access_token:
                 try:
@@ -405,7 +371,7 @@ def _refresh_token(use_id: str, oauth2_user_data: "OAuth2UserData") -> "OAuth2Us
     """
     from sema4ai.action_server._encryption import decrypt_simple
 
-    settings = _get_oauthlib2_provider_settings(oauth2_user_data.provider)
+    settings = get_resolved_provider_settings(oauth2_user_data.provider)
     oauth2_session = _create_oauth2_session(oauth2_user_data.provider)
     client_secret = settings.clientSecret
     client_id = settings.clientId
@@ -480,7 +446,7 @@ def _create_oauth2_session(
 
     from sema4ai.action_server._settings import get_settings
 
-    settings = _get_oauthlib2_provider_settings(provider)
+    settings = get_resolved_provider_settings(provider)
 
     client_id = settings.clientId
     app_settings = get_settings()
@@ -581,7 +547,7 @@ async def oauth2_redirect(request: Request, state: str = "") -> HTMLResponse:
         assert isinstance(provider, str)
         assert isinstance(callback_url, str)
 
-        settings = _get_oauthlib2_provider_settings(provider)
+        settings = get_resolved_provider_settings(provider)
         client_secret = settings.clientSecret
         token_url = settings.tokenEndpoint
 
@@ -663,129 +629,3 @@ async def oauth2_redirect(request: Request, state: str = "") -> HTMLResponse:
         session.response = response
 
     return response
-
-
-@lru_cache
-def _get_oauthlib2_global_settings(
-    oauth2_settings_file: Optional[str] = None,
-) -> dict[str, Any]:
-    """
-    Provides the global settings for doing an OAuth2 authentication
-    (should be a mapping of provider->provider info).
-
-    Note that it's cached and its result should not be mutated.
-    """
-    import yaml
-
-    from sema4ai.action_server._settings import get_settings
-
-    if not oauth2_settings_file:
-        app_settings = get_settings()
-        if not app_settings.use_https:
-            os.environ[
-                "OAUTHLIB_INSECURE_TRANSPORT"
-            ] = "1"  # allow localhost `http` redirects
-
-        oauth2_settings_file = app_settings.oauth2_settings
-
-    if not oauth2_settings_file:
-        raise RuntimeError(
-            "Unable to make OAuth2 login because the oauth2 settings file is not set."
-        )
-
-    p = Path(oauth2_settings_file)
-    if not p.exists():
-        raise RuntimeError(
-            f"Unable to make OAuth2 login because the oauth2 settings file: {oauth2_settings_file} does not exist."
-        )
-
-    with p.open("rb") as stream:
-        contents = yaml.safe_load(stream)
-
-    if not isinstance(contents, dict):
-        raise RuntimeError(
-            f"Expected {oauth2_settings_file} to be a yaml with a mapping of provider name->provider info."
-        )
-    return contents
-
-
-def _get_oauthlib2_provider_settings(
-    provider: str, oauth2_settings_file: Optional[str] = None
-) -> OAuth2ProviderSettingsResolved:
-    """
-    Gets the OAuth2 settings to be used for a given provider.
-    """
-    contents = _get_oauthlib2_global_settings(oauth2_settings_file)
-
-    settings = contents.get(provider)
-
-    if not settings:
-        raise RuntimeError(
-            f"Found no OAuth2 info for provider {provider} in {oauth2_settings_file}."
-        )
-
-    if not isinstance(settings, dict):
-        raise RuntimeError(
-            f"Expected OAuth2 info for provider {provider} in {oauth2_settings_file} to be a mapping with the provider info."
-        )
-
-    if "clientId" not in settings:
-        raise RuntimeError(
-            f"Expected 'clientId' to be in OAuth2 settings for {provider}."
-        )
-    if "clientSecret" not in settings:
-        raise RuntimeError(
-            f"Expected 'clientSecret' to be in OAuth2 settings for {provider}."
-        )
-    default_settings = _DEFAULT_OAUTH2_SETTINGS.get(provider)
-    if not default_settings:
-        default_settings = OAuth2ProviderSettings()
-
-    as_dict = _deep_update(default_settings.model_dump(), settings)
-
-    ret = OAuth2ProviderSettingsResolved.model_validate(as_dict)
-
-    for attr in ("authorizationEndpoint", "tokenEndpoint", "revocationEndpoint"):
-        value = getattr(ret, attr)
-        if not value:
-            if attr == "revocationEndpoint":
-                # This one is optional
-                continue
-
-            raise RuntimeError(
-                f"Expected '{attr}' to be in OAuth2 settings for {provider}."
-            )
-
-        if value.startswith("/"):
-            if not ret.server:
-                raise RuntimeError(
-                    f"As the '{attr}' is relative, the 'server' setting must be provided in the OAuth2 settings for {provider}"
-                )
-
-            use_server = ret.server
-            if use_server.endswith("/"):
-                use_server = use_server[:-1]
-
-            value = f"{use_server}{value}"
-            setattr(ret, attr, value)
-
-    return ret
-
-
-def _deep_update(dict1, dict2):
-    """
-    Merges two dictionaries recursively.
-
-    Returns:
-        A new dictionary with the merged content.
-    """
-    merged = dict1.copy()
-    for key, value in dict2.items():
-        if key in dict1:
-            if isinstance(value, dict) and isinstance(dict1[key], dict):
-                merged[key] = _deep_update(dict1[key], value)
-            else:
-                merged[key] = value
-        else:
-            merged[key] = value
-    return merged
