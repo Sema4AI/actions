@@ -2,12 +2,18 @@
 
 ## Unreleased
 
+## 0.16.1 - 2024-07-11
+
+- Upgrade to MacOS runner 13 as 11 is now deprecated in GitHub actions.
+
 ## 0.16.0 - 2024-07-10
 
 - OAuth2 is now defined in the server side and not in the client side.
   - The OAuth2 settings are now defined in a `.yaml`.
     - On Windows it's default location is `%LOCALAPPDATA%/sema4ai/action-server/oauth2-settings.yaml`.
     - On Linux/Mac it's default location is `~/.sema4ai/action-server/oauth2-settings.yaml`.
+    
+- Note: this was a partial release because Mac OS 11 is deprecated in GitHub actions.
 
 ## 0.15.2 - 2024-06-25
 

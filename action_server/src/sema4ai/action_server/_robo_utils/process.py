@@ -420,7 +420,7 @@ def check_output_interactive(
         except BaseException:
             log.exception("Error checking that progress was cancelled.")
 
-    with subprocess.Popen(*popenargs, **kwargs) as process:
+    with _popen_raise(*popenargs, **kwargs) as process:
         threads = [
             threading.Thread(
                 target=stream_reader,
