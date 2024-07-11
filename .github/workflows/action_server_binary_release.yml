@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, windows-2019, macos-11]
+        os: [ubuntu-20.04, windows-2019, macos-13]
     steps:
       - uses: actions/checkout@v4
 
@@ -94,7 +94,7 @@ jobs:
         run: |
           cp -R build-binary/build/x86_64-unknown-linux-gnu/release/install/* go-wrapper/assets
       - name: Copy assets [Mac]
-        if: matrix.os == 'macos-11'
+        if: matrix.os == 'macos-13'
         run: |
           cp -R build-binary/build/x86_64-apple-darwin/release/install/* go-wrapper/assets
       - name: Copy assets [Windows]
