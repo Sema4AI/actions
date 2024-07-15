@@ -7,10 +7,8 @@ import os
 import subprocess
 import sys
 import threading
-from concurrent.futures import Future
-from functools import partial
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Protocol, Union
+from typing import Dict, List, Optional, Protocol, Union
 
 from sema4ai.action_server._preload_actions.preload_actions_autoexit import (
     is_process_alive,
@@ -22,20 +20,6 @@ PathLike = Union[str, Path]
 
 log = logging.getLogger(__name__)
 IS_WINDOWS = sys.platform == "win32"
-
-
-def _run_in_thread_and_get_result(target) -> Any:
-    fut: Future[Any] = Future()
-
-    def method():
-        try:
-            fut.set_result(target())
-        except BaseException as e:
-            fut.set_exception(e)
-
-    t = threading.Thread(target=method)
-    t.start()
-    return fut.result()
 
 
 def _stream_reader(stream, on_output):
@@ -125,9 +109,7 @@ class Process:
         log.debug(
             "Subprocess start [args=%s,cwd=%s,uid=%d]", self._args, self._cwd, self._uid
         )
-        proc = self._proc = _run_in_thread_and_get_result(
-            partial(_popen_raise, self._args, **new_kwargs)
-        )
+        proc = self._proc = _popen_raise(self._args, **new_kwargs)
         log.debug("Subprocess started [pid=%s,uid=%d]", proc.pid, self._uid)
         on_stdout = None
         if read_stdout:

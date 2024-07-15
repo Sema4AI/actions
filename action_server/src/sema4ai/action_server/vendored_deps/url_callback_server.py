@@ -252,8 +252,13 @@ def start_server_in_thread(
         except BaseException as e:
             if not fut_provide_uri.cancelled():
                 fut_provide_uri.set_exception(e)
+        finally:
+            try:
+                local_server.server_close()
+            except Exception:
+                pass
 
-    t = threading.Thread(target=method, name="OAuth2 Server")
+    t = threading.Thread(target=method, name="OAuth2 Server", daemon=True)
     t.start()
     return fut_provide_uri, fut_provide_callback_address
 

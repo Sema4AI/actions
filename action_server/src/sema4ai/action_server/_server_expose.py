@@ -292,6 +292,13 @@ async def listen_for_requests(
                 if not os.path.exists(ssl_certfile):
                     raise RuntimeError(f"ssl_certfile: {ssl_certfile} does not exist.")
 
+                try:
+                    import truststore
+
+                    truststore.extract_from_ssl()
+                except Exception:
+                    pass
+
                 import ssl
                 from ssl import Purpose
 
@@ -299,6 +306,13 @@ async def listen_for_requests(
                 ctx.load_verify_locations(
                     ssl_certfile,
                 )
+
+                try:
+                    import truststore
+
+                    truststore.inject_into_ssl()
+                except Exception:
+                    pass
                 connector = aiohttp.TCPConnector(ssl=ctx)
 
         ws: websockets.WebSocketClientProtocol

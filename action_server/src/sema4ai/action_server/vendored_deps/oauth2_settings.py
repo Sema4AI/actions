@@ -134,6 +134,7 @@ def get_oauthlib2_global_settings(
         raise RuntimeError(
             f"Expected {oauth2_settings_file} to be a yaml with a mapping of provider name->provider info."
         )
+
     return contents
 
 
