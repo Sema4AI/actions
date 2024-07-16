@@ -78,3 +78,53 @@ custom:
   clientSecret: "xxxxxx-yyyyy-zzzz-aaaa-bbbbbbbbbbbbb"
   server: "https://<service.microsoft.com>"
 ```
+
+Now, with the OAuth2 settings configured, it should be possible to make a
+`login` into the needed provider when running the action in the Action Server UI.
+
+## VSCode development
+
+When developing inside of VSCode it's possible to run/debug actions directly
+from the `TASK/ACTION PACKAGES` view.
+
+When running an action, it's expected that an `input_<action-name>.json` file
+is created and the required inputs for the action are set (so, if a parameter
+such as `count` is required the json will have a `count` set in the json).
+
+Starting with `Sema4.ai VSCode Extension 2.2.0`, it's now possible to add
+an entry to that input json with `vscode:request:oauth2` which will then
+prompt automatically when the action is run to make the OAuth2 login flow
+so that the required `access_token` is collected and sent to the action.
+
+The example belows shows a json which will provide a `count` as well as a 
+`google_secret` with the proper `access_token` received from the user authentication
+requesting for the `drive.readonly` and `gmail.send` permissions.
+
+```
+{
+  "count": 1,
+  "vscode:request:oauth2": {
+    "google_secret": {
+      "type": "OAuth2Secret",
+      "scopes": [
+        "https://www.googleapis.com/auth/drive.readonly",
+        "https://www.googleapis.com/auth/gmail.send"
+      ],
+      "provider": "google"
+    }
+  }
+}
+```
+
+Note that when running the action a browser window will automatically open
+for each provider requested in the action.
+
+Also make sure that when registering the OAuth2 client/secret the proper
+redirect uri is added (by default it's `http://localhost:4567/oauth2/redirect/`
+note that it should usually not use the same port used to launch the action server
+so that there are no conflicts with a running action server instance).
+
+It's possible to use the VSCode command `Sema4.ai: Open OAuth2 Settings` to
+create a file in the proper place with the default structure to be filled
+(the created file has comments explaining how to configure it -- it's the
+same file used by the Action Server explained above).
