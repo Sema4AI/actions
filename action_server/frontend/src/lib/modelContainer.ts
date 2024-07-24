@@ -3,6 +3,7 @@ import { Dispatch } from 'react';
 export enum ModelType {
   RUNS = 'runs',
   ACTIONS = 'actions',
+  SERVER_CONFIG = 'server_config',
 }
 
 export interface CachedModel<T> {
@@ -25,6 +26,10 @@ export class ModelContainer {
       data: undefined,
     });
     this.models.set(ModelType.ACTIONS, {
+      isPending: true,
+      data: undefined,
+    });
+    this.models.set(ModelType.SERVER_CONFIG, {
       isPending: true,
       data: undefined,
     });

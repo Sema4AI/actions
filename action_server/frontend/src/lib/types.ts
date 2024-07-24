@@ -56,6 +56,7 @@ export interface AsyncLoaded<T> {
 export type LoadedRuns = AsyncLoaded<Run[]>;
 export type LoadedActionsPackages = AsyncLoaded<ActionPackage[]>;
 export type LoadedArtifacts = AsyncLoaded<Artifact>;
+export type LoadedServerConfig = AsyncLoaded<ServerConfig>;
 
 export interface InputProperty {
   type: OpenAPIV3_1.NonArraySchemaObjectType | 'enum' | 'array';
@@ -67,4 +68,6 @@ export interface InputProperty {
 export type ServerConfig = {
   expose_url: string;
   auth_enabled: boolean;
+  version: string; // The version for the action server (if it changes a full window reload would be needed).
+  mtime_uuid: string; // The mtime of the action server (if it changes all data needs to be reloaded).
 };

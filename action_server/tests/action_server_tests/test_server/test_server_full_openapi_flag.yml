@@ -477,7 +477,9 @@ paths:
         '200':
           content:
             application/json:
-              schema: {}
+              schema:
+                title: Response Serve Config Config Get
+                type: object
           description: Successful Response
       summary: Serve Config
   /oauth2/create-reference-id:

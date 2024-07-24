@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction, createContext, useContext } from 'react';
-import { LoadedActionsPackages, LoadedRuns, ServerConfig } from './types';
+import { LoadedActionsPackages, LoadedRuns, LoadedServerConfig } from './types';
 
 export type ViewSettings = {
   theme: 'dark' | 'light';
@@ -12,7 +12,8 @@ export type ActionServerContextType = {
   setLoadedRuns: Dispatch<SetStateAction<LoadedRuns>>;
   loadedActions: LoadedActionsPackages;
   setLoadedActions: Dispatch<SetStateAction<LoadedActionsPackages>>;
-  serverConfig?: ServerConfig;
+  loadedServerConfig: LoadedServerConfig;
+  setLoadedServerConfig: Dispatch<SetStateAction<LoadedServerConfig>>;
 };
 
 export const defaultActionServerState: ActionServerContextType = {
@@ -36,6 +37,14 @@ export const defaultActionServerState: ActionServerContextType = {
     errorMessage: undefined,
   },
   setLoadedActions: () => null,
+
+  // Server Config
+  loadedServerConfig: {
+    isPending: true,
+    data: undefined,
+    errorMessage: undefined,
+  },
+  setLoadedServerConfig: () => null,
 };
 
 export const ActionServerContext = createContext<ActionServerContextType>(defaultActionServerState);

@@ -14,11 +14,11 @@ from ._protocols import IBeforeStartCallback
 log = logging.getLogger(__name__)
 
 
-def _name_as_summary(name):
+def _name_as_summary(name: str) -> str:
     return name.replace("_", " ").title()
 
 
-def _name_to_url(name):
+def _name_to_url(name: str) -> str:
     from sema4ai.action_server._slugify import slugify
 
     return slugify(name.replace("_", "-"))
@@ -53,6 +53,8 @@ def start_server(
 ) -> None:
     import json
     from dataclasses import asdict
+    from functools import lru_cache
+    from typing import Any
 
     import uvicorn
     from fastapi import Depends, HTTPException, Security
@@ -193,11 +195,23 @@ def start_server(
     app.include_router(secrets_api_router, include_in_schema=settings.full_openapi_spec)
     app.include_router(oauth2_api_router, include_in_schema=settings.full_openapi_spec)
 
-    @app.get("/config", include_in_schema=settings.full_openapi_spec)
-    async def serve_config():
+    @lru_cache
+    def get_static_config_data() -> dict[str, Any]:
+        """
+        This information is not expected to be changed after the action
+        server is started.
+        """
+        from sema4ai.action_server import __version__
+
         from ._server_expose import get_expose_session_payload, read_expose_session_json
 
-        payload = {"expose_url": False, "auth_enabled": False}
+        payload = {
+            "expose_url": False,
+            "auth_enabled": False,
+            # When the action server version changes, this means that anything
+            # may have changed (including the action server UI).
+            "version": __version__,
+        }
 
         if api_key:
             payload["auth_enabled"] = True
@@ -217,7 +231,15 @@ def start_server(
                 payload[
                     "expose_url"
                 ] = f"https://{expose_session_payload.sessionId}.{settings.expose_url}"
+        return payload
 
+    @app.get("/config", include_in_schema=settings.full_openapi_spec)
+    async def serve_config() -> dict[str, Any]:
+        payload = get_static_config_data()
+        # When the mtime changes, this means that the contents
+        # (actions/action packages/expose) may have changed or the
+        # action server was restarted (potentially with different settings).
+        payload["mtime_uuid"] = app.mtime_uuid
         return payload
 
     async def serve_log_html(request: Request):
