@@ -1,6 +1,6 @@
 import { FC, useCallback } from 'react';
 import { Box, Typography, usePopover } from '@sema4ai/components';
-import { IconGlobe, IconLink } from '@sema4ai/icons';
+import { IconGlobe, IconLink, IconWifiNoConnection } from '@sema4ai/icons';
 import { styled } from '@sema4ai/theme';
 
 import { useActionServerContext } from '~/lib/actionServerContext';
@@ -10,6 +10,8 @@ import { InputCopy } from './CopyToClipboard';
 const Container = styled(Box)`
   cursor: pointer;
 `;
+
+const EMPTY = '';
 
 const ExposedIcon = styled(Box)<{ $enabled: boolean }>`
   position: relative;
@@ -35,7 +37,7 @@ const ExposedIcon = styled(Box)<{ $enabled: boolean }>`
 `;
 
 export const SideHeader: FC = () => {
-  const { serverConfig } = useActionServerContext();
+  const { loadedServerConfig } = useActionServerContext();
 
   const { referenceRef, referenceProps, PopoverContent, setOpen } = usePopover({
     placement: 'right',
@@ -51,7 +53,9 @@ export const SideHeader: FC = () => {
     setOpen(false);
   }, []);
 
-  const isExposed = !!serverConfig?.expose_url;
+  const exposeUrl: string = loadedServerConfig.data?.expose_url || EMPTY;
+  const isExposed: boolean = loadedServerConfig.isPending ? false : exposeUrl !== EMPTY;
+  const isConfigAvailable: boolean = loadedServerConfig.data !== undefined;
 
   return (
     <Box onMouseLeave={onMouseLeave}>
@@ -79,26 +83,34 @@ export const SideHeader: FC = () => {
         </Box>
         <Typography fontWeight={600}>Action Server</Typography>
         <ExposedIcon $enabled={isExposed} ml="auto">
-          <IconGlobe size={24} />
+          {isConfigAvailable ? (
+            <IconGlobe size={24} />
+          ) : (
+            <IconWifiNoConnection size={24} color="content.error" />
+          )}
         </ExposedIcon>
       </Container>
       <PopoverContent>
         <Box p="$16" backgroundColor="background.primary" borderRadius="$8" boxShadow="medium">
-          {isExposed ? (
+          {!isConfigAvailable && (
+            <Typography fontWeight="bold" mb="$16">
+              Action Server Config unavailable (the network is currently down or the Action Server
+              was stopped).
+            </Typography>
+          )}
+
+          {isConfigAvailable && isExposed && (
             <>
               <Typography fontWeight="bold" mb="$16">
                 Action Server exposed
               </Typography>
               <Box mb="$16">
-                <InputCopy
-                  iconLeft={IconLink}
-                  label="Server URL"
-                  value={serverConfig.expose_url}
-                  readOnly
-                />
+                <InputCopy iconLeft={IconLink} label="Server URL" value={exposeUrl} readOnly />
               </Box>
             </>
-          ) : (
+          )}
+
+          {isConfigAvailable && !isExposed && (
             <>
               <Typography fontWeight="bold" mb="$16">
                 Action Server not exposed

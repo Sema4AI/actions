@@ -21,7 +21,7 @@ import {
 } from '@sema4ai/components';
 import { IconBolt, IconLoading, IconLogIn, IconLogOut } from '@sema4ai/icons';
 
-import { Action, ActionPackage, AsyncLoaded } from '~/lib/types';
+import { Action, ActionPackage, AsyncLoaded, ServerConfig } from '~/lib/types';
 import { toKebabCase } from '~/lib/helpers';
 import { useActionServerContext } from '~/lib/actionServerContext';
 import { useLocalStorage } from '~/lib/useLocalStorage';
@@ -109,7 +109,7 @@ export const ActionRun: FC<Props> = ({ action, actionPackage }) => {
   // The API key is currently saved in the local storage.
   const [apiKey, setApiKey] = useLocalStorage<string>('api-key', '');
 
-  const { serverConfig } = useActionServerContext();
+  const { loadedServerConfig } = useActionServerContext();
   const { mutate: runAction, isPending, isSuccess, data, reset } = useActionRunMutation();
   const [formData, setFormData] = useState<PropertyFormData[]>([]);
   const [secretsData, setSecretsData] = useState<Map<string, string>>(new Map());
@@ -246,6 +246,7 @@ export const ActionRun: FC<Props> = ({ action, actionPackage }) => {
         });
         return;
       }
+      const serverConfig: ServerConfig | undefined = loadedServerConfig.data;
 
       try {
         runAction({
@@ -267,7 +268,7 @@ export const ActionRun: FC<Props> = ({ action, actionPackage }) => {
       actionPackage,
       formData,
       apiKey,
-      serverConfig,
+      loadedServerConfig,
       useRawJSON,
       formRawJSON,
       secretsData,
@@ -418,6 +419,8 @@ export const ActionRun: FC<Props> = ({ action, actionPackage }) => {
 
     secretsFields = <Form.Fieldset>{secretsFieldsChildren}</Form.Fieldset>;
   }
+
+  const serverConfig: ServerConfig | undefined = loadedServerConfig.data;
 
   return (
     <Form busy={isPending} onSubmit={onSubmit}>

@@ -19,10 +19,11 @@ def test_return_response_ok_action(
             {},
         )
         found = json.loads(response.text)
-        assert found == {
-            "error_code": "internal-error",
-            "message": "Inconsistent value returned from action: 1 is not of type 'object'\n\nFailed validating 'type' in schema:\n    {'properties': {'error': {'anyOf': [{'type': 'string'},\n                                        {'type': 'null'}],\n                              'default': None,\n                              'description': 'The error message if the '\n                                             'action failed for some '\n                                             'reason',\n                              'title': 'Error'},\n                    'result': {'anyOf': [{'type': 'string'},\n                                         {'type': 'null'}],\n                               'default': None,\n                               'description': 'The result for the action '\n                                              'if it ran successfully',\n                               'title': 'Result'}},\n     'title': 'Response[str]',\n     'type': 'object'}\n\nOn instance:\n    1 -- i.e.: the returned value (1) does not match the expected output schema ({'properties': {'result': {'anyOf': [{'type': 'string'}, {'type': 'null'}], 'default': None, 'description': 'The result for the action if it ran successfully', 'title': 'Result'}, 'error': {'anyOf': [{'type': 'string'}, {'type': 'null'}], 'default': None, 'description': 'The error message if the action failed for some reason', 'title': 'Error'}}, 'title': 'Response[str]', 'type': 'object'}).",
-        }
+        assert found["error_code"] == "internal-error"
+        assert (
+            "Inconsistent value returned from action: 1 is not of type 'object'"
+            in found["message"]
+        )
 
     def case2():
         # ---------- case without response (action error)

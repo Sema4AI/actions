@@ -114,13 +114,18 @@ def _create_run(
     Returns a future which provides the returncode. Note: the `with` statement
     that uses this method should not return before `future.result()` is given.
     """
+    import typing
+
+    from starlette.requests import Request
+
     p = Path(tmpdir)
     robot_artifacts = p / f"artifacts_{i}"
     robot_artifacts.mkdir(parents=True, exist_ok=True)
     input_json = robot_artifacts / "input.json"
     output_file = robot_artifacts / "output.txt"
     result_json = robot_artifacts / "result.json"
-    request = _DummyRequest()
+
+    request: Request = typing.cast(Request, _DummyRequest())
     input_json.write_text(json.dumps({"name": "John"}))
     action_package = actions_process_pool.action_package_id_to_action_package[
         action.action_package_id

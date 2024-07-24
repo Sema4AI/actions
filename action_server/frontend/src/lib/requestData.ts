@@ -2,7 +2,14 @@
 /* eslint-disable max-classes-per-file */
 
 import { Dispatch, SetStateAction } from 'react';
-import { Action, AsyncLoaded, LoadedActionsPackages, LoadedRuns, Run } from './types';
+import {
+  Action,
+  AsyncLoaded,
+  LoadedActionsPackages,
+  LoadedRuns,
+  LoadedServerConfig,
+  Run,
+} from './types';
 import { Counter, copyArrayAndInsertElement, logError } from './helpers';
 import { CachedModel, ModelContainer, ModelType } from './modelContainer';
 import { WebsocketConn } from './websocketConn';
@@ -99,6 +106,8 @@ class ModelUpdater {
 
   private messageIdToHandler = new Map();
 
+  private needsConfig = false;
+
   constructor(modelContainer: ModelContainer) {
     this.modelContainer = modelContainer;
     this.sio = new WebsocketConn(`${baseUrlWs}/api/ws`);
@@ -185,6 +194,31 @@ class ModelUpdater {
       // (either being the first or not as new connections later
       // on probably mean we missed updates).
       this.sio.emit('start_listen_run_events');
+
+      if (this.needsConfig) {
+        // i.e.: the server config is not pushed from the server (because it doesn't change once the
+        // server is started), but if we disconnect and reconnect we need to request it again
+        // (so, on disconnect we set the data to undefined and then request it again).
+        const fetchConfig = async () => {
+          const response = await fetch(`${baseUrl}/config`);
+          const payload = await response.json();
+          this.modelContainer.onModelUpdated(ModelType.SERVER_CONFIG, {
+            isPending: false,
+            data: payload,
+          });
+        };
+
+        fetchConfig();
+      }
+    });
+
+    this.sio.on('disconnect', () => {
+      this.needsConfig = true;
+
+      this.modelContainer.onModelUpdated(ModelType.SERVER_CONFIG, {
+        isPending: false,
+        data: undefined,
+      });
     });
   }
 
@@ -192,9 +226,11 @@ class ModelUpdater {
     // Load initial data (actions/runs)
     const loadActionsPromise = loadAsync<Action>(`${baseUrl}/api/actionPackages`, 'GET');
     const loadRunsPromise = loadAsync<Run>(`${baseUrl}/api/runs`, 'GET');
+    const loadConfigPromise = loadAsync<Run>(`${baseUrl}/config`, 'GET');
 
     const actions = await loadActionsPromise;
     const runs = await loadRunsPromise;
+    const config = await loadConfigPromise;
 
     if (runs.data !== undefined) {
       sortRuns(runs.data);
@@ -202,8 +238,9 @@ class ModelUpdater {
 
     this.modelContainer.onModelUpdated(ModelType.ACTIONS, actions);
     this.modelContainer.onModelUpdated(ModelType.RUNS, runs);
+    this.modelContainer.onModelUpdated(ModelType.SERVER_CONFIG, config);
 
-    // Connect now to automatically start tracking run changes.
+    // Connect now to automatically start tracking changes.
     this.sio.connect();
   }
 
@@ -230,24 +267,39 @@ class ModelUpdater {
 const globalModelUpdater = new ModelUpdater(globalModelContainer);
 globalModelUpdater.startUpdating();
 
+// RUNS
 export const startTrackRuns = (setLoadedRuns: Dispatch<SetStateAction<LoadedRuns>>) => {
   globalModelContainer.addListener(ModelType.RUNS, setLoadedRuns);
-};
-
-export const startTrackActions = (
-  setLoadedActions: Dispatch<SetStateAction<LoadedActionsPackages>>,
-) => {
-  globalModelContainer.addListener(ModelType.ACTIONS, setLoadedActions);
 };
 
 export const stopTrackRuns = (setLoadedRuns: Dispatch<SetStateAction<LoadedRuns>>) => {
   globalModelContainer.removeListener(ModelType.ACTIONS, setLoadedRuns);
 };
 
+// ACTIONS
+export const startTrackActions = (
+  setLoadedActions: Dispatch<SetStateAction<LoadedActionsPackages>>,
+) => {
+  globalModelContainer.addListener(ModelType.ACTIONS, setLoadedActions);
+};
+
 export const stopTrackActions = (
   setLoadedActions: Dispatch<SetStateAction<LoadedActionsPackages>>,
 ) => {
   globalModelContainer.removeListener(ModelType.ACTIONS, setLoadedActions);
+};
+
+// SERVER CONFIG
+export const startTrackServerConfig = (
+  setLoadedServerConfig: Dispatch<SetStateAction<LoadedServerConfig>>,
+) => {
+  globalModelContainer.addListener(ModelType.SERVER_CONFIG, setLoadedServerConfig);
+};
+
+export const stopTrackServerConfig = (
+  setLoadedServerConfig: Dispatch<SetStateAction<LoadedServerConfig>>,
+) => {
+  globalModelContainer.removeListener(ModelType.SERVER_CONFIG, setLoadedServerConfig);
 };
 
 export const collectRunArtifacts = async (

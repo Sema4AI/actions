@@ -14,13 +14,14 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { HeaderAndMenu } from '~/components/Header';
 import { Redirect, SideHeader } from '~/components';
-import { LoadedActionsPackages, LoadedRuns, ServerConfig } from '~/lib/types';
+import { LoadedActionsPackages, LoadedServerConfig, LoadedRuns } from '~/lib/types';
 import {
-  baseUrl,
   startTrackActions,
   startTrackRuns,
+  startTrackServerConfig,
   stopTrackActions,
   stopTrackRuns,
+  stopTrackServerConfig,
 } from '~/lib/requestData';
 import { useLocalStorage } from '~/lib/useLocalStorage';
 
@@ -112,19 +113,11 @@ const Root = () => {
     defaultActionServerState.loadedActions,
   );
 
-  const [serverConfig, setServerConfig] = useState<ServerConfig | undefined>(undefined);
+  const [loadedServerConfig, setLoadedServerConfig] = useState<LoadedServerConfig>(
+    defaultActionServerState.loadedServerConfig,
+  );
 
   const queryClient = new QueryClient();
-
-  useEffect(() => {
-    const fetchConfig = async () => {
-      const response = await fetch(`${baseUrl}/config`);
-      const payload = await response.json();
-      setServerConfig(payload);
-    };
-
-    fetchConfig();
-  }, []);
 
   const actionServerContextValue = useMemo<ActionServerContextType>(
     () => ({
@@ -134,7 +127,8 @@ const Root = () => {
       setLoadedRuns,
       loadedActions,
       setLoadedActions,
-      serverConfig,
+      loadedServerConfig,
+      setLoadedServerConfig,
     }),
     [
       viewSettings,
@@ -143,7 +137,7 @@ const Root = () => {
       setLoadedRuns,
       loadedActions,
       setLoadedActions,
-      serverConfig,
+      loadedServerConfig,
     ],
   );
   const [showNavInSmallMode, setNavInSmallMode] = useState<boolean>(false);
@@ -161,10 +155,12 @@ const Root = () => {
   useEffect(() => {
     startTrackActions(setLoadedActions);
     startTrackRuns(setLoadedRuns);
+    startTrackServerConfig(setLoadedServerConfig);
 
     return () => {
       stopTrackActions(setLoadedActions);
       stopTrackRuns(setLoadedRuns);
+      stopTrackServerConfig(setLoadedServerConfig);
     };
   }, []);
 
@@ -193,9 +189,9 @@ const Root = () => {
                 >
                   Runs
                 </SideNavigation.Link>
-                {serverConfig?.expose_url && (
+                {loadedServerConfig.data?.expose_url && (
                   <SideNavigation.Link
-                    href={serverConfig?.expose_url}
+                    href={loadedServerConfig.data?.expose_url}
                     target="_blank"
                     icon={<IconGlobe />}
                   >

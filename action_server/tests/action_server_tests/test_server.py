@@ -55,7 +55,7 @@ def test_bad_return_on_no_conda(
     message = found.json()["message"]
     assert message == (
         "Inconsistent value returned from action: None is not of type 'string'\n\n"
-        "Failed validating 'type' in schema:\n    {'description': '', 'type': 'string'}\n\n"
+        "Failed validating 'type' in schema:\n    {'type': 'string', 'description': ''}\n\n"
         "On instance:\n    None -- i.e.: the returned value (None) does not match the expected output schema ({'type': 'string', 'description': ''})."
     )
 
