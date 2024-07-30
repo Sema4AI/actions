@@ -22,7 +22,7 @@ export const ActionDetails: FC = () => {
       action: actionExists,
       actionPackage: packageExists,
     };
-  }, [actionId]);
+  }, [actionId, loadedActions]);
 
   const onClose = useCallback(() => {
     navigate('/actions');
