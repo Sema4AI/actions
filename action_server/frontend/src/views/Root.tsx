@@ -33,6 +33,7 @@ import {
   ViewSettings,
   defaultActionServerState,
 } from '../lib/actionServerContext';
+import { CheckVersionDialog } from './actions/components/CheckVersionDialog';
 
 const Main = styled.main<{ isCollapsed: boolean }>`
   background: ${({ theme }) => theme.colors.background.primary.color};
@@ -169,6 +170,7 @@ const Root = () => {
       <ThemeProvider name={viewSettings.theme} overrides={overrides}>
         <ActionServerContext.Provider value={actionServerContextValue}>
           <Main isCollapsed={false}>
+            <CheckVersionDialog config={{ serverConfig: loadedServerConfig.data }} />
             <HeaderAndMenu onClickMenuButton={onClickMenuButton} />
             <SideNavigation aria-label="Navigation" open={showNavInSmallMode} onClose={onClose}>
               <SideHeader />

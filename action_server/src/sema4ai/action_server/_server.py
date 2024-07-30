@@ -265,7 +265,7 @@ def start_server(
 
         from sema4ai.action_server._storage import get_key
 
-        from . import _static_contents
+        from . import __version__, _static_contents
 
         if IN_DEV:
             # Always reload in dev mode.
@@ -278,7 +278,9 @@ def start_server(
         key = base64.b64encode(get_key("ui")).decode("utf-8")
         _cache["cached"] = index_html.replace(
             b"<script",
-            f"<script>window.ENCRYPTION_KEY={key!r};</script><script".encode("utf-8"),
+            f"<script>window.ENCRYPTION_KEY={key!r};window.__ACTION_SERVER_VERSION__={__version__!r};</script><script".encode(
+                "utf-8"
+            ),
             1,
         )
         return _cache["cached"]
