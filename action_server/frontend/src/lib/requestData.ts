@@ -106,7 +106,7 @@ class ModelUpdater {
 
   private messageIdToHandler = new Map();
 
-  private needsConfig = false;
+  private firstConnect = true;
 
   constructor(modelContainer: ModelContainer) {
     this.modelContainer = modelContainer;
@@ -190,31 +190,24 @@ class ModelUpdater {
     });
 
     this.sio.on('connect', () => {
-      // On any new connection we have to start listening again
-      // (either being the first or not as new connections later
-      // on probably mean we missed updates).
-      this.sio.emit('start_listen_run_events');
+      if (this.firstConnect) {
+        this.firstConnect = false;
 
-      if (this.needsConfig) {
+        // On any new connection we have to start listening again
+        // (either being the first or not as new connections later
+        // on probably mean we missed updates).
+        this.sio.emit('start_listen_run_events');
+      } else {
         // i.e.: the server config is not pushed from the server (because it doesn't change once the
         // server is started), but if we disconnect and reconnect we need to request it again
         // (so, on disconnect we set the data to undefined and then request it again).
-        const fetchConfig = async () => {
-          const response = await fetch(`${baseUrl}/config`);
-          const payload = await response.json();
-          this.modelContainer.onModelUpdated(ModelType.SERVER_CONFIG, {
-            isPending: false,
-            data: payload,
-          });
-        };
-
-        fetchConfig();
+        this.fetchModelsData(true);
       }
     });
 
     this.sio.on('disconnect', () => {
-      this.needsConfig = true;
-
+      // Note: if the server is killed/restarted too fast, it's possible that we don't
+      // get a disconnect notification -- we'd just receive a new 'connect' notification.
       this.modelContainer.onModelUpdated(ModelType.SERVER_CONFIG, {
         isPending: false,
         data: undefined,
@@ -222,8 +215,8 @@ class ModelUpdater {
     });
   }
 
-  public async startUpdating() {
-    // Load initial data (actions/runs)
+  private async fetchModelsData(startListening: boolean) {
+    // Load data (actions/runs/config)
     const loadActionsPromise = loadAsync<Action>(`${baseUrl}/api/actionPackages`, 'GET');
     const loadRunsPromise = loadAsync<Run>(`${baseUrl}/api/runs`, 'GET');
     const loadConfigPromise = loadAsync<Run>(`${baseUrl}/config`, 'GET');
@@ -240,6 +233,16 @@ class ModelUpdater {
     this.modelContainer.onModelUpdated(ModelType.RUNS, runs);
     this.modelContainer.onModelUpdated(ModelType.SERVER_CONFIG, config);
 
+    if (startListening) {
+      // On any new connection we have to start listening again
+      // (either being the first or not as new connections later
+      // on probably mean we missed updates).
+      this.sio.emit('start_listen_run_events');
+    }
+  }
+
+  public async startUpdating() {
+    await this.fetchModelsData(false);
     // Connect now to automatically start tracking changes.
     this.sio.connect();
   }
