@@ -63,8 +63,6 @@ class _CustomFastAPI(FastAPI):
 
 @cache
 def get_app() -> _CustomFastAPI:
-    from starlette.requests import Request
-
     from sema4ai.action_server import __version__
 
     settings = get_settings()
@@ -79,16 +77,6 @@ def get_app() -> _CustomFastAPI:
         allow_headers=["*"],
         allow_credentials=True,
     )
-
-    async def add_custom_header(request: Request, call_next):
-        response = await call_next(request)
-        # The MTime UUID is changed whenever there is a change in the
-        # actions (and the UI should respond accordingly to it).
-        # It's s added to all of the responses.
-        response.headers["X-Action-Server-Mtime-UUID"] = app.mtime_uuid
-        return response
-
-    app.middleware("http")(add_custom_header)
 
     app.add_exception_handler(_errors.RequestError, _errors.request_error_handler)  # type: ignore
     app.add_exception_handler(HTTPException, _errors.http_error_handler)  # type: ignore
