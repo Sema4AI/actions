@@ -4,12 +4,16 @@ import os
 import socket
 import subprocess
 import sys
+import typing
 from functools import partial
-from typing import Dict, Optional, Sequence
+from typing import Optional, Sequence
 
 from termcolor import colored
 
-from ._protocols import IBeforeStartCallback
+from ._protocols import ArgumentsNamespaceStart, IBeforeStartCallback
+
+if typing.TYPE_CHECKING:
+    from asyncio.events import AbstractEventLoop
 
 log = logging.getLogger(__name__)
 
@@ -44,14 +48,127 @@ def get_action_description_from_docs(docs: str) -> str:
     return doc_desc
 
 
+class _ActionRoutes:
+    def __init__(self, whitelist: str | None, endpoint_dependencies: list):
+        from sema4ai.action_server._models import Action, ActionPackage
+
+        self.whitelist = whitelist
+        self.endpoint_dependencies = endpoint_dependencies
+        self.action_package_id_to_action_package: dict[str, ActionPackage] = {}
+        self.actions: list[Action] = []
+        self.registered_route_names: set[str] = set()
+
+    def register_actions(self) -> None:
+        import json
+        from typing import Optional
+
+        from . import _actions_run
+        from ._app import get_app
+        from ._models import Action, ActionPackage, get_db
+
+        db = get_db()
+        app = get_app()
+        action: Action
+        action_package_id_to_action_package: dict[str, ActionPackage] = dict(
+            (action_package.id, action_package)
+            for action_package in db.all(ActionPackage)
+        )
+
+        actions = db.all(Action)
+        registered_route_names: set[str] = set()
+        for action in actions:
+            if not action.enabled:
+                # Disabled actions should not be registered.
+                continue
+
+            doc_desc: Optional[str] = ""
+            if action.docs:
+                doc_desc = get_action_description_from_docs(action.docs)
+
+            if not doc_desc:
+                doc_desc = ""
+
+            action_package = action_package_id_to_action_package.get(
+                action.action_package_id
+            )
+            if not action_package:
+                log.critical(
+                    "Unable to find action package: %s", action.action_package_id
+                )
+                continue
+
+            if self.whitelist:
+                from ._whitelist import accept_action
+
+                if not accept_action(self.whitelist, action_package.name, action.name):
+                    log.info(
+                        "Skipping action %s / %s (not in whitelist)",
+                        action_package.name,
+                        action.name,
+                    )
+                    continue
+            display_name = _name_as_summary(action.name)
+            options = action.options
+            if options:
+                options_as_dict = json.loads(options)
+                if options_as_dict:
+                    display_name_in_options = options_as_dict.get("display_name")
+                    if display_name_in_options:
+                        display_name = display_name_in_options
+
+            func, openapi_extra = _actions_run.generate_func_from_action(
+                action_package, action, display_name
+            )
+            if action.is_consequential is not None:
+                openapi_extra["x-openai-isConsequential"] = action.is_consequential
+
+            route_name = build_url_api_run(action_package.name, action.name)
+            assert (
+                route_name not in registered_route_names
+            ), f"Route: {route_name} already registered."
+            app.add_api_route(
+                route_name,
+                func,
+                name=action.name,
+                summary=display_name,
+                description=doc_desc,
+                operation_id=action.name,
+                methods=["POST"],
+                dependencies=self.endpoint_dependencies,
+                openapi_extra=openapi_extra,
+            )
+            registered_route_names.add(route_name)
+
+        self.action_package_id_to_action_package = action_package_id_to_action_package
+        self.actions = actions
+        self.registered_route_names = registered_route_names
+
+    def unregister_actions(self):
+        from sema4ai.action_server._app import get_app
+
+        # We need to iterate backwards to remove with indexes.
+        app = get_app()
+        i = len(app.router.routes)
+        for route in reversed(app.router.routes):
+            i -= 1
+            if route.path_format in self.registered_route_names:
+                log.debug("Unregistering route: %s", route.path_format)
+                del app.router.routes[i]
+
+
+class _LoopHolder:
+    loop: Optional["AbstractEventLoop"] = None
+
+
 def start_server(
-    expose: bool,
+    start_args: ArgumentsNamespaceStart,
     api_key: str | None,
     expose_session: str | None,
-    whitelist: str | None,
     before_start: Sequence[IBeforeStartCallback],
 ) -> None:
     import json
+    import threading
+    import typing
     from dataclasses import asdict
     from functools import lru_cache
     from typing import Any
@@ -63,15 +180,21 @@ def start_server(
     from starlette.requests import Request
     from starlette.responses import HTMLResponse
 
-    from . import _actions_process_pool, _actions_run
+    from . import _actions_process_pool
     from ._api_action_package import action_package_api_router
     from ._api_oauth2 import oauth2_api_router
     from ._api_run import run_api_router
     from ._api_secrets import secrets_api_router
     from ._app import get_app
-    from ._models import Action, ActionPackage, get_db
     from ._server_websockets import websocket_api_router
     from ._settings import get_settings
+
+    if typing.TYPE_CHECKING:
+        from ._watcher import ActionServerFileWatcher
+
+    expose: bool = start_args.expose
+    whitelist: str | None = start_args.whitelist
+    file_watcher: None | "ActionServerFileWatcher" = None
 
     settings = get_settings()
 
@@ -87,12 +210,6 @@ def start_server(
         "/artifacts",
         StaticFiles(directory=artifacts_dir),
         name="artifacts",
-    )
-
-    db = get_db()
-    action: Action
-    action_package_id_to_action_package: Dict[str, ActionPackage] = dict(
-        (action_package.id, action_package) for action_package in db.all(ActionPackage)
     )
 
     def verify_api_key(
@@ -111,62 +228,8 @@ def start_server(
     if api_key:
         endpoint_dependencies.append(Depends(verify_api_key))
 
-    actions = db.all(Action)
-    for action in actions:
-        if not action.enabled:
-            # Disabled actions should not be registered.
-            continue
-
-        doc_desc: Optional[str] = ""
-        if action.docs:
-            doc_desc = get_action_description_from_docs(action.docs)
-
-        if not doc_desc:
-            doc_desc = ""
-
-        action_package = action_package_id_to_action_package.get(
-            action.action_package_id
-        )
-        if not action_package:
-            log.critical("Unable to find action package: %s", action.action_package_id)
-            continue
-
-        if whitelist:
-            from ._whitelist import accept_action
-
-            if not accept_action(whitelist, action_package.name, action.name):
-                log.info(
-                    "Skipping action %s / %s (not in whitelist)",
-                    action_package.name,
-                    action.name,
-                )
-                continue
-        display_name = _name_as_summary(action.name)
-        options = action.options
-        if options:
-            options_as_dict = json.loads(options)
-            if options_as_dict:
-                display_name_in_options = options_as_dict.get("display_name")
-                if display_name_in_options:
-                    display_name = display_name_in_options
-
-        func, openapi_extra = _actions_run.generate_func_from_action(
-            action_package, action, display_name
-        )
-        if action.is_consequential is not None:
-            openapi_extra["x-openai-isConsequential"] = action.is_consequential
-
-        app.add_api_route(
-            build_url_api_run(action_package.name, action.name),
-            func,
-            name=action.name,
-            summary=display_name,
-            description=doc_desc,
-            operation_id=action.name,
-            methods=["POST"],
-            dependencies=endpoint_dependencies,
-            openapi_extra=openapi_extra,
-        )
+    action_routes = _ActionRoutes(whitelist, endpoint_dependencies)
+    action_routes.register_actions()
 
     if os.getenv("RC_ADD_SHUTDOWN_API", "").lower() in ("1", "true"):
 
@@ -232,6 +295,58 @@ def start_server(
                     "expose_url"
                 ] = f"https://{expose_session_payload.sessionId}.{settings.expose_url}"
         return payload
+
+    if start_args.auto_reload:
+        _reload_lock = threading.Lock()
+
+        def do_reload(explicit: bool = False) -> bool:
+            """
+            Internal function to do a reload of the actions.
+
+            Returns:
+                True if the reload was successful and False otherwise.
+            """
+            from sema4ai.action_server._cli_impl import _import_actions
+            from sema4ai.action_server._models import get_db
+            from sema4ai.action_server._server_websockets import report_mtime_changed
+
+            db = get_db()
+            with _reload_lock, db.connect():
+                # This is run in a thread. We can't have 2 reloads at the same
+                # time, so, a lock is required.
+
+                if explicit:
+                    log.info("Reload explicitly called!")
+                else:
+                    log.info("File-changes detected: auto-reloading!")
+                code = _import_actions(
+                    start_args,
+                    settings,
+                    disable_not_imported=True,
+                )
+                if code != 0:
+                    log.info(
+                        "Unable to do auto-reload (actions could not be imported)."
+                    )
+                    return False
+
+                action_routes.unregister_actions()
+                action_routes.register_actions()
+
+                actions_process_pool = _actions_process_pool.get_actions_process_pool()
+                actions_process_pool.on_reload(
+                    action_routes.action_package_id_to_action_package,
+                    action_routes.actions,
+                )
+                app.update_mtime_uuid()
+                assert _LoopHolder.loop is not None
+                report_mtime_changed(_LoopHolder.loop)
+                return True
+
+        from ._watcher import ActionServerFileWatcher
+
+        file_watcher = ActionServerFileWatcher(start_args.dir, do_reload)
+        file_watcher.start()
 
     @app.get("/config", include_in_schema=settings.full_openapi_spec)
     async def serve_config() -> dict[str, Any]:
@@ -403,13 +518,17 @@ def start_server(
                     + f"{api_key}\n"
                 )
 
-    async def _on_startup():
+    async def _on_startup() -> None:
+        loop = asyncio.get_event_loop()
+        _LoopHolder.loop = loop
         if expose:
-            loop = asyncio.get_event_loop()
             loop.call_later(1 / 15.0, partial(expose_later, loop))
 
-    def _on_shutdown():
+    def _on_shutdown() -> None:
         import psutil
+
+        if file_watcher is not None:
+            file_watcher.stop()
 
         log.info("Stopping action server...")
         from sema4ai.action_server._robo_utils.process import (
@@ -442,7 +561,9 @@ def start_server(
     app.add_event_handler("shutdown", _on_shutdown)
 
     with _actions_process_pool.setup_actions_process_pool(
-        settings, action_package_id_to_action_package, actions
+        settings,
+        action_routes.action_package_id_to_action_package,
+        action_routes.actions,
     ):
         kwargs = settings.to_uvicorn()
         config = uvicorn.Config(app=app, **kwargs)

@@ -269,6 +269,7 @@ def make_exe():
             "sema4ai-actions~=0.8",
             "termcolor~=2.4",
             "uvicorn~=0.23",
+            "watchfiles~=0.22",
             "websockets~=12.0",
             ## END DEPS
         ]

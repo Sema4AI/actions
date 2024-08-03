@@ -12,10 +12,15 @@ LOGGER = logging.getLogger(__name__)
 
 
 class _CustomFastAPI(FastAPI):
+    mtime_uuid: str
+
     def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.update_mtime_uuid()
+
+    def update_mtime_uuid(self) -> None:
         import uuid
 
-        super().__init__(*args, **kwargs)
         self.mtime_uuid: str = str(uuid.uuid4())
 
     def openapi(self):

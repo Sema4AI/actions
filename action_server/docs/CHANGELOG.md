@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- New `--auto-reload` parameter available in `action-server start`.
+  - When passed, whenever a file with a `.py`, `.pyx` or `.yaml` extension under an Action
+    Package directory is changed, the Action Server will automatically reload the actions
+    loaded.
+- The Action Server UI will now detect when:
+  - The Action Server backend becomes unreachable (i.e.: UI indication that the network is down or it was stopped).
+  - The Action Server is restarted with a different `--expose` flag (i.e.: the proper state is now shown).
+  - The Actions available in the Action Server change (i.e.: shows the new contents of the action after a reload).
+  - The connected Action Server version changes (i.e.: requires a browser page reload).
+
 ## 0.16.1 - 2024-07-11
 
 - Upgrade to MacOS runner 13 as 11 is now deprecated in GitHub actions.
@@ -12,7 +22,6 @@
   - The OAuth2 settings are now defined in a `.yaml`.
     - On Windows it's default location is `%LOCALAPPDATA%/sema4ai/action-server/oauth2-settings.yaml`.
     - On Linux/Mac it's default location is `~/.sema4ai/action-server/oauth2-settings.yaml`.
-    
 - Note: this was a partial release because Mac OS 11 is deprecated in GitHub actions.
 
 ## 0.15.2 - 2024-06-25
