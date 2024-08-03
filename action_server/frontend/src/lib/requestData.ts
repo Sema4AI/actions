@@ -189,6 +189,11 @@ class ModelUpdater {
       }
     });
 
+    this.sio.on('mtime_changed', () => {
+      // When the server mtime changes, all our data needs to be considered invalid.
+      this.fetchModelsData(false);
+    });
+
     this.sio.on('connect', () => {
       if (this.firstConnect) {
         this.firstConnect = false;
