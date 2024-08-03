@@ -5,6 +5,7 @@ import socket as socket_module
 import subprocess
 import sys
 import threading
+from collections import namedtuple
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional, Set
@@ -33,9 +34,7 @@ AF_INET, SOCK_STREAM, SHUT_WR, SOL_SOCKET, SO_REUSEADDR, IPPROTO_TCP, socket = (
 if sys.platform == "win32":
     SO_EXCLUSIVEADDRUSE = socket_module.SO_EXCLUSIVEADDRUSE  # noqa
 
-
-class _Key(tuple):
-    pass
+_Key = namedtuple("_Key", "action_package_id, env, cwd")
 
 
 def _create_server_socket(host: str, port: int):
@@ -105,6 +104,11 @@ class ProcessHandle:
         from ._robo_utils.process import build_python_launch_env
 
         self.key = _get_process_handle_key(settings, action_package)
+
+        # The can_reuse flag is used to notify whether this process can be reused
+        # (upon reloading all running processes are marked as non-reusable).
+        self.can_reuse = True
+
         env = json.loads(action_package.env_json)
         _add_preload_actions_dir_to_env_pythonpath(env)
         env = build_python_launch_env(env)
@@ -454,7 +458,7 @@ def _get_process_handle_key(settings: Settings, action_package: ActionPackage) -
 
     env = tuple(sorted(json.loads(action_package.env_json).items()))
     cwd = get_action_package_cwd(settings, action_package)
-    return _Key((action_package.id, env, cwd))
+    return _Key(action_package.id, env, cwd)
 
 
 class ActionsProcessPool:
@@ -479,6 +483,37 @@ class ActionsProcessPool:
 
         # Semaphore used to track running processes.
         self._processes_running_semaphore = threading.Semaphore(self.max_processes)
+
+        self._warmup_processes()
+
+    def on_reload(
+        self,
+        action_package_id_to_action_package: Dict[str, ActionPackage],
+        actions: List[Action],
+    ):
+        """
+        On a reload, we need to kill all the related, idle processes and mark
+        any running process as non-reusable.
+        """
+        with self._lock:
+            for key, idle_processes in tuple(self._idle_processes.items()):
+                for process in idle_processes:
+                    process.kill()
+                self._idle_processes.pop(key)
+
+            for key, running_processes in tuple(self._running_processes.items()):
+                for process in running_processes:
+                    process.can_reuse = False
+
+            self.action_package_id_to_action_package = (
+                action_package_id_to_action_package
+            )
+
+            # We just want the actions which are enabled.
+            self.actions = [action for action in actions if action.enabled]
+
+            # An iterator which keeps cycling over the actions.
+            self._cycle_actions_iterator = itertools.cycle(self.actions)
 
         self._warmup_processes()
 
@@ -656,7 +691,14 @@ class ActionsProcessPool:
                     if process_handle.is_alive():
                         if self._reuse_processes:
                             curr_idle = self._get_idle_processes_count_unlocked()
-                            if self.min_processes <= curr_idle:
+                            if not process_handle.can_reuse:
+                                log.debug(
+                                    f"Process Pool: Exited process ({process_handle.pid}) -- process marked as non-reusable."
+                                )
+                                # We cannot reuse it!
+                                process_handle.kill()
+
+                            elif self.min_processes <= curr_idle:
                                 log.debug(
                                     f"Process Pool: Exited process ({process_handle.pid}) -- min processes already satisfied."
                                 )

@@ -294,6 +294,18 @@ async def _report_change_event(run_change_event: "RunChangeEvent"):
         log.exception("Error reporting change event to json.")
 
 
+async def _report_mtime_changed():
+    notify_all = None
+    await _socket_server.emit("mtime_changed", [], to=notify_all)
+
+
+def report_mtime_changed(loop):
+    """
+    Note that this callback is called from a different thread.
+    """
+    asyncio.run_coroutine_threadsafe(_report_mtime_changed(), loop)
+
+
 @websocket_api_router.websocket("")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()

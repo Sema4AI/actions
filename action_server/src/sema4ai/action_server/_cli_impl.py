@@ -174,6 +174,12 @@ def _add_start_server_command(command_parser, defaults):
     )
 
     start_parser.add_argument(
+        "--auto-reload",
+        action="store_true",
+        help="When specified changes to Action Packages will be automatically picked up by the Action Server.",
+    )
+
+    start_parser.add_argument(
         "--parent-pid",
         type=int,
         help=(
@@ -823,6 +829,13 @@ information from this datadir.
                 # all the running actions processes should exit too.
                 os.environ["SEMA4AI_ACTION_SERVER_PARENT_PID"] = str(os.getpid())
 
+                if start_args.auto_reload:
+                    if not start_args.actions_sync:
+                        log.critical(
+                            "Unable to start Action Server: --auto-reload cannot be used with --actions-sync=false."
+                        )
+                        return 1
+
                 if start_args.actions_sync:
                     code = _import_actions(
                         start_args,
@@ -869,12 +882,11 @@ information from this datadir.
 
                     try:
                         start_server(
-                            expose=start_args.expose,
+                            start_args=start_args,
                             api_key=api_key,
                             expose_session=expose_session.expose_session
                             if expose_session
                             else None,
-                            whitelist=start_args.whitelist,
                             before_start=before_start,
                         )
                     except KeyboardInterrupt:

@@ -487,7 +487,11 @@ def wait_for_non_error_condition(
     curtime = time.time()
 
     while True:
-        error_msg = generate_error_or_none()
+        try:
+            error_msg = generate_error_or_none()
+        except Exception as e:
+            error_msg = str(e)
+
         if error_msg is None:
             break
 
