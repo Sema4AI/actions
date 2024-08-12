@@ -9,8 +9,6 @@ from typing import Optional, TypedDict
 import yaml
 from pydantic.main import BaseModel
 
-from ._settings import get_default_settings_dir
-
 TEMPLATES_METADATA_URL = "https://cdn.sema4.ai/action-templates/action-templates.yaml"
 TEMPLATES_PACKAGE_URL = "https://cdn.sema4.ai/action-templates/action-templates.zip"
 
@@ -117,6 +115,11 @@ def _unpack_template(template_name: str, directory: str = ".") -> None:
 
 
 def _get_action_templates_dir_path() -> Path:
+    from ._settings import get_settings, get_default_settings_dir, _legacy_get_default_settings_dir
+
+    settings = get_settings()
+    default_settings_dir = _legacy_get_default_settings_dir() if settings.legacy_data_strategy else get_default_settings_dir()
+    
     return Path(get_default_settings_dir() / "action-templates")
 
 

@@ -11,6 +11,7 @@ from typing import Dict, Iterator, List, Optional, Tuple
 
 from sema4ai.action_server._protocols import ActionResult, RCCActionResult, Sentinel
 from sema4ai.action_server._robo_utils.constants import NULL
+from sema4ai.action_server._settings import get_settings
 
 log = logging.getLogger(__name__)
 
@@ -39,9 +40,12 @@ def as_str(s) -> str:
 
 
 class Rcc(object):
-    def __init__(self, rcc_location: Path, robocorp_home: Optional[Path]):
+    def __init__(self, rcc_location: Path, product_home: Optional[Path]):
+        settings = get_settings()
+        
         self._rcc_location = rcc_location
-        self._robocorp_home = robocorp_home
+        self._legacy_strategy = settings.legacy_data_strategy
+        self._product_home = product_home
         self.config_location = os.environ.get(
             "S4_ACTION_SERVER_RCC_CONFIG_LOCATION", ""
         )
@@ -54,8 +58,8 @@ class Rcc(object):
         env["PYTHONIOENCODING"] = "utf-8"
         env["PYTHONUNBUFFERED"] = "1"
 
-        if self._robocorp_home:
-            env["ROBOCORP_HOME"] = str(self._robocorp_home)
+        if self._product_home:            
+            env["ROBOCORP_HOME" if self._legacy_strategy else "SEMA4AI_HOME"] = str(self._product_home)
         return env
 
     def _compute_launch_args_and_kwargs(
@@ -69,6 +73,10 @@ class Rcc(object):
         kwargs: dict = build_subprocess_kwargs(cwd, env, stderr=stderr)
         rcc_location = str(self._rcc_location)
         args = [rcc_location] + args + ["--controller", "action-server", "--bundled"]
+        
+        if not self._legacy_strategy:
+            args += ["--sema4ai"]
+    
         return args, kwargs
 
     def _run_rcc(
@@ -99,9 +107,9 @@ class Rcc(object):
         from sema4ai.action_server._robo_utils.process import check_output_interactive
 
         env = self._compute_env()
-        robocorp_home = env.get("ROBOCORP_HOME")
-        if not robocorp_home:
-            robocorp_home = "<unset>"
+        product_home = env.get("ROBOCORP_HOME" if self._legacy_strategy else "SEMA4AI_HOME")
+        if not product_home:
+            product_home = "<unset>"
 
         args, kwargs = self._compute_launch_args_and_kwargs(cwd, env, args, stderr)
         cmdline = list2cmdline([str(x) for x in args])
@@ -146,8 +154,10 @@ class Rcc(object):
         except CalledProcessError as e:
             stdout = as_str(e.stdout)
             stderr = as_str(e.stderr)
+            
+            home_var_name = "ROBOCORP_HOME" if self._legacy_strategy else "SEMA4AI_HOME"
             msg = (
-                f"Error running: {cmdline}.\nROBOCORP_HOME: {robocorp_home}\n\n"
+                f"Error running: {cmdline}.\n{home_var_name}: {product_home}\n\n"
                 f"Stdout: {stdout}\nStderr: {stderr}"
             )
             if hide_in_log:
@@ -362,14 +372,14 @@ _rcc: Optional["Rcc"] = None
 
 
 @contextmanager
-def initialize_rcc(rcc_location: Path, robocorp_home: Optional[Path]) -> Iterator[Rcc]:
+def initialize_rcc(rcc_location: Path, product_home: Optional[Path]) -> Iterator[Rcc]:
     global _rcc
 
     if _rcc:
         yield _rcc
         return
 
-    rcc = Rcc(rcc_location, robocorp_home)
+    rcc = Rcc(rcc_location, product_home)
     _rcc = rcc
     try:
         yield rcc

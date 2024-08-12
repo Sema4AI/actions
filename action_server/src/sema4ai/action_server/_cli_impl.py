@@ -50,7 +50,16 @@ def _add_whitelist_args(parser, defaults):
         default="",
         help="Allows whitelisting the actions/packages to be used",
     )
+    
 
+def _add_dir_strategy_args(parser, defaults):
+    parser.add_argument(
+        "--sema4ai",
+        help="Use Sema4.ai toolset strategy",
+        action="store_true",
+        default=False,
+        dest="sema4ai_strategy"
+    )
 
 def str2bool(v):
     if isinstance(v, bool):
@@ -337,7 +346,9 @@ def _create_parser():
         description=f"Sema4.ai Action Server ({__version__})",
         formatter_class=argparse.RawTextHelpFormatter,
     )
-
+    
+    _add_dir_strategy_args(base_parser, defaults)
+    
     command_subparser = base_parser.add_subparsers(dest="command")
 
     # Starts the server

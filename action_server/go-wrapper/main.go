@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strings"
 
 	"golang.org/x/mod/semver"
@@ -133,6 +134,14 @@ func main() {
 	var actionServerPath string
 	var executablePath string
 
+	var baseSettingsDirName string
+
+	if slices.Contains(os.Args, "--sema4ai") {
+		baseSettingsDirName = "sema4ai"
+	} else {
+		baseSettingsDirName = "robocorp"
+	}
+
 	// Read the version
 	versionData, err := content.ReadFile("assets/version.txt")
 	if err != nil {
@@ -148,7 +157,7 @@ func main() {
 	switch runtime.GOOS {
 	case "windows":
 		appDataDir := os.Getenv("LOCALAPPDATA")
-		actionServerPath = fmt.Sprintf("%s\\robocorp\\action-server\\%s", appDataDir, version)
+		actionServerPath = fmt.Sprintf("%s\\%s\\action-server\\%s", appDataDir, baseSettingsDirName, version)
 		executablePath = filepath.Join(actionServerPath, "action-server.exe")
 	case "linux", "darwin":
 		homeDir, err := os.UserHomeDir()
@@ -156,7 +165,7 @@ func main() {
 			fmt.Fprintf(os.Stderr, "Error getting user home directory: %s\n", err)
 			os.Exit(1)
 		}
-		actionServerPath = fmt.Sprintf("%s/.robocorp/action-server/%s", homeDir, version)
+		actionServerPath = fmt.Sprintf("%s/.%s/action-server/%s", homeDir, baseSettingsDirName, version)
 		executablePath = filepath.Join(actionServerPath, "action-server")
 	default:
 		fmt.Fprintf(os.Stderr, "Unsupported operating system\n")
