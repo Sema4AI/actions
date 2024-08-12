@@ -65,7 +65,7 @@ def disable_feedback(temp_directory_session, rcc_config_location) -> None:
             "action_server/build.py, which downloads RCC to the proper location\n"
             "as a part of the build process."
         )
-    rcc = Rcc(rcc_location, False, sema4ai_home)
+    rcc = Rcc(rcc_location, sema4ai_home)
     result = rcc._run_rcc(
         "configure identity --do-not-track --config".split()
         + [str(rcc_config_location)]
