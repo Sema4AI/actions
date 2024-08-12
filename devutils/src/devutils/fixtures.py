@@ -48,10 +48,10 @@ def rcc_loc(tmpdir_factory):
 
 
 @pytest.fixture
-def rcc(rcc_loc, robocorp_home, ci_endpoint):
+def rcc(rcc_loc, sema4ai_home, ci_endpoint):
     from devutils.rcc import Rcc
 
-    return Rcc(rcc_loc, robocorp_home, ci_endpoint)
+    return Rcc(rcc_loc, sema4ai_home, ci_endpoint)
 
 
 def run_in_rcc(rcc_loc: Path, cwd: Path, args: Sequence[str] = (), expect_error=False):
@@ -76,14 +76,14 @@ def run_in_rcc(rcc_loc: Path, cwd: Path, args: Sequence[str] = (), expect_error=
 
 
 @pytest.fixture(scope="session")
-def robocorp_home(tmpdir_factory) -> str:
+def sema4ai_home(tmpdir_factory) -> str:
     # import shutil
     #
     # ret = "c:/temp/tests_robohome"
     # shutil.rmtree(os.path.join(ret, ".robocorp_code"), ignore_errors=True)
     # return ret
 
-    dirname = tmpdir_factory.mktemp("robocorp_home")
+    dirname = tmpdir_factory.mktemp("sema4ai_home")
 
     return str(dirname)
 

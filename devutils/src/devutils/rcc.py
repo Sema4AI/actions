@@ -133,9 +133,9 @@ class Rcc(object):
     A wrapper (adapted from Robocorp Code) which can be used to manage RCC in tests.
     """
 
-    def __init__(self, rcc_location: str, robocorp_home: str, endpoint: str) -> None:
+    def __init__(self, rcc_location: str, sema4ai_home: str, endpoint: str) -> None:
         self.rcc_location = rcc_location
-        self.robocorp_home = robocorp_home
+        self.sema4ai_home = sema4ai_home
         self.config_location = os.environ.get(
             "S4_ACTION_SERVER_RCC_CONFIG_LOCATION", ""
         )
@@ -177,9 +177,9 @@ class Rcc(object):
         env["PYTHONIOENCODING"] = "utf-8"
         env["PYTHONUNBUFFERED"] = "1"
 
-        robocorp_home = self.robocorp_home
-        if robocorp_home:
-            env["ROBOCORP_HOME"] = robocorp_home
+        sema4ai_home = self.sema4ai_home
+        if sema4ai_home:
+            env["SEMA4AI_HOME"] = sema4ai_home
 
         kwargs: dict = build_subprocess_kwargs(cwd, env, stderr=stderr)
         args = [rcc_location] + args + ["--controller", "RobocorpDevutilsTests"]
@@ -202,7 +202,7 @@ class Rcc(object):
         except CalledProcessError as e:
             stdout = e.stdout.decode("utf-8", "replace")
             stderr = e.stderr.decode("utf-8", "replace")
-            msg = f"Error running: {cmdline}.\nROBOCORP_HOME: {robocorp_home}\n\nStdout: {stdout}\nStderr: {stderr}"
+            msg = f"Error running: {cmdline}.\nSEMA4AI_HOME: {sema4ai_home}\n\nStdout: {stdout}\nStderr: {stderr}"
             if hide_in_log:
                 msg = msg.replace(hide_in_log, "<HIDDEN_IN_LOG>")
 
@@ -306,7 +306,7 @@ class Rcc(object):
 
         output = result.result
         if not output:
-            msg = f"Error. Expected to get info on credentials (found no output)."
+            msg = "Error. Expected to get info on credentials (found no output)."
             log.critical(msg)
             return None
 

@@ -12,7 +12,7 @@ def test_automigrate(
     from action_server_tests.fixtures import get_in_resources
 
     from sema4ai.action_server._database import Database
-    from sema4ai.action_server._selftest import robocorp_action_server_run
+    from sema4ai.action_server._selftest import sema4ai_action_server_run
     from sema4ai.action_server.migrations import (
         CURRENT_VERSION,
         Migration,
@@ -28,7 +28,7 @@ def test_automigrate(
 
     assert db_migration_status(target_db) == MigrationStatus.NEEDS_MIGRATION
     root_dir = get_in_resources("no_conda", "greeter")
-    robocorp_action_server_run(
+    sema4ai_action_server_run(
         [
             "import",
             f"--dir={root_dir}",
@@ -48,7 +48,7 @@ def test_automigrate(
         with db.transaction():
             db.insert(Migration(id=CURRENT_VERSION + 1, name="dummy-test"))
 
-    result = robocorp_action_server_run(
+    result = sema4ai_action_server_run(
         [
             "import",
             f"--dir={root_dir}",

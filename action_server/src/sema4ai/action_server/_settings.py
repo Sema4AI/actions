@@ -42,7 +42,7 @@ def get_python_exe_from_env(env):
     return python
 
 
-def _old_get_default_settings_dir() -> Path:
+def _legacy_get_default_settings_dir() -> Path:
     if sys.platform == "win32":
         localappdata = os.environ.get("LOCALAPPDATA")
         if not localappdata:
@@ -50,7 +50,7 @@ def _old_get_default_settings_dir() -> Path:
         path = Path(localappdata) / "robocorp" / ".action_server"
     else:
         # Linux/Mac
-        path = Path("~/robocorp/.action_server").expanduser()
+        path = Path("~/.robocorp/.action_server").expanduser()
     return path
 
 
@@ -73,7 +73,7 @@ def get_default_settings_dir() -> Path:
 
     # Notify users about backward incompatible change
     # (as this is lru-cached, should notify only once).
-    old_dir = _old_get_default_settings_dir()
+    old_dir = _legacy_get_default_settings_dir()
     if os.path.exists(old_dir):
         log.critical(
             bold_red(
@@ -186,7 +186,11 @@ class Settings:
 
         datadir = user_expanded_datadir.absolute()
 
-        settings = Settings(datadir=datadir, artifacts_dir=datadir / "artifacts")
+        settings = Settings(
+            datadir=datadir,
+            artifacts_dir=datadir / "artifacts",
+        )
+
         # Optional (just in 'start' command, not in 'import')
         for attr in (
             "address",

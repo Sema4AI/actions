@@ -22,13 +22,13 @@ def package_metadata(
     """
     import json
 
-    from sema4ai.action_server._selftest import robocorp_action_server_run
+    from sema4ai.action_server._selftest import sema4ai_action_server_run
 
     any_return = None
     cmdline: list[str] = ["package", "metadata"]
     if datadir:
         cmdline.extend(["--datadir", str(datadir)])
-    result = robocorp_action_server_run(
+    result = sema4ai_action_server_run(
         cmdline,
         returncode=any_return,
         cwd=str(action_package_dir),

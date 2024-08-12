@@ -162,10 +162,7 @@ def test_import_action_server_strategies(
     action_server_datadir: Path,
     strategy: str,
 ) -> None:
-    from action_server_tests.fixtures import (
-        get_in_resources,
-        robocorp_action_server_run,
-    )
+    from action_server_tests.fixtures import get_in_resources, sema4ai_action_server_run
 
     from sema4ai.action_server._models import Action, ActionPackage, load_db
 
@@ -181,7 +178,7 @@ def test_import_action_server_strategies(
         assert strategy == "no-conda"
         root_dir = get_in_resources("no_conda", "greeter")
 
-    robocorp_action_server_run(
+    sema4ai_action_server_run(
         [
             "import",
             f"--dir={root_dir}",
@@ -242,7 +239,7 @@ def test_import_default_value(
     tmpdir,
     action_server_datadir: Path,
 ) -> None:
-    from action_server_tests.fixtures import robocorp_action_server_run
+    from action_server_tests.fixtures import sema4ai_action_server_run
 
     from sema4ai.action_server._database import Database
     from sema4ai.action_server._models import Action, load_db
@@ -263,7 +260,7 @@ def calculator_sum(v1: int = 5) -> float:
 """
     )
 
-    robocorp_action_server_run(
+    sema4ai_action_server_run(
         [
             "import",
             f"--dir={calculator.parent}",
@@ -333,10 +330,7 @@ def test_import_no_conda(
     action_server_datadir: Path,
     client: ActionServerClient,
 ) -> None:
-    from action_server_tests.fixtures import (
-        fix_openapi_json,
-        robocorp_action_server_run,
-    )
+    from action_server_tests.fixtures import fix_openapi_json, sema4ai_action_server_run
 
     from sema4ai.action_server._database import Database
     from sema4ai.action_server._models import Action, load_db
@@ -357,7 +351,7 @@ def calculator_sum(v1: float, v2: float) -> float:
 """
     )
 
-    robocorp_action_server_run(
+    sema4ai_action_server_run(
         [
             "import",
             f"--dir={calculator.parent}",
@@ -390,7 +384,7 @@ def another_action(a1: str, a2: str) -> str:
 """
     )
 
-    robocorp_action_server_run(
+    sema4ai_action_server_run(
         [
             "import",
             f"--dir={calculator.parent}",
@@ -773,7 +767,7 @@ def test_import_task_options(
     action_server_datadir: Path,
     client: ActionServerClient,
 ) -> None:
-    from action_server_tests.fixtures import robocorp_action_server_run
+    from action_server_tests.fixtures import sema4ai_action_server_run
 
     from sema4ai.action_server._database import Database
     from sema4ai.action_server._models import Action, load_db
@@ -794,7 +788,7 @@ def calculator_sum(v1: float, v2: float) -> float:
 """
     )
 
-    robocorp_action_server_run(
+    sema4ai_action_server_run(
         [
             "import",
             f"--dir={calculator.parent}",
@@ -824,7 +818,7 @@ def calculator_sum(v1: str, v2: str) -> str:
 """
     )
 
-    robocorp_action_server_run(
+    sema4ai_action_server_run(
         [
             "import",
             f"--dir={calculator.parent}",
@@ -853,7 +847,7 @@ def calculator_sum(v1: str, v2: str) -> str:
 """
     )
 
-    robocorp_action_server_run(
+    sema4ai_action_server_run(
         [
             "import",
             f"--dir={calculator.parent}",
@@ -875,7 +869,7 @@ def calculator_sum(v1: str, v2: str) -> str:
 def test_port_in_use(action_server_process: ActionServerProcess, tmpdir):
     from sema4ai.action_server._selftest import ActionServerExitedError
 
-    action_server_datadir = tmpdir / ".robocorp_action_server_2"
+    action_server_datadir = tmpdir / ".sema4ai_action_server_2"
     process2 = ActionServerProcess(Path(action_server_datadir))
     action_server_process.start()
     try:
@@ -941,7 +935,7 @@ def test_action_package_cwd(
     action_server_process: ActionServerProcess, client: ActionServerClient, tmpdir
 ):
     def create_action(package_dir: Path):
-        from sema4ai.action_server._selftest import robocorp_action_server_run
+        from sema4ai.action_server._selftest import sema4ai_action_server_run
 
         package_dir.mkdir(parents=True, exist_ok=True)
         (package_dir / "action.py").write_text(
@@ -965,7 +959,7 @@ def do_it() -> str:
 """
         )
 
-        robocorp_action_server_run(
+        sema4ai_action_server_run(
             [
                 "import",
                 f"--dir={package_dir}",

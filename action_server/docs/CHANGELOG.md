@@ -11,6 +11,7 @@
   - The Action Server is restarted with a different `--expose` flag (i.e.: the proper state is now shown).
   - The Actions available in the Action Server change (i.e.: shows the new contents of the action after a reload).
   - The connected Action Server version changes (i.e.: requires a browser page reload).
+- Action Server will now use `%LOCALAPPDATA%/sema4ai` (Windows) and `~/.sema4ai` (Linux/Mac) as default directories for RCC data and settings
 
 ## 0.16.1 - 2024-07-11
 

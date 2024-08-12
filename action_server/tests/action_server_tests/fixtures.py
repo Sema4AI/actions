@@ -9,7 +9,7 @@ import pytest
 from sema4ai.action_server._selftest import (
     ActionServerClient,
     ActionServerProcess,
-    robocorp_action_server_run,
+    sema4ai_action_server_run,
 )
 
 
@@ -54,8 +54,8 @@ def disable_feedback(temp_directory_session, rcc_config_location) -> None:
     from sema4ai.action_server._download_rcc import get_default_rcc_location
     from sema4ai.action_server._rcc import Rcc
 
-    robocorp_home = temp_directory_session / ".robocorp_home"
-    robocorp_home.mkdir(parents=True, exist_ok=True)
+    sema4ai_home = temp_directory_session / ".sema4ai_home"
+    sema4ai_home.mkdir(parents=True, exist_ok=True)
 
     rcc_location = get_default_rcc_location()
     if not os.path.exists(rcc_location):
@@ -65,7 +65,7 @@ def disable_feedback(temp_directory_session, rcc_config_location) -> None:
             "action_server/build.py, which downloads RCC to the proper location\n"
             "as a part of the build process."
         )
-    rcc = Rcc(rcc_location, robocorp_home)
+    rcc = Rcc(rcc_location, sema4ai_home)
     result = rcc._run_rcc(
         "configure identity --do-not-track --config".split()
         + [str(rcc_config_location)]
@@ -139,7 +139,7 @@ def base_case(
         pack2 = get_in_resources("greeter")
         # Will have to generate the environment...
 
-        robocorp_action_server_run(
+        sema4ai_action_server_run(
             [
                 "import",
                 f"--dir={pack1}",

@@ -148,7 +148,7 @@ func main() {
 	switch runtime.GOOS {
 	case "windows":
 		appDataDir := os.Getenv("LOCALAPPDATA")
-		actionServerPath = fmt.Sprintf("%s\\robocorp\\action-server\\%s", appDataDir, version)
+		actionServerPath = fmt.Sprintf("%s\\sema4ai\\action-server\\%s", appDataDir, version)
 		executablePath = filepath.Join(actionServerPath, "action-server.exe")
 	case "linux", "darwin":
 		homeDir, err := os.UserHomeDir()
@@ -156,7 +156,7 @@ func main() {
 			fmt.Fprintf(os.Stderr, "Error getting user home directory: %s\n", err)
 			os.Exit(1)
 		}
-		actionServerPath = fmt.Sprintf("%s/.robocorp/action-server/%s", homeDir, version)
+		actionServerPath = fmt.Sprintf("%s/.sema4ai/action-server/%s", homeDir, version)
 		executablePath = filepath.Join(actionServerPath, "action-server")
 	default:
 		fmt.Fprintf(os.Stderr, "Unsupported operating system\n")
