@@ -43,7 +43,7 @@ def test_whitelist_on_import(
     action_server_datadir: Path,
     client: ActionServerClient,
 ) -> None:
-    from action_server_tests.fixtures import robocorp_action_server_run
+    from action_server_tests.fixtures import sema4ai_action_server_run
 
     from sema4ai.action_server._database import Database
     from sema4ai.action_server._models import Action, load_db
@@ -68,7 +68,7 @@ def calculator_subtract(v1: float, v2: float) -> float:
 """
     )
 
-    robocorp_action_server_run(
+    sema4ai_action_server_run(
         [
             "import",
             f"--dir={calculator.parent}",
@@ -136,7 +136,7 @@ def test_whitelist_on_start_run(
 ) -> None:
     from action_server_tests.fixtures import fix_openapi_json
 
-    from sema4ai.action_server._selftest import robocorp_action_server_run
+    from sema4ai.action_server._selftest import sema4ai_action_server_run
 
     calculator = Path(tmpdir) / "v1" / "calculator" / "action_calculator.py"
     calculator.parent.mkdir(parents=True, exist_ok=True)
@@ -154,7 +154,7 @@ def calculator_subtract(v1: float, v2: float) -> float:
 """
     )
 
-    robocorp_action_server_run(
+    sema4ai_action_server_run(
         [
             "import",
             f"--dir={calculator.parent}",

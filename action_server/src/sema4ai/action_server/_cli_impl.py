@@ -50,7 +50,7 @@ def _add_whitelist_args(parser, defaults):
         default="",
         help="Allows whitelisting the actions/packages to be used",
     )
-    
+
 
 def _add_dir_strategy_args(parser, defaults):
     parser.add_argument(
@@ -58,8 +58,9 @@ def _add_dir_strategy_args(parser, defaults):
         help="Use Sema4.ai toolset strategy",
         action="store_true",
         default=False,
-        dest="sema4ai_strategy"
+        dest="sema4ai_strategy",
     )
+
 
 def str2bool(v):
     if isinstance(v, bool):
@@ -346,9 +347,9 @@ def _create_parser():
         description=f"Sema4.ai Action Server ({__version__})",
         formatter_class=argparse.RawTextHelpFormatter,
     )
-    
+
     _add_dir_strategy_args(base_parser, defaults)
-    
+
     command_subparser = base_parser.add_subparsers(dest="command")
 
     # Starts the server
@@ -624,8 +625,10 @@ def _main_retcode(
     from sema4ai.action_server._rcc import initialize_rcc
     from sema4ai.action_server._session import initialize_session
 
+    use_legacy_strategy = not base_args.sema4ai_strategy
+
     try:
-        with initialize_rcc(download_rcc(), None) as rcc:
+        with initialize_rcc(download_rcc(), use_legacy_strategy, None) as rcc:
             initialize_session(rcc)
 
             if command == "package":

@@ -388,7 +388,7 @@ class ActionServerClient:
         assert result.status_code == status_code
 
 
-def robocorp_action_server_run(
+def sema4ai_action_server_run(
     cmdline,
     returncode: Optional[Union[Literal["error"], int]],
     cwd=None,
@@ -508,7 +508,7 @@ def check_new_template(
             print(f"is_frozen(): {is_frozen()}")
             print(f"Creating template project in: {tmpdir}")
 
-        output = robocorp_action_server_run(
+        output = sema4ai_action_server_run(
             ["new", "--name=my_project", "--template=minimal"],
             returncode=0,
             cwd=str(tmpdir),

@@ -115,12 +115,20 @@ def _unpack_template(template_name: str, directory: str = ".") -> None:
 
 
 def _get_action_templates_dir_path() -> Path:
-    from ._settings import get_settings, get_default_settings_dir, _legacy_get_default_settings_dir
+    from ._settings import (
+        _legacy_get_default_settings_dir,
+        get_default_settings_dir,
+        get_settings,
+    )
 
     settings = get_settings()
-    default_settings_dir = _legacy_get_default_settings_dir() if settings.legacy_data_strategy else get_default_settings_dir()
-    
-    return Path(get_default_settings_dir() / "action-templates")
+    default_settings_dir = (
+        _legacy_get_default_settings_dir()
+        if settings.legacy_data_strategy
+        else get_default_settings_dir()
+    )
+
+    return Path(default_settings_dir / "action-templates")
 
 
 def _get_action_templates_metadata_path() -> Path:

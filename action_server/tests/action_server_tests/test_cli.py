@@ -6,19 +6,19 @@ from action_server_tests.fixtures import ActionServerClient, ActionServerProcess
 
 
 def test_version() -> None:
-    from action_server_tests.fixtures import robocorp_action_server_run
+    from action_server_tests.fixtures import sema4ai_action_server_run
 
     from sema4ai.action_server import __version__
 
-    result = robocorp_action_server_run(["version"], returncode=0)
+    result = sema4ai_action_server_run(["version"], returncode=0)
     assert result.stdout.strip() == __version__
 
 
 def test_download_rcc(tmpdir) -> None:
-    from action_server_tests.fixtures import robocorp_action_server_run
+    from action_server_tests.fixtures import sema4ai_action_server_run
 
     rcc_location = tmpdir / ("rcc.exe" if sys.platform == "win32" else "rcc")
-    robocorp_action_server_run(["download-rcc", "--file", rcc_location], returncode=0)
+    sema4ai_action_server_run(["download-rcc", "--file", rcc_location], returncode=0)
     assert os.path.exists(rcc_location)
 
 
@@ -33,9 +33,9 @@ def test_new(
 def test_new_list_templates(tmpdir) -> None:
     import json
 
-    from sema4ai.action_server._selftest import robocorp_action_server_run
+    from sema4ai.action_server._selftest import sema4ai_action_server_run
 
-    output = robocorp_action_server_run(
+    output = sema4ai_action_server_run(
         ["new", "list-templates"], returncode=0, cwd=tmpdir
     )
 
@@ -43,7 +43,7 @@ def test_new_list_templates(tmpdir) -> None:
     assert "Basic" in output.stderr
     assert "Advanced" in output.stderr
 
-    output = robocorp_action_server_run(
+    output = sema4ai_action_server_run(
         ["new", "list-templates", "--json"], returncode=0, cwd=tmpdir
     )
 
@@ -59,21 +59,21 @@ def test_new_list_templates(tmpdir) -> None:
 def test_help(str_regression):
     import re
 
-    from action_server_tests.fixtures import robocorp_action_server_run
+    from action_server_tests.fixtures import sema4ai_action_server_run
 
-    result = robocorp_action_server_run(["-h"], returncode=0)
+    result = sema4ai_action_server_run(["-h"], returncode=0)
     out = re.sub(r"\(\d+.\d+.\d+\)", "(<version>)", result.stdout)
     str_regression.check(out)
 
 
 def test_migrate(database_v0):
-    from action_server_tests.fixtures import robocorp_action_server_run
+    from action_server_tests.fixtures import sema4ai_action_server_run
 
     from sema4ai.action_server.migrations import MigrationStatus, db_migration_status
 
     db_path = database_v0
     assert db_migration_status(db_path) == MigrationStatus.NEEDS_MIGRATION
-    robocorp_action_server_run(
+    sema4ai_action_server_run(
         [
             "migrate",
             "--datadir",
@@ -129,7 +129,7 @@ def test_datadir_user_specified(tmpdir):
 def test_package_update(tmpdir, str_regression, op):
     from pathlib import Path
 
-    from action_server_tests.fixtures import robocorp_action_server_run
+    from action_server_tests.fixtures import sema4ai_action_server_run
 
     tmp = Path(tmpdir)
 
@@ -166,11 +166,11 @@ dependencies:
 
     assert (
         "Command for package operation not specified."
-        in robocorp_action_server_run(["package"], returncode=1).stderr
+        in sema4ai_action_server_run(["package"], returncode=1).stderr
     )
 
     if op == "dry_run.no_backup":
-        result = robocorp_action_server_run(
+        result = sema4ai_action_server_run(
             ["package", "update", "--dry-run", "--no-backup"], returncode=0, cwd=tmp
         )
         assert (tmp / "robot.yaml").exists()
@@ -178,7 +178,7 @@ dependencies:
         assert not (tmp / "package.yaml").exists()
 
     elif op == "dry_run.backup":
-        result = robocorp_action_server_run(
+        result = sema4ai_action_server_run(
             ["package", "update", "--dry-run"], returncode=0, cwd=tmp
         )
         assert (tmp / "robot.yaml").exists()
@@ -186,15 +186,13 @@ dependencies:
         assert not (tmp / "package.yaml").exists()
 
     elif op == "update.backup":
-        result = robocorp_action_server_run(
-            ["package", "update"], returncode=0, cwd=tmp
-        )
+        result = sema4ai_action_server_run(["package", "update"], returncode=0, cwd=tmp)
         assert (tmp / "robot.yaml.bak").exists()
         assert (tmp / "conda.yaml.bak").exists()
         assert (tmp / "package.yaml").exists()
 
     elif op == "update.no_backup":
-        result = robocorp_action_server_run(
+        result = sema4ai_action_server_run(
             ["package", "update", "--no-backup"], returncode=0, cwd=tmp
         )
         assert not (tmp / "robot.yaml.bak").exists()
