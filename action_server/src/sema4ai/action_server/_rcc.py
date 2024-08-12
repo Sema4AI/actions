@@ -39,9 +39,7 @@ def as_str(s) -> str:
 
 
 class Rcc(object):
-    def __init__(
-        self, rcc_location: Path, sema4ai_home: Optional[Path]
-    ):
+    def __init__(self, rcc_location: Path, sema4ai_home: Optional[Path]):
         self._rcc_location = rcc_location
         self.sema4ai_home = sema4ai_home
         self.config_location = os.environ.get(
@@ -58,7 +56,7 @@ class Rcc(object):
 
         if self.sema4ai_home:
             env["SEMA4AI_HOME"] = str(self.sema4ai_home)
-            
+
         return env
 
     def _compute_launch_args_and_kwargs(
@@ -71,7 +69,11 @@ class Rcc(object):
 
         kwargs: dict = build_subprocess_kwargs(cwd, env, stderr=stderr)
         rcc_location = str(self._rcc_location)
-        args = [rcc_location] + args + ["--controller", "action-server", "--bundled", "--sema4ai"]
+        args = (
+            [rcc_location]
+            + args
+            + ["--controller", "action-server", "--bundled", "--sema4ai"]
+        )
 
         return args, kwargs
 
@@ -367,9 +369,7 @@ _rcc: Optional["Rcc"] = None
 
 
 @contextmanager
-def initialize_rcc(
-    rcc_location: Path, sema4ai_home: Optional[Path]
-) -> Iterator[Rcc]:
+def initialize_rcc(rcc_location: Path, sema4ai_home: Optional[Path]) -> Iterator[Rcc]:
     global _rcc
 
     if _rcc:
