@@ -40,11 +40,10 @@ def as_str(s) -> str:
 
 class Rcc(object):
     def __init__(
-        self, rcc_location: Path, legacy_strategy: bool, product_home: Optional[Path]
+        self, rcc_location: Path, sema4ai_home: Optional[Path]
     ):
         self._rcc_location = rcc_location
-        self._legacy_strategy = legacy_strategy
-        self._product_home = product_home
+        self.sema4ai_home = sema4ai_home
         self.config_location = os.environ.get(
             "S4_ACTION_SERVER_RCC_CONFIG_LOCATION", ""
         )
@@ -57,10 +56,9 @@ class Rcc(object):
         env["PYTHONIOENCODING"] = "utf-8"
         env["PYTHONUNBUFFERED"] = "1"
 
-        if self._product_home:
-            env["ROBOCORP_HOME" if self._legacy_strategy else "SEMA4AI_HOME"] = str(
-                self._product_home
-            )
+        if self.sema4ai_home:
+            env["SEMA4AI_HOME"] = str(self.sema4ai_home)
+            
         return env
 
     def _compute_launch_args_and_kwargs(
@@ -73,10 +71,7 @@ class Rcc(object):
 
         kwargs: dict = build_subprocess_kwargs(cwd, env, stderr=stderr)
         rcc_location = str(self._rcc_location)
-        args = [rcc_location] + args + ["--controller", "action-server", "--bundled"]
-
-        if not self._legacy_strategy:
-            args += ["--sema4ai"]
+        args = [rcc_location] + args + ["--controller", "action-server", "--bundled", "--sema4ai"]
 
         return args, kwargs
 
@@ -96,7 +91,7 @@ class Rcc(object):
         Returns an ActionResult where the result is the stdout of the executed command.
 
         :param log_errors:
-            If false, errors won't be logged (i.e.: should be false when errors
+            If false, errors won't be logged (i.e.: should be false when errors-+
             are expected).
 
         :param stderr:
@@ -108,11 +103,9 @@ class Rcc(object):
         from sema4ai.action_server._robo_utils.process import check_output_interactive
 
         env = self._compute_env()
-        product_home = env.get(
-            "ROBOCORP_HOME" if self._legacy_strategy else "SEMA4AI_HOME"
-        )
-        if not product_home:
-            product_home = "<unset>"
+        sema4ai_home = env.get("SEMA4AI_HOME")
+        if not sema4ai_home:
+            sema4ai_home = "<unset>"
 
         args, kwargs = self._compute_launch_args_and_kwargs(cwd, env, args, stderr)
         cmdline = list2cmdline([str(x) for x in args])
@@ -158,9 +151,8 @@ class Rcc(object):
             stdout = as_str(e.stdout)
             stderr = as_str(e.stderr)
 
-            home_var_name = "ROBOCORP_HOME" if self._legacy_strategy else "SEMA4AI_HOME"
             msg = (
-                f"Error running: {cmdline}.\n{home_var_name}: {product_home}\n\n"
+                f"Error running: {cmdline}.\nSEMA4AI_HOME: {sema4ai_home}\n\n"
                 f"Stdout: {stdout}\nStderr: {stderr}"
             )
             if hide_in_log:
@@ -376,7 +368,7 @@ _rcc: Optional["Rcc"] = None
 
 @contextmanager
 def initialize_rcc(
-    rcc_location: Path, legacy_strategy: bool, product_home: Optional[Path]
+    rcc_location: Path, sema4ai_home: Optional[Path]
 ) -> Iterator[Rcc]:
     global _rcc
 
@@ -384,7 +376,7 @@ def initialize_rcc(
         yield _rcc
         return
 
-    rcc = Rcc(rcc_location, legacy_strategy, product_home)
+    rcc = Rcc(rcc_location, sema4ai_home)
     _rcc = rcc
     try:
         yield rcc

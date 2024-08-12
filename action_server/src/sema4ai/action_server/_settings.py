@@ -146,12 +146,6 @@ class Settings:
     # (so, even if the port is 0, it should map to the actually mapped port).
     base_url: Optional[str] = None
 
-    # Indicates whether old ROBOCORP_HOME should be used instead of SEMA4AI_HOME.
-    # This setting is controlled via --sema4ai flag.
-    # @TODO:
-    # Remove when legacy strategy is no longer supported.
-    legacy_data_strategy: bool = True
-
     @classmethod
     def defaults(cls):
         fields = cls.__dataclass_fields__
@@ -169,8 +163,6 @@ class Settings:
             ActionServerValidationError,
         )
 
-        use_legacy_data_strategy = not args.sema4ai_strategy
-
         user_specified_datadir = args.datadir
         if not user_specified_datadir:
             import hashlib
@@ -183,12 +175,7 @@ class Settings:
 
             # Not secure, but ok for our purposes
             short_hash = hashlib.sha256(as_posix.encode()).hexdigest()[:8]
-            default_settings_dir = (
-                _legacy_get_default_settings_dir()
-                if use_legacy_data_strategy
-                else get_default_settings_dir()
-            )
-            datadir_name = f"{default_settings_dir}/{name}_{short_hash}"
+            datadir_name = f"{get_default_settings_dir()}/{name}_{short_hash}"
 
             log.info(colored(f"Using datadir: {datadir_name}", attrs=["dark"]))
             user_expanded_datadir = Path(datadir_name).expanduser()
@@ -202,7 +189,6 @@ class Settings:
         settings = Settings(
             datadir=datadir,
             artifacts_dir=datadir / "artifacts",
-            legacy_data_strategy=use_legacy_data_strategy,
         )
 
         # Optional (just in 'start' command, not in 'import')
@@ -251,11 +237,7 @@ class Settings:
         if args.command == "start":
             # At this point, if using a self-signed certificate, it'll be
             # created and ssl_keyfile/ssl_certfile will be set.
-            user_path = (
-                _legacy_get_default_settings_dir()
-                if use_legacy_data_strategy
-                else get_user_sema4_path()
-            )
+            user_path = get_user_sema4_path()
 
             if settings.use_https:
                 if settings.ssl_self_signed:

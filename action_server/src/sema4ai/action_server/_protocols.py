@@ -116,7 +116,6 @@ class ArgumentsNamespace(Protocol):
         "cloud",
     ]
     verbose: bool
-    sema4ai_strategy: bool
 
 
 class ArgumentsNamespaceNew(ArgumentsNamespace):
