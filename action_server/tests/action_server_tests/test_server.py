@@ -869,7 +869,7 @@ def calculator_sum(v1: str, v2: str) -> str:
 def test_port_in_use(action_server_process: ActionServerProcess, tmpdir):
     from sema4ai.action_server._selftest import ActionServerExitedError
 
-    action_server_datadir = tmpdir / ".robocorp_action_server_2"
+    action_server_datadir = tmpdir / ".sema4ai_action_server_2"
     process2 = ActionServerProcess(Path(action_server_datadir))
     action_server_process.start()
     try:

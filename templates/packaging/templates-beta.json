@@ -1,5 +1,5 @@
 {
-    "templateBundleUrl": "https://downloads.robocorp.com/action-templates/beta/action-templates.zip",
+    "templateBundleUrl": "https://cdn.sema4.ai/action-templates/beta/action-templates.zip",
     "templates": [
         {
             "id": "minimal",
