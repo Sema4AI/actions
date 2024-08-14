@@ -221,7 +221,7 @@ def build_package(
 
     # Ok, it seems we're good to go. Package everything based on the
     # package.yaml exclude rules.
-    # https://github.com/robocorp/robocorp/blob/master/action_server/docs/guides/01-package-yaml.md
+    # https://github.com/Sema4ai/actions/blob/master/action_server/docs/guides/01-package-yaml.md
     import zipfile
 
     with zipfile.ZipFile(output_file, "w") as zip_file:

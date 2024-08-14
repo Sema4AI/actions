@@ -235,7 +235,7 @@ export const ActionRuns: FC = () => {
             <Link
               icon={IconInformation}
               iconAfter={IconArrowUpRight}
-              href="https://github.com/robocorp/robocorp"
+              href="https://github.com/Sema4ai/actions"
               target="_blank"
               rel="noopener"
               variant="subtle"
