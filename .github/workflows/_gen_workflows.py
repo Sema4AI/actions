@@ -186,13 +186,11 @@ class BaseTests:
                 "NODE_AUTH_TOKEN": "${{ secrets.GH_PAT_READ_PACKAGES }}",
             },
         }
-        
+
         build_oauth_config = {
             "name": "Build OAuth config",
             "run": "inv build-oauth-config",
-            "env": {
-                "GH_TOKEN": "${{ secrets.GITHUB_TOKEN }}"
-            },
+            "env": {"GH_TOKEN": "${{ secrets.GH_PAT_GHA_TO_ANOTHER_REPO }}"},
         }
 
         install_poetry = {
@@ -262,7 +260,7 @@ inv docs --validate
         if self.require_build_frontend:
             steps.append(setup_node)
             steps.append(build_frontend)
-            
+
         if self.require_build_oauth_config:
             steps.append(build_oauth_config)
 
