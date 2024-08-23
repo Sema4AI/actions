@@ -289,8 +289,8 @@ def _add_new_command(command_subparser, defaults):
 
     add_verbose_args(list_templates_parser, defaults)
     add_json_output_args(list_templates_parser)
-    
-    
+
+
 def _add_get_default_oauth_config_command(command_subparser, defaults):
     # This serves only as an internal command, therefore we don't add help entry to it.
     command_subparser.add_parser(
@@ -609,12 +609,12 @@ def _main_retcode(
     #     return
 
     from ._download_rcc import download_rcc
-    
+
     if command == "get-default-oauth-config":
         from sema4ai.action_server import _oauth_config
-        
+
         contents = _oauth_config.FILE_CONTENTS["oauth_config.yaml"]
-        
+
         print(contents)
         return 0
 
