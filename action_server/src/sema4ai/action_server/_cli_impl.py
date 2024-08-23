@@ -291,14 +291,6 @@ def _add_new_command(command_subparser, defaults):
     add_json_output_args(list_templates_parser)
 
 
-def _add_get_sema4ai_oauth_config_command(command_subparser, defaults):
-    # This serves only as an internal command, therefore we don't add help entry to it.
-    command_subparser.add_parser(
-        "get-sema4ai-oauth-config",
-        add_help=False,
-    )
-
-
 def _add_cloud_command(command_subparser, defaults):
     from sema4ai.action_server._cli_helpers import (
         add_json_output_args,
@@ -412,7 +404,6 @@ def _create_parser():
     )
 
     _add_cloud_command(command_subparser, defaults)
-    _add_get_sema4ai_oauth_config_command(command_subparser, defaults)
 
     return base_parser
 
@@ -577,6 +568,14 @@ def _main_retcode(
         )
         return 0
 
+    if args and args[0] == "get-sema4ai-oauth-config":
+        from sema4ai.action_server import _oauth_config
+
+        contents = _oauth_config.FILE_CONTENTS["oauth_config.yaml"]
+        print(contents)
+
+        return 0
+
     parser = _create_parser()
     base_args: ArgumentsNamespace = parser.parse_args(args)
 
@@ -609,14 +608,6 @@ def _main_retcode(
     #     return
 
     from ._download_rcc import download_rcc
-
-    if command == "get-sema4ai-oauth-config":
-        from sema4ai.action_server import _oauth_config
-
-        contents = _oauth_config.FILE_CONTENTS["oauth_config.yaml"]
-        print(contents)
-
-        return 0
 
     if command == "download-rcc":
         download_args: ArgumentsNamespaceDownloadRcc = typing.cast(

@@ -1,11 +1,11 @@
 usage: action-server [-h]
-                     {start,import,download-rcc,new,version,migrate,package,env,cloud,get-sema4ai-oauth-config}
+                     {start,import,download-rcc,new,version,migrate,package,env,cloud}
                      ...
 
 Sema4.ai Action Server (<version>)
 
 positional arguments:
-  {start,import,download-rcc,new,version,migrate,package,env,cloud,get-sema4ai-oauth-config}
+  {start,import,download-rcc,new,version,migrate,package,env,cloud}
     start               Starts the Sema4.ai Action Server (importing the actions in the current directory by default).
     import              Imports an Action Package and exits
     download-rcc        Downloads RCC (by default to the location required by the Sema4.ai Action Server)
