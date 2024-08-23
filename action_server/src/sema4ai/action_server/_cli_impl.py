@@ -388,7 +388,6 @@ def _create_parser():
     )
 
     _add_migrate_command(command_subparser, defaults)
-
     add_package_command(command_subparser, defaults)
 
     # Clean env caches
@@ -567,6 +566,14 @@ def _main_retcode(
             expose_server_expose_session,
             expose_server_api_key,
         )
+        return 0
+
+    if args and args[0] == "get-sema4ai-oauth-config":
+        from sema4ai.action_server import _oauth_config
+
+        contents = _oauth_config.FILE_CONTENTS["oauth_config.yaml"]
+        print(contents)
+
         return 0
 
     parser = _create_parser()

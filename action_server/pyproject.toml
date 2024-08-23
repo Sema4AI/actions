@@ -11,6 +11,7 @@ license = "Apache-2.0"
 packages = [{ include = "sema4ai", from = "src" }]
 include = [
 	"src/sema4ai/action_server/_static_contents.py",
+	"src/sema4ai/action_server/_oauth2_config.py",
 	"src/sema4ai/action_server/bin/rcc*",
 ]
 homepage = "https://github.com/sema4ai/actions/"

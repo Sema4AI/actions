@@ -5,16 +5,15 @@ name: Action Server [MANYLINUX] Release
 
 on:
   push:
-#     branches:
-#       - "wip-manylinux"
+    #     branches:
+    #       - "wip-manylinux"
 
     tags:
       - "sema4ai-action_server-*"
 
-
 defaults:
   run:
-    working-directory: './action_server'
+    working-directory: "./action_server"
 
 jobs:
   build:
@@ -31,7 +30,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.10"
-  
+
       - name: Setup node
         uses: actions/setup-node@v3
         with:
@@ -39,17 +38,17 @@ jobs:
           registry-url: "https://npm.pkg.github.com"
           scope: "@robocorp"
 
-
       - name: Install cibuildwheel
         run: |
-            python -m pip install cibuildwheel==2.16.2
-            python -m pip install invoke
-            python -m invoke build-frontend
+          python -m pip install cibuildwheel==2.16.2
+          python -m pip install invoke
+          python -m invoke build-frontend
+          python -m invoke build-oauth-config
         env:
-           CI: true
-           NODE_AUTH_TOKEN: ${{ secrets.GH_PAT_READ_PACKAGES }}
-        
-        
+          CI: true
+          NODE_AUTH_TOKEN: ${{ secrets.GH_PAT_READ_PACKAGES }}
+          GH_TOKEN: ${{ secrets.GH_PAT_GHA_TO_ANOTHER_REPO }}
+
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse
         env:
@@ -61,11 +60,11 @@ jobs:
         with:
           name: ${{ runner.os }}-wheels
           path: "action_server/wheelhouse/*"
-          
+
       - name: Upload to PyPI .whl
         run: |
-            pip install twine
-            twine upload wheelhouse/*.whl
+          pip install twine
+          twine upload wheelhouse/*.whl
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN_SEMA4AI_ACTION_SERVER }}
