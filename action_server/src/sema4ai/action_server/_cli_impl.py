@@ -615,7 +615,7 @@ def _main_retcode(
 
         contents = _oauth_config.FILE_CONTENTS["oauth_config.yaml"]
         print(contents)
-        
+
         return 0
 
     if command == "download-rcc":
