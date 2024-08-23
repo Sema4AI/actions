@@ -19,7 +19,7 @@ globals().update(
     build_common_tasks(
         ROOT,
         "sema4ai.action_server",
-        ruff_format_arguments=r"--exclude=_static_contents.py,__oauth_config.py",
+        ruff_format_arguments=r"--exclude=_static_contents.py,_oauth_config.py",
     )
 )
 
