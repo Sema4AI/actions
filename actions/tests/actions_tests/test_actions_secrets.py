@@ -47,6 +47,28 @@ def test_actions_secret_run_just_secret(datadir: Path):
     assert json_output.read_text() == "this-is-the-secret"
 
 
+def test_actions_secret_default_secret(datadir: Path):
+    from devutils.fixtures import sema4ai_actions_run
+
+    # Specifies the request in the json input.
+    json_output = datadir / "json.output"
+    json_input_contents: dict = {}
+
+    input_json = datadir / "json.input"
+    input_json.write_text(json.dumps(json_input_contents))
+
+    args = [
+        "run",
+        "-a",
+        "action_with_default_secret",
+        datadir,
+        f"--json-input={input_json}",
+    ]
+
+    sema4ai_actions_run(args, returncode=0, cwd=str(datadir))
+    assert json_output.read_text() == "my-default-secret"
+
+
 def test_actions_secret_run_with_request(datadir: Path):
     from devutils.fixtures import sema4ai_actions_run
 

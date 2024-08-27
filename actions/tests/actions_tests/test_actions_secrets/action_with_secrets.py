@@ -26,3 +26,14 @@ def action_with_secret_and_request(
     """
     Path("json.output").write_text(my_password.value)
     return my_password.value
+
+
+@action
+def action_with_default_secret(
+    my_password: Secret = Secret.model_validate("my-default-secret"),
+) -> str:
+    """
+    This is an action that requires a secret but has a default value for it.
+    """
+    Path("json.output").write_text(my_password.value)
+    return my_password.value
