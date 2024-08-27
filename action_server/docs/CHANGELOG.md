@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 0.18.0 - 2024-08-27
+
+- Add to the package metadata an `action_package_version` field and rename `version` to `metadata_version`.
+
 ## 0.17.0 - 2024-08-14
 
 - New `--auto-reload` parameter available in `action-server start`.
