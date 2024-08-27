@@ -114,6 +114,7 @@ class ArgumentsNamespace(Protocol):
         "migrate",
         "env",
         "cloud",
+        "get-user-oauth-config-path"
     ]
     verbose: bool
 
@@ -278,6 +279,11 @@ class ArgumentsNamespaceCloudOrganizations(ArgumentsNamespace):
     cloud_command: Literal["list-organizations"]
     access_credentials: Optional[str]
     hostname: Optional[str]
+    json: bool
+
+
+class ArgumentsNamespaceGetUserOAuthConfigPath(ArgumentsNamespace):
+    command: Literal["get-user-oauth-config-path"]
     json: bool
 
 

@@ -202,3 +202,4 @@ dependencies:
         assert (tmp / "package.yaml").exists()
 
     str_regression.check(result.stdout)
+    
