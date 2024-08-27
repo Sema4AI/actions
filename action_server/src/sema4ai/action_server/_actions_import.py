@@ -128,18 +128,27 @@ def import_action_package(
     if package_yaml_exists:
         # Ok, new version: we create a conda.yaml automatically from
         # the environment information.
-        if not action_package_name:
-            try:
-                with open(original_package_yaml, "r", encoding="utf-8") as stream:
-                    package_yaml_contents = yaml.safe_load(stream)
-            except Exception:
-                raise ActionPackageError(
-                    f"Error loading file as yaml ({original_package_yaml})."
-                )
-            if isinstance(package_yaml_contents, dict):
-                n = package_yaml_contents.get("name")
-                if n:
-                    action_package_name = n
+        try:
+            with open(original_package_yaml, "r", encoding="utf-8") as stream:
+                package_yaml_contents = yaml.safe_load(stream)
+        except Exception:
+            raise ActionPackageError(
+                f"Error loading file as yaml ({original_package_yaml})."
+            )
+        if not isinstance(package_yaml_contents, dict):
+            raise ActionPackageError(
+                f"Error: expected {original_package_yaml} to have a dictionary as top-level."
+            )
+
+        version = package_yaml_contents.get("version")
+        if version is None:
+            log.warn(
+                f"Expected {original_package_yaml} to have a 'version' field (without a version it's not possible to publish the action package)."
+            )
+
+        n = package_yaml_contents.get("name")
+        if n:
+            action_package_name = n
 
         conda_yaml = create_conda_from_package_yaml(datadir, conda_yaml)
 

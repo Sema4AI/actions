@@ -1,5 +1,6 @@
+version: 1
 dependencies:
-  conda-forge: 
+  conda-forge:
     - python=3.10.12
     - uv=0.1.37
   pypi:
