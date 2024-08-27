@@ -324,18 +324,16 @@ def _add_cloud_command(command_subparser, defaults):
     add_json_output_args(list_organizations_parser)
     add_login_args(list_organizations_parser)
     add_verbose_args(list_organizations_parser, defaults)
-    
+
 
 def _add_get_user_oauth_config_path_command(command_subparser, defaults):
-    from sema4ai.action_server._cli_helpers import (
-        add_json_output_args,
-    )
+    from sema4ai.action_server._cli_helpers import add_json_output_args
 
     get_user_oauth_config_path_parser = command_subparser.add_parser(
         "get-user-oauth-config-path",
         help="Returns the path to user's OAuth config",
     )
-    
+
     add_json_output_args(get_user_oauth_config_path_parser)
 
 
@@ -658,7 +656,7 @@ def _main_retcode(
                 "start",
                 "new",
                 "cloud",
-                "get-user-oauth-config-path"
+                "get-user-oauth-config-path",
             ):
                 log.critical(f"Unexpected command: {command}.")
                 return 1
@@ -672,10 +670,10 @@ def _main_retcode(
                 from ._new_project import handle_new_command
 
                 return handle_new_command(base_args)
-            
+
             if command == "get-user-oauth-config-path":
                 from ._get_oauth_config import handle_get_user_oauth_config_path_command
-                
+
                 return handle_get_user_oauth_config_path_command(base_args)
 
             migrate_import_or_start_args = typing.cast(

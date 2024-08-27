@@ -114,7 +114,7 @@ class ArgumentsNamespace(Protocol):
         "migrate",
         "env",
         "cloud",
-        "get-user-oauth-config-path"
+        "get-user-oauth-config-path",
     ]
     verbose: bool
 
