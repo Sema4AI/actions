@@ -41,7 +41,7 @@ jobs:
           python -m pip install poetry
           python -m pip install invoke
           python -m invoke build-frontend
-          python -m invoke build-oauth-config
+          python -m invoke build-oauth2-config
         env:
           CI: true
           NODE_AUTH_TOKEN: ${{ secrets.GH_PAT_READ_PACKAGES }}

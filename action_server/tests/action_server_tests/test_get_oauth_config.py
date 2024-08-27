@@ -6,9 +6,9 @@ from unittest import mock
 
 @mock.patch("builtins.print")
 def test_get_user_oauth_config_path(print_mock: mock.MagicMock, tmpdir) -> None:
-    from sema4ai.action_server._get_oauth_config import (
+    from sema4ai.action_server._oauth2 import (
         USER_CONFIG_FILE_NAME,
-        get_user_oauth_config_path,
+        get_user_oauth2_config_path,
     )
 
     mock_settings_dir: Path = tmpdir / "action-server"
@@ -24,7 +24,7 @@ def test_get_user_oauth_config_path(print_mock: mock.MagicMock, tmpdir) -> None:
 
         assert mock_config_path.exists() is False
 
-        retcode = get_user_oauth_config_path(output_json=False)
+        retcode = get_user_oauth2_config_path(output_json=False)
 
         assert retcode == 0
         assert mock_config_path.exists() is True
@@ -34,7 +34,7 @@ def test_get_user_oauth_config_path(print_mock: mock.MagicMock, tmpdir) -> None:
 
         assert print_args[0] == mock_config_path
 
-        retcode = get_user_oauth_config_path(output_json=True)
+        retcode = get_user_oauth2_config_path(output_json=True)
 
         assert retcode == 0
         assert mock_config_path.exists() is True

@@ -50,7 +50,7 @@ def get_python_version(pyproject):
 class BaseTests:
     require_node = False
     require_build_frontend = False
-    require_build_oauth_config = False
+    require_build_oauth2_config = False
     validate_docstrings = False
     before_run_custom_additional_steps = ()
     after_run_custom_additional_steps = ()
@@ -187,9 +187,9 @@ class BaseTests:
             },
         }
 
-        build_oauth_config = {
-            "name": "Build OAuth config",
-            "run": "inv build-oauth-config",
+        build_oauth2_config = {
+            "name": "Build OAuth2 config",
+            "run": "inv build-oauth2-config",
             "env": {"GH_TOKEN": "${{ secrets.GH_PAT_GHA_TO_ANOTHER_REPO }}"},
         }
 
@@ -261,8 +261,8 @@ inv docs --validate
             steps.append(setup_node)
             steps.append(build_frontend)
 
-        if self.require_build_oauth_config:
-            steps.append(build_oauth_config)
+        if self.require_build_oauth2_config:
+            steps.append(build_oauth2_config)
 
         steps.extend(self.before_run_custom_additional_steps)
 
@@ -291,7 +291,7 @@ class ActionServerTests(BaseTests):
     project_name = "action_server"
     require_node = True
     require_build_frontend = True
-    require_build_oauth_config = True
+    require_build_oauth2_config = True
 
 
 class ActionsTests(BaseTests):

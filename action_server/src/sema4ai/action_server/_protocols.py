@@ -114,7 +114,7 @@ class ArgumentsNamespace(Protocol):
         "migrate",
         "env",
         "cloud",
-        "get-user-oauth-config-path",
+        "oauth2",
     ]
     verbose: bool
 
@@ -281,6 +281,22 @@ class ArgumentsNamespaceCloudOrganizations(ArgumentsNamespace):
     hostname: Optional[str]
     json: bool
 
+
+class ArgumentsNamespaceOAuth2(ArgumentsNamespace):
+    command: Literal["oauth2"]
+    oauth2_command: Literal["sema4ai-config", "user-config-path"]
+
+
+class ArgumentsNamespaceOAuth2Sema4aiConfig(ArgumentsNamespace):
+    command: Literal["oauth2"]
+    oauth2_command: Literal["sema4ai-config"]
+
+
+class ArgumentsNamespaceOAuth2UserConfigPath(ArgumentsNamespace):
+    command: Literal["oauth2"]
+    oauth2_command: Literal["user-config-path"]
+    json: bool
+    
 
 class ArgumentsNamespaceGetUserOAuthConfigPath(ArgumentsNamespace):
     command: Literal["get-user-oauth-config-path"]

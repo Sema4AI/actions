@@ -1,11 +1,11 @@
 usage: action-server [-h]
-                     {start,import,download-rcc,new,version,migrate,package,env,cloud,get-user-oauth-config-path}
+                     {start,import,download-rcc,new,version,migrate,package,env,cloud,oauth2}
                      ...
 
 Sema4.ai Action Server (<version>)
 
 positional arguments:
-  {start,import,download-rcc,new,version,migrate,package,env,cloud,get-user-oauth-config-path}
+  {start,import,download-rcc,new,version,migrate,package,env,cloud,oauth2}
     start               Starts the Sema4.ai Action Server (importing the actions in the current directory by default).
     import              Imports an Action Package and exits
     download-rcc        Downloads RCC (by default to the location required by the Sema4.ai Action Server)
@@ -15,8 +15,7 @@ positional arguments:
     package             Utilities to manage the action package
     env                 Commands related to the environment handling
     cloud               Utilities to perform Control Room operations
-    get-user-oauth-config-path
-                        Returns the path to user's OAuth config
+    oauth2              Utilities to manage the OAuth2 configuration
 
 options:
   -h, --help            show this help message and exit
