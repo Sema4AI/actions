@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Any, Iterator, List, Optional, Tuple
 
-from ._deps_protocols import _RangeTypedDict
+from ..ls_protocols import _RangeTypedDict
 
 
 @dataclass

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Dict, Iterator, Optional
 
-from ._deps_protocols import _RangeTypedDict
+from ..ls_protocols import _RangeTypedDict
 from .conda_impl import conda_match_spec, conda_version
 
 
