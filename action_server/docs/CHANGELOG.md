@@ -2,7 +2,10 @@
 
 ## Unreleased
 
-- Add new command: `get-user-oauth-config-path`
+- Add top level command: `oauth2`, providing OAuth2 related utilities
+- Add `sema4ai-config` subcommand for `oauth2`
+  - Returns OAuth2 configuration for Sema4.ai provided OAuth2 applications 
+- Add `user-config-path` subcommand for `oauth2`
   - Returns the path to user's local OAuth config file
   - `--json` argument can be provided to get the result in JSON format
 
