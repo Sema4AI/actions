@@ -1,7 +1,7 @@
 name: pack2 name
-
+version: 0.0.1
 dependencies:
-  conda-forge: 
+  conda-forge:
     - python=3.10.12
     - pip=24
   pypi:
@@ -9,6 +9,6 @@ dependencies:
 
 packaging:
   exclude:
-  - ignore/**
-  - not_ok.txt
-  - "*.foo"
+    - ignore/**
+    - not_ok.txt
+    - "*.foo"

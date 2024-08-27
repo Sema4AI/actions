@@ -1,5 +1,6 @@
+version: 0.1
 dependencies:
-  conda-forge: 
+  conda-forge:
     - python=3.10.12
     - pip=24
   pypi:

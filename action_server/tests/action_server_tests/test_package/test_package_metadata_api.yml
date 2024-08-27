@@ -1,5 +1,7 @@
 metadata:
-  description: ''
+  action_package_version: pre-alpha
+  description: Action package without a 'package.yaml' file (testing only).
+  metadata_version: 2
   name: pack_secrets
   secrets:
     /api/actions/pack-secrets/hello-greeting/run:
@@ -9,7 +11,6 @@ metadata:
         private_info:
           description: Some private information gotten from somewhere.
           type: Secret
-  version: 1
 openapi.json:
   components:
     schemas:

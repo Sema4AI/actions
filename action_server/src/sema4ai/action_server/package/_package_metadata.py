@@ -1,6 +1,9 @@
 import json
+import logging
 from pathlib import Path
 from typing import Any, Dict
+
+log = logging.getLogger(__name__)
 
 
 def collect_package_metadata(package_dir: Path, datadir: str) -> str | int:
@@ -54,14 +57,34 @@ def collect_package_metadata(package_dir: Path, datadir: str) -> str | int:
                         "secrets": found_secrets,
                     }
 
-        package_description = ""
         package_yaml_path = Path(package_dir) / "package.yaml"
-        if package_yaml_path.exists():
+        action_package_version: str
+
+        if not package_yaml_path.exists():
+            action_package_version = "pre-alpha"
+            package_description = (
+                "Action package without a 'package.yaml' file (testing only)."
+            )
+            log.info(
+                f"The Action Package '{package_dir}' does not contain a 'package.yaml' file (proceeding with default values)."
+            )
+        else:
             import yaml
 
             with package_yaml_path.open() as f:
                 package_yaml = yaml.safe_load(f)
+                if not isinstance(package_yaml, dict):
+                    raise ActionServerValidationError(
+                        f"Error: expected {package_yaml_path} to have a dictionary as top-level."
+                    )
                 package_description = package_yaml.get("description", "")
+                try:
+                    action_package_version = str(package_yaml["version"])
+                except KeyError:
+                    raise ActionServerValidationError(
+                        "The Action Package 'version' is not set. "
+                        f"Please set the 'version' field in {package_yaml_path}."
+                    )
 
         metadata["metadata"] = {
             "name": action_package.name,
@@ -69,7 +92,8 @@ def collect_package_metadata(package_dir: Path, datadir: str) -> str | int:
             "secrets": secrets,
             # This is the version of the metadata itself. Should be raised
             # when the info in the metadata itself changes.
-            "version": 1,
+            "action_package_version": action_package_version,
+            "metadata_version": 2,  # Version 2 means that the action package has a version now.
         }
 
     def collect_metadata_and_cancel_startup(app: FastAPI) -> bool:
