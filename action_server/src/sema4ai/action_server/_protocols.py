@@ -296,11 +296,6 @@ class ArgumentsNamespaceOAuth2UserConfigPath(ArgumentsNamespace):
     command: Literal["oauth2"]
     oauth2_command: Literal["user-config-path"]
     json: bool
-    
-
-class ArgumentsNamespaceGetUserOAuthConfigPath(ArgumentsNamespace):
-    command: Literal["get-user-oauth-config-path"]
-    json: bool
 
 
 JSONValue = Union[
