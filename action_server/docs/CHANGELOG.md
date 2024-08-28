@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.19.0 - 2024-08-28
+
 - Add top level command: `oauth2`, providing OAuth2 related utilities
 - Add `sema4ai-config` subcommand for `oauth2`
   - Returns OAuth2 configuration for Sema4.ai provided OAuth2 applications 
