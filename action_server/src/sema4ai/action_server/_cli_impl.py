@@ -326,6 +326,28 @@ def _add_cloud_command(command_subparser, defaults):
     add_verbose_args(list_organizations_parser, defaults)
 
 
+def _add_oauth2_command(command_subparser, defaults):
+    from sema4ai.action_server._cli_helpers import add_json_output_args
+
+    oauth2_parser = command_subparser.add_parser(
+        "oauth2",
+        help="Utilities to manage the OAuth2 configuration",
+    )
+
+    oauth2_subparsers = oauth2_parser.add_subparsers(dest="oauth2_command")
+
+    oauth2_subparsers.add_parser(
+        "sema4ai-config",
+        help="Returns Sema4.ai OAuth2 configuration",
+    )
+
+    user_config_path_parser = oauth2_subparsers.add_parser(
+        "user-config-path", help="Returns the path to user's OAuth2 config"
+    )
+
+    add_json_output_args(user_config_path_parser)
+
+
 def _create_parser():
     from sema4ai.action_server.package._package_build_cli import add_package_command
 
@@ -404,6 +426,7 @@ def _create_parser():
     )
 
     _add_cloud_command(command_subparser, defaults)
+    _add_oauth2_command(command_subparser, defaults)
 
     return base_parser
 
@@ -568,14 +591,6 @@ def _main_retcode(
         )
         return 0
 
-    if args and args[0] == "get-sema4ai-oauth-config":
-        from sema4ai.action_server import _oauth_config
-
-        contents = _oauth_config.FILE_CONTENTS["oauth_config.yaml"]
-        print(contents)
-
-        return 0
-
     parser = _create_parser()
     base_args: ArgumentsNamespace = parser.parse_args(args)
 
@@ -640,6 +655,11 @@ def _main_retcode(
                 from sema4ai.action_server._actions_cloud import handle_cloud_command
 
                 return handle_cloud_command(base_args)
+
+            if command == "oauth2":
+                from ._oauth2 import handle_oauth2_command
+
+                return handle_oauth2_command(base_args)
 
             if command not in (
                 "migrate",

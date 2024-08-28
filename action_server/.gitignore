@@ -1,8 +1,9 @@
 src/sema4ai/action_server/_static/
 src/sema4ai/action_server/_static_contents.py
-src/sema4ai/action_server/_oauth_config.py
+src/sema4ai/action_server/_oauth2_config.py
 .robocorp
 output
 build
 rcc
 sema4ai-oauth-config.yaml
+oauth-config.yaml
