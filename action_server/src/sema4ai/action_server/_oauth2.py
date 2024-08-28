@@ -2,7 +2,11 @@ import logging
 import typing
 from pathlib import Path
 
-from ._protocols import ArgumentsNamespace, ArgumentsNamespaceOAuth2, ArgumentsNamespaceOAuth2UserConfigPath
+from ._protocols import (
+    ArgumentsNamespace,
+    ArgumentsNamespaceOAuth2,
+    ArgumentsNamespaceOAuth2UserConfigPath,
+)
 
 USER_CONFIG_FILE_NAME = "oauth2_config.yaml"
 
@@ -55,20 +59,20 @@ def handle_oauth2_command(base_args: ArgumentsNamespace) -> int:
     oauth2_args: ArgumentsNamespaceOAuth2 = typing.cast(
         ArgumentsNamespaceOAuth2, base_args
     )
-    
+
     oauth2_command = oauth2_args.oauth2_command
     if not oauth2_command:
         log.critical("Command for oauth2 operation not specified.")
         return 1
-    
+
     if oauth2_command == "sema4ai-config":
         return get_sema4ai_oauth2_config()
-    
+
     if oauth2_command == "user-config-path":
         user_config_path_args: ArgumentsNamespaceOAuth2UserConfigPath = typing.cast(
             ArgumentsNamespaceOAuth2UserConfigPath, base_args
         )
-        
+
         return get_user_oauth2_config_path(user_config_path_args.json)
-    
+
     return 1

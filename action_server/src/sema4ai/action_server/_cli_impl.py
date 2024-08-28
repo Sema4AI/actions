@@ -328,26 +328,24 @@ def _add_cloud_command(command_subparser, defaults):
 
 def _add_oauth2_command(command_subparser, defaults):
     from sema4ai.action_server._cli_helpers import add_json_output_args
-    
+
     oauth2_parser = command_subparser.add_parser(
         "oauth2",
         help="Utilities to manage the OAuth2 configuration",
     )
-    
+
     oauth2_subparsers = oauth2_parser.add_subparsers(dest="oauth2_command")
-    
-    sema4ai_config_parser = oauth2_subparsers.add_parser(
+
+    oauth2_subparsers.add_parser(
         "sema4ai-config",
         help="Returns Sema4.ai OAuth2 configuration",
     )
-    
+
     user_config_path_parser = oauth2_subparsers.add_parser(
-        "user-config-path",
-        help="Returns the path to user's OAuth2 config"
+        "user-config-path", help="Returns the path to user's OAuth2 config"
     )
 
     add_json_output_args(user_config_path_parser)
-
 
 
 def _create_parser():
@@ -657,7 +655,7 @@ def _main_retcode(
                 from sema4ai.action_server._actions_cloud import handle_cloud_command
 
                 return handle_cloud_command(base_args)
-            
+
             if command == "oauth2":
                 from ._oauth2 import handle_oauth2_command
 

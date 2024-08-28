@@ -205,16 +205,11 @@ dependencies:
 
 
 def test_oauth2_sema4ai_config(tmpdir) -> None:
-
     from sema4ai.action_server._selftest import sema4ai_action_server_run
 
-    output = sema4ai_action_server_run(
-        ["oauth2"], returncode=1, cwd=tmpdir
-    )
-    
+    output = sema4ai_action_server_run(["oauth2"], returncode=1, cwd=tmpdir)
+
     assert "Command for oauth2 operation not specified." in output.stderr
-    
+
     # Return code assertion happens inside the call.
-    sema4ai_action_server_run(
-        ["oauth2", "sema4ai-config"], returncode=0, cwd=tmpdir
-    )
+    sema4ai_action_server_run(["oauth2", "sema4ai-config"], returncode=0, cwd=tmpdir)
