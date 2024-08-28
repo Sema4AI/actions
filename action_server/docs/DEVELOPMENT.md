@@ -2,10 +2,12 @@
 
 ## Release process
 
-To release a new version use `inv` commands:
+To release a new version use `inv` commands (in the `/action_server` directory):
 
-- `inv set-version <version>`
-- `inv make-release`
+- First, check that the `CHANGELOG.md` is updated with the new changes (keep the `## Unreleased` section for the current release).
+- `inv set-version <version>`: will set the version and update the `CHANGELOG.md` `## Unreleased` section to have the specified version/current date.
+- Commit/get the changes (open a PR, merge it, get the contents locally).
+- `inv make-release`: will create a tag and push it to the remote repository (which will in turn trigger the release pipeline).
 
 ## Beta releases
 
