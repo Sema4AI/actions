@@ -30,7 +30,7 @@ def _download_with_resume(url: str, target: Path) -> Path:
     with _open_urllib(url) as response:
         content_size = int(response.getheader("Content-Length") or -1)
         try:
-            with open(url, "wb") as stream:
+            with open(target, "wb") as stream:
                 while True:
                     chunk = response.read(chunk_size)
                     if not chunk:
