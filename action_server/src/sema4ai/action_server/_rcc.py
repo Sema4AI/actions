@@ -289,6 +289,10 @@ class Rcc(object):
         args.append("--json")
         args.append("--no-retry-build")
         args.append("--no-pyc-management")
+
+        if os.getenv("SEMA4AI_OPTIMIZE_FOR_CONTAINER") == "1":
+            args.append("--liveonly")
+
         timeout = 60 * 60  # Wait up to 1 hour for the env...
         ret = self._run_rcc(
             args,

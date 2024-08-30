@@ -12,7 +12,7 @@ from sema4ai.action_server._robo_utils.callback import Callback, OnExitContextMa
 from sema4ai.action_server.vendored_deps.action_package_handling.cli_errors import (
     ActionPackageError,
 )
-from sema4ai.action_server.vendored_deps.termcolors import bold_red, bold_yellow
+from sema4ai.action_server.vendored_deps.termcolors import bold_yellow
 
 if typing.TYPE_CHECKING:
     from sema4ai.actions._protocols import ActionsListActionTypedDict
