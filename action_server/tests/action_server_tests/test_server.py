@@ -196,23 +196,7 @@ def test_import_action_server_strategies(
             action_package = next(iter(action_packages))
             env = json.loads(action_package.env_json)
 
-            if strategy == "conda.yaml":
-                # calculator
-                assert env.get("PYTHON_EXE") not in (
-                    None,
-                    "",
-                    sys.executable,
-                ), "Expected custom env"
-                assert len(actions) == 2
-            elif strategy == "action-server.yaml":
-                # greeter
-                assert len(actions) == 1
-                assert env.get("PYTHON_EXE") not in (
-                    None,
-                    "",
-                    sys.executable,
-                ), "Expected custom env"
-            elif strategy in ("package.yaml", "package.yaml:uv"):
+            if strategy in ("package.yaml", "package.yaml:uv"):
                 # hello
                 assert len(actions) == 1
                 assert env.get("PYTHON_EXE") not in (

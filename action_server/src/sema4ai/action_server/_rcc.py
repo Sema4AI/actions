@@ -302,8 +302,7 @@ class Rcc(object):
             log.critical(
                 (
                     "Unable to create environment from:\n%s\n"
-                    "To recreate the environment, please change the related conda yaml"
-                    "\nor restart VSCode to retry with the same conda yaml contents."
+                    "To recreate the environment, please fix the related package.yaml"
                 ),
                 package_yaml,
             )

@@ -60,7 +60,7 @@ def _raise_deprecated_conda(found: Path):
     raise ActionPackageError(
         "Deprecated: The file for defining the environment is now `package.yaml`.\n"
         f"Using {found} is no longer supported.\n"
-        "It's not a one to one mapping for action-server.yaml, but\n"
+        "It's not a one to one mapping for but\n"
         f"`{cmd} package update` can be used to make most of the needed changes.\n"
         "See: https://github.com/Sema4AI/actions/blob/master/action_server/docs/guides/01-package-yaml.md for more details."
     )
