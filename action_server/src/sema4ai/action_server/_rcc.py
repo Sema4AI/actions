@@ -206,7 +206,7 @@ class Rcc(object):
     def get_package_yaml_hash(self, package_yaml: Path) -> str:
         args: list[str] = ["ht", "hash"]
         args.append(str(package_yaml))
-        args.extend("--bundled --silent --no-temp-management --warranty-voided".split())
+        args.extend("--silent --no-temp-management --warranty-voided".split())
 
         result = self._run_rcc(args)
 
