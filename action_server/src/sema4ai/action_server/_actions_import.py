@@ -12,7 +12,7 @@ from sema4ai.action_server._robo_utils.callback import Callback, OnExitContextMa
 from sema4ai.action_server.vendored_deps.action_package_handling.cli_errors import (
     ActionPackageError,
 )
-from sema4ai.action_server.vendored_deps.termcolors import bold_red, bold_yellow
+from sema4ai.action_server.vendored_deps.termcolors import bold_yellow
 
 if typing.TYPE_CHECKING:
     from sema4ai.actions._protocols import ActionsListActionTypedDict
@@ -50,20 +50,19 @@ class IHookOnActionsList(typing.Protocol):
 hook_on_actions_list: IHookOnActionsList = Callback(raise_exceptions=True)
 
 
-def _log_deprecated_conda():
+def _raise_deprecated_conda(found: Path):
     from sema4ai.action_server._settings import is_frozen
 
     if is_frozen():
         cmd = "action-server"
     else:
         cmd = "python -m sema4ai.action_server"
-    log.critical(
-        bold_red(
-            "Deprecated: The file for defining the environment is now `package.yaml`.\n"
-            "It's not a one to one mapping for action-server.yaml, but\n"
-            f"`{cmd} package update` can be used to make most of the needed changes.\n"
-            "See: https://github.com/Sema4AI/actions/blob/master/action_server/docs/guides/01-package-yaml.md for more details."
-        )
+    raise ActionPackageError(
+        "Deprecated: The file for defining the environment is now `package.yaml`.\n"
+        f"Using {found} is no longer supported.\n"
+        "It's not a one to one mapping for but\n"
+        f"`{cmd} package update` can be used to make most of the needed changes.\n"
+        "See: https://github.com/Sema4AI/actions/blob/master/action_server/docs/guides/01-package-yaml.md for more details."
     )
 
 
@@ -92,14 +91,11 @@ def import_action_package(
     """
 
     from sema4ai.action_server._whitelist import accept_action_package
-    from sema4ai.action_server.vendored_deps.action_package_handling import (
-        create_conda_from_package_yaml,
-    )
 
     from ._errors_action_server import ActionServerValidationError
     from ._gen_ids import gen_uuid
     from ._models import ActionPackage
-    from ._rcc import create_hash, get_rcc
+    from ._rcc import get_rcc
     from ._robo_utils.process import build_python_launch_env
     from ._settings import is_frozen
 
@@ -119,12 +115,10 @@ def import_action_package(
 
     # Verify if it's actually a proper package (meaning that it has
     # the package.yaml as well as actions we can run).
-    original_package_yaml = original_conda_yaml = conda_yaml = (
-        import_path / "package.yaml"
-    )
+    original_package_yaml = import_path / "package.yaml"
 
     action_package_name = ""
-    package_yaml_exists = conda_yaml.exists()
+    package_yaml_exists = original_package_yaml.exists()
     if package_yaml_exists:
         # Ok, new version: we create a conda.yaml automatically from
         # the environment information.
@@ -150,8 +144,6 @@ def import_action_package(
         if n:
             action_package_name = n
 
-        conda_yaml = create_conda_from_package_yaml(datadir, conda_yaml)
-
     if not action_package_name:
         action_package_name = import_path.name
 
@@ -163,18 +155,9 @@ def import_action_package(
             return
 
     if not package_yaml_exists:
-        # Backward-compatibility
-        conda_yaml = original_conda_yaml = import_path / "action-server.yaml"
-        package_yaml_exists = conda_yaml.exists()
-        if package_yaml_exists:
-            _log_deprecated_conda()
-
-    if not package_yaml_exists:
-        # Backward-compatibility
-        conda_yaml = original_conda_yaml = import_path / "conda.yaml"
-        package_yaml_exists = conda_yaml.exists()
-        if package_yaml_exists:
-            _log_deprecated_conda()
+        for yaml_name in ("action-server.yaml", "conda.yaml"):
+            if (import_path / yaml_name).exists():
+                _raise_deprecated_conda(import_path / yaml_name)
 
     if not package_yaml_exists:
         if is_frozen():
@@ -188,32 +171,17 @@ Note: no virtual environment will be used for the imported actions, they'll be r
         condahash = "<unmanaged>"
         use_env = {}
     else:
-        try:
-            with open(conda_yaml, "r", encoding="utf-8") as stream:
-                contents = yaml.safe_load(stream)
-        except Exception:
-            raise ActionPackageError(f"{conda_yaml} does not seem a valid yaml.")
-
-        if not isinstance(contents, dict):
-            raise ActionPackageError(f"{conda_yaml} has no dict as top-level.")
-
-        if not contents.get("dependencies"):
-            raise ActionPackageError(f"{conda_yaml} has no 'dependencies' specified.")
-
-        log.debug(
-            f"""Actions added with managed environment defined by: {conda_yaml}."""
-        )
-
-        # The hash is based only on the parsed contents, not on the file
-        # contents per se (so, changing comments or spaces is ok).
-        condahash = create_hash(repr(contents))
-
         log.info(
             "Action package seems ok. "
             "Bootstrapping RCC environment (please wait, this can take a long time)."
         )
         rcc = get_rcc()
-        env_info = rcc.create_env_and_get_vars(datadir, conda_yaml, condahash)
+
+        condahash = rcc.get_package_yaml_hash(original_package_yaml)
+
+        env_info = rcc.create_env_and_get_vars(
+            datadir, original_package_yaml, condahash
+        )
         if not env_info.success:
             raise ActionPackageError(
                 f"It was not possible to bootstrap the RCC environment. "
@@ -288,7 +256,7 @@ Note: no virtual environment will be used for the imported actions, they'll be r
                 raise ActionServerValidationError(
                     f"Error, the `robocorp-actions` version is: {v_as_str}.\n"
                     f"Expected `robocorp-actions` version to be {expected_version_str} or higher.\n"
-                    f"Please update the version in: {original_conda_yaml}\n"
+                    f"Please update the version in: {original_package_yaml}\n"
                 )
             else:
                 raise ActionServerValidationError(
@@ -303,7 +271,7 @@ Note: no virtual environment will be used for the imported actions, they'll be r
             log.critical(
                 f"Warning: the `robocorp-actions` version is: {v_as_str}.\n"
                 f"To receive encrypted secrets, robocorp-actions 0.2.1 or newer is required.\n"
-                f"Please update the version in: {original_conda_yaml}\n"
+                f"Please update the version in: {original_package_yaml}\n"
                 "(proceeding with initalization but actions receiving encrypted secrets will\n"
                 "not work properly -- on future versions of the action server, support for \n"
                 "this version of robocorp-actions will be removed)."

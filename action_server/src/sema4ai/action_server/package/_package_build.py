@@ -120,8 +120,7 @@ def build_package(
 
     from .._errors_action_server import ActionServerValidationError
 
-    # We expect a package.yaml to be there (we don't support just conda.yaml for
-    # this).
+    # We expect a package.yaml to be there!
     package_yaml = input_dir / "package.yaml"
     if not package_yaml.exists():
         raise ActionServerValidationError("package.yaml required for build.")
