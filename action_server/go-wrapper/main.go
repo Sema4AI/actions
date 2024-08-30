@@ -143,7 +143,7 @@ func main() {
 
 	// Check if there is an update available, but only do it if there is
 	// no `SEMA4AI_OPTIMIZE_FOR_CONTAINER` environment variable set to 1.
-	if os.Getenv("SEMA4AI_OPTIMIZE_FOR_CONTAINER") != "1" {
+	if os.Getenv("SEMA4AI_OPTIMIZE_FOR_CONTAINER") != "1" && os.Getenv("SEMA4AI_SKIP_UPDATE_CHECK") != "1" {
 		checkAvailableUpdate(version)
 	}
 

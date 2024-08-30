@@ -2,11 +2,18 @@
 
 ## Unreleased
 
+- RCC is now used to calculate hash from `package.yaml` (which is used as the space name)
+  - Uses: `rcc ht hash package.yaml --silent --no-temp-management --warranty-voided --bundled`
+- If the `SEMA4AI_OPTIMIZE_FOR_CONTAINER==1` environment variable is set:
+  - `--liveonly` is passed as a flag to `rcc` when building the environment.
+- `SEMA4AI_OPTIMIZE_FOR_CONTAINER=1` or `SEMA4AI_SKIP_UPDATE_CHECK=1` may be used for the go wrapper to skip its version check.
+- Removed support for (long deprecated) actions with a `conda.yaml` or `action-server.yaml`.
+
 ## 0.19.0 - 2024-08-28
 
 - Add top level command: `oauth2`, providing OAuth2 related utilities
 - Add `sema4ai-config` subcommand for `oauth2`
-  - Returns OAuth2 configuration for Sema4.ai provided OAuth2 applications 
+  - Returns OAuth2 configuration for Sema4.ai provided OAuth2 applications
 - Add `user-config-path` subcommand for `oauth2`
   - Returns the path to user's local OAuth config file
   - `--json` argument can be provided to get the result in JSON format
