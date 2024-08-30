@@ -156,7 +156,7 @@ def test_global_return_reuse_process(
 
 @pytest.mark.parametrize(
     "strategy",
-    ["action-server.yaml", "conda.yaml", "no-conda", "package.yaml", "package.yaml:uv"],
+    ["no-conda", "package.yaml", "package.yaml:uv"],
 )
 def test_import_action_server_strategies(
     action_server_datadir: Path,
@@ -166,11 +166,7 @@ def test_import_action_server_strategies(
 
     from sema4ai.action_server._models import Action, ActionPackage, load_db
 
-    if strategy == "conda.yaml":
-        root_dir = get_in_resources("calculator")
-    elif strategy == "action-server.yaml":
-        root_dir = get_in_resources("greeter")
-    elif strategy == "package.yaml":
+    if strategy == "package.yaml":
         root_dir = get_in_resources("hello")
     elif strategy == "package.yaml:uv":
         root_dir = get_in_resources("hello_uv")

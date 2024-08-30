@@ -15,14 +15,6 @@ from sema4ai.action_server._robo_utils.constants import NULL
 log = logging.getLogger(__name__)
 
 
-def create_hash(contents: str) -> str:
-    import hashlib
-
-    sha256_hash = hashlib.sha256()
-    sha256_hash.update(contents.encode("utf-8"))
-    return sha256_hash.hexdigest()
-
-
 RCC_CLOUD_ROBOT_MUTEX_NAME = "rcc_cloud_activity"
 RCC_CREDENTIALS_MUTEX_NAME = "rcc_credentials"
 
@@ -211,8 +203,25 @@ class Rcc(object):
 
         return RCCActionResult(cmdline, success=True, message=None, result=output)
 
+    def get_package_yaml_hash(self, package_yaml: Path) -> str:
+        args: list[str] = ["ht", "hash"]
+        args.append(str(package_yaml))
+        args.extend("--bundled --silent --no-temp-management --warranty-voided".split())
+
+        result = self._run_rcc(args)
+
+        if result.success:
+            if not result.result:
+                raise RuntimeError(
+                    f"No result found from running: {result.command_line}"
+                )
+            return result.result.strip()
+        raise RuntimeError(
+            f"Error when running: {result.command_line}: {result.message}"
+        )
+
     def create_env_and_get_vars(
-        self, datadir: Path, conda_yaml: Path, conda_hash: str
+        self, datadir: Path, package_yaml: Path, package_yaml_hash: str
     ) -> ActionResult[EnvInfo]:
         """
         Creates the environment if needed. Note: this function needs to be
@@ -226,7 +235,7 @@ class Rcc(object):
         env_info_dir = datadir / "env-info"
         env_info_dir.mkdir(parents=True, exist_ok=True)
 
-        env_info_cache_file = env_info_dir / f"{conda_hash}.json"
+        env_info_cache_file = env_info_dir / f"{package_yaml_hash}.json"
         if env_info_cache_file.exists():
             try:
                 contents = env_info_cache_file.read_text(encoding="utf-8")
@@ -250,7 +259,7 @@ class Rcc(object):
                     ),
                 )
 
-        env_info_result = self._create_env_and_get_vars(conda_yaml, conda_hash)
+        env_info_result = self._create_env_and_get_vars(package_yaml, package_yaml_hash)
         if env_info_result.success:
             assert isinstance(env_info_result.result, EnvInfo)
             dump = {
@@ -266,15 +275,15 @@ class Rcc(object):
         return datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f%Z")
 
     def _create_env_and_get_vars(
-        self, conda_yaml: Path, conda_hash: str
+        self, package_yaml: Path, package_yaml_hash: str
     ) -> ActionResult[EnvInfo]:
         """ """
         args = [
             "holotree",
             "variables",
             "--space",
-            conda_hash,
-            str(conda_yaml),
+            package_yaml_hash,
+            str(package_yaml),
         ]
         self._add_config_to_args(args)
         args.append("--json")
@@ -284,7 +293,7 @@ class Rcc(object):
         ret = self._run_rcc(
             args,
             mutex_name=RCC_CLOUD_ROBOT_MUTEX_NAME,
-            cwd=str(conda_yaml.parent),
+            cwd=str(package_yaml.parent),
             timeout=timeout,  # Creating the env may be really slow!
             show_interactive_output=logging.root.level <= logging.DEBUG,
         )
@@ -296,7 +305,7 @@ class Rcc(object):
                     "To recreate the environment, please change the related conda yaml"
                     "\nor restart VSCode to retry with the same conda yaml contents."
                 ),
-                conda_yaml,
+                package_yaml,
             )
 
             if not msg:
