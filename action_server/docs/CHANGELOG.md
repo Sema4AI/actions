@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.20.0 - 2024-08-30
+
 - RCC is now used to calculate hash from `package.yaml` (which is used as the space name)
   - Uses: `rcc ht hash package.yaml --silent --no-temp-management --warranty-voided --bundled`
 - If the `SEMA4AI_OPTIMIZE_FOR_CONTAINER==1` environment variable is set:
