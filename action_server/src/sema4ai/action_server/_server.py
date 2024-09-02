@@ -505,18 +505,20 @@ def start_server(
             + colored(url, "light_blue")
         )
 
-        if not expose:
-            log.info(
-                colored("     Public access: use ", attrs=["dark"])
-                + colored("--expose", attrs=["bold"])
-                + colored(" to expose\n", attrs=["dark"])
-            )
-
-            if api_key:
+        if os.getenv("SEMA4AI_OPTIMIZE_FOR_CONTAINER") != "1":
+            # No need to log the contents below when in a container.
+            if not expose:
                 log.info(
-                    colored("  🔑 API Authorization Bearer key: ", attrs=["bold"])
-                    + f"{api_key}\n"
+                    colored("     Public access: use ", attrs=["dark"])
+                    + colored("--expose", attrs=["bold"])
+                    + colored(" to expose\n", attrs=["dark"])
                 )
+
+                if api_key:
+                    log.info(
+                        colored("  🔑 API Authorization Bearer key: ", attrs=["bold"])
+                        + f"{api_key}\n"
+                    )
 
     async def _on_startup() -> None:
         loop = asyncio.get_event_loop()
