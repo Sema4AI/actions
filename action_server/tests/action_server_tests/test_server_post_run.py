@@ -21,7 +21,7 @@ def test_server_post_run(
     output_json = Path(datadir / "output.json")
     cmd = f"{Path(sys.executable).as_posix()} {post_run_script.as_posix()} {output_json.as_posix()} $base_artifacts_dir $run_artifacts_dir $run_id"
 
-    env = {"S4_ACTION_SERVER_POST_RUN_CMD": cmd}
+    env = {"SEMA4AI_ACTION_SERVER_POST_RUN_CMD": cmd}
     action_server_process.start(
         cwd=pack, actions_sync=True, db_file="server.db", env=env
     )

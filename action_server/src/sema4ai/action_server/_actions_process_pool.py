@@ -428,7 +428,7 @@ class ProcessHandle:
             build_subprocess_kwargs,
         )
 
-        post_run_cmd = os.environ.get("S4_ACTION_SERVER_POST_RUN_CMD")
+        post_run_cmd = os.environ.get("SEMA4AI_ACTION_SERVER_POST_RUN_CMD")
         if not post_run_cmd:
             return
 

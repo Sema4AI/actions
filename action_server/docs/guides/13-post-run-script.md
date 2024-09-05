@@ -1,7 +1,7 @@
 # Post run scripts
 
 In the `Action Server`, it's possible to customize a command to be invoked right after
-an action is run by setting the `S4_ACTION_SERVER_POST_RUN_CMD` environment variable.
+an action is run by setting the `SEMA4AI_ACTION_SERVER_POST_RUN_CMD` environment variable.
 
 The command set is by default parsed using `shlex.split` (https://docs.python.org/3/library/shlex.html#shlex.split)
 and then a substitution is done per-argument to make a replacement of some variables using the rules from `string.Template` (`https://docs.python.org/3/library/string.html#string.Template`) -- i.e.: variables are expected to be in the format `$name`.

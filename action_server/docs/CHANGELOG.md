@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Rename constant to be SEMA4AI_ACTION_SERVER_POST_RUN_CMD
+
 ## 0.21.0 - 2024-09-05
 
 - In the `Action Server`, it's possible to customize a command to be invoked right after
