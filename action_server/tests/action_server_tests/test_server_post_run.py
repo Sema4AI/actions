@@ -8,6 +8,7 @@ def test_server_post_run(
 ):
     import os
     import sys
+    from pathlib import Path
 
     from action_server_tests.fixtures import get_in_resources
     from devutils.fixtures import wait_for_non_error_condition
@@ -17,8 +18,8 @@ def test_server_post_run(
 
     pack = get_in_resources("no_conda", "greeter")
 
-    output_json = datadir / "output.json"
-    cmd = f"{sys.executable} {post_run_script} {output_json} $base_artifacts_dir $run_artifacts_dir $run_id"
+    output_json = Path(datadir / "output.json")
+    cmd = f"{Path(sys.executable).as_posix()} {post_run_script.as_posix()} {output_json.as_posix()} $base_artifacts_dir $run_artifacts_dir $run_id"
 
     env = {"S4_ACTION_SERVER_POST_RUN_CMD": cmd}
     action_server_process.start(

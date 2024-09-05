@@ -19,3 +19,5 @@ the command line executed should not rely on anything related to the action (it'
 not even `python` is available as it'll just use whathever environment is used to start
 the `Action Server`, so, if some utility is needed, make sure it's already in the `PATH` used
 to start the `Action Server`).
+
+As it's using `shlex.split`, paths should be passed with `/` and not `\`, even on Windows.

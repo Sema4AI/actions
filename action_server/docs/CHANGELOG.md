@@ -2,11 +2,15 @@
 
 ## Unreleased
 
+- In the `Action Server`, it's possible to customize a command to be invoked right after
+  an action is run by setting the `S4_ACTION_SERVER_POST_RUN_CMD` environment variable.
+  See [13-post-run-script.md](./guides/13-post-run-script.md) for details.
+
 ## 0.20.0 - 2024-08-30
 
 - RCC is now used to calculate hash from `package.yaml` (which is used as the space name)
   - Uses: `rcc ht hash package.yaml --silent --no-temp-management --warranty-voided --bundled`
-- If the `SEMA4AI_OPTIMIZE_FOR_CONTAINER==1` environment variable is set:
+- If the `SEMA4AI_OPTIMIZE_FOR_CONTAINER=1` environment variable is set:
   - `--liveonly` is passed as a flag to `rcc` when building the environment.
 - `SEMA4AI_OPTIMIZE_FOR_CONTAINER=1` or `SEMA4AI_SKIP_UPDATE_CHECK=1` may be used for the go wrapper to skip its version check.
 - Removed support for (long deprecated) actions with a `conda.yaml` or `action-server.yaml`.
