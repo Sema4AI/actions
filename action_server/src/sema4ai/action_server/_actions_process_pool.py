@@ -14,7 +14,7 @@ from sema4ai.actions._action_context import ActionContext
 from starlette.requests import Request
 from termcolor import colored
 
-from sema4ai.action_server._models import Action, ActionPackage
+from sema4ai.action_server._models import Action, ActionPackage, Run
 from sema4ai.action_server._protocols import JSONValue
 
 from ._settings import Settings, is_frozen
@@ -271,10 +271,11 @@ class ProcessHandle:
 
     def _do_run_action(
         self,
+        run: Run,
         action_package: ActionPackage,
         action: Action,
         input_json: Path,
-        robot_artifacts: Path,
+        run_artifacts_dir: Path,
         result_json: Path,
         request: Request,
         reuse_process: bool,
@@ -402,7 +403,7 @@ class ProcessHandle:
             "action_name": action.name,
             "action_file": f"{action.file}",
             "input_json": f"{input_json}",
-            "robot_artifacts": f"{robot_artifacts}",
+            "robot_artifacts": f"{run_artifacts_dir}",
             "result_json": f"{result_json}",
             "headers": headers,
             "cookies": dict(request.cookies),
@@ -412,14 +413,65 @@ class ProcessHandle:
         self._writer.write(msg)
         queue = self._read_queue
         result_msg = queue.get(block=True)
+
+        try:
+            self._call_post_run_scripts(msg, result_msg, run)
+        except Exception:
+            log.exception("Error runnnig post run command.")
         return result_msg["returncode"]
+
+    def _call_post_run_scripts(self, msg: dict, result_msg: dict, run: Run) -> None:
+        import os
+
+        from sema4ai.action_server._robo_utils.process import (
+            build_python_launch_env,
+            build_subprocess_kwargs,
+        )
+
+        post_run_cmd = os.environ.get("S4_ACTION_SERVER_POST_RUN_CMD")
+        if not post_run_cmd:
+            return
+
+        import shlex
+        from string import Template
+
+        from sema4ai.action_server._settings import get_settings
+
+        settings = get_settings()
+
+        mapping = {
+            "base_artifacts_dir": settings.artifacts_dir,
+            "run_id": run.id,
+            "run_artifacts_dir": msg["robot_artifacts"],
+        }
+        args = shlex.split(post_run_cmd)
+        use_args = []
+        for arg in args:
+            try:
+                use_args.append(Template(arg).substitute(mapping))
+            except Exception:
+                log.exception(
+                    f"Error substituting {arg!r} for post run. Full cmd: {post_run_cmd!r}"
+                )
+
+        # Run but don't wait for it!
+        try:
+            cwd = None
+            env = env = build_python_launch_env({})
+            new_kwargs = build_subprocess_kwargs(cwd, env=env)
+
+            log.debug("Running: %s", shlex.join(use_args))
+            subprocess.Popen(use_args, **new_kwargs)
+        except Exception:
+            log.exception(f"Error running: {use_args!r}")
 
     def run_action(
         self,
+        run: Run,
         action_package: ActionPackage,
         action: Action,
         input_json: Path,
-        robot_artifacts: Path,
+        run_artifacts_dir: Path,
         output_file: Path,
         result_json: Path,
         request: Request,
@@ -438,10 +490,11 @@ class ProcessHandle:
             with self._on_output.register(on_output):
                 # stdout is now used for communicating, so, don't hear on it.
                 returncode = self._do_run_action(
+                    run,
                     action_package,
                     action,
                     input_json,
-                    robot_artifacts,
+                    run_artifacts_dir,
                     result_json,
                     request,
                     reuse_process,

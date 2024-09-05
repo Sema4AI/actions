@@ -201,7 +201,7 @@ def _run_action_in_thread(
             )
             input_json.write_bytes(body)
 
-            robot_artifacts = settings.artifacts_dir / relative_artifacts_path
+            run_artifacts_dir = settings.artifacts_dir / relative_artifacts_path
 
             result_json = (
                 settings.artifacts_dir
@@ -219,10 +219,11 @@ def _run_action_in_thread(
             try:
                 _set_run_as_running(run, initial_time)
                 returncode = process_handle.run_action(
+                    run,
                     action_package,
                     action,
                     input_json,
-                    robot_artifacts,
+                    run_artifacts_dir,
                     output_file,
                     result_json,
                     request,

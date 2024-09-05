@@ -114,9 +114,13 @@ def _create_run(
     Returns a future which provides the returncode. Note: the `with` statement
     that uses this method should not return before `future.result()` is given.
     """
+    import datetime
     import typing
 
     from starlette.requests import Request
+
+    from sema4ai.action_server._database import datetime_to_str
+    from sema4ai.action_server._models import Run, RunStatus
 
     p = Path(tmpdir)
     robot_artifacts = p / f"artifacts_{i}"
@@ -130,11 +134,23 @@ def _create_run(
     action_package = actions_process_pool.action_package_id_to_action_package[
         action.action_package_id
     ]
-
+    run: Run = Run(
+        id="run-id",
+        numbered_id=1,
+        status=RunStatus.NOT_RUN,
+        action_id=action.id,
+        start_time=datetime_to_str(datetime.datetime.now(datetime.timezone.utc)),
+        run_time=None,
+        inputs=json.dumps({}),
+        result=None,
+        error_message=None,
+        relative_artifacts_dir="rel-artifacts-dir",
+    )
     with actions_process_pool.obtain_process_for_action(action) as process_handle:
         fut: Future[int] = run_in_thread(
             partial(
                 process_handle.run_action,
+                run,
                 action_package,
                 action,
                 input_json,
