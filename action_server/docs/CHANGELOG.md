@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.22.0 - 2024-09-05
+
 - Rename constant to be SEMA4AI_ACTION_SERVER_POST_RUN_CMD
 
 ## 0.21.0 - 2024-09-05
