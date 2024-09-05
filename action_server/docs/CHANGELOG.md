@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.21.0 - 2024-09-05
+
 - In the `Action Server`, it's possible to customize a command to be invoked right after
   an action is run by setting the `S4_ACTION_SERVER_POST_RUN_CMD` environment variable.
   See [13-post-run-script.md](./guides/13-post-run-script.md) for details.
