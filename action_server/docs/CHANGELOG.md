@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.23.0 - 2024-09-06
+
 - Add support for authenticating OAuth2 flow with pkce (without clientSecret).
 - Using new format for OAuth2.
   - File path being used changed from `oauth2-settings.yaml` to `oauth2_config.yaml`.
