@@ -15,15 +15,27 @@ def _verify_oauth2_settings() -> Path:
     from sema4ai.action_server._settings import get_user_sema4_path
 
     user = get_user_sema4_path()
-    yaml_location = user / "oauth2-settings.yaml"
+    yaml_location = user / "oauth2_config.yaml"
     assert (
         yaml_location.exists()
     ), f"Expected {yaml_location} to exist with the OAuth2 settings."
 
     txt = yaml_location.read_text()
     contents = yaml.safe_load(txt)
-    assert "google" in contents, f"Expected 'google' to be defined in {yaml_location}"
-    google = contents["google"]
+    assert (
+        "oauth2Config" in contents
+    ), f"Expected 'oauth2Config' to be defined in {yaml_location}"
+    oauth2_config = contents.get("oauth2Config")
+
+    assert (
+        "providers" in oauth2_config
+    ), f"Expected 'providers' to be defined in {yaml_location}"
+    providers = oauth2_config.get("providers")
+
+    assert (
+        "google" in providers
+    ), f"Expected 'providers/google' to be defined in {yaml_location}"
+    google = providers["google"]
     for key in ["clientId", "clientSecret"]:
         assert (
             key in google
@@ -170,7 +182,7 @@ def manual_test_oauth2_action_server_ui(
             f"--oauth2-settings={str(settings_file)}",
             "--full-openapi-spec",
         ],
-        port=8080,  # Needs to match redirect url
+        port=61080,  # Needs to match redirect url
     )
 
     fut_uri, fut_address = start_server_in_thread(port=0)
@@ -178,11 +190,26 @@ def manual_test_oauth2_action_server_ui(
     callback_url = fut_address.result(10)
     assert callback_url
 
+    result = client.get_json("/oauth2/create-reference-id")
+
+    reference_id = result["reference_id"]
+
+    # webbrowser.open(
+    #     client.build_full_url(
+    #         "/oauth2/login?provider=google&"
+    #         "scopes=openid&"
+    #         f"callback_url={callback_url}&"
+    #         f"reference_id={reference_id}&"
+    #     ),
+    #     new=1,
+    # )
+
     webbrowser.open(
         client.build_full_url(
-            "/oauth2/login?provider=google&"
-            "scopes=openid"
-            f"callback_url={callback_url}"
+            "/oauth2/login?provider=microsoft&"
+            "scopes=Calendars.Read&"
+            f"callback_url={callback_url}&"
+            f"reference_id={reference_id}&"
         ),
         new=1,
     )
@@ -208,18 +235,24 @@ def test_settings(tmpdir):
     oauth2_settings_file.write_text(
         yaml.safe_dump(
             dict(
-                google={
-                    "clientId": "foo",
-                    "clientSecret": "bar",
-                    "tokenEndpoint": "<end>",
-                },
-                custom={
-                    "clientId": "f",
-                    "clientSecret": "b",
-                    "tokenEndpoint": "/end",
-                    "authorizationEndpoint": "/auth",
-                    "server": "http://server/",
-                },
+                oauth2Config=dict(
+                    providers=dict(
+                        google={
+                            "mode": "custom",
+                            "clientId": "foo",
+                            "clientSecret": "bar",
+                            "tokenEndpoint": "<end>",
+                        },
+                        custom={
+                            "mode": "custom",
+                            "clientId": "f",
+                            "clientSecret": "b",
+                            "tokenEndpoint": "/end",
+                            "authorizationEndpoint": "/auth",
+                            "server": "http://server/",
+                        },
+                    )
+                )
             )
         )
     )
@@ -256,10 +289,10 @@ def test_oauth2_provider_settings():
 
 
 @mock.patch("builtins.print")
-def test_get_user_oauth2_config_path(print_mock: mock.MagicMock, tmpdir) -> None:
+def test_print_user_oauth2_config_path(print_mock: mock.MagicMock, tmpdir) -> None:
     from sema4ai.action_server._oauth2 import (
         USER_CONFIG_FILE_NAME,
-        get_user_oauth2_config_path,
+        print_user_oauth2_config_path,
     )
 
     mock_settings_dir: Path = tmpdir / "action-server"
@@ -275,7 +308,7 @@ def test_get_user_oauth2_config_path(print_mock: mock.MagicMock, tmpdir) -> None
 
         assert mock_config_path.exists() is False
 
-        retcode = get_user_oauth2_config_path(output_json=False)
+        retcode = print_user_oauth2_config_path(output_json=False)
 
         assert retcode == 0
         assert mock_config_path.exists() is True
@@ -285,7 +318,7 @@ def test_get_user_oauth2_config_path(print_mock: mock.MagicMock, tmpdir) -> None
 
         assert print_args[0] == mock_config_path
 
-        retcode = get_user_oauth2_config_path(output_json=True)
+        retcode = print_user_oauth2_config_path(output_json=True)
 
         assert retcode == 0
         assert mock_config_path.exists() is True

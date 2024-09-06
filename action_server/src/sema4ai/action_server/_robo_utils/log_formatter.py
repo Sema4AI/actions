@@ -55,15 +55,15 @@ class UvicornLogFilter(Filter):
 class UvicornAccessDisableOAuth2LogFilter(Filter):
     def filter(self, record):
         if record.name == "uvicorn.access":
-            # Hide logging for /oauth2 redirect urls.
+            # Hide logging for oauth2 related urls.
             if len(record.args) == 5:
-                if record.args[2].startswith("/oauth2/redirect"):
+                if record.args[2].startswith("/oauth2/login"):
                     args = list(record.args)
-                    args[2] = "/oauth2/redirect?..."
+                    args[2] = "/oauth2/login/?..."
                     record.args = tuple(args)
-                elif record.args[2].startswith("/oauth2/login"):
+                elif record.args[2].startswith("/sema4ai/oauth2"):
                     args = list(record.args)
-                    args[2] = "/oauth2/login?..."
+                    args[2] = "/sema4ai/oauth2/?..."
                     record.args = tuple(args)
                 return True
         return True

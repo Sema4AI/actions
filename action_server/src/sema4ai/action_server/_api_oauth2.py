@@ -6,7 +6,7 @@ We need to cover 2 use-cases here:
       oauth urls as well as in the index)
     - A pop-up browser window is opened at `/oauth2/login`
     - The user provides his information
-    - A `/oauth2/redirect` request is received as a callback, at which
+    - A `/sema4ai/oauth2` request is received as a callback, at which
       point the session id will be connected to the token and a
       call to the action server should automatically add the required
       tokens when the action is called (and refresh them as needed). 
@@ -18,7 +18,7 @@ We need to cover 2 use-cases here:
       can be retrieved later.
       -- The `reference_id` must also be passed so that the login state can be checked
       later on.
-    - After the `/oauth2/redirect` is triggered by the browser the `callback_url`
+    - After the `/sema4ai/oauth2` is triggered by the browser the `callback_url`
       will be triggered in succession.
 """
 import datetime
@@ -26,7 +26,7 @@ import json
 import logging
 import typing
 from functools import partial
-from typing import Any, Iterable, Optional
+from typing import Any, Iterable, Optional, Sequence
 
 import requests
 from fastapi.routing import APIRouter
@@ -42,7 +42,7 @@ if typing.TYPE_CHECKING:
         OAuth2ProviderSettingsResolved,
     )
 
-oauth2_api_router = APIRouter(prefix="/oauth2")
+oauth2_api_router = APIRouter(prefix="")
 
 log = logging.getLogger(__name__)
 
@@ -75,7 +75,7 @@ def get_resolved_provider_settings(provider: str) -> "OAuth2ProviderSettingsReso
     return get_oauthlib2_provider_settings(provider, oauth2_settings_file)
 
 
-@oauth2_api_router.get("/logout")
+@oauth2_api_router.get("/oauth2/logout")
 async def oauth2_logout(
     provider: str,
     request: Request,
@@ -152,7 +152,7 @@ async def oauth2_logout(
     return response_model
 
 
-@oauth2_api_router.get("/login")
+@oauth2_api_router.get("/oauth2/login")
 async def oauth2_login(
     provider: str,
     scopes: str,
@@ -173,8 +173,6 @@ async def oauth2_login(
         log.info(
             "comma (,) found in scopes. Note that it's expected that a space separator is used."
         )
-    from requests_oauthlib import OAuth2Session  # type: ignore
-
     from sema4ai.action_server._database import Database
     from sema4ai.action_server._models import get_db
     from sema4ai.action_server._settings import get_settings
@@ -209,23 +207,29 @@ async def oauth2_login(
         base_url = app_settings.base_url
         assert base_url, "Internal error: `base_url` not available from app settings."
 
-        client_id = settings.clientId
-        redirect_uri = f"{base_url}/oauth2/redirect/"
         auth_url = settings.authorizationEndpoint
 
-        oauth2_session = OAuth2Session(
-            client_id=client_id, redirect_uri=redirect_uri, scope=scopes.split(" ")
-        )
+        oauth2_session = _create_oauth2_session(provider, scope=scopes.split(" "))
 
         params = settings.authParams or {}
 
+        # The code_verifier is generated at this point
         authorization_url, state = oauth2_session.authorization_url(auth_url, **params)
+        code_verifier = None
+        if oauth2_session._pkce:
+            # The code verifier is later needed to obtain tokens!
+            code_verifier = oauth2_session._code_verifier
+            assert (
+                code_verifier
+            ), "Expected _code_verifier to be set in the `authorization_url` method."
+
         session.set_session_data(
             f"oauth_state-${state}",
             {
                 "provider": provider,
                 "reference_id": reference_id,
                 "callback_url": callback_url,
+                "code_verifier": code_verifier,
             },
             expires_at=datetime.datetime.now() + datetime.timedelta(minutes=15),
         )
@@ -242,7 +246,7 @@ class OAuth2StatusResponseForProvider(BaseModel):
     metadata: Optional[dict]  # Metadata which may be available
 
 
-@oauth2_api_router.get("/status")
+@oauth2_api_router.get("/oauth2/status")
 async def oauth2_status(
     request: Request,
     response: "Response",
@@ -372,7 +376,15 @@ def _refresh_token(use_id: str, oauth2_user_data: "OAuth2UserData") -> "OAuth2Us
     from sema4ai.action_server._encryption import decrypt_simple
 
     settings = get_resolved_provider_settings(oauth2_user_data.provider)
-    oauth2_session = _create_oauth2_session(oauth2_user_data.provider)
+    code_verifier = oauth2_user_data.code_verifier
+    if code_verifier:
+        decrypted = decrypt_simple(code_verifier)
+        assert isinstance(decrypted, str)
+        code_verifier = decrypted
+
+    oauth2_session = _create_oauth2_session(
+        oauth2_user_data.provider, code_verifier=code_verifier
+    )
     client_secret = settings.clientSecret
     client_id = settings.clientId
     token_url = settings.tokenEndpoint
@@ -397,7 +409,9 @@ def _refresh_token(use_id: str, oauth2_user_data: "OAuth2UserData") -> "OAuth2Us
         refresh_token=refresh_token,
     )
 
-    return _update_db_with_token(use_id, oauth2_user_data.provider, token)
+    return _update_db_with_token(
+        use_id, oauth2_user_data.provider, token, code_verifier=code_verifier
+    )
 
 
 def _should_renew(oauth2_user_data: "OAuth2UserData") -> bool:
@@ -427,7 +441,7 @@ class CreatedReferenceId(BaseModel):
     reference_id: str
 
 
-@oauth2_api_router.get("/create-reference-id")
+@oauth2_api_router.get("/oauth2/create-reference-id")
 async def create_reference_id() -> CreatedReferenceId:
     """
     Creates a new reference ID (using this reference it's later possible
@@ -440,7 +454,11 @@ async def create_reference_id() -> CreatedReferenceId:
 
 
 def _create_oauth2_session(
-    provider: str, state: Optional[str] = None
+    provider: str,
+    state: Optional[str] = None,
+    *,
+    scope: Optional[Sequence[str]] = (),
+    code_verifier: Optional[str] = None,
 ) -> "OAuth2Session":
     from requests_oauthlib import OAuth2Session  # type: ignore
 
@@ -452,15 +470,30 @@ def _create_oauth2_session(
     app_settings = get_settings()
     base_url = app_settings.base_url
     assert base_url, "Internal error: `base_url` not available from app settings."
-    redirect_uri = f"{base_url}/oauth2/redirect/"
+    redirect_uri = f"{base_url}/sema4ai/oauth2/"
+
+    kwargs: dict[str, Any] = {}
+
+    if not settings.clientSecret:
+        kwargs["pkce"] = "S256"
+
+    if scope:
+        kwargs["scope"] = scope
 
     oauth2_session = OAuth2Session(
-        client_id=client_id, state=state, redirect_uri=redirect_uri
+        client_id=client_id, state=state, redirect_uri=redirect_uri, **kwargs
     )
+
+    if oauth2_session._pkce and code_verifier:
+        # If pkce without a code_verifier this may mean that the code verifier is still not generated.
+        oauth2_session._code_verifier = code_verifier
+
     return oauth2_session
 
 
-def _update_db_with_token(use_id: str, provider: str, token) -> "OAuth2UserData":
+def _update_db_with_token(
+    use_id: str, provider: str, token, *, code_verifier: str
+) -> "OAuth2UserData":
     from sema4ai.action_server._database import Database
     from sema4ai.action_server._encryption import encrypt_simple
     from sema4ai.action_server._models import OAuth2UserData, get_db
@@ -510,6 +543,7 @@ def _update_db_with_token(use_id: str, provider: str, token) -> "OAuth2UserData"
         expires_at=expires_at,
         token_type=token_type,
         scopes=scopes,
+        code_verifier=encrypt_simple(code_verifier) if code_verifier else code_verifier,
     )
 
     db: Database = get_db()
@@ -519,7 +553,7 @@ def _update_db_with_token(use_id: str, provider: str, token) -> "OAuth2UserData"
     return data
 
 
-@oauth2_api_router.get("/redirect")
+@oauth2_api_router.get("/sema4ai/oauth2")
 async def oauth2_redirect(request: Request, state: str = "") -> HTMLResponse:
     """
     Callback that should've been registered in the OAuth2 callback to
@@ -543,9 +577,12 @@ async def oauth2_redirect(request: Request, state: str = "") -> HTMLResponse:
         provider = typing.cast(str, oauth_state["provider"])
         reference_id = typing.cast(str, oauth_state["reference_id"])
         callback_url = typing.cast(str, oauth_state["callback_url"])
+        code_verifier = typing.cast(str, oauth_state["code_verifier"] or "")
 
         assert isinstance(provider, str)
         assert isinstance(callback_url, str)
+        if code_verifier:
+            assert isinstance(code_verifier, str)
 
         settings = get_resolved_provider_settings(provider)
         client_secret = settings.clientSecret
@@ -559,7 +596,10 @@ async def oauth2_redirect(request: Request, state: str = "") -> HTMLResponse:
         if settings.additionalHeaders:
             headers.update(settings.additionalHeaders)
 
-        oauth2_session = _create_oauth2_session(provider, state)
+        oauth2_session = _create_oauth2_session(
+            provider, state, code_verifier=code_verifier
+        )
+
         token = oauth2_session.fetch_token(
             token_url,
             client_secret=client_secret,
@@ -572,7 +612,9 @@ async def oauth2_redirect(request: Request, state: str = "") -> HTMLResponse:
         if not use_id:
             use_id = session.session_id
 
-        data = _update_db_with_token(use_id, provider, token)
+        data = _update_db_with_token(
+            use_id, provider, token, code_verifier=code_verifier
+        )
 
         if reference_id and callback_url:
             result = requests.post(

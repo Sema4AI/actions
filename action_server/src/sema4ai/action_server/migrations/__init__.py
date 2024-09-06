@@ -33,6 +33,8 @@ MIGRATION_ID_TO_NAME: Dict[int, str] = {
     5: "add_action_options",
     # we'll look for a 'migration_add_session_and_indexes' module based on this.
     6: "add_session_and_indexes",
+    # we'll look for a 'migration_add_code_verifier' module based on this.
+    7: "add_code_verifier",
 }
 
 CURRENT_VERSION: int = max(MIGRATION_ID_TO_NAME.keys())

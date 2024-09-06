@@ -5,6 +5,8 @@ from typing import Any, Optional
 
 @dataclass
 class OAuth2ProviderSettings:
+    mode: Optional[str] = None  # custom/sema4ai
+    name: Optional[str] = None
     clientId: Optional[str] = None
     clientSecret: Optional[str] = None
     server: Optional[str] = None
@@ -13,6 +15,7 @@ class OAuth2ProviderSettings:
     authorizationEndpoint: Optional[str] = None
     authParams: Optional[dict[str, str]] = None
     additionalHeaders: Optional[dict[str, str]] = None
+    requiresHttps: Optional[bool] = False
 
     # Some replacement functions to keep pydantic API without actually
     # relying on it.
@@ -33,7 +36,10 @@ class OAuth2ProviderSettings:
 
     @classmethod
     def model_validate(cls, dct):
-        settings = cls(**dct)
+        try:
+            settings = cls(**dct)
+        except Exception as e:
+            raise RuntimeError(f"Invalid OAuth2 settings. Original error: {str(e)}")
 
         for field_name, field_info in cls.__dataclass_fields__.items():
             field_type = field_info.type
@@ -112,7 +118,7 @@ _DEFAULT_OAUTH2_SETTINGS: dict[str, OAuth2ProviderSettings] = {
 }
 
 
-def get_oauthlib2_global_settings(
+def _get_oauthlib2_user_settings(
     oauth2_settings_file: str,
 ) -> dict[str, Any]:
     """
@@ -132,10 +138,42 @@ def get_oauthlib2_global_settings(
 
     if not isinstance(contents, dict):
         raise RuntimeError(
-            f"Expected {oauth2_settings_file} to be a yaml with a mapping of provider name->provider info."
+            f"Expected {oauth2_settings_file} to be a yaml with a mapping of oauth2Config->providers->provider name->provider info."
         )
 
     return contents
+
+
+def _get_oauthlib2_sema4ai_settings(provider: str) -> dict:
+    import yaml
+
+    from sema4ai.action_server._oauth2 import get_sema4ai_provided_oauth2_config
+
+    contents = get_sema4ai_provided_oauth2_config()
+    dct = yaml.safe_load(contents)
+    if not isinstance(dct, dict):
+        raise RuntimeError("Expected the Sema4.ai oauth2 config to be a yaml.")
+
+    oauth2_config = _require("oauth2Config", dct)
+    providers = _require("providers", oauth2_config)
+
+    settings = providers.get(provider)
+
+    if not settings:
+        raise RuntimeError(
+            f"Found no OAuth2 info for provider {provider} in sema4ai settings (either the provider name is mistyped or it's an unsupported provider and thus must be 'custom')."
+        )
+
+    if not isinstance(settings, dict):
+        raise RuntimeError(f"Expected {provider} info to be a dict.")
+    return settings
+
+
+def _require(key: str, dct: dict) -> Any:
+    found = dct.get(key, None)
+    if found is None:
+        raise RuntimeError(f"Expected '{key}' to be in Oauth2 settings.")
+    return found
 
 
 def get_oauthlib2_provider_settings(
@@ -144,9 +182,11 @@ def get_oauthlib2_provider_settings(
     """
     Gets the OAuth2 settings to be used for a given provider.
     """
-    contents = get_oauthlib2_global_settings(oauth2_settings_file)
+    contents = _get_oauthlib2_user_settings(oauth2_settings_file)
+    oauth2_config = _require("oauth2Config", contents)
+    providers = _require("providers", oauth2_config)
 
-    settings = contents.get(provider)
+    settings = providers.get(provider)
 
     if not settings:
         raise RuntimeError(
@@ -158,14 +198,31 @@ def get_oauthlib2_provider_settings(
             f"Expected OAuth2 info for provider {provider} in {oauth2_settings_file} to be a mapping with the provider info."
         )
 
+    mode = settings.get("mode")
+    if not mode:
+        raise RuntimeError(
+            f"'mode' not specified for provider: {provider} (expected either 'sema4ai' or 'custom' to be set as the mode)."
+        )
+
+    if mode not in ("custom", "sema4ai"):
+        raise RuntimeError(
+            f"Invalid 'mode': {mode!r} specified for provider: {provider} (expected either 'sema4ai' or 'custom' to be set as the mode)."
+        )
+
+    if mode == "sema4ai":
+        settings = _get_oauthlib2_sema4ai_settings(provider)
+
     if "clientId" not in settings:
         raise RuntimeError(
-            f"Expected 'clientId' to be in OAuth2 settings for {provider}."
+            f"Expected 'clientId' to be in OAuth2 settings for {provider} (mode: {mode})."
         )
-    if "clientSecret" not in settings:
-        raise RuntimeError(
-            f"Expected 'clientSecret' to be in OAuth2 settings for {provider}."
-        )
+
+    # clientSecret is optional (if not given uses pkce to make the authentication)
+    # if "clientSecret" not in settings:
+    #     raise RuntimeError(
+    #         f"Expected 'clientSecret' to be in OAuth2 settings for {provider} (mode: {mode})."
+    #     )
+
     default_settings = _DEFAULT_OAUTH2_SETTINGS.get(provider)
     if not default_settings:
         default_settings = OAuth2ProviderSettings()
@@ -182,13 +239,13 @@ def get_oauthlib2_provider_settings(
                 continue
 
             raise RuntimeError(
-                f"Expected '{attr}' to be in OAuth2 settings for {provider}."
+                f"Expected '{attr}' to be in OAuth2 settings for {provider} (mode: {mode})."
             )
 
         if value.startswith("/"):
             if not ret.server:
                 raise RuntimeError(
-                    f"As the '{attr}' is relative, the 'server' setting must be provided in the OAuth2 settings for {provider}"
+                    f"As the '{attr}' is relative, the 'server' setting must be provided in the OAuth2 settings for {provider} (mode: {mode})"
                 )
 
             use_server = ret.server
