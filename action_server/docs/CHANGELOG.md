@@ -2,9 +2,14 @@
 
 ## Unreleased
 
+- Add support for authenticating OAuth2 flow with pkce (without clientSecret).
+- Using new format for OAuth2.
+  - File path being used changed from `oauth2-settings.yaml` to `oauth2_config.yaml`.
+  - The structure of the file changed (there's now support for )
+
 ## 0.22.0 - 2024-09-05
 
-- Rename constant to be SEMA4AI_ACTION_SERVER_POST_RUN_CMD
+- Rename constant to be `SEMA4AI_ACTION_SERVER_POST_RUN_CMD`.
 
 ## 0.21.0 - 2024-09-05
 
@@ -27,7 +32,7 @@
 - Add `sema4ai-config` subcommand for `oauth2`
   - Returns OAuth2 configuration for Sema4.ai provided OAuth2 applications
 - Add `user-config-path` subcommand for `oauth2`
-  - Returns the path to user's local OAuth config file
+  - Returns the path to user's local OAuth config file (note: it changed from `oauth2-settings.yaml` to `oauth2_config.yaml`)
   - `--json` argument can be provided to get the result in JSON format
 
 ## 0.18.0 - 2024-08-27

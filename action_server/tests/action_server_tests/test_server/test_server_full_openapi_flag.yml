@@ -574,45 +574,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
           description: Validation Error
       summary: Oauth2 Logout
-  /oauth2/redirect:
-    get:
-      description: 'Callback that should''ve been registered in the OAuth2 callback
-        to
-
-        complete the authentication flow.'
-      operationId: oauth2_redirect_oauth2_redirect_get
-      parameters:
-      - in: query
-        name: state
-        required: false
-        schema:
-          default: ''
-          title: State
-          type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema: {}
-          description: Successful Response
-        '422':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-          description: Validation Error
-      summary: Oauth2 Redirect
-  /oauth2/settings/{full_path}:
-    get:
-      operationId: serve_index_oauth2_settings__full_path__get
-      responses:
-        '200':
-          content:
-            text/html:
-              schema:
-                type: string
-          description: Successful Response
-      summary: Serve Index
   /oauth2/status:
     get:
       description: 'Collects the current status for the OAuth2 (either for the
@@ -676,5 +637,33 @@ paths:
                 type: string
           description: Successful Response
       summary: Serve Index
+  /sema4ai/oauth2:
+    get:
+      description: 'Callback that should''ve been registered in the OAuth2 callback
+        to
+
+        complete the authentication flow.'
+      operationId: oauth2_redirect_sema4ai_oauth2_get
+      parameters:
+      - in: query
+        name: state
+        required: false
+        schema:
+          default: ''
+          title: State
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Oauth2 Redirect
 servers:
 - url: http://localhost:0

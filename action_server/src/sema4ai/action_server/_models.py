@@ -157,6 +157,9 @@ class OAuth2UserData:
     # model (for data which is not available in the above info already).
     metadata: str = ""
 
+    # The code verifier is needed for pkce (authentication without a clientSecret).
+    code_verifier: str = ""  # Data encrypted with storage key
+
 
 class RunStatus:
     NOT_RUN = 0

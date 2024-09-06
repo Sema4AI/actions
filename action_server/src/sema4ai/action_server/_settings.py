@@ -267,7 +267,7 @@ class Settings:
                     assert settings.ssl_keyfile and settings.ssl_certfile
 
             if not settings.oauth2_settings:
-                settings.oauth2_settings = str(user_path / "oauth2-settings.yaml")
+                settings.oauth2_settings = str(user_path / "oauth2_config.yaml")
 
         return settings
 
