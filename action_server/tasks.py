@@ -115,48 +115,50 @@ def build_frontend(ctx: Context, debug: bool = False, install: bool = True):
 FILE_CONTENTS = {repr(file_contents)}
 """
         )
-        
+
+
 @task
 def build_oauth2_config(ctx: Context):
     """Build static OAuth2 .yaml config."""
+    import subprocess
+
     sema4ai_config_file_name = "sema4ai-oauth-config.yaml"
     default_user_config_file_name = "oauth-config.yaml"
     sema4ai_config_local_file_path = CURDIR / sema4ai_config_file_name
     default_user_config_local_file_path = CURDIR / default_user_config_file_name
-    
+
     base_api_url = "repos/Sema4AI/oauth-public-configs/contents"
-    
-    dest_path = (
-        CURDIR / "src" / "sema4ai" / "action_server" / "_oauth2_config.py"
-    )
-    
-    run(ctx,
-        "gh",
-        "api",
-        "-H \"Accept: application/vnd.github.raw\"",
-        f"{base_api_url}/{sema4ai_config_file_name}",
-        f"> {sema4ai_config_local_file_path}"
-    )
-    
-    assert sema4ai_config_local_file_path.exists(), f"Expected {sema4ai_config_local_file_path} to exist."
 
-    run(ctx,
-        "gh",
-        "api",
-        "-H \"Accept: application/vnd.github.raw\"",
-        f"{base_api_url}/{default_user_config_file_name}",
-        f"> {default_user_config_local_file_path}"
-    )
+    dest_path = CURDIR / "src" / "sema4ai" / "action_server" / "_oauth2_config.py"
 
-    assert default_user_config_local_file_path.exists(), f"Expected {default_user_config_local_file_path} to exist."
-    
-    with open(sema4ai_config_local_file_path) as sema4ai_config_file, open(default_user_config_local_file_path) as user_config_file:
-        file_contents = {
-            "sema4ai_config": sema4ai_config_file.read(),
-            "default_user_config": user_config_file.read()
-        }
-    
-    with open(dest_path, "w", encoding='utf-8') as stream:
+    result_sema4ai_config_contents = subprocess.run(
+        [
+            "gh",
+            "api",
+            "-H",
+            "Accept: application/vnd.github.raw",
+            f"{base_api_url}/{sema4ai_config_file_name}",
+        ],
+        stdout=subprocess.PIPE,
+    ).stdout.decode("utf-8")
+
+    default_user_config_contents = subprocess.run(
+        [
+            "gh",
+            "api",
+            "-H",
+            "Accept: application/vnd.github.raw",
+            f"{base_api_url}/{default_user_config_file_name}",
+        ],
+        stdout=subprocess.PIPE,
+    ).stdout.decode("utf-8")
+
+    file_contents = {
+        "sema4ai_config": result_sema4ai_config_contents,
+        "default_user_config": default_user_config_contents,
+    }
+
+    with open(dest_path, "w", encoding="utf-8") as stream:
         print(f"Writing OAuth2 configs to: {dest_path}")
         stream.write(
             f"""# coding: utf-8
@@ -168,7 +170,7 @@ def build_oauth2_config(ctx: Context):
 FILE_CONTENTS = {repr(file_contents)}
 """
         )
-    
+
 
 @task
 def build_binary(ctx: Context) -> None:
