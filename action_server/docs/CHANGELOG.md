@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.23.1 - 2024-09-08
+
 - Fixed issue on auto-shutdown when specified `--parent-pid` dies (did not work if `robocorp.log` was not in the environment and it was not release dependency).
 
 ## 0.23.0 - 2024-09-06
