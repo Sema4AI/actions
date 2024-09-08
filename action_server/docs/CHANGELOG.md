@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.23.2 - 2024-09-08
+
 - Fixed issue where OAuth2 token was being renewed when no `refresh_token` was available.
 
 ## 0.23.1 - 2024-09-08
