@@ -147,8 +147,6 @@ def _os_exit(retcode: int):
     """
     Kills subprocesses and exits with the given returncode.
     """
-    from robocorp import log
-
     try:
         import psutil
 

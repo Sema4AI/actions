@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Fixed issue on auto-shutdown when specified `--parent-pid` dies (did not work if `robocorp.log` was not in the environment and it was not release dependency).
+
 ## 0.23.0 - 2024-09-06
 
 - Add support for authenticating OAuth2 flow with pkce (without clientSecret).
