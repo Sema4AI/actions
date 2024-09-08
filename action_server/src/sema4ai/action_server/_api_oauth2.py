@@ -292,7 +292,7 @@ async def oauth2_status(
         must_renew: list[OAuth2UserData] = []
         if refresh_tokens:
             if force_refresh:
-                must_renew = current_oauth2_user_data
+                must_renew = [x for x in current_oauth2_user_data if _can_renew(x)]
             else:
                 must_renew = [x for x in current_oauth2_user_data if _should_renew(x)]
 
@@ -414,6 +414,32 @@ def _refresh_token(use_id: str, oauth2_user_data: "OAuth2UserData") -> "OAuth2Us
     )
 
 
+def _can_renew(oauth2_user_data: "OAuth2UserData") -> bool:
+    """
+    Args:
+        oauth2_user_data: The data to be checked
+
+    Returns:
+        True if the oauth2 access_token should be renewed and False otherwise.
+    """
+    from sema4ai.action_server._encryption import decrypt_simple
+
+    if not oauth2_user_data.refresh_token:
+        # Unable to renew in this case as there's no refresh_token to renew.
+        return False
+
+    try:
+        if not decrypt_simple(oauth2_user_data.refresh_token):
+            return False
+    except Exception:
+        log.critical(
+            f"It was not possible to decrypt the refresh_token from {oauth2_user_data.provider} "
+            "(the storage key has probably changed, so, a new login will be needed)."
+        )
+        return False
+    return True
+
+
 def _should_renew(oauth2_user_data: "OAuth2UserData") -> bool:
     """
     Args:
@@ -424,8 +450,7 @@ def _should_renew(oauth2_user_data: "OAuth2UserData") -> bool:
     """
     from sema4ai.action_server._user_session import iso_to_datetime
 
-    if not oauth2_user_data.refresh_token:
-        # Unable to renew in this case as there's no refresh_token to renew.
+    if not _can_renew(oauth2_user_data):
         return False
 
     if not oauth2_user_data.expires_at:

@@ -10,4 +10,6 @@ if __name__ == "__main__":
     # os.chdir(r"d:\x\temp\check-action-server\oauth-google")
     # args = ["start", "--expose"]
 
+    # args = "start --port 61080 --actions-sync=false --datadir=/Users/fabioz/.sema4ai/.sema4ai_code/oauth2/datadir".split()
+
     main(args)
