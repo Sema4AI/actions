@@ -1,0 +1,11 @@
+[project]
+name = "sema4ai-http-helper"
+version = "1.0.0"
+description = "Simple HTTP library"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "truststore>=0.9.2",
+    "urllib3>=2.2.2",
+]
+
