@@ -40,5 +40,5 @@ jobs:
 
     - name: Upload to PyPI
       run: |
-        poetry config pypi-token.pypi  ${{ secrets.PYPI_TOKEN_SEMA4AI_ACTIONS }}
+        poetry config pypi-token.pypi  ${{ secrets.PYPI_TOKEN_SEMA4AI_HTTP_HELPER }}
         poetry publish
