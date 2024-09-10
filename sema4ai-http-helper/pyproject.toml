@@ -1,9 +1,17 @@
 [project]
 name = "sema4ai-http-helper"
 version = "1.0.0"
-description = "Simple HTTP library"
+description = "HTTP library that enables the use of OS certificate stores when working behind MITM firewalls"
 readme = "README.md"
+repository = "https://github.com/sema4ai/actions/"
+license = "Apache-2.0"
+
+#authors = [
+#	"Vlad D. <vlad@sema4.ai>",
+#]
+
 requires-python = ">=3.10"
+
 dependencies = [
     "truststore>=0.9.2",
     "urllib3>=2.2.2",
