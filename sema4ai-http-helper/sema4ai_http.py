@@ -273,7 +273,7 @@ def download_with_resume(
     timeout: int = 5,
     wait_interval: float | int = 1,
     overwrite_existing: bool = False,
-    resume_existing: bool = True,
+    resume_from_existing_part_file: bool = True,
 ) -> DownloadResult:
     """
     Downloads a file from a URL to a target path with resume support.
@@ -291,7 +291,7 @@ def download_with_resume(
         timeout (int): Timeout in seconds. Default to 5 seconds
         wait_interval (float | int): Time in seconds to wait between retries. Defaults to 1 second.
         overwrite_existing (bool): Whether to overwrite existing files. Defaults to False.
-        resume_existing (bool): Whether to resume if an existing .part file exists. Defaults to True.
+        resume_from_existing_part_file (bool): Whether to resume the download from an existing partial file. Defaults to True.
 
     Returns:
         Path: Path to the downloaded file.
@@ -318,7 +318,7 @@ def download_with_resume(
         target=target,
         logger=logger,
         overwrite_existing=overwrite_existing,
-        resume_existing=resume_existing,
+        resume_existing=resume_from_existing_part_file,
         max_retries=max_retries,
     ) as downloader:
         for status in downloader:
