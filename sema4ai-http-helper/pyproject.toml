@@ -16,7 +16,7 @@ truststore = "0.9.2"
 urllib3 = ">=2.2.2"
 
 [tool.poetry.group.dev.dependencies]
-
+invoke = "^2.2.0"
 
 [build-system]
 requires = ["poetry-core"]

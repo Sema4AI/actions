@@ -1,15 +1,22 @@
-import sys
-from pathlib import Path
+from invoke import Context, task
 
-ROOT = Path(__file__).absolute().parent
+TAG = "sema4ai-http-helper-{tag}"
 
-try:
-    import devutils
-except ImportError:
-    devutils_src = ROOT.parent / "devutils" / "src"
-    assert devutils_src.exists(), f"{devutils_src} does not exist!"
-    sys.path.append(str(devutils_src))
 
-from devutils.invoke_utils import build_common_tasks
+@task
+# @task(name="check-tag-version")
+def check_tag_version(ctx: Context):
+    current_version = str(ctx.run("poetry version -s", hide=True).stdout.strip())
+    # will error our it git describes errors out
+    ctx.run(
+        f"git describe --exact-match --tags {TAG.format(tag=current_version)}",
+        echo=False,
+    )
 
-globals().update(build_common_tasks(ROOT, "sema4ai.actions"))
+
+@task
+def create_tag(ctx: Context):
+    current_version = str(ctx.run("poetry version -s", hide=True).stdout.strip())
+    tag = TAG.format(tag=current_version)
+    ctx.run(f"git tag {tag}")
+    ctx.run(f"git push origin {tag}")
