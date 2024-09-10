@@ -88,7 +88,7 @@ Downloads a file from a URL with support for resuming interrupted downloads. Thi
 - `timeout`: Timeout for the request.
 - `wait_interval`: Time to wait between retries.
 - `overwrite_existing`: Whether to overwrite an existing file.
-- `resume_existing`: Whether to resume downloading if a partial file exists.
+- `resume_from_existing_part_file`: Whether to resume the download from an existing partial file. Defaults to True.
 
 **Returns:** A `DownloadResult` object containing the download status and file path.
 
