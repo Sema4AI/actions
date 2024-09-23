@@ -1,24 +1,23 @@
 import logging
-import ssl
-import stat
 import sys
-import time
-from copy import copy
+import typing
 from dataclasses import dataclass
 from enum import Enum, auto
+from functools import lru_cache
 from pathlib import Path
 from typing import NamedTuple
 
-import truststore
 import urllib3
 
 _DEFAULT_LOGGER = logging.getLogger(__name__)
 
+if typing.TYPE_CHECKING:
+    import ssl
 
-if sys.version_info < (3, 12):
-    _SSL_LEGACY_SERVER_CONNECT = 0x4
-else:
-    _SSL_LEGACY_SERVER_CONNECT = ssl.OP_LEGACY_SERVER_CONNECT
+
+_TYPE_BODY = typing.Union[bytes, typing.IO[typing.Any], typing.Iterable[bytes], str]
+
+__version__ = "1.0.1"
 
 
 class DownloadStatus(Enum):
@@ -31,38 +30,118 @@ class DownloadStatus(Enum):
 
 
 def build_ssl_context(
-    protocol: int = None, *, enable_legacy_server_connect: bool = False
-) -> ssl.SSLContext:
+    protocol: int | None = None, *, enable_legacy_server_connect: bool | None = None
+) -> "ssl.SSLContext":
     """Returns a Truststore SSL context with OP_LEGACY_SERVER_CONNECT flag enabled"""
-    ctx = truststore.SSLContext(protocol)
+    import os
+    import ssl
+
+    import truststore
+
+    # Ignoring typing because trustore has bad typing, it should be int|None, although it says only int.
+    ctx = truststore.SSLContext(protocol)  # type: ignore
+    if enable_legacy_server_connect is None:
+        # i.e.: False if RC_TLS_LEGACY_RENEGOTIATION_ALLOWED is not set
+        env_value = os.getenv("SEMA4AI_TLS_LEGACY_RENEGOTIATION_ALLOWED", "").lower()
+        if not env_value:
+            # Backward compatibility with Robocorp TLS env var
+            env_value = os.getenv("RC_TLS_LEGACY_RENEGOTIATION_ALLOWED", "").lower()
+
+        enable_legacy_server_connect = env_value in ("1", "true")
+
     if enable_legacy_server_connect:
+        if sys.version_info < (3, 12):
+            _SSL_LEGACY_SERVER_CONNECT = 0x4
+        else:
+            _SSL_LEGACY_SERVER_CONNECT = ssl.OP_LEGACY_SERVER_CONNECT
         ctx.options |= _SSL_LEGACY_SERVER_CONNECT
     return ctx
 
 
-_DEFAULT_POOL = urllib3.PoolManager(
-    ssl_context=build_ssl_context(ssl.PROTOCOL_TLS_CLIENT), cert_reqs="CERT_REQUIRED"
-)
+@lru_cache
+def _get_default_pool():
+    import ssl
+
+    return urllib3.PoolManager(
+        ssl_context=build_ssl_context(ssl.PROTOCOL_TLS_CLIENT),
+        cert_reqs="CERT_REQUIRED",
+    )
 
 
-def get(url, /, **kwargs) -> urllib3.BaseHTTPResponse:
-    return _DEFAULT_POOL.request("get", url, **kwargs)
+def get(
+    url,
+    /,
+    body: _TYPE_BODY | None = None,
+    fields: typing.Any | None = None,
+    headers: typing.Mapping[str, str] | None = None,
+    json: typing.Any | None = None,
+    **urlopen_kw: typing.Any,
+) -> urllib3.BaseHTTPResponse:
+    return _get_default_pool().request(
+        "get", url, body=body, fields=fields, headers=headers, json=json, **urlopen_kw
+    )
 
 
-def post(url, /, **kwargs) -> urllib3.BaseHTTPResponse:
-    return _DEFAULT_POOL.request("post", url, **kwargs)
+def post(
+    url,
+    /,
+    body: _TYPE_BODY | None = None,
+    fields: typing.Any | None = None,
+    headers: typing.Mapping[str, str] | None = None,
+    json: typing.Any | None = None,
+    **urlopen_kw: typing.Any,
+) -> urllib3.BaseHTTPResponse:
+    return _get_default_pool().request(
+        "post", url, body=body, fields=fields, headers=headers, json=json, **urlopen_kw
+    )
 
 
-def put(url, /, **kwargs) -> urllib3.BaseHTTPResponse:
-    return _DEFAULT_POOL.request("put", url, **kwargs)
+def put(
+    url,
+    /,
+    body: _TYPE_BODY | None = None,
+    fields: typing.Any | None = None,
+    headers: typing.Mapping[str, str] | None = None,
+    json: typing.Any | None = None,
+    **urlopen_kw: typing.Any,
+) -> urllib3.BaseHTTPResponse:
+    return _get_default_pool().request(
+        "put", url, body=body, fields=fields, headers=headers, json=json, **urlopen_kw
+    )
 
 
-def patch(url, /, **kwargs) -> urllib3.BaseHTTPResponse:
-    return _DEFAULT_POOL.request("patch", url, **kwargs)
+def patch(
+    url,
+    /,
+    body: _TYPE_BODY | None = None,
+    fields: typing.Any | None = None,
+    headers: typing.Mapping[str, str] | None = None,
+    json: typing.Any | None = None,
+    **urlopen_kw: typing.Any,
+) -> urllib3.BaseHTTPResponse:
+    return _get_default_pool().request(
+        "patch", url, body=body, fields=fields, headers=headers, json=json, **urlopen_kw
+    )
 
 
-def delete(url, /, **kwargs) -> urllib3.BaseHTTPResponse:
-    return _DEFAULT_POOL.request("delete", url, **kwargs)
+def delete(
+    url,
+    /,
+    body: _TYPE_BODY | None = None,
+    fields: typing.Any | None = None,
+    headers: typing.Mapping[str, str] | None = None,
+    json: typing.Any | None = None,
+    **urlopen_kw: typing.Any,
+) -> urllib3.BaseHTTPResponse:
+    return _get_default_pool().request(
+        "delete",
+        url,
+        body=body,
+        fields=fields,
+        headers=headers,
+        json=json,
+        **urlopen_kw,
+    )
 
 
 @dataclass(slots=True)
@@ -70,20 +149,19 @@ class _RequestInfo:
     url: str
     headers: dict[str, str] | None
     chunk_size: int
-    poll_manager: urllib3.PoolManager
+    pool_manager: urllib3.PoolManager
     timeout: int
 
-    def set_range_header(self, value) -> "_RequestInfo":
-        clone = copy(self)
-        if not clone.headers:
-            clone.headers = {}
+    def set_range_header(self, value) -> None:
+        if not self.headers:
+            self.headers = {}
+        else:
+            self.headers = self.headers.copy()
 
-        clone.headers["Range"] = f"bytes={value}-"
-
-        return clone
+        self.headers["Range"] = f"bytes={value}-"
 
     def make_request(self) -> urllib3.BaseHTTPResponse:
-        return self.poll_manager.request(
+        return self.pool_manager.request(
             "get",
             self.url,
             headers=self.headers,
@@ -93,6 +171,9 @@ class _RequestInfo:
 
 
 class _PartialDownloader:
+    _status: DownloadStatus | None
+    _http_error: urllib3.exceptions.HTTPError | None
+
     def __init__(
         self,
         *,
@@ -124,8 +205,9 @@ class _PartialDownloader:
         self._http_error = None
 
     @staticmethod
-    def get_partial_target(target: Path) -> Path:
-        target_dir, target_filename = target.parent, target.name
+    def get_partial_target(target: str | Path) -> Path:
+        as_path = Path(target)
+        target_dir, target_filename = as_path.parent, as_path.name
         return target_dir / f"{target_filename}.part"
 
     @property
@@ -175,12 +257,10 @@ class _PartialDownloader:
             current_size = 0
 
         if current_size != 0:
-            request_info = self._request_info.set_range_header(current_size)
-        else:
-            request_info = self._request_info
+            self._request_info.set_range_header(current_size)
 
         try:
-            response = request_info.make_request()
+            response = self._request_info.make_request()
         except Exception as err:
             return self._handle_request_error(err)
 
@@ -209,7 +289,7 @@ class _PartialDownloader:
             if current_size >= expected_content_length:
                 raise ValueError("Current file size exceeds expected download size")
 
-            self._logger.info(f"Resuming download for {request_info.url}")
+            self._logger.info(f"Resuming download for {self._request_info.url}")
 
         else:
             expected_content_length = content_length
@@ -221,7 +301,7 @@ class _PartialDownloader:
             # even before finishing (so, we resume it afterward if
             # that was the case).
             try:
-                while chunk := response.read(request_info.chunk_size):
+                while chunk := response.read(self._request_info.chunk_size):
                     stream.write(chunk)
             except Exception as err:
                 self._handle_request_error(err)
@@ -247,7 +327,7 @@ class _PartialDownloader:
             return
 
         if self._status == DownloadStatus.HTTP_ERROR and self._http_error:
-            raise self._http_error from self._http_error
+            raise self._http_error
 
 
 class DownloadResult(NamedTuple):
@@ -268,7 +348,7 @@ def download_with_resume(
     make_executable: bool = False,
     logger: logging.Logger = _DEFAULT_LOGGER,
     chunk_size: int = 1024 * 5,
-    poll_manager: urllib3.PoolManager = _DEFAULT_POOL,
+    pool_manager: urllib3.PoolManager | None = None,
     max_retries: int = 10,
     timeout: int = 5,
     wait_interval: float | int = 1,
@@ -286,7 +366,7 @@ def download_with_resume(
         make_executable (bool): Whether to make the file executable. Defaults to False.
         logger (logging.Logger): Optional logger to use.
         chunk_size (int): Size of download chunks. Defaults to 5120 bytes.
-        poll_manager (urllib3.PoolManager): Optional urllib3.PoolManager to use.
+        pool_manager (urllib3.PoolManager): Optional urllib3.PoolManager to use.
         max_retries (int): Maximum number of retries. Defaults to 10 retries.
         timeout (int): Timeout in seconds. Default to 5 seconds
         wait_interval (float | int): Time in seconds to wait between retries. Defaults to 1 second.
@@ -297,25 +377,30 @@ def download_with_resume(
         Path: Path to the downloaded file.
 
     """
-    target: Path = Path(target)
-    if target.is_dir() and url:
+    import time
+
+    target_path: Path = Path(target)
+    if target_path.is_dir() and url:
         filename = url.split("/")[-1]
-        target = target / filename
+        target_path = target_path / filename
+
+    if pool_manager is None:
+        pool_manager = _get_default_pool()
 
     request_info = _RequestInfo(
         url=url,
         headers=headers,
         chunk_size=chunk_size,
-        poll_manager=poll_manager,
+        pool_manager=pool_manager,
         timeout=timeout,
     )
 
-    logger.info(f"Downloading '{url}' to '{target.absolute()}'")
-    target.parent.mkdir(parents=True, exist_ok=True)
+    logger.info(f"Downloading '{url}' to '{target_path.absolute()}'")
+    target_path.parent.mkdir(parents=True, exist_ok=True)
 
     with _PartialDownloader(
         request_info=request_info,
-        target=target,
+        target=target_path,
         logger=logger,
         overwrite_existing=overwrite_existing,
         resume_existing=resume_from_existing_part_file,
@@ -337,7 +422,9 @@ def download_with_resume(
                 case _:
                     raise RuntimeError(f"Unknown download status: {status}")
 
-        if make_executable:
-            target.chmod(target.stat().st_mode | stat.S_IEXEC)
+    if make_executable:
+        import stat
 
-    return DownloadResult(downloader.status, target)
+        target_path.chmod(target_path.stat().st_mode | stat.S_IEXEC)
+
+    return DownloadResult(downloader.status, target_path)

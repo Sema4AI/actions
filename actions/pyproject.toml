@@ -23,8 +23,6 @@ pydantic = "^2.0" # Required for the `Response[T]`
 sema4ai-devutils = { path = "../devutils/", develop = true }
 types-psutil = "^5.9"
 
-
-
 [tool.mypy]
 mypy_path = "src:tests"
 

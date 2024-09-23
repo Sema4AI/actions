@@ -301,9 +301,16 @@ class ActionsTests(BaseTests):
     require_node = True
 
 
+class HttpHelperTests(BaseTests):
+    name = "HTTP Helper Tests"
+    target = "http_helper_tests.yml"
+    project_name = "sema4ai-http-helper"
+
+
 TEST_TARGETS = [
     ActionServerTests(),
     ActionsTests(),
+    HttpHelperTests(),
 ]
 
 
