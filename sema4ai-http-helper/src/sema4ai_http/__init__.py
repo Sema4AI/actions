@@ -17,7 +17,7 @@ if typing.TYPE_CHECKING:
 
 _TYPE_BODY = typing.Union[bytes, typing.IO[typing.Any], typing.Iterable[bytes], str]
 
-__version__ = "1.0.1"
+__version__ = "1.0.2"
 
 
 class DownloadStatus(Enum):
