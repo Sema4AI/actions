@@ -16,7 +16,17 @@ truststore = "0.9.2"
 urllib3 = ">=2.2.2"
 
 [tool.poetry.group.dev.dependencies]
-invoke = "^2.2.0"
+sema4ai-devutils = { path = "../devutils/", develop = true }
+
+[tool.mypy]
+mypy_path = "src:tests"
+
+[tool.black]
+skip-string-normalization = false
+skip-magic-trailing-comma = false
+
+[tool.isort]
+profile = "black"
 
 [build-system]
 requires = ["poetry-core"]

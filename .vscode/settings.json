@@ -4,7 +4,9 @@
     "actions/tests",
     "action_server/src",
     "action_server/tests",
-    "devutils/src"
+    "devutils/src",
+    "sema4ai-http-helper/src",
+    "sema4ai-http-helper/tests"
   ],
   "python.pydev.preferredImportLocation": "topOfMethod",
 
