@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+## 1.0.0 - 2024-09-25
+
+The command specified in `SEMA4AI_ACTION_SERVER_POST_RUN_CMD` can now use the following variables:
+
+- `$action_name`
+- `$workroom_base_url` (optional)
+- `$agent_id` (optional)
+- `$invoked_on_behalf_of_user_id` (optional)
+- `$thread_id` (optional)
+- `$tenant_id` (optional)
+
+- Marking as `1.0.0` as the `Action Server` is now considered stable and ready for production use.
+
 ## 0.23.2 - 2024-09-08
 
 - Fixed issue where OAuth2 token was being renewed when no `refresh_token` was available.
