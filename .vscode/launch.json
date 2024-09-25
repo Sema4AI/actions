@@ -14,7 +14,8 @@
         "0",
         "--assert=plain",
         "--force-regen",
-        "--capture=no"
+        "--capture=no",
+        "--tb=short"
       ]
       // "env": {
       //   "PYDEVD_DEBUG": "1",

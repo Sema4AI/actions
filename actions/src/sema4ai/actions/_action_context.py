@@ -80,7 +80,14 @@ class ActionContext:
                 i.e.: if the payload has:
 
                 {
-                  'secrets': {'secret_name': 'secret_value'}
+                  'secrets': {'secret_name': 'secret_value'},
+                  'invocation_context': {
+                    'workroom_base_url': str | None,
+                    'agent_id': str | None,
+                    'invoked_on_behalf_of_user_id': str | None,
+                    'thread_id': str | None,
+                    'tenant_id': str,
+                  },
                 }
 
                 The path to access the secret_name would be:
@@ -88,6 +95,7 @@ class ActionContext:
 
         """
         self._env = env
+        self._initial_data = data
         loaded_data = json.loads(base64.b64decode(data.encode("ascii")).decode("utf-8"))
         if not isinstance(loaded_data, dict):
             raise RuntimeError(
@@ -108,6 +116,13 @@ class ActionContext:
             self._encrypted = False
             self._raw_data: Dict[str, JSONValue] = loaded_data
             self._hide_secrets()
+
+    @property
+    def initial_data(self) -> str:
+        """
+        The initial data received from the request (x-action-context header).
+        """
+        return self._initial_data
 
     @property
     def value(self) -> JSONValue:

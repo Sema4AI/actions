@@ -11,6 +11,9 @@ from sema4ai.actions._constants import SUPPORTED_TYPES_IN_SCHEMA
 from sema4ai.actions._customization._plugin_manager import PluginManager
 from sema4ai.actions._protocols import IAction, IContext, Status
 
+if typing.TYPE_CHECKING:
+    from sema4ai.actions._action_context import ActionContext
+
 _map_python_type_to_user_type = {
     str: "string",
     int: "integer",
@@ -318,6 +321,7 @@ class Action:
 
 class _ActionContext:
     _current_action: Optional[IAction] = None
+    _current_action_context: Optional["ActionContext"] = None
 
 
 def set_current_action(action: Optional[IAction]):
@@ -326,6 +330,14 @@ def set_current_action(action: Optional[IAction]):
 
 def get_current_action() -> Optional[IAction]:
     return _ActionContext._current_action
+
+
+def set_current_action_context(action_context: Optional["ActionContext"]):
+    _ActionContext._current_action_context = action_context
+
+
+def get_current_action_context() -> Optional["ActionContext"]:
+    return _ActionContext._current_action_context
 
 
 class Context:

@@ -16,6 +16,7 @@
   "python.pydev.lint.mypy.use": true,
   "python.pydev.lint.mypy.showOutput": true,
   "python.pydev.lint.mypy.args": "--follow-imports=silent --show-column-numbers --namespace-packages --explicit-package-bases",
+  "python.pydev.docstring.style": "google",
   "editor.formatOnType": true,
   "editor.formatOnSave": true,
   "python.pydev.sortImportsOnFormat": "isort",

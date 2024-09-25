@@ -8,7 +8,7 @@ import threading
 from collections import namedtuple
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional, Set
+from typing import Dict, Iterator, List, Optional, Set
 
 from sema4ai.actions._action_context import ActionContext
 from starlette.requests import Request
@@ -301,6 +301,14 @@ class ProcessHandle:
 
         headers = IN_MEMORY_SECRETS.update_headers(action_package, action, headers)
 
+        x_action_context_key = "x-action-context"
+        x_action_context = headers.get(x_action_context_key)
+
+        initial_action_context_value: Optional[JSONValue] = None
+        if x_action_context:
+            action_context = ActionContext(x_action_context)
+            initial_action_context_value = action_context.value
+
         session_id = request.cookies.get(COOKIE_SESSION_ID)
         if session_id:
             db = get_db()
@@ -341,19 +349,12 @@ class ProcessHandle:
                             (d.provider, d) for d in new_oauth2_data
                         )
 
-                        base: Optional[Any] = None
-
-                        x_action_context_key = "x-action-context"
-                        x_action_context = headers.get(x_action_context_key)
-
-                        if x_action_context:
-                            action_context = ActionContext(x_action_context)
-                            base = action_context.value
-
                         data = {}
 
-                        if base:
-                            data.update(base)
+                        if initial_action_context_value and isinstance(
+                            initial_action_context_value, dict
+                        ):
+                            data.update(initial_action_context_value)
 
                         for param_name, provider in param_name_to_provider.items():
                             access_data = provider_to_access_data.get(provider)
@@ -376,6 +377,13 @@ class ProcessHandle:
                                         # Always pass the server if it's available.
                                         metadata["server"] = settings.server
                                     ctx = data.setdefault("secrets", {})
+
+                                    if not isinstance(ctx, dict):
+                                        log.critical(
+                                            "The value for 'secrets' is not a dictionary, overwriting!"
+                                        )
+                                        ctx = data["secrets"] = {}
+
                                     ctx[param_name] = {
                                         "provider": provider,
                                         "access_token": access_token,
@@ -415,12 +423,20 @@ class ProcessHandle:
         result_msg = queue.get(block=True)
 
         try:
-            self._call_post_run_scripts(msg, result_msg, run)
+            self._call_post_run_scripts(
+                initial_action_context_value, msg, result_msg, run
+            )
         except Exception:
             log.exception("Error runnnig post run command.")
         return result_msg["returncode"]
 
-    def _call_post_run_scripts(self, msg: dict, result_msg: dict, run: Run) -> None:
+    def _call_post_run_scripts(
+        self,
+        initial_action_context_value: Optional[JSONValue],
+        msg: dict,
+        result_msg: dict,
+        run: Run,
+    ) -> None:
         import os
 
         from sema4ai.action_server._robo_utils.process import (
@@ -443,7 +459,22 @@ class ProcessHandle:
             "base_artifacts_dir": settings.artifacts_dir,
             "run_id": run.id,
             "run_artifacts_dir": msg["robot_artifacts"],
+            "action_name": msg["action_name"],
         }
+        if isinstance(initial_action_context_value, dict):
+            invocation_context = initial_action_context_value.get("invocation_context")
+            if isinstance(invocation_context, dict):
+                for key in [
+                    "workroom_base_url",
+                    "agent_id",
+                    "invoked_on_behalf_of_user_id",
+                    "thread_id",
+                    "tenant_id",
+                ]:
+                    invocation_context_value = invocation_context.get(key)
+                    if isinstance(invocation_context_value, str):
+                        mapping[key] = invocation_context_value
+
         args = shlex.split(post_run_cmd)
         use_args = []
         for arg in args:
@@ -457,7 +488,11 @@ class ProcessHandle:
         # Run but don't wait for it!
         try:
             cwd = None
-            env = env = build_python_launch_env({})
+            mapping_as_env_vars = {
+                f"SEMA4AI_ACTION_SERVER_POST_RUN_{k.upper()}": f"{v}"
+                for k, v in mapping.items()
+            }
+            env = build_python_launch_env(mapping_as_env_vars)
             new_kwargs = build_subprocess_kwargs(cwd, env=env)
 
             log.debug("Running: %s", shlex.join(use_args))

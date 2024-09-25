@@ -18,6 +18,9 @@ from sema4ai.actions._customization._extension_points import EPManagedParameters
 from sema4ai.actions._customization._plugin_manager import PluginManager
 from sema4ai.actions._protocols import IAction
 
+if typing.TYPE_CHECKING:
+    from sema4ai.actions._action_context import ActionContext
+
 
 def list_actions(
     *,
@@ -246,6 +249,7 @@ def run(
         0 if everything went well.
         1 if there was some error running the action.
     """
+    from sema4ai.actions._action import set_current_action_context
     from sema4ai.actions._collect_actions import update_pythonpath
     from sema4ai.actions._response import ActionError, Response
 
@@ -488,6 +492,19 @@ def run(
                         set_current_action(action)
                         before_action_run(action)
                         try:
+                            if json_loaded_arguments is not None:
+                                kwargs = copy.deepcopy(json_loaded_arguments)
+                                kwargs, action_context = _validate_and_convert_kwargs(
+                                    pm, action, kwargs
+                                )
+
+                            else:
+                                kwargs, action_context = _normalize_arguments(
+                                    pm, action, additional_arguments or []
+                                )
+
+                            set_current_action_context(action_context)
+
                             if print_input and json_loaded_arguments is not None:
                                 input_as_json_str = json.dumps(
                                     json_loaded_arguments, indent=4
@@ -498,16 +515,6 @@ def run(
                                 context.show(
                                     input_as_json_str,
                                     flush=True,
-                                )
-                            if json_loaded_arguments is not None:
-                                kwargs = copy.deepcopy(json_loaded_arguments)
-                                kwargs = _validate_and_convert_kwargs(
-                                    pm, action, kwargs
-                                )
-
-                            else:
-                                kwargs = _normalize_arguments(
-                                    pm, action, additional_arguments or []
                                 )
 
                             result = action.run(**kwargs)
@@ -663,7 +670,7 @@ def check_boolean(value):
 
 def _validate_and_convert_kwargs(
     pm: PluginManager, action: IAction, kwargs: Dict[str, Any]
-) -> Dict[str, Any]:
+) -> tuple[Dict[str, Any], Optional["ActionContext"]]:
     from typing import get_type_hints
 
     from sema4ai.actions._exceptions import InvalidArgumentsError
@@ -730,7 +737,12 @@ def _validate_and_convert_kwargs(
 
                 new_kwargs[param_name] = passed_value
 
-    new_kwargs = _inject_managed_params(pm, sig, new_kwargs, kwargs)
+    action_context = None
+    if pm.has_instance(EPManagedParameters):
+        ep_managed_parameters = pm.get_instance(EPManagedParameters)
+        action_context = ep_managed_parameters.get_action_context(new_kwargs, kwargs)
+
+    new_kwargs = _inject_managed_params(pm, sig, action_context, new_kwargs, kwargs)
     error_message = ""
     try:
         sig.bind(**new_kwargs)
@@ -739,19 +751,20 @@ def _validate_and_convert_kwargs(
     if error_message:
         raise InvalidArgumentsError(error_message)
 
-    return new_kwargs
+    return new_kwargs, action_context
 
 
 def _inject_managed_params(
     pm: PluginManager,
     sig: inspect.Signature,
+    action_context: Optional["ActionContext"],
     new_kwargs: Dict[str, Any],
     original_kwargs: Dict[str, Any],
 ) -> Dict[str, Any]:
     if pm.has_instance(EPManagedParameters):
         ep_managed_parameters = pm.get_instance(EPManagedParameters)
         return ep_managed_parameters.inject_managed_params(
-            sig, new_kwargs, original_kwargs
+            sig, action_context, new_kwargs, original_kwargs
         )
     return new_kwargs
 
@@ -863,7 +876,7 @@ def _get_managed_param_type(
 
 def _normalize_arguments(
     pm: PluginManager, action: IAction, args: list[str]
-) -> Dict[str, Any]:
+) -> tuple[Dict[str, Any], Optional["ActionContext"]]:
     from typing import get_type_hints
 
     from sema4ai.actions._exceptions import InvalidArgumentsError
@@ -942,8 +955,8 @@ def _normalize_arguments(
 
         kwargs[param_name] = param_value
 
-    kwargs = _validate_and_convert_kwargs(pm, action, kwargs)
-    return kwargs
+    kwargs, action_context = _validate_and_convert_kwargs(pm, action, kwargs)
+    return kwargs, action_context
 
 
 def _get_usage(parser) -> str:

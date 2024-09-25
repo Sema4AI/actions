@@ -1,8 +1,12 @@
 import inspect
+import typing
 from ast import FunctionDef
 from typing import Any, Dict, Optional, overload
 
 from sema4ai.actions._customization._extension_points import EPManagedParameters
+
+if typing.TYPE_CHECKING:
+    from sema4ai.actions._action_context import ActionContext
 
 
 class ManagedParameters:
@@ -76,22 +80,16 @@ class ManagedParameters:
 
         return False
 
-    def inject_managed_params(
+    def get_action_context(
         self,
-        sig: inspect.Signature,
         new_kwargs: Dict[str, Any],
         original_kwargs: Dict[str, Any],
-    ) -> Dict[str, Any]:
+    ) -> Optional["ActionContext"]:
+        """
+        Returns the action context or None if the context wasn't really set.
+        """
         from sema4ai.actions._action_context import ActionContext
         from sema4ai.actions._request import Request
-        from sema4ai.actions._secret import (
-            OAuth2Secret,
-            Secret,
-            is_oauth2_secret_subclass,
-            is_secret_subclass,
-        )
-
-        use_kwargs = new_kwargs.copy()
 
         request = new_kwargs.get("request")
         if request is None:
@@ -101,7 +99,24 @@ class ManagedParameters:
         if request is None:
             request = self._param_name_to_instance.get("request")
 
-        x_action_context = ActionContext.from_request(request)
+        action_context = ActionContext.from_request(request)
+        return action_context
+
+    def inject_managed_params(
+        self,
+        sig: inspect.Signature,
+        action_context: Optional["ActionContext"],
+        new_kwargs: Dict[str, Any],
+        original_kwargs: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        from sema4ai.actions._secret import (
+            OAuth2Secret,
+            Secret,
+            is_oauth2_secret_subclass,
+            is_secret_subclass,
+        )
+
+        use_kwargs = new_kwargs.copy()
 
         for param in sig.parameters.values():
             if (
@@ -127,9 +142,9 @@ class ManagedParameters:
                         # as a value in the root.
                         use_kwargs[param.name] = use_class.model_validate(secret_value)
 
-                    elif x_action_context is not None:
+                    elif action_context is not None:
                         use_kwargs[param.name] = use_class.from_action_context(
-                            x_action_context, f"secrets/{param.name}"
+                            action_context, f"secrets/{param.name}"
                         )
 
         return use_kwargs
