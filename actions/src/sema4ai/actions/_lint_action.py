@@ -183,7 +183,12 @@ def _make_error(
             (node.lineno, node.col_offset + coldelta + len(node.name)),
             severity,
         )
-    else:
+    elif (
+        hasattr(node, "lineno")
+        and hasattr(node, "col_offset")
+        and hasattr(node, "end_lineno")
+        and hasattr(node, "end_col_offset")
+    ):
         return Error(
             msg,
             (node.lineno, node.col_offset + coldelta),
@@ -191,6 +196,13 @@ def _make_error(
                 node.end_lineno or node.lineno,
                 (node.end_col_offset or node.col_offset) + coldelta,
             ),
+            severity,
+        )
+    else:
+        return Error(
+            msg,
+            (1, 1),
+            (1, 1),
             severity,
         )
 

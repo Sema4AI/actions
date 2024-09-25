@@ -32,7 +32,7 @@ def test_secrets_encryption_raw() -> None:
     from sema4ai.actions._action_context import _decrypt
 
     # Example usage
-    key = AESGCM.generate_key(bit_length=256)
+    key = AESGCM.generate_key(256)
     plaintext = b"Your secret message"
 
     iv, ciphertext, tag = encrypt(key, plaintext)
@@ -68,7 +68,7 @@ def test_action_context() -> None:
 
     from sema4ai.actions._action_context import ActionContext, _decrypt
 
-    keys = [AESGCM.generate_key(bit_length=256), AESGCM.generate_key(bit_length=256)]
+    keys = [AESGCM.generate_key(256), AESGCM.generate_key(256)]
     if USE_STATIC_INFO:
         keys = [b"a" * len(keys[0]) for k in keys]
 

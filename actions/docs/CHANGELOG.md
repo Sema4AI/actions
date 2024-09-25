@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 1.0.0 - 2024-09-25
+
+- Updated required dependencies versions (in particular, cryptography is now "^43").
+- Marking as 1.0 to signal that the library is now stable and ready to be used in production.
+
 ## 0.10.0 - 2024-06-21
 
 - A model returned with a `pydantic` field with a `validation_alias` will no longer break.
