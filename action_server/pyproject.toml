@@ -24,25 +24,25 @@ action-server = "sema4ai.action_server.cli:main"
 # Important: when these versions change, pyoxidizer.bzl needs
 # to be updated too for the binary build.
 # Use 'inv update-pyoxidizer-versions'.
-aiohttp = "^3.9.3"
-fastapi-slim = "^0.111.0"
-jsonschema = "^4.22.0"
+aiohttp = "^3.10.6"
+fastapi-slim = "^0.115.0"
+jsonschema = "^4.23.0"
 # This one needs a `_fix_jsonschema_specifications` hack
 # See: https://github.com/python-jsonschema/jsonschema-specifications/issues/61
 jsonschema-specifications = "^2023.12.1"
 msgspec = "^0.18"
-psutil = "^5"
-pydantic = "^2.4.2"
+psutil = ">=5.0,<7.0"
+pydantic = "^2.9.2"
 pyyaml = "^6"
 python = "^3.10"
 requests = "^2"
-sema4ai-actions = "^0.8.0"
+sema4ai-actions = "^1.0.0"
 termcolor = "^2.4.0"
-uvicorn = "^0.23.2"
-websockets = "^12.0"
-cryptography = "^42.0.5"
+uvicorn = "^0.30.6"
+websockets = "^13.1"
+cryptography = "^43.0.1"
 requests_oauthlib = "^2.0"
-watchfiles = "^0.22.0"
+watchfiles = "^0.24.0"
 
 
 [tool.poetry.group.dev.dependencies]

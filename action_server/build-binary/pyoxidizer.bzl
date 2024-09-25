@@ -255,22 +255,22 @@ def make_exe():
     for resource in exe.pip_install(
         [
             ## START DEPS
-            "aiohttp~=3.9",
-            "cryptography~=42.0",
-            "fastapi-slim~=0.111",
+            "aiohttp~=3.10",
+            "cryptography~=43.0",
+            "fastapi-slim~=0.115",
             "jsonschema-specifications~=2023.12",
-            "jsonschema~=4.22",
+            "jsonschema~=4.23",
             "msgspec~=0.18",
-            "psutil>=5,<6",
-            "pydantic~=2.4",
+            "psutil>=5.0,<7",
+            "pydantic~=2.9",
             "pyyaml>=6,<7",
             "requests>=2,<3",
             "requests_oauthlib~=2.0",
-            "sema4ai-actions~=0.8",
+            "sema4ai-actions~=1.0",
             "termcolor~=2.4",
-            "uvicorn~=0.23",
-            "watchfiles~=0.22",
-            "websockets~=12.0",
+            "uvicorn~=0.30",
+            "watchfiles~=0.24",
+            "websockets~=13.1",
             ## END DEPS
         ]
     ):
