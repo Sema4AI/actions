@@ -2,7 +2,10 @@
 
 ## Unreleased
 
+## 1.0.1 - 2024-09-26
+
 - Add more debug logging related to post run commands.
+- Fixed issue where running an action would fail when passing an action context (just reproducible when using the binary build).
 
 ## 1.0.0 - 2024-09-25
 

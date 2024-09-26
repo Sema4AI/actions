@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sema4ai-action-server"
-version = "1.0.0"
+version = "1.0.1"
 description = """Sema4AI Action Server"""
 authors = [
 	"Fabio Z. <fabio@robocorp.com>",
@@ -36,7 +36,7 @@ pydantic = "^2.9.2"
 pyyaml = "^6"
 python = "^3.10"
 requests = "^2"
-sema4ai-actions = "^1.0.0"
+sema4ai-actions = "^1.0.1"
 termcolor = "^2.4.0"
 uvicorn = "^0.30.6"
 websockets = "^13.1"
