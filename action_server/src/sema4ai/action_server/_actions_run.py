@@ -274,6 +274,7 @@ def _run_action_in_thread(
                 raise RuntimeError(result_contents.get("message", "Internal error"))
 
             except BaseException as e:
+                log.exception("Internal error running action!")
                 _set_run_as_finished_failed(run, str(e), initial_time)
                 raise HTTPException(status_code=500, detail=str(e))
 

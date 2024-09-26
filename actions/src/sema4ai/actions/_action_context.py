@@ -1,10 +1,12 @@
 import base64
 import json
 import os
+import typing
 from typing import Dict, List, Optional
 
-from sema4ai.actions._protocols import JSONValue
-from sema4ai.actions._request import Request
+if typing.TYPE_CHECKING:
+    from sema4ai.actions._protocols import JSONValue
+    from sema4ai.actions._request import Request
 
 
 def _get_str_list_from_env(env_name: str, env) -> List[str]:
@@ -45,6 +47,19 @@ def _decrypt(key: bytes, iv: bytes, ciphertext: bytes, tag: bytes) -> bytes:
     ).decryptor()
 
     return decryptor.update(ciphertext) + decryptor.finalize()
+
+
+def _is_robocorp_log_available():
+    # When frozen it can't really be used.
+    import sys
+
+    if getattr(sys, "frozen", False):
+        return False
+
+    if not hasattr(os, "__file__"):
+        return False
+
+    return True
 
 
 class ActionContext:
@@ -111,10 +126,10 @@ class ActionContext:
             and "iv" in loaded_data
         ):
             self._encrypted = True
-            self._encrypted_data: Dict[str, JSONValue] = loaded_data
+            self._encrypted_data: Dict[str, "JSONValue"] = loaded_data
         else:
             self._encrypted = False
-            self._raw_data: Dict[str, JSONValue] = loaded_data
+            self._raw_data: Dict[str, "JSONValue"] = loaded_data
             self._hide_secrets()
 
     @property
@@ -125,7 +140,9 @@ class ActionContext:
         return self._initial_data
 
     @property
-    def value(self) -> JSONValue:
+    def value(self) -> "JSONValue":
+        from typing import Any
+
         # Data already decrypted
         try:
             return self._raw_data
@@ -135,9 +152,17 @@ class ActionContext:
         if not self._encrypted:
             raise RuntimeError("Expected data to be encrypted if it reached here!")
 
-        from robocorp import log
+        ctx: Any
+        if _is_robocorp_log_available():
+            from robocorp import log
 
-        with log.suppress():
+            ctx = log.suppress()
+        else:
+            from contextlib import nullcontext
+
+            ctx = nullcontext()
+
+        with ctx:
             keys = _get_str_list_from_env(
                 "ACTION_SERVER_DECRYPT_KEYS", env=self._env or os.environ
             )
@@ -221,15 +246,16 @@ class ActionContext:
     def _hide_secrets(self):
         secrets = self._raw_data.get("secrets")
         if secrets and isinstance(secrets, dict):
-            from robocorp import log
+            if _is_robocorp_log_available():
+                from robocorp import log
 
-            for secret_value in secrets.values():
-                if isinstance(secret_value, str):
-                    log.hide_from_output(secret_value)
-                    log.hide_from_output(repr(secret_value))
+                for secret_value in secrets.values():
+                    if isinstance(secret_value, str):
+                        log.hide_from_output(secret_value)
+                        log.hide_from_output(repr(secret_value))
 
     @classmethod
-    def from_request(cls, request: Optional[Request]) -> Optional["ActionContext"]:
+    def from_request(cls, request: Optional["Request"]) -> Optional["ActionContext"]:
         if not request:
             return None
         data = request.headers.get("x-action-context")

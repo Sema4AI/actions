@@ -4,6 +4,16 @@ from sema4ai.action_server._selftest import ActionServerClient, ActionServerProc
 USE_STATIC_INFO = False
 
 
+def test_secrets_simple(
+    action_server_process: ActionServerProcess, client: ActionServerClient, tmpdir
+):
+    from pathlib import Path
+
+    from sema4ai.action_server._selftest import check_secrets_simple
+
+    check_secrets_simple(Path(tmpdir), action_server_process, client, verbose=False)
+
+
 def test_secrets_encrypted(
     action_server_process: ActionServerProcess,
     client: ActionServerClient,
@@ -16,7 +26,7 @@ def test_secrets_encrypted(
 
     pack = datadir / "pack_encryption"
 
-    keys = [AESGCM.generate_key(bit_length=256), AESGCM.generate_key(bit_length=256)]
+    keys = [AESGCM.generate_key(256), AESGCM.generate_key(256)]
     if USE_STATIC_INFO:
         keys = [b"a" * len(keys[0])]
 
@@ -154,7 +164,7 @@ def test_secrets_encrypted_set_through_separate_post_request(
 
     pack = datadir / "pack_encryption"
 
-    keys = [AESGCM.generate_key(bit_length=256), AESGCM.generate_key(bit_length=256)]
+    keys = [AESGCM.generate_key(256), AESGCM.generate_key(256)]
     if USE_STATIC_INFO:
         keys = [b"a" * len(keys[0])]
 
@@ -205,7 +215,7 @@ def test_secrets_encrypted_oauth2(
 
     pack = datadir / "pack_encryption_oauth2"
 
-    keys = [AESGCM.generate_key(bit_length=256), AESGCM.generate_key(bit_length=256)]
+    keys = [AESGCM.generate_key(256), AESGCM.generate_key(256)]
     if USE_STATIC_INFO:
         keys = [b"a" * len(keys[0])]
 
@@ -269,7 +279,7 @@ def test_secrets_oauth2_encrypted_set_through_separate_post_request(
 
     pack = datadir / "pack_encryption_oauth2"
 
-    keys = [AESGCM.generate_key(bit_length=256), AESGCM.generate_key(bit_length=256)]
+    keys = [AESGCM.generate_key(256), AESGCM.generate_key(256)]
     if USE_STATIC_INFO:
         keys = [b"a" * len(keys[0])]
 

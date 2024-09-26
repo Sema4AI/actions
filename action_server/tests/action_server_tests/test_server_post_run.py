@@ -133,7 +133,6 @@ def test_server_bad_post_run_command(
     client: ActionServerClient,
     datadir,
 ):
-    import os
     import sys
     from pathlib import Path
 

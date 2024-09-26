@@ -494,6 +494,124 @@ def run_command_line(
     )
 
 
+def check_secrets_simple(
+    tmpdir: Path,
+    action_server_process: ActionServerProcess,
+    client: ActionServerClient,
+    verbose: bool = False,
+):
+    from sema4ai.action_server._settings import is_frozen
+
+    curdir = os.path.abspath(".")
+    try:
+        os.chdir(str(tmpdir))
+        if verbose:
+            print(f"is_frozen(): {is_frozen()}")
+            print(f"Creating template project in: {tmpdir}")
+
+        contents_with_encryption = '''from sema4ai.actions import Secret, action
+
+@action
+def get_private(private_info: Secret) -> str:
+    """
+    Returns the value passed to the private key.
+
+    Args:
+        private_info: Some private info.
+
+    Returns:
+        The value of the private key.
+    """
+    return private_info.value
+'''
+        check_secrets = tmpdir / "check_secrets"
+        check_secrets.mkdir(parents=True, exist_ok=True)
+
+        package_yaml = check_secrets / "package.yaml"
+        package_yaml.write_text(
+            """
+name: Check secrets
+
+description: Check secrets
+
+# Package version number, recommend using semver.org
+version: 0.0.1
+
+dependencies:
+  conda-forge:
+  - python=3.10.14
+  - uv=0.2.6
+  pypi:
+  - sema4ai-actions=0.10.0
+
+packaging:
+  # By default, all files and folders in this directory are packaged when uploaded.
+  # Add exclusion rules below (expects glob format: https://docs.python.org/3/library/glob.html)
+  exclude:
+    - ./.git/**
+    - ./.vscode/**
+    - ./devdata/**
+    - ./output/**
+    - ./venv/**
+    - ./.venv/**
+    - ./.DS_store/**
+    - ./**/*.pyc
+    - ./**/*.zip
+"""
+        )
+
+        action = check_secrets / "action.py"
+        action.write_text(contents_with_encryption, encoding="utf-8")
+
+        import base64
+
+        from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+
+        keys = [AESGCM.generate_key(256), AESGCM.generate_key(256)]
+
+        # ACTION_SERVER_DECRYPT_INFORMATION: Contains information on what is passed
+        # encrypted.
+        # Note: x-action-context is "special" in that it's a header that can be sent to
+        # the action server over multiple parts (x-action-context-1, x-action-context-2, ...)
+        # the result of all the parts will be decoded.
+        #
+        # ACTION_SERVER_DECRYPT_KEYS: The keys that can be used to decrypt (base-64
+        # version of the actual bytes used to encrypt).
+        env = dict(
+            ACTION_SERVER_DECRYPT_INFORMATION=json.dumps(["header:x-action-context"]),
+            ACTION_SERVER_DECRYPT_KEYS=json.dumps(
+                [base64.b64encode(k).decode("ascii") for k in keys]
+            ),
+        )
+
+        action_server_process.start(
+            cwd=check_secrets,
+            actions_sync=True,
+            db_file="server.db",
+            lint=True,
+            env=env,
+        )
+
+        from sema4ai.action_server._encryption import make_encrypted_data_envelope
+
+        ctx_info = make_encrypted_data_envelope(
+            keys[0], {"secrets": {"private_info": "my-secret-value"}}
+        )
+
+        found = client.post_get_str(
+            "api/actions/check-secrets/get-private/run",
+            {"name": "Foo"},
+            headers={"x-action-context": ctx_info},
+        )
+        assert "my-secret-value" == json.loads(found)
+
+        if verbose:
+            print("Test finished with success.")
+
+    finally:
+        os.chdir(curdir)
+
+
 def check_new_template(
     tmpdir: Path,
     action_server_process: ActionServerProcess,
@@ -624,6 +742,12 @@ def do_selftest():
             with make_action_server_process(tmpdir) as action_server_process:
                 with make_client(action_server_process) as client:
                     check_new_template(
+                        tmpdir, action_server_process, client, verbose=True
+                    )
+
+            with make_action_server_process(tmpdir) as action_server_process:
+                with make_client(action_server_process) as client:
+                    check_secrets_simple(
                         tmpdir, action_server_process, client, verbose=True
                     )
     except Exception:
