@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 1.0.1 - 2024-09-26
+
+- When running in frozen mode, `robocorp.log` will no longer be imported when the action context is requested.
+
 ## 1.0.0 - 2024-09-25
 
 - Updated required dependencies versions (in particular, cryptography is now "^43").
