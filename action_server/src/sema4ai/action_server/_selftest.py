@@ -360,12 +360,13 @@ class ActionServerClient:
         result.raise_for_status()
         return result
 
-    def post_error(self, url, status_code, data=None):
+    def post_error(self, url, status_code, data=None, headers=None):
         import requests
 
         result = requests.post(
             self.build_full_url(url),
             json=data or {},
+            headers=headers or {},
             **self.requests_kwargs(),
         )
         if result.status_code != status_code:

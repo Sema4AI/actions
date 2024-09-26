@@ -2,16 +2,20 @@
 
 ## Unreleased
 
+- Add more debug logging related to post run commands.
+
 ## 1.0.0 - 2024-09-25
 
-The command specified in `SEMA4AI_ACTION_SERVER_POST_RUN_CMD` can now use the following variables:
+- The command specified in `SEMA4AI_ACTION_SERVER_POST_RUN_CMD` can now use the following variables:
 
-- `$action_name`
-- `$workroom_base_url` (optional)
-- `$agent_id` (optional)
-- `$invoked_on_behalf_of_user_id` (optional)
-- `$thread_id` (optional)
-- `$tenant_id` (optional)
+  - `$action_name`
+  - `$workroom_base_url` (optional)
+  - `$agent_id` (optional)
+  - `$invoked_on_behalf_of_user_id` (optional)
+  - `$thread_id` (optional)
+  - `$tenant_id` (optional)
+
+- The variables are now also available as environment variables in the command executed in the format of `SEMA4AI_ACTION_SERVER_POST_RUN_<VARIABLE_NAME>`.
 
 - Marking as `1.0.0` as the `Action Server` is now considered stable and ready for production use.
 

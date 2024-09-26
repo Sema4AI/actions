@@ -87,7 +87,12 @@ def _connect_to_socket(host, port):
 
 
 class ProcessHandle:
-    def __init__(self, settings: Settings, action_package: ActionPackage):
+    def __init__(
+        self,
+        settings: Settings,
+        action_package: ActionPackage,
+        post_run_args: Optional[tuple[str, ...]],
+    ):
         from queue import Queue
 
         from sema4ai.action_server._preload_actions.preload_actions_streams import (
@@ -102,6 +107,8 @@ class ProcessHandle:
         )
         from ._preload_actions.preload_actions_streams import JsonRpcStreamReaderThread
         from ._robo_utils.process import build_python_launch_env
+
+        self._post_run_args = post_run_args
 
         self.key = _get_process_handle_key(settings, action_package)
 
@@ -422,35 +429,35 @@ class ProcessHandle:
         queue = self._read_queue
         result_msg = queue.get(block=True)
 
-        try:
-            self._call_post_run_scripts(
-                initial_action_context_value, msg, result_msg, run
-            )
-        except Exception:
-            log.exception("Error runnnig post run command.")
+        if self._post_run_args:
+            log.debug("Calling post run command.")
+            try:
+                self._call_post_run_script(
+                    self._post_run_args,
+                    initial_action_context_value,
+                    msg,
+                    result_msg,
+                    run,
+                )
+            except Exception:
+                log.exception("Error runnnig post run command.")
+        else:
+            log.debug("Not running post run command.")
         return result_msg["returncode"]
 
-    def _call_post_run_scripts(
+    def _call_post_run_script(
         self,
+        post_run_args: tuple[str, ...],
         initial_action_context_value: Optional[JSONValue],
         msg: dict,
         result_msg: dict,
         run: Run,
     ) -> None:
-        import os
-
-        from sema4ai.action_server._robo_utils.process import (
-            build_python_launch_env,
-            build_subprocess_kwargs,
-        )
-
-        post_run_cmd = os.environ.get("SEMA4AI_ACTION_SERVER_POST_RUN_CMD")
-        if not post_run_cmd:
-            return
-
         import shlex
         from string import Template
 
+        from sema4ai.action_server._robo_utils import process, run_in_thread
+        from sema4ai.action_server._robo_utils.process import build_python_launch_env
         from sema4ai.action_server._settings import get_settings
 
         settings = get_settings()
@@ -475,15 +482,14 @@ class ProcessHandle:
                     if isinstance(invocation_context_value, str):
                         mapping[key] = invocation_context_value
 
-        args = shlex.split(post_run_cmd)
         use_args = []
-        for arg in args:
+        for arg in post_run_args:
             try:
                 use_args.append(Template(arg).substitute(mapping))
             except Exception:
-                log.exception(
-                    f"Error substituting {arg!r} for post run. Full cmd: {post_run_cmd!r}"
-                )
+                error_msg = f"Error substituting {arg!r} in post run command."
+                log.exception(error_msg)
+                raise RuntimeError(error_msg)  # We can't proceed!
 
         # Run but don't wait for it!
         try:
@@ -493,10 +499,26 @@ class ProcessHandle:
                 for k, v in mapping.items()
             }
             env = build_python_launch_env(mapping_as_env_vars)
-            new_kwargs = build_subprocess_kwargs(cwd, env=env)
 
-            log.debug("Running: %s", shlex.join(use_args))
-            subprocess.Popen(use_args, **new_kwargs)
+            def run_post_run_command_in_thread():
+                try:
+                    # Note: should log when starting automatically.
+                    p = process.Process(use_args, cwd=cwd, env=env)
+                    p.start()
+                    p.join()
+                    if p.returncode != 0:
+                        log.error(
+                            "Post run command return code is: %s (full command: %s)",
+                            p.returncode,
+                            shlex.join(use_args),
+                        )
+                    else:
+                        log.debug("Post run command finished successfuly.")
+                except Exception:
+                    log.exception("Error in post run command.")
+
+            run_in_thread.run_in_thread(run_post_run_command_in_thread)
+
         except Exception:
             log.exception(f"Error running: {use_args!r}")
 
@@ -556,8 +578,28 @@ class ActionsProcessPool:
         action_package_id_to_action_package: Dict[str, ActionPackage],
         actions: List[Action],
     ):
+        import os
+        import shlex
+
         self._settings = settings
         self.action_package_id_to_action_package = action_package_id_to_action_package
+
+        post_run_cmd = os.environ.get("SEMA4AI_ACTION_SERVER_POST_RUN_CMD")
+        if not post_run_cmd:
+            log.debug(
+                "SEMA4AI_ACTION_SERVER_POST_RUN_CMD not set (post run will be skipped)."
+            )
+            self._post_run_cmd_args = None
+        else:
+            log.debug("SEMA4AI_ACTION_SERVER_POST_RUN_CMD set to: '%s'", post_run_cmd)
+            try:
+                post_run_cmd_args = shlex.split(post_run_cmd)
+            except Exception:
+                error_msg = f"Error. Unable to parse SEMA4AI_ACTION_SERVER_POST_RUN_CMD: '{post_run_cmd}' with shlex."
+                log.exception(error_msg)
+                raise RuntimeError(error_msg)
+
+            self._post_run_cmd_args = tuple(post_run_cmd_args)
 
         # We just want the actions which are enabled.
         self.actions = [action for action in actions if action.enabled]
@@ -631,7 +673,9 @@ class ActionsProcessPool:
             action.action_package_id
         ]
 
-        process_handle = ProcessHandle(self._settings, action_package)
+        process_handle = ProcessHandle(
+            self._settings, action_package, self._post_run_cmd_args
+        )
         assert self._lock.locked(), "Lock must be acquired at this point."
         self._add_to_idle_processes(process_handle)
 
