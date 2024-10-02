@@ -471,16 +471,9 @@ class ProcessHandle:
         if isinstance(initial_action_context_value, dict):
             invocation_context = initial_action_context_value.get("invocation_context")
             if isinstance(invocation_context, dict):
-                for key in [
-                    "workroom_base_url",
-                    "agent_id",
-                    "invoked_on_behalf_of_user_id",
-                    "thread_id",
-                    "tenant_id",
-                ]:
-                    invocation_context_value = invocation_context.get(key)
-                    if isinstance(invocation_context_value, str):
-                        mapping[key] = invocation_context_value
+                for key, value in invocation_context.items():
+                    if isinstance(value, str):
+                        mapping[key] = value
 
         use_args = []
         for arg in post_run_args:

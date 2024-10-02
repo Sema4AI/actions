@@ -12,11 +12,7 @@ The available variables are:
 - `$run_artifacts_dir`
 - `$run_id`
 - `$action_name`
-- `$workroom_base_url` (optional)
-- `$agent_id` (optional)
-- `$invoked_on_behalf_of_user_id` (optional)
-- `$thread_id` (optional)
-- `$tenant_id` (optional)
+- Any variable from the `invocation_context` (passed in the `x-action-context` header) which is passed as a string will also be available to be used in the post run command.
 
 Note: the variables marked as optional may not be present in the substitution (if they are not passed in the 'x-action-context' header).
 
@@ -26,11 +22,7 @@ The same variables are also available as environment variables (with `SEMA4AI_AC
 - `SEMA4AI_ACTION_SERVER_POST_RUN_RUN_ARTIFACTS_DIR`
 - `SEMA4AI_ACTION_SERVER_POST_RUN_RUN_ID`
 - `SEMA4AI_ACTION_SERVER_POST_RUN_ACTION_NAME`
-- `SEMA4AI_ACTION_SERVER_POST_RUN_WORKROOM_BASE_URL` (optional)
-- `SEMA4AI_ACTION_SERVER_POST_RUN_AGENT_ID` (optional)
-- `SEMA4AI_ACTION_SERVER_POST_RUN_INVOKED_ON_BEHALF_OF_USER_ID` (optional)
-- `SEMA4AI_ACTION_SERVER_POST_RUN_THREAD_ID` (optional)
-- `SEMA4AI_ACTION_SERVER_POST_RUN_TENANT_ID` (optional)
+- Any other variable from the `invocation_context` (passed in the `x-action-context` header) with the format `SEMA4AI_ACTION_SERVER_POST_RUN_<VARIABLE_NAME>`.
 
 ### Note
 

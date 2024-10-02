@@ -590,6 +590,7 @@ packaging:
             db_file="server.db",
             lint=True,
             env=env,
+            timeout=60 * 5,  # May need to bootstrap environment
         )
 
         from sema4ai.action_server._encryption import make_encrypted_data_envelope
