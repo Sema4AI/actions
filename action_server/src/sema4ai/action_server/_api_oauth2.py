@@ -2,18 +2,18 @@
 We need to cover 2 use-cases here:
 
 1. The Action Server UI.
-    - In this case a cookie with a session id is created (both in the 
+    - In this case a cookie with a session id is created (both in the
       oauth urls as well as in the index)
     - A pop-up browser window is opened at `/oauth2/login`
     - The user provides his information
     - A `/sema4ai/oauth2` request is received as a callback, at which
       point the session id will be connected to the token and a
       call to the action server should automatically add the required
-      tokens when the action is called (and refresh them as needed). 
-      
+      tokens when the action is called (and refresh them as needed).
+
 2. VSCode
-    - In this case the VSCode would start the action server 
-      and open `/oauth2/login` in a browser. 
+    - In this case the VSCode would start the action server
+      and open `/oauth2/login` in a browser.
       -- When doing the login a `client_callback` must be passed so that the token
       can be retrieved later.
       -- The `reference_id` must also be passed so that the login state can be checked
@@ -21,6 +21,7 @@ We need to cover 2 use-cases here:
     - After the `/sema4ai/oauth2` is triggered by the browser the `callback_url`
       will be triggered in succession.
 """
+
 import datetime
 import json
 import logging
@@ -588,7 +589,7 @@ async def oauth2_redirect(request: Request, state: str = "") -> HTMLResponse:
     from sema4ai.action_server._user_session import session_scope
 
     with session_scope(request) as session:
-        oauth_state = session.get_session_data(f"oauth_state-${state}")
+        oauth_state = session.get_session_data(f"oauth_state-${state}", drop=True)
         if not oauth_state:
             raise RuntimeError(
                 "Internal error: session data invalid to make OAuth2 authentication."

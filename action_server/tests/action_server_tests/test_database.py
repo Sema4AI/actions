@@ -464,3 +464,50 @@ def test_database_concurrency(datadir):
     with db.connect():
         for action_package in db.all(SomeActionPackage):
             assert action_package.name == "bar"
+
+
+def test_database_temp_session_data_cleanup(tmpdir):
+    from sema4ai.action_server._models import TempUserSessionData
+    from sema4ai.action_server._user_session import (
+        _temp_session_data_cleanup,
+        datetime_to_iso,
+    )
+
+    db = Database(":memory:")
+    with db.connect():
+        db.initialize([TempUserSessionData])
+        db.create_tables(_db_rules)
+
+        with db.transaction():
+            curtime = datetime.datetime(
+                year=2024, month=1, day=1, hour=1, minute=1, second=1, microsecond=1
+            )
+
+            before_time1 = curtime - datetime.timedelta(days=1)
+            before_time2 = curtime - datetime.timedelta(microseconds=1)
+
+            after_time1 = curtime + datetime.timedelta(days=1)
+            after_time2 = curtime + datetime.timedelta(microseconds=1)
+            times = [
+                before_time1,
+                before_time2,
+                after_time1,
+                after_time2,
+            ]
+            for time in times:
+                db.insert(
+                    TempUserSessionData(
+                        user_session_id="foobar",
+                        key="foobar",
+                        data="foobar",
+                        expires_at=datetime_to_iso(time),
+                    )
+                )
+
+            _temp_session_data_cleanup(db, curtime)
+
+            # get just the times and check them
+            assert {x.expires_at for x in db.all(TempUserSessionData)} == {
+                datetime_to_iso(after_time1),
+                datetime_to_iso(after_time2),
+            }

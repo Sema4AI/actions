@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Make sure that temporary session data acquired for OAuth2 authentication is deleted after use.
+
 ## 1.1.0 - 2024-10-02
 
 - Now it's possible to use any variable from the `invocation_context` in the post run command (they'll also be available as environment variables in the format `SEMA4AI_ACTION_SERVER_POST_RUN_<VARIABLE_NAME>`).
