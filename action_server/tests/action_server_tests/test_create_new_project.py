@@ -113,7 +113,7 @@ def test_create_new_project_download_metadata_fail_with_cached_templates(
     "sema4ai.action_server._new_project.log.info",
     wraps=sema4ai.action_server._new_project.log.info,
 )
-@mock.patch("builtins.print")
+@mock.patch("sys.stdout.buffer.write")
 def test_list_templates_no_templates_available(
     print_mock: mock.MagicMock, log_info_mock: mock.MagicMock, _, tmpdir
 ) -> None:
@@ -140,4 +140,4 @@ def test_list_templates_no_templates_available(
         print_args = print_mock.mock_calls[-1].args
 
         assert retcode == 0
-        assert print_args[0] == "[]"
+        assert print_args[0] == b"[]"

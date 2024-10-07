@@ -84,6 +84,8 @@ def handle_verify_login_command(base_args: ArgumentsNamespace) -> int:
 
 
 def handle_list_organizations_command(base_args: ArgumentsNamespace) -> int:
+    import sys
+
     from sema4ai.action_server._errors_action_server import ActionServerValidationError
     from sema4ai.action_server._protocols import ArgumentsNamespaceCloudOrganizations
     from sema4ai.action_server._storage import get_access_credentials, get_hostname
@@ -114,7 +116,8 @@ def handle_list_organizations_command(base_args: ArgumentsNamespace) -> int:
         organizations = list_organizations(access_credentials, hostname)
 
         if cloud_organizations_args.json:
-            print(json.dumps([org.model_dump(mode="json") for org in organizations]))
+            output = json.dumps([org.model_dump(mode="json") for org in organizations])
+            sys.stdout.buffer.write(output.encode("utf-8"))
         else:
             for organization in organizations:
                 log.info(f"Organization: {organization}")

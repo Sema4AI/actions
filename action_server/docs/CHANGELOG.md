@@ -3,6 +3,8 @@
 ## Unreleased
 
 - Make sure that temporary session data acquired for OAuth2 authentication is deleted after use.
+- When json output is written, utf-8 is used (regular prints still use the default
+  Python heuristic, which can use `PYTHONIOENCODING` to override the locale encoding if needed).
 
 ## 1.1.0 - 2024-10-02
 

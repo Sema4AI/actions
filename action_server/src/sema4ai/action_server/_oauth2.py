@@ -24,8 +24,10 @@ def get_sema4ai_provided_oauth2_config() -> str:
 
 
 def _print_sema4ai_oauth2_config() -> int:
+    import sys
+
     contents = get_sema4ai_provided_oauth2_config()
-    print(contents)
+    sys.stdout.buffer.write(contents.encode("utf-8"))
 
     return 0
 
@@ -38,6 +40,9 @@ def print_user_oauth2_config_path(output_json: bool = False) -> int:
     Returns:
         0 if everything worked properly and 1 if some error happened.
     """
+    import json
+    import sys
+
     from ._settings import get_default_settings_dir
 
     config_path: Path = get_default_settings_dir() / USER_CONFIG_FILE_NAME
@@ -50,9 +55,9 @@ def print_user_oauth2_config_path(output_json: bool = False) -> int:
                 f.write(FILE_CONTENTS["default_user_config"])
 
         if output_json:
-            import json
-
-            print(json.dumps({"path": str(config_path)}))
+            sys.stdout.buffer.write(
+                json.dumps({"path": str(config_path)}).encode("utf-8")
+            )
         else:
             print(config_path)
 

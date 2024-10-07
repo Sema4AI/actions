@@ -289,7 +289,10 @@ def test_oauth2_provider_settings():
 
 
 @mock.patch("builtins.print")
-def test_print_user_oauth2_config_path(print_mock: mock.MagicMock, tmpdir) -> None:
+@mock.patch("sys.stdout.buffer.write")
+def test_print_user_oauth2_config_path(
+    print_mock: mock.MagicMock, buffer_write_mock: mock.MagicMock, tmpdir
+) -> None:
     from sema4ai.action_server._oauth2 import (
         USER_CONFIG_FILE_NAME,
         print_user_oauth2_config_path,
@@ -314,7 +317,7 @@ def test_print_user_oauth2_config_path(print_mock: mock.MagicMock, tmpdir) -> No
         assert mock_config_path.exists() is True
 
         # Get latest print args
-        print_args = print_mock.mock_calls[-1].args
+        print_args = buffer_write_mock.mock_calls[-1].args
 
         assert print_args[0] == mock_config_path
 
