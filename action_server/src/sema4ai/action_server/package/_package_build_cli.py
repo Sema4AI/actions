@@ -297,7 +297,9 @@ def handle_package_command(base_args: ArgumentsNamespace):
             )
 
             if package_build_args.json:
-                print(json.dumps({"package_path": result.package_path}))
+                sys.stdout.buffer.write(
+                    json.dumps({"package_path": result.package_path}).encode("utf-8")
+                )
         except ActionServerValidationError as e:
             log.critical(
                 bold_red(
@@ -364,8 +366,9 @@ def handle_package_command(base_args: ArgumentsNamespace):
                     with open(package_metadata_args.output_file, "wb") as stream:
                         stream.write(package_metadata_or_returncode.encode("utf-8"))
                 else:
-                    print(package_metadata_or_returncode)
-                    sys.stdout.flush()
+                    sys.stdout.buffer.write(
+                        package_metadata_or_returncode.encode("utf-8")
+                    )
             else:
                 assert package_metadata_or_returncode != 0
                 retcode = package_metadata_or_returncode
@@ -428,7 +431,7 @@ def handle_package_command(base_args: ArgumentsNamespace):
             )
 
             if package_push_args.json:
-                print(package.model_dump_json())
+                sys.stdout.buffer.write(package.model_dump_json().encode("utf-8"))
             else:
                 log.info(f"Package published, ID is: {package.id}")
 
@@ -479,7 +482,7 @@ def handle_package_command(base_args: ArgumentsNamespace):
             )
 
             if package_status_args.json:
-                print(package.model_dump_json())
+                sys.stdout.buffer.write(package.model_dump_json().encode("utf-8"))
             else:
                 log.info(f"Control Room URL: {package.url}")
                 log.info(f"Package publish status is: {package.status}")
@@ -533,7 +536,7 @@ def handle_package_command(base_args: ArgumentsNamespace):
             )
 
             if package_changelog_args.json:
-                print(package.model_dump_json())
+                sys.stdout.buffer.write(package.model_dump_json().encode("utf-8"))
             else:
                 log.info(
                     f"Package {package_changelog_args.package_id} changelog updated to Control Room successfully"

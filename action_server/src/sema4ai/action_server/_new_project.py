@@ -95,6 +95,8 @@ def handle_list_templates(output_json: bool = False) -> int:
     Args:
         output_json: If true, the output will be formatted as JSON.
     """
+    import sys
+
     from sema4ai.action_server.vendored_deps.termcolors import bold_red
 
     from ._new_project_helpers import (
@@ -111,9 +113,10 @@ def handle_list_templates(output_json: bool = False) -> int:
         templates: list[ActionTemplate] = metadata.templates if metadata else []
 
         if output_json:
-            print(
-                json.dumps([template.model_dump(mode="json") for template in templates])
+            output = json.dumps(
+                [template.model_dump(mode="json") for template in templates]
             )
+            sys.stdout.buffer.write(output.encode("utf-8"))
         else:
             if len(templates) == 0:
                 log.info("No templates available.")
