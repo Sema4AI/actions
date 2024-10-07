@@ -157,6 +157,7 @@ def _set_session_data(
 
     db = get_db()
     with db.connect(), db.transaction():
+        _temp_session_data_cleanup(db)
         db.insert_or_update(
             TempUserSessionData(
                 user_session_id=session_id,
@@ -168,7 +169,11 @@ def _set_session_data(
         )
 
 
-def _get_session_data(session_id: str, key: str) -> JSONValue:
+def _get_session_data(session_id: str, key: str, drop: bool) -> JSONValue:
+    """
+    If drop is True, the data is deleted after being collected
+    (usually the oauth2 authentication just needs a single access).
+    """
     import json
 
     from sema4ai.action_server._models import TempUserSessionData, get_db
@@ -176,6 +181,7 @@ def _get_session_data(session_id: str, key: str) -> JSONValue:
     db = get_db()
     with db.connect(), db.transaction():
         try:
+            _temp_session_data_cleanup(db)
             found = db.first(
                 TempUserSessionData,
                 "SELECT * FROM temp_user_session_data WHERE user_session_id = ? AND key = ?",
@@ -187,10 +193,28 @@ def _get_session_data(session_id: str, key: str) -> JSONValue:
             expires_at = found.expires_at
             if datetime.datetime.now() > iso_to_datetime(expires_at):
                 # Expired
-                db.delete(found, ["session_id", "key"])
+                db.delete(found, ["user_session_id", "key"])
                 return None
+            else:
+                if drop:
+                    db.delete(found, ["user_session_id", "key"])
 
             return json.loads(found.data)
+
+
+def _temp_session_data_cleanup(
+    db: "Database", now_datetime: datetime.datetime | None = None
+):
+    from sema4ai.action_server._models import TempUserSessionData
+
+    if now_datetime is None:
+        now_datetime = datetime.datetime.now()
+
+    db.delete_where(
+        TempUserSessionData,
+        "expires_at < ?",
+        [datetime_to_iso(now_datetime)],
+    )
 
 
 class _BaseScopeContext:
@@ -202,8 +226,8 @@ class _BaseScopeContext:
     ) -> None:
         _set_session_data(self.session_id, key, value, expires_at)
 
-    def get_session_data(self, key: str) -> JSONValue:
-        return _get_session_data(self.session_id, key)
+    def get_session_data(self, key: str, drop: bool) -> JSONValue:
+        return _get_session_data(self.session_id, key, drop)
 
 
 class ReferencedScopeContext(_BaseScopeContext):
