@@ -204,8 +204,3 @@ class ManagedParameters:
         from sema4ai.actions._protocols import check_implements
 
         _: EPManagedParameters = check_implements(self)
-
-
-def _get_secret_header_name(secret_name: str) -> str:
-    secret_name = secret_name.replace("_", "-")
-    return f"x-secret-{secret_name}"
