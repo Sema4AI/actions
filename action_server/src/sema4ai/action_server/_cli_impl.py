@@ -615,12 +615,11 @@ def _main_retcode(
         # Log to stderr.
         _setup_stderr_logging(log_level)
 
-    # if command == "schema":
-    # This doesn't work at this point because we have to register the
-    # actions first for it to work.
-    #     file = base_args.file
-    #     _write_schema(file)
-    #     return
+        if log_level == logging.DEBUG:
+            import subprocess
+
+            log.debug(f"Arguments: {subprocess.list2cmdline(sys.argv)}")
+            log.debug(f"CWD: {os.path.abspath(os.getcwd())}")
 
     from ._download_rcc import download_rcc
 
