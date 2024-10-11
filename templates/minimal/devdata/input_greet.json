@@ -1,3 +1,15 @@
 {
-    "paramName": "paramValue"
+    "inputs": [
+        {
+            "inputName": "input-1",
+            "inputValue": {}
+        }
+    ],
+    "metadata": {
+        "actionName": "greet",
+        "actionRelativePath": "actions.py",
+        "schemaDescription": [],
+        "managedParamsSchemaDescription": {},
+        "inputFileVersion": "v2"
+    }
 }

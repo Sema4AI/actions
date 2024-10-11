@@ -1,7 +1,31 @@
 {
-  "github_access_token": "YOUR_ACCESS_TOKEN",
-  "repository_info": {
-    "owner_id": "OWNER_ID",
-    "name": "REPOSITORY_NAME"
+  "inputs": [
+    {
+      "inputName": "input-1",
+      "inputValue": {
+        "repository_info": {
+          "owner_id": "OWNER_ID",
+          "name": "REPOSITORY_NAME"
+        },
+        "limit": 0,
+        "github_access_token": "<YOUR_ACCESS_TOKEN>"
+      }
+    }
+  ],
+  "metadata": {
+    "actionName": "get_repository_commits",
+    "actionRelativePath": "actions.py",
+    "schemaDescription": [
+      "repository_info.owner_id: string: The owner of the repository",
+      "repository_info.name: string: The name of the repository",
+      "limit: integer: The maximum number of commits to return (max 100)."
+    ],
+    "managedParamsSchemaDescription": {
+      "github_access_token": {
+        "type": "Secret",
+        "description": "Your private GitHub access token."
+      }
+    },
+    "inputFileVersion": "v2"
   }
 }
