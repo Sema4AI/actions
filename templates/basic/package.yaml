@@ -9,11 +9,11 @@ version: 0.0.1
 
 dependencies:
   conda-forge:
-  - python=3.10.14
-  - uv=0.2.6
+    - python=3.10.14
+    - uv=0.4.17
   pypi:
-  - sema4ai-actions=0.10.0
-  - robocorp-browser=2.3.3
+    - sema4ai-actions=1.0.1
+    - robocorp-browser=2.3.3
 
 packaging:
   # By default, all files and folders in this directory are packaged when uploaded.
