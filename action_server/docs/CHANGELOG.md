@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 1.1.2 - 2024-10-17
+
+- Fix the high security issues in backend and frontend
+
 ## 1.1.1 - 2024-10-07
 
 - Make sure that temporary session data acquired for OAuth2 authentication is deleted after use.
