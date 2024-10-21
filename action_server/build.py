@@ -10,7 +10,7 @@ log = logging.getLogger(__name__)
 # No real build, just download RCC at this point.
 
 # Note: referenced here and in sema4ai.action_server._download_rcc
-RCC_VERSION = "18.1.5"
+RCC_VERSION = "18.3.0"
 
 RCC_URLS = {
     "Windows": f"https://cdn.sema4.ai/rcc/releases/v{RCC_VERSION}/windows64/rcc.exe",

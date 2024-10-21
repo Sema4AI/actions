@@ -258,6 +258,34 @@ def _add_import_command(command_subparser, defaults):
     _add_whitelist_args(import_parser, defaults)
 
 
+def _add_devenv_command(command_subparser, defaults):
+    from sema4ai.action_server._cli_helpers import add_datadir_arg, add_verbose_args
+
+    # Ok, now add the `devenv` command. It should then have a
+    # `task` subcommand which will receive the task name to run.
+    devenv_parser = command_subparser.add_parser(
+        "devenv",
+        help="Commands related to development tasks",
+    )
+
+    devenv_subparsers = devenv_parser.add_subparsers(dest="devenv_command")
+
+    add_datadir_arg(devenv_parser, defaults)
+    add_verbose_args(devenv_parser, defaults)
+
+    task_parser = devenv_subparsers.add_parser(
+        "task",
+        help="Runs a task in the development environment",
+    )
+
+    # Now, after the task, we should receive (multiple) task names to run.
+    task_parser.add_argument(
+        "task_names",
+        nargs="+",
+        help="The names of the tasks to run",
+    )
+
+
 def _add_new_command(command_subparser, defaults):
     from sema4ai.action_server._cli_helpers import (
         add_json_output_args,
@@ -427,6 +455,7 @@ def _create_parser():
 
     _add_cloud_command(command_subparser, defaults)
     _add_oauth2_command(command_subparser, defaults)
+    _add_devenv_command(command_subparser, defaults)
 
     return base_parser
 
@@ -659,6 +688,11 @@ def _main_retcode(
                 from ._oauth2 import handle_oauth2_command
 
                 return handle_oauth2_command(base_args)
+
+            if command == "devenv":
+                from ._devenv import handle_devenv_command
+
+                return handle_devenv_command(base_args)
 
             if command not in (
                 "migrate",

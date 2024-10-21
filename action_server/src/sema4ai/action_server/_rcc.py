@@ -203,10 +203,12 @@ class Rcc(object):
 
         return RCCActionResult(cmdline, success=True, message=None, result=output)
 
-    def get_package_yaml_hash(self, package_yaml: Path) -> str:
+    def get_package_yaml_hash(self, package_yaml: Path, devenv: bool) -> str:
         args: list[str] = ["ht", "hash"]
         args.append(str(package_yaml))
         args.extend("--silent --no-temp-management --warranty-voided".split())
+        if devenv:
+            args.append("--devdeps")
 
         result = self._run_rcc(args)
 
@@ -221,7 +223,7 @@ class Rcc(object):
         )
 
     def create_env_and_get_vars(
-        self, datadir: Path, package_yaml: Path, package_yaml_hash: str
+        self, datadir: Path, package_yaml: Path, package_yaml_hash: str, devenv: bool
     ) -> ActionResult[EnvInfo]:
         """
         Creates the environment if needed. Note: this function needs to be
@@ -259,7 +261,9 @@ class Rcc(object):
                     ),
                 )
 
-        env_info_result = self._create_env_and_get_vars(package_yaml, package_yaml_hash)
+        env_info_result = self._create_env_and_get_vars(
+            package_yaml, package_yaml_hash, devenv
+        )
         if env_info_result.success:
             assert isinstance(env_info_result.result, EnvInfo)
             dump = {
@@ -275,7 +279,7 @@ class Rcc(object):
         return datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f%Z")
 
     def _create_env_and_get_vars(
-        self, package_yaml: Path, package_yaml_hash: str
+        self, package_yaml: Path, package_yaml_hash: str, devenv: bool
     ) -> ActionResult[EnvInfo]:
         """ """
         args = [
@@ -292,6 +296,8 @@ class Rcc(object):
 
         if os.getenv("SEMA4AI_OPTIMIZE_FOR_CONTAINER") == "1":
             args.append("--liveonly")
+        if devenv:
+            args.append("--devdeps")
 
         timeout = 60 * 60  # Wait up to 1 hour for the env...
         ret = self._run_rcc(

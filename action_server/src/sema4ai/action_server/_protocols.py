@@ -115,6 +115,7 @@ class ArgumentsNamespace(Protocol):
         "env",
         "cloud",
         "oauth2",
+        "devenv",
     ]
     verbose: bool
 
@@ -140,6 +141,17 @@ class ArgumentsNamespaceEnv(ArgumentsNamespace):
 class ArgumentsNamespaceDownloadRcc(ArgumentsNamespace):
     command: Literal["download-rcc"]
     file: str
+
+
+class ArgumentsNamespaceDevEnv(ArgumentsNamespace):
+    command: Literal["devenv"]
+    devenv_command: Literal["task"]
+
+
+class ArgumentsNamespaceDevEnvTask(ArgumentsNamespaceDevEnv):
+    devenv_command: Literal["task"]
+    datadir: str
+    task_names: list[str]
 
 
 class ArgumentsNamespacePackage(ArgumentsNamespace):

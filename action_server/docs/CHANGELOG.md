@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- `RCC` is now updated to `v17.30.0`.
+- Changes in `package.yaml`:
+  - `dev-dependencies` can now be used to install dependencies in a development environment.
+  - `dev-tasks` can be used to run tasks in the development environment.
+  - `pythonpath` can now be used to specify the directories which should be added to the pythonpath.
+    - Note: this is a **backward incompatible** change as old versions of the action server will not
+      be able to understand the new `pythonpath` field, thus, action packages making use of it
+      will not work with older versions of the `Action Server`.
+
 ## 1.1.2 - 2024-10-17
 
 - Fix the high security issues in backend and frontend

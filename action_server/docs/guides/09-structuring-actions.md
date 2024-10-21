@@ -1,4 +1,3 @@
-
 # Structuring a simple action.
 
 When doing a small action which will not have any code reused anywhere, it's
@@ -34,7 +33,6 @@ def greet(name: str, title: str = "Mr.") -> str:
 
 ```
 
-
 # Structuring a bigger action.
 
 When an action starts to grow or code inside the action can be reused
@@ -59,28 +57,27 @@ The `/greeter_action/greet_one_person_action.py` and `/greeter_action/greet_mult
 modules would be loaded to search for `@action` and those could import other things
 from the package.
 
-Note: in general it's not recommended to have multiple `.py` modules in the 
+Note: in general it's not recommended to have multiple `.py` modules in the
 root directory of the action package (as that raises the possibility of having
-clashes with other standard library modules). 
+clashes with other standard library modules).
 
 # Using `Response` and `ActionError`
 
-`sema4ai-actions 0.8.0` introduced 2 new classes: 
+`sema4ai-actions 0.8.0` introduced 2 new classes:
 `sema4ai.actions.Response` and `sema4ai.actions.ActionError`.
 
-These classes can be used to have more control of what's returned to an LLM and 
+These classes can be used to have more control of what's returned to an LLM and
 can be used to give error messages that are more meaningful to the LLM.
 
 Without using these classes, an `@action` would usually just provide the direct
 value and any exception raised would be converted to an http error with a `500`
 error response, yet, when a `Response[T]` is set as the return type for an `@action`, only
-internal errors from the action server would return a `500` response and any other 
-error that happens inside the `@action` would actually return a response 
+internal errors from the action server would return a `500` response and any other
+error that happens inside the `@action` would actually return a response
 in a structure returning either a `result` or an `error` set.
 
 The example below shows an example and explains what is expected to happen in different
 circumstances.
-
 
 ```python
 from sema4ai.actions import ActionError, Response, action
@@ -105,7 +102,7 @@ def greet(name: str, title: str = "Mr.") -> Response[str]:
         )
 
     if not name:
-        # This has the same effect as 
+        # This has the same effect as
         # `return Response(error="The name of the person to greet is empty.")`.
         raise ActionError("The name of the person to greet is empty.")
 
@@ -117,3 +114,46 @@ def greet(name: str, title: str = "Mr.") -> Response[str]:
     # A successful result making a greeting.
     return Response(result=f"Hello {title} {name}!")
 ```
+
+# Testing actions
+
+With `Action Server 2.0.0` or later, it's possible to test actions using the `dev-tasks`
+defined in the `package.yaml` ([pytest](https://docs.pytest.org/en/latest/) is recommended as the test framework).
+
+At this point it may make sense to put tests in one folder while keeping the sources
+in a different folder (although this is not strictly necessary, you can just put tests just
+in a different package directly under the root of the action package, which would be in the
+`pythonpath` by default).
+
+Example:
+
+```
+/src
+    /greet.py
+/tests
+    /test_greet.py
+```
+
+To work with the above structure, the `pythonpath` should be set to include the `src` and the
+`tests` folder by adding the following to the `package.yaml` (note: this requires `Action Server 2.0.0` or later):
+
+```yaml
+pythonpath:
+  - src
+  - tests
+```
+
+And then add the `pytest` dependency to the `dev-dependencies` and create a `dev-task` which would run the tests as:
+
+```yaml
+dev-dependencies:
+  pypi:
+    - pytest=8.3.3
+
+dev-tasks:
+  test: pytest tests
+```
+
+Then you can run the tests using `action-server devenv task test`.
+
+See [Dev Tasks](./14-dev-tasks.md) for more information.
