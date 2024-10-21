@@ -1,4 +1,4 @@
-def add_data_args(parser, defaults):
+def add_datadir_arg(parser, defaults):
     parser.add_argument(
         "-d",
         "--datadir",
@@ -9,6 +9,10 @@ def add_data_args(parser, defaults):
             "(by default a datadir will be generated based on the current directory)."
         ),
     )
+
+
+def add_data_args(parser, defaults):
+    add_datadir_arg(parser, defaults)
     parser.add_argument(
         "--db-file",
         help=(

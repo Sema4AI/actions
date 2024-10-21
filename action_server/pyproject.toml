@@ -71,6 +71,8 @@ build-backend = "poetry.core.masonry.api"
 script = "build.py"
 generate-setup-file = true
 
+[tool.pytest.ini_options]
+norecursedirs = "tests/action_server_tests/test_devenv/*"
 
 # This is for backward compatibility.
 [[tool.mypy.overrides]]

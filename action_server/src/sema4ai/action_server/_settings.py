@@ -9,6 +9,7 @@ from typing import Iterator, Optional
 
 from termcolor import colored
 
+from sema4ai.action_server._protocols import ArgumentsNamespaceDevEnvTask
 from sema4ai.action_server.vendored_deps.termcolors import bold_red
 
 from ._protocols import ArgumentsNamespaceMigrateImportOrStart
@@ -158,7 +159,9 @@ class Settings:
         return ret
 
     @classmethod
-    def _create(cls, args: ArgumentsNamespaceMigrateImportOrStart) -> "Settings":
+    def _create(
+        cls, args: ArgumentsNamespaceMigrateImportOrStart | ArgumentsNamespaceDevEnvTask
+    ) -> "Settings":
         from sema4ai.action_server._errors_action_server import (
             ActionServerValidationError,
         )
@@ -232,7 +235,9 @@ class Settings:
 
         # Used in either import or start commands.
         settings.verbose = args.verbose
-        settings.db_file = args.db_file
+
+        if hasattr(args, "db_file"):
+            settings.db_file = args.db_file
 
         if args.command == "start":
             # At this point, if using a self-signed certificate, it'll be
@@ -296,7 +301,7 @@ _global_settings: Optional[Settings] = None
 
 @contextmanager
 def setup_settings(
-    args: ArgumentsNamespaceMigrateImportOrStart,
+    args: ArgumentsNamespaceMigrateImportOrStart | ArgumentsNamespaceDevEnvTask,
 ) -> Iterator[Settings]:
     global _global_settings
     settings = Settings._create(args)

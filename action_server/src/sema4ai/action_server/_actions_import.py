@@ -9,9 +9,6 @@ from typing import Literal
 from termcolor import colored
 
 from sema4ai.action_server._robo_utils.callback import Callback, OnExitContextManager
-from sema4ai.action_server.vendored_deps.action_package_handling.cli_errors import (
-    ActionPackageError,
-)
 from sema4ai.action_server.vendored_deps.termcolors import bold_yellow
 
 if typing.TYPE_CHECKING:
@@ -50,22 +47,6 @@ class IHookOnActionsList(typing.Protocol):
 hook_on_actions_list: IHookOnActionsList = Callback(raise_exceptions=True)
 
 
-def _raise_deprecated_conda(found: Path):
-    from sema4ai.action_server._settings import is_frozen
-
-    if is_frozen():
-        cmd = "action-server"
-    else:
-        cmd = "python -m sema4ai.action_server"
-    raise ActionPackageError(
-        "Deprecated: The file for defining the environment is now `package.yaml`.\n"
-        f"Using {found} is no longer supported.\n"
-        "It's not a one to one mapping for but\n"
-        f"`{cmd} package update` can be used to make most of the needed changes.\n"
-        "See: https://github.com/Sema4AI/actions/blob/master/action_server/docs/guides/01-package-yaml.md for more details."
-    )
-
-
 def import_action_package(
     *,
     datadir: Path,
@@ -92,60 +73,19 @@ def import_action_package(
 
     from sema4ai.action_server._whitelist import accept_action_package
 
+    from ._action_package_handler import ActionPackageHandler
     from ._errors_action_server import ActionServerValidationError
     from ._gen_ids import gen_uuid
     from ._models import ActionPackage
-    from ._rcc import get_rcc
     from ._robo_utils.process import build_python_launch_env
-    from ._settings import is_frozen
 
     log.debug("Importing action package from: %s", action_package_dir)
 
-    datadir = datadir.absolute()
-    import_path = Path(action_package_dir).absolute()
-    if not import_path.exists():
-        raise ActionPackageError(
-            f"Unable to import action package from directory: {import_path} "
-            "(directory does not exist).",
-        )
-    if not import_path.is_dir():
-        raise ActionPackageError(f"Error: expected {import_path} to be a directory.")
-
-    import yaml
-
-    # Verify if it's actually a proper package (meaning that it has
-    # the package.yaml as well as actions we can run).
-    original_package_yaml = import_path / "package.yaml"
-
-    action_package_name = ""
-    package_yaml_exists = original_package_yaml.exists()
-    if package_yaml_exists:
-        # Ok, new version: we create a conda.yaml automatically from
-        # the environment information.
-        try:
-            with open(original_package_yaml, "r", encoding="utf-8") as stream:
-                package_yaml_contents = yaml.safe_load(stream)
-        except Exception:
-            raise ActionPackageError(
-                f"Error loading file as yaml ({original_package_yaml})."
-            )
-        if not isinstance(package_yaml_contents, dict):
-            raise ActionPackageError(
-                f"Error: expected {original_package_yaml} to have a dictionary as top-level."
-            )
-
-        version = package_yaml_contents.get("version")
-        if version is None:
-            log.warn(
-                f"Expected {original_package_yaml} to have a 'version' field (without a version it's not possible to publish the action package)."
-            )
-
-        n = package_yaml_contents.get("name")
-        if n:
-            action_package_name = n
-
-    if not action_package_name:
-        action_package_name = import_path.name
+    action_package_handler = ActionPackageHandler(action_package_dir, datadir)
+    action_package_name = action_package_handler.action_package_name
+    package_yaml_exists = action_package_handler.package_yaml_exists
+    original_package_yaml = action_package_handler.original_package_yaml
+    import_path = action_package_handler.import_path
 
     if whitelist:
         if not accept_action_package(whitelist, action_package_name):
@@ -154,45 +94,7 @@ def import_action_package(
             )
             return
 
-    if not package_yaml_exists:
-        for yaml_name in ("action-server.yaml", "conda.yaml"):
-            if (import_path / yaml_name).exists():
-                _raise_deprecated_conda(import_path / yaml_name)
-
-    if not package_yaml_exists:
-        if is_frozen():
-            raise ActionServerValidationError(
-                f"Unable to import actions in standalone action-server because no `package.yaml` is available at: {original_package_yaml}."
-            )
-        log.info(
-            """Adding action without a managed environment (package.yaml unavailable).
-Note: no virtual environment will be used for the imported actions, they'll be run in the same environment used to run the action server."""
-        )
-        condahash = "<unmanaged>"
-        use_env = {}
-    else:
-        log.info(
-            "Action package seems ok. "
-            "Bootstrapping RCC environment (please wait, this can take a long time)."
-        )
-        rcc = get_rcc()
-
-        condahash = rcc.get_package_yaml_hash(original_package_yaml)
-
-        env_info = rcc.create_env_and_get_vars(
-            datadir, original_package_yaml, condahash
-        )
-        if not env_info.success:
-            raise ActionPackageError(
-                f"It was not possible to bootstrap the RCC environment. "
-                f"Error: {env_info.message}"
-            )
-        if not env_info.result:
-            raise ActionPackageError(
-                "It was not possible to get the environment when "
-                "bootstrapping RCC environment."
-            )
-        use_env = env_info.result.env
+    condahash, use_env = action_package_handler.bootstrap_environment()
 
     # Ok, we bootstrapped, now, let's collect the actions.
     try:
