@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2.0.0 - 2024-10-24
+
 - `RCC` is now updated to `v17.30.0`.
 - Changes in `package.yaml`:
   - `dev-dependencies` can now be used to install dependencies in a development environment.
