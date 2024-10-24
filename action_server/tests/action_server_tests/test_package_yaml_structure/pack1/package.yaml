@@ -1,0 +1,48 @@
+name: Action Package Example
+description: Example Integrating pytest, ruff, isort and mypy
+version: 0.0.1
+
+dependencies:
+  conda-forge:
+    - python=3.10.14
+    - uv=0.4.17
+  pypi:
+    - sema4ai-actions=1.0.1
+
+dev-dependencies:
+  pypi:
+    - pytest
+
+dev-tasks:
+  test-ok: pytest -k test_my_action_ok
+  test-fail: pytest -k test_my_action_fail
+  # If multiple lines are set, each command is run sequentially
+  # (note that each line is split  with shlex and run as a command
+  # without shell expansion)
+  echo-arg1-arg2: |
+    python -m mylib arg1
+    python -m mylib arg2
+
+# Note: If the pythonpath is not specified, only the directory containing
+# the `package.yaml` is added to the pythonpath. i.e.: it's the same as:
+# pytonpath:
+#  - .
+pythonpath:
+  - src
+  - lib
+  - tests
+
+packaging:
+  exclude:
+    - ./tests/** # tests don't need to be packaged
+    - ./.git/**
+    - ./.vscode/**
+    - ./devdata/**
+    - ./output/**
+    - ./venv/**
+    - ./.venv/**
+    - ./.DS_store/**
+    - ./**/*.pyc
+    - ./**/*.zip
+
+anything-else: is ignored

@@ -90,9 +90,9 @@ def collect_package_metadata(package_dir: Path, datadir: str) -> str | int:
             "name": action_package.name,
             "description": package_description,
             "secrets": secrets,
+            "action_package_version": action_package_version,
             # This is the version of the metadata itself. Should be raised
             # when the info in the metadata itself changes.
-            "action_package_version": action_package_version,
             "metadata_version": 2,  # Version 2 means that the action package has a version now.
         }
 

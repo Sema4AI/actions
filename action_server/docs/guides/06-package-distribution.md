@@ -13,7 +13,7 @@ default all the files from the Action Package directory are recursively added
 to the `.zip`, and it's possible to customize files which shouldn't be added
 to the action server by specifying them in the `package.yaml` in the
 `packaging/exclude` section (entries are based on the
-[glob format](https://docs.python.org/3/library/glob.html).
+[glob format](https://docs.python.org/3/library/glob.html)).
 
 Example:
 
@@ -25,13 +25,11 @@ description: Automates dealing with the CRM.
 dependencies:
   conda-forge:
     - python=3.10.12
-    - pip=23.2.1
-    - robocorp-truststore=0.8.0
+    - uv=0.4.19
 
   pypi:
-    - robocorp-actions=0.1.0
+    - sema4ai-actions=1.0.1
     - robocorp=1.4.3
-    - pytz=2023.3
 
 packaging:
   exclude:
@@ -42,6 +40,9 @@ packaging:
 
 Note: using `action-server package build` with the `package.yaml` above will
 create a `.zip` named: `crm-automation.zip` in the current directory.
+
+Note: A file named `__action_server_metadata__.json` will be added to the root of the zip file,
+containing the metadata of the `Action Package` (see: [Package Metadata](./15-package-metadata.md) for more details).
 
 # Documentation for the action package
 
@@ -71,37 +72,3 @@ Note: if `--output-dir` is not given, the current directory will be used.
 
 Note: `--override` can be given to override the contents of the directory
 without asking for confirmation.
-
-# Collecting metadata from an Action Package:
-
-To collect metadata from a given Action Package (which must be extracted in the
-filesystem), it's possible to run:
-
-`action-server package metadata`
-
-By doing so it'll write to `stdout` the metadata from the Action Package
-(in version `0.2.0` this only includes one `openapi.json` entry with the
-`openapi.json` contents, but it's expected that this will have more information
-in the future).
-
-Note: logging may still be written to `stderr` and if the process returns with
-a non-zero value the `stderr` should have information on what failed.
-
-From action-server `0.3.0` onwards, data on the expected secrets is also available
-in the returned metadata.
-
-The full structure given in the output is something as:
-
-```yaml
-openapi.json: <OpenAPI Contents>
-
-metadata: # Note: optional as no additional metadata may be needed
-  secrets: # Note: optional as secrets may not be there
-    <url-for-secret>:
-      action: <action-name>
-      actionPackage: <action-package-name>
-      secrets:
-        <secret-name>:
-          description: <secret description -- only available when used with sema4ai-actions 0.5.0 onwards>
-          type: Secret
-```

@@ -196,6 +196,25 @@ def build_package(
 
             exclude_patterns.append(pat)
 
+    # Check the spec version
+    spec_version = package_yaml_contents.get("spec-version", "v1")
+
+    if not isinstance(spec_version, str):
+        raise ActionServerValidationError(
+            "Expected 'spec-version' in package.yaml to be a str."
+        )
+
+    if spec_version not in ("v1", "v2"):
+        raise ActionServerValidationError(
+            f"This Action Server version can only work with `Action Packages` that have 'spec-version' set to either 'v1' or 'v2'. Found: {spec_version}."
+        )
+
+    if spec_version == "v1":
+        if "pythonpath" in package_yaml_contents:
+            raise ActionServerValidationError(
+                "The 'pythonpath' field is not supported in v1 of the Action Package specification. Please update the spec-version to v2 (this Action Package will require Action Server v2.0.0 or later to run)."
+            )
+
     # `package metadata`` will validate everything and as it's
     # in-memory it should not affect existing data. We still need the system
     # mutex lock on the datadir due to environment updates that can't happen in

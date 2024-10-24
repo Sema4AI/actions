@@ -1,7 +1,7 @@
 ## Getting request data (such as headers) in Actions
 
-Starting with `robocorp-actions 0.1.0`, it's possible to collect data from the
-received request by creating a `request: Request` argument in the `@action`.
+It's possible to collect data from the received request by creating a `request: Request`
+argument in the `@action`.
 
 The data currently available in the request is:
 
@@ -13,7 +13,7 @@ Note that the access to headers and cookies is case-insensitive.
 ### Example:
 
 ```
-from robocorp.actions import action, Request
+from sema4ai.actions import action, Request
 
 @action
 def my_action(request: Request):
@@ -25,4 +25,4 @@ def my_action(request: Request):
 Note: for testing it's possible to set the `request` (with its `headers` and `cookies`)
 using the `--json-input`.
 
-In a production environment it'll be provided by the Action Server.
+In a production environment it'll be provided by the `Action Server`.

@@ -1,0 +1,26 @@
+name: Action Package Example
+description: Example Integrating pytest, ruff, isort and mypy
+version: 0.0.1
+spec-version: v55
+
+dependencies:
+  conda-forge:
+    - python=3.10.14
+    - uv=0.4.17
+  pypi:
+    - sema4ai-actions=1.0.1
+
+packaging:
+  exclude:
+    - ./tests/** # tests don't need to be packaged
+    - ./.git/**
+    - ./.vscode/**
+    - ./devdata/**
+    - ./output/**
+    - ./venv/**
+    - ./.venv/**
+    - ./.DS_store/**
+    - ./**/*.pyc
+    - ./**/*.zip
+
+anything-else: is ignored

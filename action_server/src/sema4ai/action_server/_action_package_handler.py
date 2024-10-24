@@ -181,9 +181,13 @@ class ActionPackageHandler:
         """
         import os
 
+        from sema4ai.action_server._errors_action_server import (
+            ActionServerValidationError,
+        )
         from sema4ai.action_server.vendored_deps.action_package_handling.cli_errors import (
             ActionPackageError,
         )
+        from sema4ai.action_server.vendored_deps.termcolors import bold_yellow
 
         if not self.package_yaml_exists:
             log.info(
@@ -194,6 +198,23 @@ class ActionPackageHandler:
             use_env = {}
         else:
             from ._rcc import get_rcc
+
+            if self._package_yaml_contents:
+                # Verify the version of the package.yaml file.
+                spec_version = self._package_yaml_contents.get("spec-version")
+                if not spec_version:
+                    log.warn(
+                        bold_yellow(
+                            "The `spec-version` field is missing from `package.yaml`.\n"
+                            "It's recommended to update your package.yaml file to include the `spec-version` field.\n"
+                            "See: https://github.com/Sema4AI/actions/blob/master/action_server/docs/guides/01-package-yaml.md for more details."
+                        )
+                    )
+
+                elif spec_version not in ("v1", "v2"):
+                    raise ActionServerValidationError(
+                        f"This version of the Action Server only supports `spec-version` `v1` or `v2`. Found: `{spec_version}`."
+                    )
 
             log.info(
                 "Action package seems ok. "
@@ -219,6 +240,16 @@ class ActionPackageHandler:
             use_env = env_info.result.env
 
         pythonpath_entries = self.get_pythonpath_entries()
+
+        if pythonpath_entries != ["."]:
+            if self._package_yaml_contents:
+                spec_version = self._package_yaml_contents.get("spec-version")
+                if not spec_version:
+                    log.critical(
+                        "The `pythonpath` entries in `package.yaml` are only supported in `spec-version: v2`.\n"
+                        f"Please update {self._original_package_yaml}\n  to include the `spec-version` field.\n"
+                        "See: https://github.com/Sema4AI/actions/blob/master/action_server/docs/guides/01-package-yaml.md for more details."
+                    )
 
         package_root = self.package_root
         abspath_entries = []
