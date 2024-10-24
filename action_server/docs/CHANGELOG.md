@@ -4,7 +4,7 @@
 
 ## 2.0.0 - 2024-10-24
 
-- `RCC` is now updated to `v17.30.0`.
+- `RCC` is now updated to `v18.3.0`.
 - Changes in `package.yaml`:
   - `dev-dependencies` can now be used to install dependencies in a development environment.
   - `dev-tasks` can be used to run tasks in the development environment.
