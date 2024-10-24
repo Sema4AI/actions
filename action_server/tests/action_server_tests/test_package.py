@@ -124,6 +124,27 @@ def test_package_zip_no_actions(datadir):
     assert "No actions found" in output.stderr
 
 
+def test_package_pack_v2_fields_but_not_v2_marked(datadir):
+    from sema4ai.action_server._selftest import sema4ai_action_server_run
+
+    output = sema4ai_action_server_run(
+        [
+            "package",
+            "build",
+            "--output-dir",
+            str(datadir),
+            "--datadir",
+            str(datadir / "data"),
+        ],
+        returncode=1,
+        cwd=datadir / "pack_v2_fields_but_not_v2_marked",
+    )
+    assert (
+        "The 'pythonpath' field is not supported in v1 of the Action Package specification. Please update the spec-version to v2"
+        in output.stderr
+    )
+
+
 def test_package_metadata(datadir, data_regression):
     from sema4ai.action_server._selftest import sema4ai_action_server_run
 

@@ -33,7 +33,7 @@ def handle_new_project(directory: str = ".", template_name: str = "") -> int:
     except Exception as e:
         log.warning(
             bold_yellow(
-                bold_yellow("Refreshing templates failed, reason: \n")
+                "Refreshing templates failed, reason: \n"
                 + f"{e}\n"
                 + "Already cached templates will be used if available."
             )
