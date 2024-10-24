@@ -13,6 +13,8 @@
       be able to understand the new `pythonpath` field, thus, action packages making use of it
       will not work with older versions of the `Action Server`.
 
+See: https://github.com/Sema4AI/actions/blob/master/action_server/docs/guides/14-dev-tasks.md for more information on how to use dev-tasks.
+
 ## 1.1.2 - 2024-10-17
 
 - Fix the high security issues in backend and frontend
