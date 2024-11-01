@@ -4,7 +4,7 @@ from ast import FunctionDef
 from typing import Any, Dict, Optional, Protocol, overload
 
 if typing.TYPE_CHECKING:
-    from sema4ai.actions._action_context import ActionContext
+    from sema4ai.actions._action_context import RequestContexts
 
 
 class EPManagedParameters(Protocol):
@@ -44,7 +44,7 @@ class EPManagedParameters(Protocol):
     def inject_managed_params(
         self,
         sig: inspect.Signature,
-        action_context: Optional["ActionContext"],
+        request_contexts: Optional["RequestContexts"],
         new_kwargs: Dict[str, Any],
         original_kwargs: Dict[str, Any],
     ) -> Dict[str, Any]:
@@ -53,7 +53,7 @@ class EPManagedParameters(Protocol):
 
         Args:
             sig: The signature of the function being called.
-            action_context: The action context (may be None).
+            request_contexts: The request contexts (may be None).
             new_kwargs: The new kwargs (where the parameters should be injected).
             original_kwargs: The original kwargs passed to the function.
         """
