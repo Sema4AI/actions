@@ -19,7 +19,7 @@ from sema4ai.actions._customization._plugin_manager import PluginManager
 from sema4ai.actions._protocols import IAction
 
 if typing.TYPE_CHECKING:
-    from sema4ai.actions._action_context import ActionContext
+    from sema4ai.actions._action_context import RequestContexts
 
 
 def list_actions(
@@ -494,16 +494,20 @@ def run(
                         try:
                             if json_loaded_arguments is not None:
                                 kwargs = copy.deepcopy(json_loaded_arguments)
-                                kwargs, action_context = _validate_and_convert_kwargs(
+                                kwargs, request_contexts = _validate_and_convert_kwargs(
                                     pm, action, kwargs
                                 )
 
                             else:
-                                kwargs, action_context = _normalize_arguments(
+                                kwargs, request_contexts = _normalize_arguments(
                                     pm, action, additional_arguments or []
                                 )
 
-                            set_current_action_context(action_context)
+                            set_current_action_context(
+                                request_contexts.action_context
+                                if request_contexts is not None
+                                else None
+                            )
 
                             if print_input and json_loaded_arguments is not None:
                                 input_as_json_str = json.dumps(
@@ -670,7 +674,7 @@ def check_boolean(value):
 
 def _validate_and_convert_kwargs(
     pm: PluginManager, action: IAction, kwargs: Dict[str, Any]
-) -> tuple[Dict[str, Any], Optional["ActionContext"]]:
+) -> tuple[Dict[str, Any], Optional["RequestContexts"]]:
     from typing import get_type_hints
 
     from sema4ai.actions._exceptions import InvalidArgumentsError
@@ -737,12 +741,14 @@ def _validate_and_convert_kwargs(
 
                 new_kwargs[param_name] = passed_value
 
-    action_context = None
+    request_contexts = None
     if pm.has_instance(EPManagedParameters):
         ep_managed_parameters = pm.get_instance(EPManagedParameters)
-        action_context = ep_managed_parameters.get_action_context(new_kwargs, kwargs)
+        request_contexts = ep_managed_parameters.get_request_contexts(
+            new_kwargs, kwargs
+        )
 
-    new_kwargs = _inject_managed_params(pm, sig, action_context, new_kwargs, kwargs)
+    new_kwargs = _inject_managed_params(pm, sig, request_contexts, new_kwargs, kwargs)
     error_message = ""
     try:
         sig.bind(**new_kwargs)
@@ -751,20 +757,20 @@ def _validate_and_convert_kwargs(
     if error_message:
         raise InvalidArgumentsError(error_message)
 
-    return new_kwargs, action_context
+    return new_kwargs, request_contexts
 
 
 def _inject_managed_params(
     pm: PluginManager,
     sig: inspect.Signature,
-    action_context: Optional["ActionContext"],
+    request_contexts: Optional["RequestContexts"],
     new_kwargs: Dict[str, Any],
     original_kwargs: Dict[str, Any],
 ) -> Dict[str, Any]:
     if pm.has_instance(EPManagedParameters):
         ep_managed_parameters = pm.get_instance(EPManagedParameters)
         return ep_managed_parameters.inject_managed_params(
-            sig, action_context, new_kwargs, original_kwargs
+            sig, request_contexts, new_kwargs, original_kwargs
         )
     return new_kwargs
 
@@ -876,7 +882,7 @@ def _get_managed_param_type(
 
 def _normalize_arguments(
     pm: PluginManager, action: IAction, args: list[str]
-) -> tuple[Dict[str, Any], Optional["ActionContext"]]:
+) -> tuple[Dict[str, Any], Optional["RequestContexts"]]:
     from typing import get_type_hints
 
     from sema4ai.actions._exceptions import InvalidArgumentsError
@@ -894,10 +900,13 @@ def _normalize_arguments(
     )
 
     # Add arguments to the parser based on the function signature and type hints
+    found_names = []
+
     for param_name, param in sig.parameters.items():
         if _is_managed_param(pm, param.name, param=param):
             continue
 
+        found_names.append(param_name)
         param_type = type_hints.get(param_name)
 
         if param_type:
@@ -939,8 +948,16 @@ def _normalize_arguments(
 
     # Call the user function with the parsed arguments.
     kwargs = {}
-    for param_name in sig.parameters:
-        param_value = getattr(parsed_args, param_name)
+    for param_name in found_names:
+        try:
+            param_value = getattr(parsed_args, param_name)
+        except AttributeError:
+            msg = f"Argument: {param_name} not found."
+            raise InvalidArgumentsError(
+                f"It's not possible to call: '{method_name}' because the passed arguments don't match the expected signature.\n{_get_usage(parser)}.\n{msg}"
+            )
+
+        param_type = type_hints.get(param_name)
 
         if param_type not in SUPPORTED_TYPES_IN_SCHEMA:
             model_validate = getattr(param_type, "model_validate", None)
@@ -955,8 +972,8 @@ def _normalize_arguments(
 
         kwargs[param_name] = param_value
 
-    kwargs, action_context = _validate_and_convert_kwargs(pm, action, kwargs)
-    return kwargs, action_context
+    kwargs, request_contexts = _validate_and_convert_kwargs(pm, action, kwargs)
+    return kwargs, request_contexts
 
 
 def _get_usage(parser) -> str:

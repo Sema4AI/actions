@@ -6,6 +6,8 @@
 # `obj.model_dump(mode="json")`
 SUPPORTED_TYPES_IN_SCHEMA = (str, int, float, bool)
 
-DEFAULT_ACTION_SEARCH_GLOB = "*action*.py"
+DEFAULT_ACTION_SEARCH_GLOB = (
+    "*action*.py|*query*.py|*queries*.py|*predict*.py|*predicts*.py"
+)
 
 MODULE_ENTRY_POINT = "sema4ai.actions"

@@ -22,6 +22,32 @@ _map_python_type_to_user_type = {
 }
 
 
+def get_datasources_from_annotation_args(
+    annotation_args, filename: str, name: str
+) -> dict[str, Any]:
+    from sema4ai.actions._exceptions import ActionsCollectError
+
+    error_message = f"""
+Invalid DataSource annotation found.
+
+The DataSource must always be annotated with a DataSourceSpec:
+(i.e.: `Annotated[DataSource, DataSourceSpec(name="datasource_name", engine="postgres")]`) 
+
+File with @action: {filename}
+@action name: {name}
+"""
+    if not annotation_args or len(annotation_args) != 2:
+        raise ActionsCollectError(error_message)
+
+    datasource_spec = annotation_args[1]
+    if datasource_spec.__class__.__name__ != "DataSourceSpec":
+        raise ActionsCollectError(
+            f"Second parameter in Annotation of DataSource is not a DataSourceSpec.\n{error_message}"
+        )
+
+    return datasource_spec.get_metadata()
+
+
 def get_provider_and_scope_from_annotation_args(
     annotation_args, filename: str, name: str
 ) -> tuple[str, list[str]]:
@@ -199,6 +225,12 @@ class Action:
                 tp = _get_managed_param_type(self._pm, param.name, param=param).__name__
 
                 dct: dict[str, Any] = {"type": tp}
+
+                # Note: the description may be overridden in the datasource.
+                desc = param_name_to_description.get(param.name)
+                if desc:
+                    dct["description"] = desc
+
                 if tp == "OAuth2Secret":
                     # In this case we need to make some introspection to get additional information
                     # on the type (provider, scopes, ...)
@@ -212,9 +244,14 @@ class Action:
                     dct["provider"] = provider_str
                     dct["scopes"] = scope_strs
 
-                desc = param_name_to_description.get(param.name)
-                if desc:
-                    dct["description"] = desc
+                elif tp == "DataSource":
+                    annotation_args = get_args(param.annotation)
+                    dct.update(
+                        get_datasources_from_annotation_args(
+                            annotation_args, self.filename, self.name
+                        )
+                    )
+
                 managed_params_schema[param.name] = dct
 
         return managed_params_schema

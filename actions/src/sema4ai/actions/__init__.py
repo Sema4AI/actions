@@ -101,9 +101,16 @@ def action(*args, **kwargs):
             if not isinstance(display_name, str):
                 raise ValueError("Expected 'display_name' argument to be a str.")
 
+        kind = kwargs.pop("kind", "action")
+        if kind is not None:
+            if not isinstance(kind, str):
+                raise ValueError("Expected 'kind' argument to be a str.")
+
         if kwargs:
+            # Note: "query" is internal and should not be used by users (so, don't
+            # expose it in the public API).
             raise ValueError(
-                f"Arguments accepted by @action: ['is_consequential']. Received arguments: {list(kwargs.keys())}"
+                f"Arguments accepted by @action: ['is_consequential', 'display_name']. Received arguments: {list(kwargs.keys())}"
             )
 
         # When an action is found, register it in the framework as a target for execution.
@@ -112,6 +119,7 @@ def action(*args, **kwargs):
             options={
                 "is_consequential": is_consequential,
                 "display_name": display_name,
+                "kind": kind,
             },
         )
 

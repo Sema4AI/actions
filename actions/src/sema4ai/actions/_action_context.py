@@ -62,7 +62,7 @@ def _is_robocorp_log_available():
     return True
 
 
-class ActionContext:
+class BaseContext:
     """
     This is data received as input which may or may not be encrypted.
 
@@ -114,7 +114,7 @@ class ActionContext:
         loaded_data = json.loads(base64.b64decode(data.encode("ascii")).decode("utf-8"))
         if not isinstance(loaded_data, dict):
             raise RuntimeError(
-                "Expected 'X-Action-Context' header to have json contents."
+                f"Expected {self._header_name()} header to have json contents."
             )
 
         # Ok, we have the basic info, now, this info may be encrypted or not
@@ -169,7 +169,7 @@ class ActionContext:
 
             if not keys:
                 raise RuntimeError(
-                    "The information in the X-Action-Server seems to be encrypted, but decryption keys are not available in ACTION_SERVER_DECRYPT_KEYS."
+                    f"The information in the {self._header_name()} seems to be encrypted, but decryption keys are not available in ACTION_SERVER_DECRYPT_KEYS."
                 )
 
             cipher = self._encrypted_data["cipher"]
@@ -199,26 +199,26 @@ class ActionContext:
                 cipher_decoded_base_64: bytes = base64.b64decode(cipher)
             except Exception:
                 raise RuntimeError(
-                    "Unable to decode the 'cipher' field passed to X-Action-Context as base64."
+                    f"Unable to decode the 'cipher' field passed to {self._header_name()} as base64."
                 )
 
             try:
                 iv_decoded_base_64: bytes = base64.b64decode(iv)
             except Exception:
                 raise RuntimeError(
-                    "Unable to decode the 'iv' field passed to X-Action-Context as base64."
+                    f"Unable to decode the 'iv' field passed to {self._header_name()} as base64."
                 )
 
             try:
                 auth_tag_decoded_base_64 = base64.b64decode(auth_tag)
             except Exception:
                 raise RuntimeError(
-                    "Unable to decode the 'auth-tag' field passed to X-Action-Context as base64."
+                    f"Unable to decode the 'auth-tag' field passed to {self._header_name()} as base64."
                 )
 
             if algorithm != "aes256-gcm":
                 raise RuntimeError(
-                    f"Unable to recognize X-Action-Context encryption algorithm: {algorithm}"
+                    f"Unable to recognize {self._header_name()} encryption algorithm: {algorithm}"
                 )
 
             for key in keys:
@@ -235,13 +235,37 @@ class ActionContext:
                     continue
             else:
                 raise RuntimeError(
-                    "It was not possible to decode the X-Action-Context header with any of the available keys."
+                    f"It was not possible to decode the {self._header_name()} header with any of the available keys."
                 )
 
             self._raw_data = json.loads(raw_data)
             self._hide_secrets()
 
         return self._raw_data
+
+    def _hide_secrets(self):
+        """
+        Subclasses can implement this method to hide sensitive data.
+        """
+
+    @classmethod
+    def _header_name(cls) -> str:
+        raise NotImplementedError("Subclasses should implement this method.")
+
+    @classmethod
+    def from_request(cls, request: Optional["Request"]) -> Optional["BaseContext"]:
+        if not request:
+            return None
+        data = request.headers.get(cls._header_name())
+        if data is None:
+            return None
+        return cls(data)
+
+
+class ActionContext(BaseContext):
+    @classmethod
+    def _header_name(cls) -> str:
+        return "x-action-context"
 
     def _hide_secrets(self):
         secrets = self._raw_data.get("secrets")
@@ -254,11 +278,59 @@ class ActionContext:
                         log.hide_from_output(secret_value)
                         log.hide_from_output(repr(secret_value))
 
+
+class DataContext(BaseContext):
     @classmethod
-    def from_request(cls, request: Optional["Request"]) -> Optional["ActionContext"]:
-        if not request:
-            return None
-        data = request.headers.get("x-action-context")
-        if data is None:
-            return None
-        return ActionContext(data)
+    def _header_name(cls) -> str:
+        return "x-data-context"
+
+    def _hide_secrets(self):
+        datasources = self._raw_data.get("datasources")
+        if datasources and isinstance(datasources, dict):
+            if _is_robocorp_log_available():
+                from robocorp import log
+
+                for datasource in datasources.values():
+                    if isinstance(datasource, dict):
+                        secret_value = datasource.get("password")
+                        if isinstance(secret_value, str):
+                            log.hide_from_output(secret_value)
+                            log.hide_from_output(repr(secret_value))
+
+
+class InvocationContext(BaseContext):
+    @classmethod
+    def _header_name(cls) -> str:
+        return "x-invocation-context"
+
+
+class RequestContexts:
+    def __init__(self, request: Optional["Request"]):
+        self._request = request
+        self._data_context: Optional[DataContext] = None
+        self._action_context: Optional[ActionContext] = None
+        self._invocation_context: Optional[InvocationContext] = None
+
+    @property
+    def data_context(self) -> Optional[DataContext]:
+        if self._data_context is None and self._request is not None:
+            self._data_context = typing.cast(
+                DataContext, DataContext.from_request(self._request)
+            )
+        return self._data_context
+
+    @property
+    def action_context(self) -> Optional[ActionContext]:
+        if self._action_context is None and self._request is not None:
+            self._action_context = typing.cast(
+                ActionContext, ActionContext.from_request(self._request)
+            )
+        return self._action_context
+
+    @property
+    def invocation_context(self) -> Optional[InvocationContext]:
+        if self._invocation_context is None and self._request is not None:
+            self._invocation_context = typing.cast(
+                InvocationContext, InvocationContext.from_request(self._request)
+            )
+        return self._invocation_context
