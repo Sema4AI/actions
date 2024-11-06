@@ -115,6 +115,12 @@ _DEFAULT_OAUTH2_SETTINGS: dict[str, OAuth2ProviderSettings] = {
         tokenEndpoint="/oauth2/v2.0/token",
         # server=settings.server,
     ),
+    "salesforce": OAuth2ProviderSettings(
+        server="https://login.salesforce.com",
+        tokenEndpoint="/services/oauth2/token",
+        revocationEndpoint="/services/oauth2/revoke",
+        authorizationEndpoint="/services/oauth2/authorize",
+    ),
 }
 
 
