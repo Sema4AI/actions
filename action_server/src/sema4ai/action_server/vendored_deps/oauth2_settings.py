@@ -115,6 +115,12 @@ _DEFAULT_OAUTH2_SETTINGS: dict[str, OAuth2ProviderSettings] = {
         tokenEndpoint="/oauth2/v2.0/token",
         # server=settings.server,
     ),
+    "salesforce": OAuth2ProviderSettings(
+        server="https://login.salesforce.com",
+        tokenEndpoint="/services/oauth2/token",
+        revocationEndpoint="/services/oauth2/revoke",
+        authorizationEndpoint="/services/oauth2/authorize",
+    ),
 }
 
 
@@ -146,7 +152,6 @@ def _get_oauthlib2_user_settings(
 
 def _get_oauthlib2_sema4ai_settings(provider: str) -> dict:
     import yaml
-
     from sema4ai.action_server._oauth2 import get_sema4ai_provided_oauth2_config
 
     contents = get_sema4ai_provided_oauth2_config()
