@@ -152,6 +152,7 @@ def _get_oauthlib2_user_settings(
 
 def _get_oauthlib2_sema4ai_settings(provider: str) -> dict:
     import yaml
+
     from sema4ai.action_server._oauth2 import get_sema4ai_provided_oauth2_config
 
     contents = get_sema4ai_provided_oauth2_config()
