@@ -95,7 +95,7 @@ class _SimpleFileServer(BaseHTTPRequestHandler):
         content_length = int(self.headers.get("Content-Length", 0))
         content_type = self.headers.get("Content-Type")
         post_data = self.rfile.read(content_length)
-        if post_data and "multipart/form-data" not in content_type:
+        if post_data and content_type not in ["multipart/form-data", "application/octet-stream"]:
             try:
                 request_body = json.loads(post_data)
             except json.JSONDecodeError:
@@ -109,7 +109,7 @@ class _SimpleFileServer(BaseHTTPRequestHandler):
             request_body = {}
 
         if len(path_parts) == 1 and path_parts[0] == "upload":
-            assert "multipart/form-data" in content_type
+            assert content_type in ["multipart/form-data", "application/octet-stream"]
             self._send_response(200, headers={"Content-Type": "application/json"})
             return
 
