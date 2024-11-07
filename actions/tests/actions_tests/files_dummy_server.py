@@ -95,7 +95,10 @@ class _SimpleFileServer(BaseHTTPRequestHandler):
         content_length = int(self.headers.get("Content-Length", 0))
         content_type = self.headers.get("Content-Type")
         post_data = self.rfile.read(content_length)
-        if post_data and content_type not in ["multipart/form-data", "application/octet-stream"]:
+        if post_data and content_type not in [
+            "multipart/form-data",
+            "application/octet-stream",
+        ]:
             try:
                 request_body = json.loads(post_data)
             except json.JSONDecodeError:
