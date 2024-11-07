@@ -52,7 +52,13 @@ def collect_deps_pyprojects(root_pyproject: Path, found=None) -> Iterator[Path]:
     for key in dependencies:
         if key.startswith("sema4ai-"):
             dep_name = key[len("sema4ai-") :]
-            dep_pyproject = root_pyproject.parent.parent / dep_name / "pyproject.toml"
+
+            # Special case for http-helper
+            if dep_name == "http-helper":
+                dep_pyproject = root_pyproject.parent.parent / key / "pyproject.toml"
+            else:
+                dep_pyproject = root_pyproject.parent.parent / dep_name / "pyproject.toml"
+
             assert dep_pyproject.exists(), f"Expected {dep_pyproject} to exist."
             if dep_pyproject not in found:
                 found.add(dep_pyproject)
