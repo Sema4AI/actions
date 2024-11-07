@@ -275,10 +275,13 @@ def build_common_tasks(
                         # Changes something as:
                         # sema4ai-actions = "0.1.0"
                         # to:
-                        # sema4ai-actions = {path = "../log/", develop = true
-                        name = key[len("sema4ai-") :]
+                        # sema4ai-actions = {path = "../actions/", develop = true
+                        # Special case for http-helper which keeps the sema4ai- prefix
+                        name = key[len("sema4ai-"):]
+                        dir_name = key if name == "http-helper" else name
                         if all_packages or (projects and name in projects):
-                            dependencies[key] = dict(path=f"../{name}/", develop=True)
+                            dependencies[key] = dict(path=f"../{dir_name}/", develop=True)
+
             yield
         finally:
             for roundtrip in roundtrips:
