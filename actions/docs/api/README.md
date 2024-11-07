@@ -6,6 +6,7 @@
 
 - [`sema4ai.actions`](./sema4ai.actions.md#module-sema4aiactions): Sema4.ai Actions enables running your AI actions in the Sema4.ai Action Server.
 - [`sema4ai.actions.api`](./sema4ai.actions.api.md#module-sema4aiactionsapi): This module contains the public API for the actions.
+- [`sema4ai.actions.chat`](./sema4ai.actions.chat.md#module-sema4aiactionschat)
 - [`sema4ai.actions.cli`](./sema4ai.actions.cli.md#module-sema4aiactionscli)
 
 ## Classes
@@ -31,4 +32,11 @@
 - [`_fixtures.setup`](./sema4ai.actions._fixtures.md#function-setup): Run code before any actions start, or before each separate action.
 - [`_fixtures.teardown`](./sema4ai.actions._fixtures.md#function-teardown): Run code after actions have been run, or after each separate action.
 - [`api.collect_lint_errors`](./sema4ai.actions.api.md#function-collect_lint_errors): Provides lint errors from the contents of a file containing the `@action`s.
+- [`chat.attach_file`](./sema4ai.actions.chat.md#function-attach_file): Attaches a file to the current chat.
+- [`chat.attach_file_content`](./sema4ai.actions.chat.md#function-attach_file_content): Set the content of a file to be used in the current chat.
+- [`chat.attach_json`](./sema4ai.actions.chat.md#function-attach_json): Attach a file with JSON content to the current chat.
+- [`chat.attach_text`](./sema4ai.actions.chat.md#function-attach_text): Attach a file with text content to the current chat.
+- [`chat.get_file_content`](./sema4ai.actions.chat.md#function-get_file_content): Get the content of a file in the current action chat.
+- [`chat.get_json`](./sema4ai.actions.chat.md#function-get_json): Get the JSON content of a file in the current action chat.
+- [`chat.get_text`](./sema4ai.actions.chat.md#function-get_text): Get the text content of a file in the current action chat.
 - [`cli.main`](./sema4ai.actions.cli.md#function-main): Entry point for running actions from sema4ai-actions.
