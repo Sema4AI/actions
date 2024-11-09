@@ -122,7 +122,7 @@ class Settings:
 
     title: str = "Sema4.ai Action Server"
 
-    address: str = "localhost"
+    address: str = "0.0.0.0"  # Listen on all available network interfaces
     port: int = 8080
     verbose: bool = False
     db_file: str = "server.db"
