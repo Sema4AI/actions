@@ -75,12 +75,15 @@ def get_app() -> _CustomFastAPI:
     server = {"url": settings.server_url}
     app = _CustomFastAPI(title=settings.title, servers=[server], version=__version__)
 
+    # Warning: This server is open to the public
+    LOGGER.warning("The server is configured to be open to the public. Ensure this is intended.")
+
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
-        allow_methods=["*"],
-        allow_headers=["*"],
-        allow_credentials=True,
+        allow_methods=["*"],  # Allow all HTTP methods
+        allow_headers=["*"],  # Allow all headers
+        allow_credentials=True,  # Allow credentials (cookies, authorization headers, etc.)
     )
 
     app.add_exception_handler(_errors.RequestError, _errors.request_error_handler)  # type: ignore
