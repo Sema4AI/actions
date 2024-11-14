@@ -9,6 +9,7 @@
   options:
     display_name: null
     is_consequential: null
+    kind: action
   output_schema:
     description: ''
     type: integer
@@ -35,6 +36,7 @@
   options:
     display_name: null
     is_consequential: null
+    kind: action
   output_schema:
     description: The sum of v1 + v2.
     type: number
@@ -62,6 +64,7 @@
   options:
     display_name: null
     is_consequential: null
+    kind: action
   output_schema:
     description: The greeting for the person.
     type: string

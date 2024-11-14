@@ -22,6 +22,116 @@ if typing.TYPE_CHECKING:
     from sema4ai.actions._action_context import RequestContexts
 
 
+def metadata(
+    *,
+    path: str,
+    glob: Optional[str] = None,
+    __stream__: Optional[typing.IO] = None,
+    pm: Optional[PluginManager] = None,
+) -> int:
+    """
+    Prints the metadata available at a given path to the stdout in json format.
+
+    {
+        // This is added by sema4ai-actions
+        'actions-spec-version': 'v1',
+        'actions':[
+            {
+                "name": "action_name",
+                "line": 10,
+                "file": "/usr/code/projects/actions.py",
+                "docs": "Action docstring",
+            },
+            ...
+        ]
+        // This is added by sema4ai-data
+        'data-spec-version': 'v1',
+        'data': {
+            'datasources': [
+                {
+                    'name': 'datasource-name',
+                    'engine': 'sqlite',
+                },
+                ...
+            ],
+            'bootstrap-sql': [
+                {
+                    'sql': 'sql-to-execute',
+                    'required-datasources': ['datasource-name'],
+                    'created-datasources': ['datasource-name'],
+                },
+            ]
+        },
+    }
+
+    Args:
+        path: The path (file or directory) from where actions should be collected.
+    """
+    from contextlib import redirect_stdout
+
+    from sema4ai.actions._action import Context
+    from sema4ai.actions._collect_actions import collect_actions
+    from sema4ai.actions._exceptions import ActionsCollectError
+    from sema4ai.actions._protocols import ActionsListActionTypedDict
+
+    from ._collect_actions import update_pythonpath
+
+    p = Path(path)
+    context = Context()
+    if not p.exists():
+        context.show_error(f"Path: {path} does not exist")
+        return 1
+
+    if pm is None:
+        pm = PluginManager()
+
+    original_stdout = sys.stdout
+    if __stream__ is not None:
+        write_to = __stream__
+    else:
+        write_to = original_stdout
+
+    update_pythonpath(p.absolute())
+    with redirect_stdout(sys.stderr):
+        try:
+            action: IAction
+            actions_found: List[ActionsListActionTypedDict] = []
+            metadata_found: Dict[str, Any] = {
+                "actions-spec-version": "v1",
+                "actions": actions_found,
+            }
+            for action in collect_actions(pm, p, glob=glob):
+                entry: ActionsListActionTypedDict = {
+                    "name": action.name,
+                    "line": action.lineno,
+                    "file": action.filename,
+                    "docs": getattr(action.method, "__doc__") or "",
+                    "input_schema": action.input_schema,
+                    "output_schema": action.output_schema,
+                    "managed_params_schema": action.managed_params_schema,
+                    "options": action.options,
+                }
+                actions_found.append(entry)
+
+            try:
+                from sema4ai.data import metadata as data_metadata  # type: ignore
+            except ImportError:
+                pass
+            else:
+                metadata_found.update(data_metadata())
+
+            write_to.write(json.dumps(metadata_found))
+            write_to.flush()
+        except Exception as e:
+            if not isinstance(e, ActionsCollectError):
+                traceback.print_exc()
+            else:
+                context.show_error(str(e))
+            return 1
+
+    return 0
+
+
 def list_actions(
     *,
     path: str,

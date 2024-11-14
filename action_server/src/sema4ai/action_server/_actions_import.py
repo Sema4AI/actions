@@ -125,14 +125,18 @@ def import_action_package(
 
     try:
         # any sema4ai.actions version will do at this point.
-        v = _get_actions_version(env, import_path, "sema4ai.actions")
+        actions_library_version = _get_actions_version(
+            env, import_path, "sema4ai.actions"
+        )
     except Exception:
         ### TODO: Remove in the future!
 
         found_actions = False
         # Still support robocorp.actions for now (but warn the user).
         try:
-            v = _get_actions_version(env, import_path, "robocorp.actions")
+            actions_library_version = _get_actions_version(
+                env, import_path, "robocorp.actions"
+            )
             log.critical(
                 "Important: 'robocorp.actions' is deprecated!\n"
                 "Please change the 'robocorp-actions' dependency to 'sema4ai-actions'\n"
@@ -151,27 +155,31 @@ def import_action_package(
 
         expected_version = (0, 0, 7)
         expected_version_str = ".".join(str(x) for x in expected_version)
-        if v < expected_version:
-            v_as_str = ".".join(str(x) for x in v)
+        if actions_library_version < expected_version:
+            actions_library_version_str = ".".join(
+                str(x) for x in actions_library_version
+            )
 
             if package_yaml_exists:
                 raise ActionServerValidationError(
-                    f"Error, the `robocorp-actions` version is: {v_as_str}.\n"
+                    f"Error, the `robocorp-actions` version is: {actions_library_version_str}.\n"
                     f"Expected `robocorp-actions` version to be {expected_version_str} or higher.\n"
                     f"Please update the version in: {original_package_yaml}\n"
                 )
             else:
                 raise ActionServerValidationError(
-                    f"Error, the `robocorp-actions` version is: {v_as_str}.\n"
+                    f"Error, the `robocorp-actions` version is: {actions_library_version_str}.\n"
                     f"Expected it to be {expected_version_str} or higher.\n"
                     f"Please update the `robocorp-actions` version in your python environment (python: {sys.executable})\n"
                 )
 
         min_version_for_encryption_with_auth_tag = (0, 2, 1)
-        if v < min_version_for_encryption_with_auth_tag:
-            v_as_str = ".".join(str(x) for x in v)
+        if actions_library_version < min_version_for_encryption_with_auth_tag:
+            actions_library_version_str = ".".join(
+                str(x) for x in actions_library_version
+            )
             log.critical(
-                f"Warning: the `robocorp-actions` version is: {v_as_str}.\n"
+                f"Warning: the `robocorp-actions` version is: {actions_library_version_str}.\n"
                 f"To receive encrypted secrets, robocorp-actions 0.2.1 or newer is required.\n"
                 f"Please update the version in: {original_package_yaml}\n"
                 "(proceeding with initalization but actions receiving encrypted secrets will\n"
@@ -187,6 +195,7 @@ def import_action_package(
         disable_not_imported=disable_not_imported,
         skip_lint=skip_lint,
         whitelist=whitelist,
+        actions_library_version=actions_library_version,
     )
 
 
@@ -234,6 +243,7 @@ def _add_actions_to_db(
     disable_not_imported: bool,
     skip_lint: bool,
     whitelist: str,
+    actions_library_version: tuple[int, ...],
 ):
     from dataclasses import asdict
 
@@ -247,23 +257,28 @@ def _add_actions_to_db(
 
     python = get_python_exe_from_env(env)
 
+    if actions_library_version > (1, 0, 1):
+        command = "metadata"
+    else:
+        command = "list"
+
     if skip_lint:
-        code = """
+        code = f"""
 try:
     from sema4ai.actions import cli
 except:
     from robocorp.actions import cli
 
-cli.main(["list", "--skip-lint"])
+cli.main(["{command}", "--skip-lint"])
 """
     else:
-        code = """
+        code = f"""
 try:
     from sema4ai.actions import cli
 except:
     from robocorp.actions import cli
 
-cli.main(["list"])
+cli.main(["{command}"])
 """
     cmdline = [python, "-c", code]
 
@@ -315,10 +330,23 @@ cli.main(["list"])
             f"It was not possible to load as json the contents >>{stdout!r}<<"
         )
     else:
-        if not isinstance(actions_list_result, list):
-            raise RuntimeError(
-                f"Expected sema4ai.actions list to provide a list. Found: >>{stdout!r}<<"
-            )
+        if command == "metadata":
+            metadata_result = actions_list_result
+            if not isinstance(metadata_result, dict):
+                raise RuntimeError(
+                    f"Expected sema4ai.actions metadata to provide dictionary. Found: >>{stdout!r}<<"
+                )
+            actions_list_result = metadata_result.get("actions")
+            if not isinstance(actions_list_result, list):
+                raise RuntimeError(
+                    f"Expected sema4ai.actions metadata to provide dictionary with 'actions' key. Found: >>{stdout!r}<<"
+                )
+
+        elif command == "list":
+            if not isinstance(actions_list_result, list):
+                raise RuntimeError(
+                    f"Expected sema4ai.actions list to provide a list. Found: >>{stdout!r}<<"
+                )
 
         hook_on_actions_list(
             action_package,

@@ -7,7 +7,7 @@
 SUPPORTED_TYPES_IN_SCHEMA = (str, int, float, bool)
 
 DEFAULT_ACTION_SEARCH_GLOB = (
-    "*action*.py|*query*.py|*queries*.py|*predict*.py|*predicts*.py"
+    "*action*.py|*query*.py|*queries*.py|*predict*.py|*datasource*.py"
 )
 
 MODULE_ENTRY_POINT = "sema4ai.actions"

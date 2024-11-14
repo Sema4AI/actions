@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- The `options` of an `Action` now have a `kind` (the default being `action`, but other actions kinds can be set, for instance, `sema4ai-data` will contribute `query` and `predict` kinds).
+- The type `Annotated[DataSource, DataSourceSpec(...)]` is now handled as a managed argument.
+- New `python -m sema4.actions metadata` command is available and will also include the `metadata` from `sema4ai-data` if it's available as well as the metadata (actions list) from the `actions` found.
+- The seach glob to identify modules which should be automatically loaded to find definitions is now `"*action*.py|*query*.py|*queries*.py|*predict*.py|*datasource*.py"` (previously it was `"*action*.py"`)
+- Supports receiving an `x-data-context` header to initialize datasources in the `sema4ai-data` library.
+
 ## 1.0.1 - 2024-09-26
 
 - When running in frozen mode, `robocorp.log` will no longer be imported when the action context is requested.

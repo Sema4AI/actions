@@ -188,6 +188,29 @@ class _ArgDispatcher:
 
         return list_parser
 
+    def _create_metadata_parser(self, main_parser):
+        # Collect actions metadata
+        metadata_parser = main_parser.add_parser(
+            "metadata",
+            help="Provides output to stdout with json contents of the metadata available.",
+        )
+        metadata_parser.add_argument(
+            dest="path",
+            help="The directory or file from where the metadata should be collected (default is the current directory).",
+            nargs="?",
+            default=".",
+        )
+        metadata_parser.add_argument(
+            "--glob",
+            help=(
+                f"May be used to specify a glob to select from which files should be collected for the metadata (default '{_constants.DEFAULT_ACTION_SEARCH_GLOB}')"
+            ),
+        )
+
+        self._add_lint_argument(metadata_parser)
+
+        return metadata_parser
+
     def _create_argparser(self):
         import argparse
 
@@ -200,6 +223,7 @@ class _ArgDispatcher:
         subparsers = parser.add_subparsers(dest="command")
         self._create_run_parser(subparsers)
         self._create_list_actions_parser(subparsers)
+        self._create_metadata_parser(subparsers)
         return parser
 
     def parse_args(self, args: List[str]):
@@ -229,6 +253,7 @@ class _ActionsArgDispatcher(_ArgDispatcher):
         super().__init__(*args, **kwargs)
         self.register("list", self._list)
         self.register("run", self._run)
+        self.register("metadata", self._metadata)
         self._pm: Optional[PluginManager] = None
 
     @contextmanager
@@ -303,6 +328,22 @@ class _ActionsArgDispatcher(_ArgDispatcher):
                 return _commands.list_actions(
                     *args, __stream__=original_stdout, **kwargs
                 )
+
+    def _metadata(self, *args, **kwargs):
+        from contextlib import nullcontext, redirect_stdout
+
+        from sema4ai.actions import _commands
+
+        skip_lint = kwargs.pop("skip_lint", True)
+
+        original_stdout = sys.stdout
+
+        with redirect_stdout(sys.stderr):
+            ctx = (
+                self._register_lint(original_stdout) if not skip_lint else nullcontext()
+            )
+            with ctx:
+                return _commands.metadata(*args, __stream__=original_stdout, **kwargs)
 
     def _run(self, *args, **kwargs):
         from sema4ai.actions import _commands

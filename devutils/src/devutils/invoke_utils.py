@@ -57,7 +57,9 @@ def collect_deps_pyprojects(root_pyproject: Path, found=None) -> Iterator[Path]:
             if dep_name == "http-helper":
                 dep_pyproject = root_pyproject.parent.parent / key / "pyproject.toml"
             else:
-                dep_pyproject = root_pyproject.parent.parent / dep_name / "pyproject.toml"
+                dep_pyproject = (
+                    root_pyproject.parent.parent / dep_name / "pyproject.toml"
+                )
 
             assert dep_pyproject.exists(), f"Expected {dep_pyproject} to exist."
             if dep_pyproject not in found:
@@ -277,10 +279,12 @@ def build_common_tasks(
                         # to:
                         # sema4ai-actions = {path = "../actions/", develop = true
                         # Special case for http-helper which keeps the sema4ai- prefix
-                        name = key[len("sema4ai-"):]
+                        name = key[len("sema4ai-") :]
                         dir_name = key if name == "http-helper" else name
                         if all_packages or (projects and name in projects):
-                            dependencies[key] = dict(path=f"../{dir_name}/", develop=True)
+                            dependencies[key] = dict(
+                                path=f"../{dir_name}/", develop=True
+                            )
 
             yield
         finally:
@@ -362,7 +366,7 @@ def build_common_tasks(
     @task
     def test(ctx, test: Optional[str] = None):
         """Run unittests"""
-        cmd = "run pytest -rfE -vv"
+        cmd = "run pytest -rfE -vv --force-regen"
 
         if test:
             cmd += f" {test}"
