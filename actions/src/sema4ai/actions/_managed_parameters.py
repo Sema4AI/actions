@@ -212,7 +212,7 @@ class ManagedParameterHeuristicDataSource(ManagedParameterHeuristic):
         return None
 
     def _get_datasource_name(self, cls: type) -> Optional[str]:
-        from typing import Annotated, Literal, get_origin
+        from typing import Annotated
 
         try:
             from sema4ai.data import DataSource, DataSourceSpec  # type: ignore
@@ -240,7 +240,7 @@ class ManagedParameterHeuristicDataSource(ManagedParameterHeuristic):
                 except TypeError:
                     pass
 
-                if issubclass(found_type, Annotated):
+                if found_type == Annotated:
                     if issubclass(first_arg, DataSource):
                         args = typing.get_args(cls)
 

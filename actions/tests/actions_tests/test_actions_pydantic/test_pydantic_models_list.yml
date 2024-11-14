@@ -23,6 +23,7 @@
   options:
     display_name: null
     is_consequential: true
+    kind: action
   output_schema:
     properties:
       error:

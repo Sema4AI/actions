@@ -22,7 +22,7 @@ _map_python_type_to_user_type = {
 }
 
 
-def get_datasources_from_annotation_args(
+def get_datasource_metadata_from_annotation_args(
     annotation_args, filename: str, name: str
 ) -> dict[str, Any]:
     from sema4ai.actions._exceptions import ActionsCollectError
@@ -33,8 +33,8 @@ Invalid DataSource annotation found.
 The DataSource must always be annotated with a DataSourceSpec:
 (i.e.: `Annotated[DataSource, DataSourceSpec(name="datasource_name", engine="postgres")]`) 
 
-File with @action: {filename}
-@action name: {name}
+File with @action/query/predict: {filename}
+@action/query/predict name: {name}
 """
     if not annotation_args or len(annotation_args) != 2:
         raise ActionsCollectError(error_message)
@@ -247,7 +247,7 @@ class Action:
                 elif tp == "DataSource":
                     annotation_args = get_args(param.annotation)
                     dct.update(
-                        get_datasources_from_annotation_args(
+                        get_datasource_metadata_from_annotation_args(
                             annotation_args, self.filename, self.name
                         )
                     )

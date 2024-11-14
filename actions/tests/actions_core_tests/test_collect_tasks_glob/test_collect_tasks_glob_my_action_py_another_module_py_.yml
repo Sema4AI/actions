@@ -9,6 +9,7 @@
   options:
     display_name: null
     is_consequential: null
+    kind: action
   output_schema:
     description: ''
     type: string
@@ -23,6 +24,7 @@
   options:
     display_name: null
     is_consequential: null
+    kind: action
   output_schema:
     description: ''
     type: string
