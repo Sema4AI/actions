@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.1.0 - 2024-11-14
+
 - The `options` of an `Action` now have a `kind` (the default being `action`, but other actions kinds can be set, for instance, `sema4ai-data` will contribute `query` and `predict` kinds).
 - The type `Annotated[DataSource, DataSourceSpec(...)]` is now handled as a managed argument.
 - New `python -m sema4.actions metadata` command is available and will also include the `metadata` from `sema4ai-data` if it's available as well as the metadata (actions list) from the `actions` found.
