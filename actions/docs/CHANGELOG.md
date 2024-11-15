@@ -7,10 +7,10 @@
 - The `options` of an `Action` now have a `kind` (the default being `action`, but other actions kinds can be set, for instance, `sema4ai-data` will contribute `query` and `predict` kinds).
 - The type `Annotated[DataSource, DataSourceSpec(...)]` is now handled as a managed argument.
 - New `python -m sema4.actions metadata` command is available and will also include the `metadata` from `sema4ai-data` if it's available as well as the metadata (actions list) from the `actions` found.
-- The seach glob to identify modules which should be automatically loaded to find definitions is now `"*action*.py|*query*.py|*queries*.py|*predict*.py|*datasource*.py"` (previously it was `"*action*.py"`)
+- The search glob to identify modules which should be automatically loaded to find definitions is now `"*action*.py|*query*.py|*queries*.py|*predict*.py|*datasource*.py"` (previously it was `"*action*.py"`)
 - Supports receiving an `x-data-context` header to initialize datasources in the `sema4ai-data` library.
 - New `sema4ai.actions.chat` module which allows attaching files/data to the chat with the current agent.
-  - The `SEMA4AI_FILE_MANAGEMENT_URL` is expected to be set with the URL of the file management service.
+  - The `SEMA4AI_FILE_MANAGEMENT_URL` environment variable is expected to be set with the URL of the file management service.
     - For local development, it's possible to use the `file://` scheme as the URL to save files in the local file system (which will store files in the given directory).
   - Note: in production it's expected that the `invocation_context` is available in the action context, with details on the current agent/thread id.
   - Note: this is new functionality in the `sema4ai-actions` library, but other components (as Agent Server/Control Room) may still not fully support this feature.
