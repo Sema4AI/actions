@@ -8,7 +8,7 @@ class _Client:
         """
 
         :param file_management_url_value: If given uses this value for the url, otherwise
-        it will use the value of the FILE_MANAGEMENT_URL environment variable, if set.
+        it will use the value of the SEMA4AI_FILE_MANAGEMENT_URL environment variable, if set.
         """
         import os
         import urllib
@@ -16,14 +16,19 @@ class _Client:
         from sema4ai.actions import _uris
 
         if not file_management_url_value:
-            file_management_url_value = os.environ.get("FILE_MANAGEMENT_URL", "")
+            file_management_url_value = os.environ.get(
+                "SEMA4AI_FILE_MANAGEMENT_URL", ""
+            )
+            if not file_management_url_value:
+                # Backward compatibility
+                file_management_url_value = os.environ.get("FILE_MANAGEMENT_URL", "")
         else:
             file_management_url_value = file_management_url_value
 
         self._url = file_management_url_value
         if not self._url:
             raise ValueError(
-                """The FILE_MANAGEMENT_URL environment variable is not set.
+                """The SEMA4AI_FILE_MANAGEMENT_URL environment variable is not set.
 It must be set either to the service URL (https://localhost:56781/server)
 or to a local file system path (file:///path/to/directory) where
 files will be stored."""
