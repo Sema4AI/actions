@@ -57,7 +57,7 @@ def test_client_server_write_to_url(dummy_server):
 def test_actions_file_api(monkeypatch, tmpdir):
     from pathlib import Path
 
-    monkeypatch.setenv("FILE_MANAGEMENT_URL", Path(tmpdir).as_uri())
+    monkeypatch.setenv("SEMA4AI_FILE_MANAGEMENT_URL", Path(tmpdir).as_uri())
 
     from sema4ai.actions import chat
 
