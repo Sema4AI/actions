@@ -22,32 +22,6 @@ _map_python_type_to_user_type = {
 }
 
 
-def get_datasource_metadata_from_annotation_args(
-    annotation_args, filename: str, name: str
-) -> dict[str, Any]:
-    from sema4ai.actions._exceptions import ActionsCollectError
-
-    error_message = f"""
-Invalid DataSource annotation found.
-
-The DataSource must always be annotated with a DataSourceSpec:
-(i.e.: `Annotated[DataSource, DataSourceSpec(name="datasource_name", engine="postgres")]`) 
-
-File with @action/query/predict: {filename}
-@action/query/predict name: {name}
-"""
-    if not annotation_args or len(annotation_args) != 2:
-        raise ActionsCollectError(error_message)
-
-    datasource_spec = annotation_args[1]
-    if datasource_spec.__class__.__name__ != "DataSourceSpec":
-        raise ActionsCollectError(
-            f"Second parameter in Annotation of DataSource is not a DataSourceSpec.\n{error_message}"
-        )
-
-    return datasource_spec.get_metadata()
-
-
 def get_provider_and_scope_from_annotation_args(
     annotation_args, filename: str, name: str
 ) -> tuple[str, list[str]]:
@@ -245,12 +219,10 @@ class Action:
                     dct["scopes"] = scope_strs
 
                 elif tp == "DataSource":
-                    annotation_args = get_args(param.annotation)
-                    dct.update(
-                        get_datasource_metadata_from_annotation_args(
-                            annotation_args, self.filename, self.name
-                        )
-                    )
+                    # Just mark that a datasource is needed here, no need to add additional information
+                    # (the metadata on the actual datasources will be added as a separate node in the
+                    # metadata, not bound to arguments).
+                    pass
 
                 managed_params_schema[param.name] = dct
 

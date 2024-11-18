@@ -212,6 +212,14 @@ class ManagedParameterHeuristicDataSource(ManagedParameterHeuristic):
         return None
 
     def _get_datasource_name(self, cls: type) -> Optional[str]:
+        """
+        Args:
+            cls: The class to check.
+
+        Returns:
+            The datasource name if the class is a DataSource, otherwise None.
+            If the datasource is a union of DataSources, returns an empty string.
+        """
         from typing import Annotated
 
         try:
@@ -221,9 +229,7 @@ class ManagedParameterHeuristicDataSource(ManagedParameterHeuristic):
 
         try:
             if issubclass(cls, DataSource):
-                raise ValueError(
-                    'DataSource must be annotated with a DataSourceSpec. i.e.: `Annotated[DataSource, DataSourceSpec(name="datasource_name", engine="postgres")]`'
-                )
+                return ""  # i.e. DataSource is not bound to a namespace as it's not annotated.
         except TypeError:
             pass
 
@@ -235,7 +241,7 @@ class ManagedParameterHeuristicDataSource(ManagedParameterHeuristic):
                 try:
                     if issubclass(found_type, DataSource):
                         raise ValueError(
-                            'DataSource should not be parametrized, it must be annotated with a DataSourceSpec. i.e.: `Annotated[DataSource, DataSourceSpec(name="datasource_name", engine="postgres")]`'
+                            'DataSource should not be parametrized, it must be annotated with a DataSourceSpec. i.e.: `Annotated[DataSource, DataSourceSpec(name="datasource_name", engine="postgres")]`.\nFound: `{cls}`'
                         )
                 except TypeError:
                     pass
@@ -246,18 +252,21 @@ class ManagedParameterHeuristicDataSource(ManagedParameterHeuristic):
 
                         if len(args) <= 1:
                             raise ValueError(
-                                'DataSource must be always Annotated with DataSourceSpec. i.e.: `Annotated[DataSource, DataSourceSpec(name="datasource_name", engine="postgres")]`'
+                                'DataSource must be always Annotated with DataSourceSpec. i.e.: `Annotated[DataSource, DataSourceSpec(name="datasource_name", engine="postgres")]`.\nFound: `{cls}`'
                             )
 
                         if len(args) > 2:
                             raise ValueError(
-                                'DataSource must just be Annotated with DataSourceSpec. i.e.: `Annotated[DataSource, DataSourceSpec(name="datasource_name", engine="postgres")]`'
+                                f'DataSource must just be Annotated with DataSourceSpec. i.e.: `Annotated[DataSource, DataSourceSpec(name="datasource_name", engine="postgres")]`.\nFound: `{cls}`'
                             )
 
                         datasource_spec = args[1]
                         if not isinstance(datasource_spec, DataSourceSpec):
+                            if typing.get_origin(datasource_spec) == typing.Union:
+                                return ""  # Union means that more than one DataSource is being queried (thus it's not bound to a namespace)
+
                             raise ValueError(
-                                'DataSource must be Annotated with DataSourceSpec. i.e.: `Annotated[DataSource, DataSourceSpec(name="datasource_name", engine="postgres")]`'
+                                f'DataSource must be Annotated with DataSourceSpec. i.e.: `Annotated[DataSource, DataSourceSpec(name="datasource_name", engine="postgres")]`.\nFound: `{cls}`'
                             )
                         return datasource_spec.name
 
