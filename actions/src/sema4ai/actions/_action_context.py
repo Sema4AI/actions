@@ -285,17 +285,16 @@ class DataContext(BaseContext):
         return "x-data-context"
 
     def _hide_secrets(self):
-        datasources = self._raw_data.get("datasources")
-        if datasources and isinstance(datasources, dict):
+        data_server_config = self._raw_data.get("data-server")
+        if data_server_config and isinstance(data_server_config, dict):
             if _is_robocorp_log_available():
                 from robocorp import log
 
-                for datasource in datasources.values():
-                    if isinstance(datasource, dict):
-                        secret_value = datasource.get("password")
-                        if isinstance(secret_value, str):
-                            log.hide_from_output(secret_value)
-                            log.hide_from_output(repr(secret_value))
+                if isinstance(data_server_config, dict):
+                    secret_value = data_server_config.get("password")
+                    if isinstance(secret_value, str):
+                        log.hide_from_output(secret_value)
+                        log.hide_from_output(repr(secret_value))
 
 
 class InvocationContext(BaseContext):

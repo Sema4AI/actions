@@ -186,16 +186,19 @@ class ManagedParameterHeuristicDataSource(ManagedParameterHeuristic):
             if connection_value is not None:
                 # Gotten directly from the input.json (or command line)
                 # as a value in the root.
-                return use_class.model_validate(
-                    connection_value, datasource_name=datasource_name
-                )
+                use_class.setup_connection_from_input_json(connection_value)
+                return use_class.model_validate(datasource_name=datasource_name)
 
             elif request_contexts is not None:
-                return use_class.from_data_context(
-                    request_contexts.data_context,
-                    f"datasources/{param_name}",
-                    datasource_name,
+                use_class.setup_connection_from_data_context(
+                    request_contexts.data_context
                 )
+                return use_class.model_validate(datasource_name=datasource_name)
+
+            else:
+                use_class.setup_connection_from_env_vars()
+                return use_class.model_validate(datasource_name=datasource_name)
+
         return None
 
     def _is_data_source_annotation(self, cls: type) -> bool:

@@ -51,16 +51,10 @@ def metadata(
                 {
                     'name': 'datasource-name',
                     'engine': 'sqlite',
+                    'setup-sql': ['sql-to-execute', ...],
                 },
                 ...
             ],
-            'bootstrap-sql': [
-                {
-                    'sql': 'sql-to-execute',
-                    'required-datasources': ['datasource-name'],
-                    'created-datasources': ['datasource-name'],
-                },
-            ]
         },
     }
 
@@ -359,7 +353,10 @@ def run(
         0 if everything went well.
         1 if there was some error running the action.
     """
-    from sema4ai.actions._action import set_current_action_context
+    from sema4ai.actions._action import (
+        set_current_action_context,
+        set_current_requests_contexts,
+    )
     from sema4ai.actions._collect_actions import update_pythonpath
     from sema4ai.actions._response import ActionError, Response
 
@@ -619,6 +616,8 @@ def run(
                                 else None
                             )
 
+                            set_current_requests_contexts(request_contexts)
+
                             if print_input and json_loaded_arguments is not None:
                                 input_as_json_str = json.dumps(
                                     json_loaded_arguments, indent=4
@@ -678,6 +677,8 @@ def run(
                             ):
                                 after_action_run(action)
                             set_current_action(None)
+                            set_current_action_context(None)
+                            set_current_requests_contexts(None)
                             if action.failed:
                                 run_status = "ERROR"
                 finally:
