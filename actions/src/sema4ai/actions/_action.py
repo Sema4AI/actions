@@ -12,7 +12,7 @@ from sema4ai.actions._customization._plugin_manager import PluginManager
 from sema4ai.actions._protocols import IAction, IContext, Status
 
 if typing.TYPE_CHECKING:
-    from sema4ai.actions._action_context import ActionContext
+    from sema4ai.actions._action_context import ActionContext, RequestContexts
 
 _map_python_type_to_user_type = {
     str: "string",
@@ -331,6 +331,7 @@ class Action:
 class _ActionContext:
     _current_action: Optional[IAction] = None
     _current_action_context: Optional["ActionContext"] = None
+    _current_requests_contexts: Optional["RequestContexts"] = None
 
 
 def set_current_action(action: Optional[IAction]):
@@ -347,6 +348,14 @@ def set_current_action_context(action_context: Optional["ActionContext"]):
 
 def get_current_action_context() -> Optional["ActionContext"]:
     return _ActionContext._current_action_context
+
+
+def set_current_requests_contexts(requests_contexts: Optional["RequestContexts"]):
+    _ActionContext._current_requests_contexts = requests_contexts
+
+
+def get_current_requests_contexts() -> Optional["RequestContexts"]:
+    return _ActionContext._current_requests_contexts
 
 
 class Context:
