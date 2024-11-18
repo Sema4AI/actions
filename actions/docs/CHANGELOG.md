@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 1.1.1 - 2024-11-18
+
+- Updates to work with the new `sema4ai-data` library.
+
 ## 1.1.0 - 2024-11-14
 
 - The `options` of an `Action` now have a `kind` (the default being `action`, but other actions kinds can be set, for instance, `sema4ai-data` will contribute `query` and `predict` kinds).
