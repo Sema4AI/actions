@@ -33,6 +33,7 @@ def collect_package_metadata(package_dir: Path, datadir: str) -> str | int:
     def on_actions_list(
         action_package: "ActionPackage",
         actions_list_result: list[ActionsListActionTypedDict],
+        data_package_metadata: dict | None,
     ):
         from sema4ai.action_server._server import build_url_api_run
 
@@ -93,8 +94,13 @@ def collect_package_metadata(package_dir: Path, datadir: str) -> str | int:
             "action_package_version": action_package_version,
             # This is the version of the metadata itself. Should be raised
             # when the info in the metadata itself changes.
-            "metadata_version": 2,  # Version 2 means that the action package has a version now.
+            # Version 2 means that the action package has a version now.
+            # Version 3 added 'data/datasources' to the metadata.
+            "metadata_version": 3,
         }
+
+        if data_package_metadata:
+            metadata["metadata"]["data"] = data_package_metadata
 
     def collect_metadata_and_cancel_startup(app: FastAPI) -> bool:
         nonlocal metadata
