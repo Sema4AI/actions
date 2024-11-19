@@ -13,9 +13,36 @@ from sema4ai.action_server._selftest import (
 )
 
 
+def _fix_file_info(info_json):
+    import os.path
+
+    if isinstance(info_json, dict):
+        # Recursively find `file` and use basename in any dict in the tree
+        for k, v in info_json.items():
+            if k == "file":
+                info_json[k] = os.path.basename(v)
+            elif isinstance(v, dict):
+                _fix_file_info(v)
+            elif isinstance(v, list):
+                _fix_file_info(v)
+    elif isinstance(info_json, list):
+        for info in info_json:
+            _fix_file_info(info)
+
+
+def _sort_datasources_in_data(data):
+    data["datasources"] = sorted(
+        data["datasources"], key=lambda x: (x["name"], x["defined-at"]["file"])
+    )
+
+
 def fix_metadata(metadata: dict) -> dict:
     assert "openapi.json" in metadata
     fix_openapi_json(metadata["openapi.json"])
+    data = metadata["metadata"].get("data")
+    if data:
+        _sort_datasources_in_data(data)
+        _fix_file_info(data)
     return metadata
 
 

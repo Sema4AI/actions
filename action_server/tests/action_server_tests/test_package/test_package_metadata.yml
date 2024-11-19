@@ -1,7 +1,7 @@
 metadata:
   action_package_version: 0.0.1
   description: pack1 description
-  metadata_version: 2
+  metadata_version: 3
   name: pack1 name
   secrets: {}
 openapi.json:

@@ -34,13 +34,14 @@ pydantic = "^2.9.2"
 pyyaml = "^6"
 python = "^3.10"
 requests = "^2"
-sema4ai-actions = "^1.0.1"
+sema4ai-actions = "^1.1.1"
 termcolor = "^2.4.0"
 uvicorn = "^0.30.6"
 websockets = "^13.1"
 cryptography = "^43.0.1"
 requests_oauthlib = "^2.0"
 watchfiles = "^0.24.0"
+sema4ai-http-helper = "^1.0.2"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -51,6 +52,7 @@ robocorp-log-pytest = "^0.0.2"
 types-psutil = "^5"
 pyoxidizer = "^0.24.0"
 types-jsonschema = "^4.22.0"
+sema4ai-data = "0.0.1"
 
 
 [tool.mypy]
