@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 2.1.0 - 2024-11-19
+
+- The `action-server metadata` command now provides a `data` field in the metadata containing the `datasources` collected
+  from data packages.
+
 ## 2.0.0 - 2024-10-24
 
 - `RCC` is now updated to `v18.3.0`.
