@@ -338,6 +338,9 @@ jobs:
   release:
     if: ${{ needs.deploy-s3.outputs.is_beta == 'false' }}
 
+    permissions:
+      contents: write # Needed to create release
+
     needs:
       - deploy-s3 # needed for is_beta
       - trigger-brew-workflow

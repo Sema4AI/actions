@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add `x-operation-kind` to the OpenAPI schema.
+
 ## 2.1.0 - 2024-11-19
 
 - The `action-server metadata` command now provides a `data` field in the metadata containing the `datasources` collected

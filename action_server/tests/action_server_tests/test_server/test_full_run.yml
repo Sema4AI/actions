@@ -62,6 +62,7 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
           description: Validation Error
       summary: Broken Action
+      x-operation-kind: action
   /api/actions/calculator/calculator-sum/run:
     post:
       description: Sums 2 numbers and returns them.
@@ -100,6 +101,7 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
           description: Validation Error
       summary: Calculator Sum
+      x-operation-kind: action
   /api/actions/greeter/greet/run:
     post:
       description: Provides a greeting for a person.
@@ -138,5 +140,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
           description: Validation Error
       summary: Greet
+      x-operation-kind: action
 servers:
 - url: http://localhost:0

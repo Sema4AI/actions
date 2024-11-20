@@ -73,5 +73,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
           description: Validation Error
       summary: Greet
+      x-operation-kind: action
 servers:
 - url: http://localhost:0

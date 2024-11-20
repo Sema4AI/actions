@@ -109,6 +109,7 @@ class _ActionRoutes:
                     continue
             display_name = _name_as_summary(action.name)
             options = action.options
+            action_kind = "action"
             if options:
                 options_as_dict = json.loads(options)
                 if options_as_dict:
@@ -116,11 +117,14 @@ class _ActionRoutes:
                     if display_name_in_options:
                         display_name = display_name_in_options
 
+                    action_kind = options_as_dict.get("kind", "action")
+
             func, openapi_extra = _actions_run.generate_func_from_action(
                 action_package, action, display_name
             )
             if action.is_consequential is not None:
                 openapi_extra["x-openai-isConsequential"] = action.is_consequential
+            openapi_extra["x-operation-kind"] = action_kind
 
             route_name = build_url_api_run(action_package.name, action.name)
             assert (
