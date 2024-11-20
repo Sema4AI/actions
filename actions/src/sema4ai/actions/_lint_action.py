@@ -207,19 +207,19 @@ def _make_error(
         )
 
 
-def _check_return_type(node: ast_module.FunctionDef) -> Iterator[Error]:
+def _check_return_type(node: ast_module.FunctionDef, kind: str) -> Iterator[Error]:
     return_type = node.returns
     if not return_type:
         yield _make_error(
             node,
-            "@action without return annotation defined "
+            f"@{kind} without return annotation defined "
             "(`str` considered as the return type).",
             severity=DiagnosticSeverity.Warning,
             coldelta=4,
         )
 
 
-def _check_return_statement(node: ast_module.FunctionDef) -> Iterator[Error]:
+def _check_return_statement(node: ast_module.FunctionDef, kind: str) -> Iterator[Error]:
     for _stack, maybe_return_node in _iter_nodes(node, recursive=True):
         if isinstance(maybe_return_node, ast_module.Return):
             break
@@ -227,13 +227,13 @@ def _check_return_statement(node: ast_module.FunctionDef) -> Iterator[Error]:
         # Return not found!
         yield _make_error(
             node,
-            "@action without a `return` (an `@action` must have a return value).",
+            f"@{kind} without a `return` (`@{kind}` must have a return value).",
             coldelta=4,
         )
 
 
 def _check_docstring_contents(
-    pm: Optional[PluginManager], node: ast_module.FunctionDef, docstring: str
+    pm: Optional[PluginManager], node: ast_module.FunctionDef, docstring: str, kind: str
 ) -> Iterator[Error]:
     import docstring_parser
 
@@ -254,7 +254,7 @@ def _check_docstring_contents(
             node,
             "No description found in docstring. "
             "Please update docstring to add it as an LLM needs this info "
-            "to understand when to call this action.",
+            f"to understand when to call this {kind}.",
             coldelta=4,
         )
         return
@@ -315,6 +315,44 @@ def _check_docstring_contents(
                 )
 
 
+def _is_action_decorator(decorator: ast_module.expr) -> bool:
+    return (isinstance(decorator, ast_module.Name) and decorator.id == "action") or (
+        isinstance(decorator, ast_module.Attribute)
+        and decorator.attr == "action"
+        and isinstance(decorator.value, ast_module.Name)
+        and decorator.value.id == "actions"
+    )
+
+
+def _is_query_decorator(decorator: ast_module.expr) -> bool:
+    return (isinstance(decorator, ast_module.Name) and decorator.id == "query") or (
+        isinstance(decorator, ast_module.Attribute)
+        and decorator.attr == "query"
+        and isinstance(decorator.value, ast_module.Name)
+        and decorator.value.id == "data"
+    )
+
+
+def _is_predict_decorator(decorator: ast_module.expr) -> bool:
+    return (isinstance(decorator, ast_module.Name) and decorator.id == "predict") or (
+        isinstance(decorator, ast_module.Attribute)
+        and decorator.attr == "predict"
+        and isinstance(decorator.value, ast_module.Name)
+        and decorator.value.id == "data"
+    )
+
+
+def _get_kind(decorator: ast_module.expr) -> str:
+    if _is_action_decorator(decorator):
+        return "action"
+    elif _is_query_decorator(decorator):
+        return "query"
+    elif _is_predict_decorator(decorator):
+        return "predict"
+    else:
+        return ""
+
+
 def iter_lint_errors(
     action_contents_file: Union[str, bytes], pm: Optional[PluginManager] = None
 ) -> Iterator[Error]:
@@ -322,33 +360,27 @@ def iter_lint_errors(
     for _stack, node in _iter_nodes(ast, recursive=False):
         if isinstance(node, ast_module.FunctionDef):
             for decorator in node.decorator_list:
-                if (
-                    isinstance(decorator, ast_module.Name) and decorator.id == "action"
-                ) or (
-                    isinstance(decorator, ast_module.Attribute)
-                    and decorator.attr == "action"
-                    and isinstance(decorator.value, ast_module.Name)
-                    and decorator.value.id == "actions"
-                ):
-                    # We found an @action. Do the needed checks.
+                kind = _get_kind(decorator)
+                if kind:
+                    # We found an @action/query/action. Do the needed checks.
 
                     # Check for docstring
                     docstring: str = ast_module.get_docstring(node) or ""
                     if docstring:
                         docstring = docstring.strip()
 
-                    yield from _check_return_type(node)
-                    yield from _check_return_statement(node)
+                    yield from _check_return_type(node, kind)
+                    yield from _check_return_statement(node, kind)
 
                     if not docstring:
                         yield _make_error(
                             node,
-                            "@action docstring not found. Please define it as this is what "
-                            "an LLM would use to decide whether to call this action.",
+                            f"@{kind} docstring not found. Please define it as this is what "
+                            f"an LLM would use to decide whether to call this {kind}.",
                             coldelta=4,
                         )
                     else:
-                        yield from _check_docstring_contents(pm, node, docstring)
+                        yield from _check_docstring_contents(pm, node, docstring, kind)
 
 
 _severity_id_to_severity = {

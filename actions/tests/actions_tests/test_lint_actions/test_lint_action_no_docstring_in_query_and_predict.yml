@@ -1,0 +1,64 @@
+- message: '@query without return annotation defined (`str` considered as the return
+    type).'
+  range:
+    end:
+      character: 13
+      line: 3
+    start:
+      character: 4
+      line: 3
+  severity: 2
+  source: sema4ai.actions
+- message: '@query without a `return` (`@query` must have a return value).'
+  range:
+    end:
+      character: 13
+      line: 3
+    start:
+      character: 4
+      line: 3
+  severity: 1
+  source: sema4ai.actions
+- message: '@query docstring not found. Please define it as this is what an LLM would
+    use to decide whether to call this query.'
+  range:
+    end:
+      character: 13
+      line: 3
+    start:
+      character: 4
+      line: 3
+  severity: 1
+  source: sema4ai.actions
+- message: '@predict without return annotation defined (`str` considered as the return
+    type).'
+  range:
+    end:
+      character: 13
+      line: 7
+    start:
+      character: 4
+      line: 7
+  severity: 2
+  source: sema4ai.actions
+- message: '@predict without a `return` (`@predict` must have a return value).'
+  range:
+    end:
+      character: 13
+      line: 7
+    start:
+      character: 4
+      line: 7
+  severity: 1
+  source: sema4ai.actions
+- message: '@predict docstring not found. Please define it as this is what an LLM
+    would use to decide whether to call this predict.'
+  range:
+    end:
+      character: 13
+      line: 7
+    start:
+      character: 4
+      line: 7
+  severity: 1
+  source: sema4ai.actions

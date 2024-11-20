@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Added linting for `@query` and `@predict` (missing docstring, missing return, etc).
+
 ## 1.1.1 - 2024-11-18
 
 - Updates to work with the new `sema4ai-data` library.
