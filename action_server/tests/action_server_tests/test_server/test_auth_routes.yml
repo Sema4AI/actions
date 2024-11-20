@@ -79,5 +79,6 @@ paths:
       security:
       - HTTPBearer: []
       summary: Greet
+      x-operation-kind: action
 servers:
 - url: http://localhost:0

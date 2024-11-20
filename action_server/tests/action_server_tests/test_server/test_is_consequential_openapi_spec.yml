@@ -73,5 +73,6 @@ paths:
           description: Validation Error
       summary: Calculator Sum
       x-openai-isConsequential: false
+      x-operation-kind: action
 servers:
 - url: http://localhost:0

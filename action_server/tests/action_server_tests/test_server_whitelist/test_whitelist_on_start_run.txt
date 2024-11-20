@@ -63,7 +63,8 @@
                             }
                         }
                     }
-                }
+                },
+                "x-operation-kind": "action"
             }
         }
     },

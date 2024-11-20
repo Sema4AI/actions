@@ -116,5 +116,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
           description: Validation Error
       summary: My Action
+      x-operation-kind: action
 servers:
 - url: http://localhost:0

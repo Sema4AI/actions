@@ -80,5 +80,6 @@ openapi.json:
                   $ref: '#/components/schemas/HTTPValidationError'
             description: Validation Error
         summary: Hello
+        x-operation-kind: action
   servers:
   - url: http://localhost:8080
