@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2.2.0 - 2024-11-20
+
 - Add `x-operation-kind` to the OpenAPI schema.
 
 ## 2.1.0 - 2024-11-19
