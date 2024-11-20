@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.1.2 - 2024-11-20
+
 - Added linting for `@query` and `@predict` (missing docstring, missing return, etc).
 
 ## 1.1.1 - 2024-11-18
