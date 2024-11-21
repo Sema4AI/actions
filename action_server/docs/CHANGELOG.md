@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+- The `x-action-context` and `x-data-context` information is now expected to be in the body of the request when the `x-action-invocation-context` header is present.
+
+  - This allows passing more information in these contexts as they may become bigger (to avoid hitting the headers size limit).
+  - The body format expected in this case is:
+
+    ```json
+    {
+      "x-action-context": "data-envelope",
+      "x-data-context": "data-envelope",
+      "body": {
+        "input-value": "value"
+      }
+    }
+    ```
+
+    - The `x-action-invocation-context` header is expected to be a data envelope too.
+    - Note: The data envelope format is the same used for secrets (either a `base64(encrypted_data(JSON.stringify(content)))` or a `base64(JSON.stringify(content))`).
+
 ## 2.2.0 - 2024-11-20
 
 - Add `x-operation-kind` to the OpenAPI schema.

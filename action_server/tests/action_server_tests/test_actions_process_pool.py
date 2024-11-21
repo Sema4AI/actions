@@ -157,7 +157,8 @@ def _create_run(
                 robot_artifacts,
                 output_file,
                 result_json,
-                request,
+                dict(request.headers),
+                dict(request.cookies),
                 actions_process_pool._reuse_processes,
             )
         )
@@ -208,6 +209,7 @@ def test_actions_process_pool_process_crash(
 
                 # Kill while process is checked-out.
                 run_info3.process_handle.kill()
+                assert actions_process_pool.get_idle_processes_count() == 0
 
             assert actions_process_pool.get_running_processes_count() == 2
             # Usually it'd be 1 idle, but as it was killed it's not added.

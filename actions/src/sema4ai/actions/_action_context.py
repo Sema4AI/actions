@@ -300,7 +300,7 @@ class DataContext(BaseContext):
 class InvocationContext(BaseContext):
     @classmethod
     def _header_name(cls) -> str:
-        return "x-invocation-context"
+        return "x-action-invocation-context"
 
 
 class RequestContexts:

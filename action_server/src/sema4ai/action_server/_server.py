@@ -60,7 +60,6 @@ class _ActionRoutes:
 
     def register_actions(self) -> None:
         import json
-        from typing import Optional
 
         from . import _actions_run
         from ._app import get_app
@@ -172,7 +171,6 @@ def start_server(
 ) -> None:
     import json
     import threading
-    import typing
     from dataclasses import asdict
     from functools import lru_cache
     from typing import Any

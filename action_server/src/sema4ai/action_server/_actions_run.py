@@ -145,9 +145,10 @@ def _run_action_in_thread(
     output_schema_dict: dict,
     input_validator: Callable[[dict], None],
     output_validator: Callable[[dict], None],
-    body: bytes,
+    inputs: dict,
     response: Response,
-    request: Request,
+    headers: dict,
+    cookies: dict,
 ):
     """
     This is where the user actually runs something.
@@ -164,15 +165,6 @@ def _run_action_in_thread(
     from ._models import Run, get_db
 
     settings = get_settings()
-
-    try:
-        inputs = json.loads(body)
-    except Exception as e:
-        raise RequestValidationError(
-            [
-                f"The received input arguments (sent in the body) cannot be interpreted as json. Details: {e}"
-            ]
-        )
 
     try:
         input_validator(inputs)
@@ -199,7 +191,7 @@ def _run_action_in_thread(
                 / relative_artifacts_path
                 / "__action_server_inputs.json"
             )
-            input_json.write_bytes(body)
+            input_json.write_bytes(json.dumps(inputs).encode("utf-8"))
 
             run_artifacts_dir = settings.artifacts_dir / relative_artifacts_path
 
@@ -226,7 +218,8 @@ def _run_action_in_thread(
                     run_artifacts_dir,
                     output_file,
                     result_json,
-                    request,
+                    headers,
+                    cookies,
                     reuse_process,
                 )
 
@@ -351,6 +344,41 @@ def generate_func_from_action(
 
     async def func(response: Response, request: Request):
         body = await request.body()
+        try:
+            inputs = json.loads(body)
+        except Exception as e:
+            raise RequestValidationError(
+                [
+                    f"The received input arguments (sent in the body) cannot be interpreted as json. Details: {e}"
+                ]
+            )
+
+        headers = dict((x[0].lower(), x[1]) for x in request.headers.items())
+        cookies = dict(request.cookies)
+
+        # i.e.: if the `x-action-invocation-context` header is present, we
+        # expect it to contain a data envelope (`base64(encrypted_data(JSON.stringify(content)))` or
+        # `base64(JSON.stringify(content))`) with the invocation context.
+        #
+        # This also changes how the body is processed (in this case, each new entry
+        # in the body will internally map to a header, whereas the `body` in it will
+        # become the actual input).
+        #
+        # This is done because headers have a size restriction and we don't want to
+        # hit it (so, we enable passing things that are conceptually headers, such as
+        # `x-action-context` and `x-data-context`, in the body of the request)
+        invocation_context = request.headers.get("x-action-invocation-context")
+        if invocation_context:  # Anything there means we expect the body to contain the additional contexts.
+            if isinstance(inputs, dict):
+                if "body" not in inputs:
+                    raise RequestValidationError(
+                        [
+                            "The received input arguments (sent in the body) do not contain the `body` key (which is expected when the `x-action-invocation-context` header is present)."
+                        ]
+                    )
+                use_inputs = inputs.pop("body")
+                headers.update(inputs)
+                inputs = use_inputs
 
         return await run_in_threadpool(
             partial(
@@ -361,9 +389,10 @@ def generate_func_from_action(
                 output_schema_dict,
                 input_validator,
                 output_validator,
-                body,
+                inputs,
                 response,
-                request,
+                headers,
+                cookies,
             )
         )
 

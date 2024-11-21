@@ -11,7 +11,6 @@ from pathlib import Path
 from typing import Dict, Iterator, List, Optional, Set
 
 from sema4ai.actions._action_context import ActionContext
-from starlette.requests import Request
 from termcolor import colored
 
 from sema4ai.action_server._models import Action, ActionPackage, Run
@@ -109,6 +108,10 @@ class ProcessHandle:
         from ._robo_utils.process import build_python_launch_env
 
         self._post_run_args = post_run_args
+
+        # If kill was internally called, we'll just check it instead of waiting for
+        # the process to exit when is_alive() is called.
+        self._kill_called = False
 
         self.key = _get_process_handle_key(settings, action_package)
 
@@ -260,6 +263,9 @@ class ProcessHandle:
         return self._cwd
 
     def is_alive(self) -> bool:
+        if self._kill_called:
+            return False
+
         from ._robo_utils.process import is_process_alive
 
         if self._process.poll() is not None:
@@ -273,6 +279,8 @@ class ProcessHandle:
         if not self.is_alive():
             return
 
+        self._kill_called = True
+
         log.debug("Subprocess kill [pid=%s]", self._process.pid)
         kill_process_and_subprocesses(self._process.pid)
 
@@ -284,7 +292,8 @@ class ProcessHandle:
         input_json: Path,
         run_artifacts_dir: Path,
         result_json: Path,
-        request: Request,
+        headers: dict,
+        cookies: dict,
         reuse_process: bool,
     ) -> int:
         from sema4ai.action_server._api_oauth2 import (
@@ -304,8 +313,6 @@ class ProcessHandle:
             get_user_session_from_id,
         )
 
-        headers = dict((x[0].lower(), x[1]) for x in request.headers.items())
-
         headers = IN_MEMORY_SECRETS.update_headers(action_package, action, headers)
 
         x_action_context_key = "x-action-context"
@@ -316,7 +323,7 @@ class ProcessHandle:
             action_context = ActionContext(x_action_context)
             initial_action_context_value = action_context.value
 
-        session_id = request.cookies.get(COOKIE_SESSION_ID)
+        session_id = cookies.get(COOKIE_SESSION_ID)
         if session_id:
             db = get_db()
             with db.connect():
@@ -421,7 +428,7 @@ class ProcessHandle:
             "robot_artifacts": f"{run_artifacts_dir}",
             "result_json": f"{result_json}",
             "headers": headers,
-            "cookies": dict(request.cookies),
+            "cookies": cookies,
             "reuse_process": reuse_process,
             "cwd": self._cwd,
         }
@@ -524,7 +531,8 @@ class ProcessHandle:
         run_artifacts_dir: Path,
         output_file: Path,
         result_json: Path,
-        request: Request,
+        headers: dict,
+        cookies: dict,
         reuse_process: bool,
     ) -> int:
         """
@@ -546,7 +554,8 @@ class ProcessHandle:
                     input_json,
                     run_artifacts_dir,
                     result_json,
-                    request,
+                    headers,
+                    cookies,
                     reuse_process,
                 )
                 return returncode
@@ -714,6 +723,7 @@ class ActionsProcessPool:
         return count
 
     def _add_to_idle_processes(self, process_handle: ProcessHandle):
+        print("Add to idle", process_handle.pid)
         assert self._lock.locked(), "Lock must be acquired at this point."
         processes = self._idle_processes.get(process_handle.key)
         if processes is None:
