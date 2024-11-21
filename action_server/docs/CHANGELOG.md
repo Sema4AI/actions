@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2.3.0 - 2024-11-21
+
 - The `x-action-context` and `x-data-context` information is now expected to be in the body of the request when the `x-action-invocation-context` header is present.
 
   - This allows passing more information in these contexts as they may become bigger (to avoid hitting the headers size limit).
