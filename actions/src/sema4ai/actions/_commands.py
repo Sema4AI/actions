@@ -34,7 +34,7 @@ def metadata(
 
     {
         // This is added by sema4ai-actions
-        'actions-spec-version': 'v1',
+        'actions_spec_version': 'v2',
         'actions':[
             {
                 "name": "action_name",
@@ -45,13 +45,13 @@ def metadata(
             ...
         ]
         // This is added by sema4ai-data
-        'data-spec-version': 'v1',
+        'data_spec_version': 'v2',
         'data': {
             'datasources': [
                 {
                     'name': 'datasource-name',
                     'engine': 'sqlite',
-                    'setup-sql': ['sql-to-execute', ...],
+                    'setup_sql': ['sql-to-execute', ...],
                 },
                 ...
             ],
@@ -91,7 +91,7 @@ def metadata(
             action: IAction
             actions_found: List[ActionsListActionTypedDict] = []
             metadata_found: Dict[str, Any] = {
-                "actions-spec-version": "v1",
+                "actions_spec_version": "v2",
                 "actions": actions_found,
             }
             for action in collect_actions(pm, p, glob=glob):
@@ -109,10 +109,14 @@ def metadata(
 
             try:
                 from sema4ai.data import metadata as data_metadata  # type: ignore
+                from sema4ai.data import version_info
             except ImportError:
                 pass
             else:
-                metadata_found.update(data_metadata())
+                if tuple(version_info[:3]) == (0, 0, 1):
+                    metadata_found.update(data_metadata())
+                else:
+                    metadata_found.update(data_metadata(p.absolute()))
 
             write_to.write(json.dumps(metadata_found))
             write_to.flush()
