@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Accept `*data_source*.py` and not just `*datasource*.py`.
+
 ## 1.1.3 - 2024-11-25
 
 - Support for `sema4ai-data` `0.0.2`.
