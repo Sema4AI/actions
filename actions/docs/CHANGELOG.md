@@ -2,13 +2,18 @@
 
 ## Unreleased
 
+## 1.1.3 - 2024-11-25
+
+- Support for `sema4ai-data` `0.0.2`.
+- Updated to use `'actions_spec_version': 'v2'` instead of `'actions-spec-version': 'v1'`.
+
 ## 1.1.2 - 2024-11-20
 
 - Added linting for `@query` and `@predict` (missing docstring, missing return, etc).
 
 ## 1.1.1 - 2024-11-18
 
-- Updates to work with the new `sema4ai-data` library.
+- Updates to work with the new `sema4ai-data` library (still provisional).
 
 ## 1.1.0 - 2024-11-14
 
@@ -22,6 +27,7 @@
     - For local development, it's possible to use the `file://` scheme as the URL to save files in the local file system (which will store files in the given directory).
   - Note: in production it's expected that the `invocation_context` is available in the action context, with details on the current agent/thread id.
   - Note: this is new functionality in the `sema4ai-actions` library, but other components (as Agent Server/Control Room) may still not fully support this feature.
+- Note: the `sema4ai-actions` metadata format is still provisional and may change in newer `1.1.x` releases.
 
 ## 1.0.1 - 2024-09-26
 
