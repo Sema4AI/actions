@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.1.4 - 2024-11-26
+
 - Accept `*data_source*.py` and not just `*datasource*.py`.
 - Modules are now loaded in a predictable order based on the module path.
 
