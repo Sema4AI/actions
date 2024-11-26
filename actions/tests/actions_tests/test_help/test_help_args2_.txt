@@ -8,6 +8,6 @@ options:
   -h, --help   show this help message and exit
   --glob GLOB  May be used to specify a glob to select from which files
                actions should be searched (default '*action*.py|*query*.py|*qu
-               eries*.py|*predict*.py|*datasource*.py')
+               eries*.py|*predict*.py|*datasource*.py|*data_source*.py')
   --skip-lint  Skip `@action` linting when an action is found (by default any
                `@action` is linted for errors when found).

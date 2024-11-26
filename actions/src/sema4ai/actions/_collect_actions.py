@@ -195,13 +195,14 @@ def collect_actions(
                 # We want to accept '|' in glob.
                 globs = use_glob.split("|")
 
-                # Use dict to make unique keeping order.
-                glob_paths = dict()
+                # Use predictable order when loading modules.
+                found_globs = []
                 for g in globs:
                     for p in path.rglob(g):
-                        glob_paths[p] = 1
+                        found_globs.append(p)
+                found_globs = sorted(found_globs, key=lambda x: x.as_posix())
 
-                for path_with_action in itertools.chain(lst, tuple(glob_paths.keys())):
+                for path_with_action in itertools.chain(lst, found_globs):
                     if path_with_action.is_dir() or not path_with_action.name.endswith(
                         ".py"
                     ):
