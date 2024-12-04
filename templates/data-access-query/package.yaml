@@ -1,0 +1,30 @@
+# Required: A short name for the action package
+name: Data Access Queries Template
+
+# Required: A description of what's in the action package.
+description: Action package description
+
+# Package version number, recommend using semver.org
+version: 0.0.1
+
+dependencies:
+  conda-forge:
+  - python=3.10.14
+  - uv=0.4.17
+  pypi:
+  - sema4ai-actions=1.1.4
+  - sema4ai-data=0.0.3
+
+packaging:
+  # By default, all files and folders in this directory are packaged when uploaded.
+  # Add exclusion rules below (expects glob format: https://docs.python.org/3/library/glob.html)
+  exclude:
+  - ./.git/**
+  - ./.vscode/**
+  - ./devdata/**
+  - ./output/**
+  - ./venv/**
+  - ./.venv/**
+  - ./.DS_store/**
+  - ./**/*.pyc
+  - ./**/*.zip

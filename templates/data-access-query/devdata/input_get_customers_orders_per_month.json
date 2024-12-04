@@ -1,0 +1,36 @@
+{
+    "inputs": [
+        {
+            "inputName": "Valid: Only one company found",
+            "inputValue": {
+                "company_name": "GermanSys"
+            }
+        },
+        {
+            "inputName": "Error: Multiple companies found",
+            "inputValue": {
+                "company_name": "German"
+            }
+        },
+        {
+            "inputName": "Error: No results",
+            "inputValue": {
+                "company_name": "Sema4"
+            }
+        }
+    ],
+    "metadata": {
+        "actionName": "get_customers_orders_per_month",
+        "actionRelativePath": "data_actions.py",
+        "schemaDescription": [
+            "company_name: string: Company name or part of it like \"GermanSys\""
+        ],
+        "managedParamsSchemaDescription": {
+            "datasource": {
+                "type": "DataSource",
+                "description": "The customer datasource."
+            }
+        },
+        "inputFileVersion": "v2"
+    }
+}

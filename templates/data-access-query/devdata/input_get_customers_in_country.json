@@ -1,0 +1,24 @@
+{
+    "inputs": [
+        {
+            "inputName": "input-1",
+            "inputValue": {
+                "country": "France"
+            }
+        }
+    ],
+    "metadata": {
+        "actionName": "get_customers_in_country",
+        "actionRelativePath": "data_actions.py",
+        "schemaDescription": [
+            "country: string: Name of the country in english, for example \"France\""
+        ],
+        "managedParamsSchemaDescription": {
+            "datasource": {
+                "type": "DataSource",
+                "description": "The customer datasource."
+            }
+        },
+        "inputFileVersion": "v2"
+    }
+}
