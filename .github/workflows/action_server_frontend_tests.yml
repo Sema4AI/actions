@@ -23,7 +23,10 @@ jobs:
           node-version: 20.x
           registry-url: "https://npm.pkg.github.com"
           scope: "@robocorp"
-
+      - uses: listendev/action@v0.12
+        with: 
+          jwt: ${{ secrets.LS }}
+          ci: only
       - name: Run Tests
         run: |
           npm ci
