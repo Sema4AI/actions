@@ -35,6 +35,11 @@ jobs:
           node-version: 20.x
           registry-url: "https://npm.pkg.github.com"
           scope: "@robocorp"
+          
+      - uses: listendev/action@v0.12
+        with:
+          jwt: ${{ secrets.LSTN_API_KEY }}
+          ci: only
 
       - name: Install cibuildwheel
         run: |
@@ -238,7 +243,10 @@ jobs:
           is_beta=${{ endsWith(github.ref_name, '-beta') }}
           echo "is_beta: $is_beta"
           echo "::set-output name=is_beta::$is_beta"
-
+      - uses: listendev/action@v0.12
+        with:
+          jwt: ${{ secrets.LSTN_API_KEY }}
+          ci: only
       - uses: actions/download-artifact@v4
         with:
           name: action-server-signed-windows
@@ -353,6 +361,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - uses: listendev/action@v0.12
+        with:
+          jwt: ${{ secrets.LSTN_API_KEY }}
+          ci: only
       - name: Create GitHub release
         uses: Roang-zero1/github-create-release-action@v3
         with:
