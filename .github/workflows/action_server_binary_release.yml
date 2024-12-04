@@ -38,7 +38,7 @@ jobs:
           
       - uses: listendev/action@v0.12
         with:
-          jwt: ${{ secrets.LSTN_API_KEY }}
+          jwt: ${{ secrets.LS }}
           ci: only
 
       - name: Install cibuildwheel
