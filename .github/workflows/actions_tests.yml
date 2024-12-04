@@ -42,6 +42,11 @@ jobs:
     steps:
     - name: Checkout repository and submodules
       uses: actions/checkout@v3
+
+    - uses: listendev/action@v0.12
+      with:
+        jwt: ${{ secrets.LS }}
+        ci: only
     - name: Install poetry
       run: pipx install poetry
     - name: Set up Python ${{ matrix.python }}
