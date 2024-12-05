@@ -26,9 +26,9 @@ PostgresCustomersDataSource = Annotated[
 
 # DEMO POSTGRES CONNECTION DETAILS
 # 
+# NAME:     public_demo
 # HOST:     data-access-public-demo-instance-1.chai8y6e2qqq.us-east-2.rds.amazonaws.com
 # PORT:     5432
+# DATABASE: postgres
 # USER:     demo_user
 # PASSWORD: xyzxyzxyz
-# DATABASE: postgres
-
