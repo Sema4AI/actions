@@ -175,10 +175,12 @@ def _run_action_in_thread(
             ]
         )
 
+    timeout = headers.get("x-actions-async-timeout", 0)
+    callback_url = headers.get("x-actions-async-callback", None)
+
     db = get_db()
     with db.connect():  # Connection is per-thread, so, we need to create a new one.
         actions_process_pool = get_actions_process_pool()
-        reuse_process = settings.reuse_processes
 
         with actions_process_pool.obtain_process_for_action(action) as process_handle:
             run_id = gen_uuid("run")
@@ -210,6 +212,7 @@ def _run_action_in_thread(
             initial_time = time.monotonic()
             try:
                 _set_run_as_running(run, initial_time)
+                reuse_process = settings.reuse_processes
                 returncode = process_handle.run_action(
                     run,
                     action_package,
