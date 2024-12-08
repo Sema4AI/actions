@@ -15,6 +15,11 @@
             "id": "advanced",
             "name": "Advanced",
             "desc": "An example showcasing more advanced configuration features of Actions."
+        },
+        {
+            "id": "data-access-query",
+            "name": "Data Access/Query",
+            "desc": "Give agents access to various data sources using named queries."
         }
     ]
 }
