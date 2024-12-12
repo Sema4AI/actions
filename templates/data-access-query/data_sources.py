@@ -1,5 +1,5 @@
 """
-The datasources.py is used to define both the datasources as well as the data server bootstrap.
+The data_sources.py is used to define both the datasources as well as the data server bootstrap.
 """
 
 from typing import Annotated
@@ -9,7 +9,7 @@ FileSalesDataSource = Annotated[
     DataSource,
     DataSourceSpec(
         created_table="sales_data",
-        file="files/b2b_sales_data.csv",  # Path relative to the data package root
+        file="files/sales_data.csv",  # Path relative to the data package root
         engine="files",  # Using the files engine
         description="Historic sales data from 2023-2024.",
     ),

@@ -2,10 +2,10 @@
 name: Data Access Queries Template
 
 # Required: A description of what's in the action package.
-description: Action package description
+description: Actions for querying sales/customer data.
 
 # Package version number, recommend using semver.org
-version: 0.0.1
+version: 0.0.2
 
 dependencies:
   conda-forge:
@@ -28,3 +28,4 @@ packaging:
   - ./.DS_store/**
   - ./**/*.pyc
   - ./**/*.zip
+
