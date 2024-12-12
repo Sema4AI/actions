@@ -1,7 +1,7 @@
 from typing import Annotated
 from sema4ai.actions import ActionError, Response
 from sema4ai.data import DataSource, query, predict
-from data_sources import FileSalesDataSource, PostgresCustomersDataSource, PredictionDataSource
+from data_sources import FileSalesDataSource, PostgresCustomersDataSource
 
 # The first query is simple select targeting only one data source and has one
 # parameter for country.
@@ -84,8 +84,7 @@ def get_customers_orders_per_month(
 
 # The base queries enable the Agent to guide the user
 @query
-def get_countries(
-    datasource: PostgresCustomersDataSource) -> Response[str]:
+def get_countries(datasource: PostgresCustomersDataSource) -> Response[str]:
     """
     Get all countries where there are customers. Use this to understand the dataset better.
 
@@ -105,8 +104,7 @@ def get_countries(
     return Response(result=result.to_markdown())
 
 @query
-def get_customers(
-    datasource: PostgresCustomersDataSource) -> Response[str]:
+def get_customers(datasource: PostgresCustomersDataSource) -> Response[str]:
     """
     Get all available customers company names and their ids. 
 
