@@ -1,0 +1,11 @@
+message: ''
+result:
+  columns:
+  - a
+  - b
+  rows:
+  - - 1
+    - '2'
+  - - 3
+    - '4'
+status: PASS

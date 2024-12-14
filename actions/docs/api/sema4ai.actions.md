@@ -32,6 +32,10 @@ Run only actions with a given name:
 
 `python -m sema4ai.actions run <directory or file> -t <action_name>`
 
+# Variables
+
+- **RowValue**
+
 # Functions
 
 ______________________________________________________________________
@@ -62,7 +66,7 @@ python -m sema4ai.actions run actions.py -a enter_user
 - <b>`is_consequential`</b>:  Whether the action is consequential or not. This will add `x-openai-isConsequential: true` to the action metadata and shown in OpenApi spec.
 - <b>`display_name`</b>:  A name to be displayed for this action. If given will be used as the openapi.json summary for this action.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/__init__.py#L60)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/__init__.py#L61)
 
 ```python
 action(*args, **kwargs)
@@ -82,7 +86,7 @@ The function may be either a generator with a single yield (so, the first yielde
 
 - <b>`func`</b>:  wrapped function.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/__init__.py#L156)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/__init__.py#L157)
 
 ```python
 action_cache(func)
@@ -94,7 +98,7 @@ ______________________________________________________________________
 
 Provides the action which is being currently run or None if not currently running an action.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/__init__.py#L191)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/__init__.py#L192)
 
 ```python
 get_current_action() → Optional[IAction]
@@ -106,7 +110,7 @@ ______________________________________________________________________
 
 Provide the output directory being used for the run or None if there's no output dir configured.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/__init__.py#L178)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/__init__.py#L179)
 
 ```python
 get_output_dir() → Optional[Path]
@@ -126,7 +130,7 @@ The function may be either a generator with a single yield (so, the first yielde
 
 - <b>`func`</b>:  wrapped function.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/__init__.py#L134)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/__init__.py#L135)
 
 ```python
 session_cache(func)
@@ -459,6 +463,14 @@ A set of strings representing the fields that have been set, i.e. that were not 
 
 ______________________________________________________________________
 
+# Class `list`
+
+Built-in mutable sequence.
+
+If no argument is given, the constructor creates a new empty list. The argument must be an iterable if specified.
+
+______________________________________________________________________
+
 # Class `Secret`
 
 This class should be used to receive secrets.
@@ -521,6 +533,79 @@ Note: the model_validate method is used for compatibility with the pydantic API.
 
 ```python
 model_validate(value: str) → Secret
+```
+
+______________________________________________________________________
+
+# Class `Table`
+
+Table is a simple data structure that represents a table with columns and rows.
+
+It's meant to be used to represent the result of a table-like operation.
+
+### `__init__`
+
+**Args:**
+
+- <b>`columns`</b>:  The columns of the table.
+- <b>`rows`</b>:  The rows of the table.
+
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/_table.py#L19)
+
+```python
+__init__(columns: list[str], rows: list[list[str | int | float | bool | None]])
+```
+
+## Properties
+
+- `model_extra`
+
+Get extra fields set during validation.
+
+**Returns:**
+A dictionary of extra fields, or `None` if `config.extra` is not set to `"allow"`.
+
+- `model_fields_set`
+
+Returns the set of fields that have been explicitly set on this model instance.
+
+**Returns:**
+A set of strings representing the fields that have been set, i.e. that were not filled from defaults.
+
+## Methods
+
+______________________________________________________________________
+
+### `get_row_as_dict`
+
+Get a row from the table as a dictionary.
+
+**Args:**
+
+- <b>`index`</b>:  The index of the row to get.
+
+**Returns:**
+The row at the given index as a dictionary.
+
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/_table.py#L82)
+
+```python
+get_row_as_dict(index: int) → dict[str, str | int | float | bool | None]
+```
+
+______________________________________________________________________
+
+### `iter_as_dicts`
+
+Iterate over the rows of the table as dictionaries.
+
+**Returns:**
+An iterator over the rows of the table as dictionaries.
+
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/_table.py#L51)
+
+```python
+iter_as_dicts() → Iterator[dict[str, str | int | float | bool | None]]
 ```
 
 # Exceptions

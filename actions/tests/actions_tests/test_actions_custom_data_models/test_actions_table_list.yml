@@ -1,0 +1,190 @@
+action_python_structure_response:
+  input_schema:
+    properties: {}
+    type: object
+  managed_params_schema: {}
+  output_schema:
+    properties:
+      error:
+        anyOf:
+        - type: string
+        - type: 'null'
+        default: null
+        description: The error message if the action failed for some reason
+        title: Error
+      result:
+        anyOf:
+        - additionalProperties:
+            type: integer
+          type: object
+        - type: 'null'
+        default: null
+        description: The result for the action if it ran successfully
+        title: Result
+    title: Response[dict[str, int]]
+    type: object
+action_python_structures:
+  input_schema:
+    properties:
+      lst:
+        items:
+          type: integer
+        title: Lst
+        type: array
+    required:
+    - lst
+    type: object
+  managed_params_schema: {}
+  output_schema:
+    items:
+      type: string
+    title: Return Value
+    type: array
+action_table_in_out:
+  input_schema:
+    properties:
+      table:
+        description: 'Table is a simple data structure that represents a table with
+          columns and rows.
+
+
+          It''s meant to be used to represent the result of a table-like operation.'
+        properties:
+          columns:
+            items:
+              type: string
+            title: Columns
+            type: array
+          rows:
+            items:
+              items:
+                anyOf:
+                - type: string
+                - type: integer
+                - type: number
+                - type: boolean
+                - type: 'null'
+              type: array
+            title: Rows
+            type: array
+        required:
+        - columns
+        - rows
+        title: Table
+        type: object
+    required:
+    - table
+    type: object
+  managed_params_schema: {}
+  output_schema:
+    description: 'Table is a simple data structure that represents a table with columns
+      and rows.
+
+
+      It''s meant to be used to represent the result of a table-like operation.'
+    properties:
+      columns:
+        items:
+          type: string
+        title: Columns
+        type: array
+      rows:
+        items:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+            - type: number
+            - type: boolean
+            - type: 'null'
+          type: array
+        title: Rows
+        type: array
+    required:
+    - columns
+    - rows
+    title: Table
+    type: object
+action_table_response:
+  input_schema:
+    properties: {}
+    type: object
+  managed_params_schema: {}
+  output_schema:
+    properties:
+      error:
+        anyOf:
+        - type: string
+        - type: 'null'
+        default: null
+        description: The error message if the action failed for some reason
+        title: Error
+      result:
+        anyOf:
+        - description: 'Table is a simple data structure that represents a table with
+            columns and rows.
+
+
+            It''s meant to be used to represent the result of a table-like operation.'
+          properties:
+            columns:
+              items:
+                type: string
+              title: Columns
+              type: array
+            rows:
+              items:
+                items:
+                  anyOf:
+                  - type: string
+                  - type: integer
+                  - type: number
+                  - type: boolean
+                  - type: 'null'
+                type: array
+              title: Rows
+              type: array
+          required:
+          - columns
+          - rows
+          title: Table
+          type: object
+        - type: 'null'
+        default: null
+        description: The result for the action if it ran successfully
+    title: Response[Table]
+    type: object
+action_with_table_result:
+  input_schema:
+    properties: {}
+    type: object
+  managed_params_schema: {}
+  output_schema:
+    description: 'Table is a simple data structure that represents a table with columns
+      and rows.
+
+
+      It''s meant to be used to represent the result of a table-like operation.'
+    properties:
+      columns:
+        items:
+          type: string
+        title: Columns
+        type: array
+      rows:
+        items:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+            - type: number
+            - type: boolean
+            - type: 'null'
+          type: array
+        title: Rows
+        type: array
+    required:
+    - columns
+    - rows
+    title: Table
+    type: object

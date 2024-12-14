@@ -830,21 +830,29 @@ def _validate_and_convert_kwargs(
             if passed_value is not inspect.Parameter.empty:
                 if param_type not in SUPPORTED_TYPES_IN_SCHEMA:
                     model_validate = getattr(param_type, "model_validate", None)
-                    if model_validate is not None:
-                        # Support for pydantic models.
-                        try:
-                            created = model_validate(passed_value)
-                        except Exception as e:
-                            msg = f"Error converting received json contents to pydantic model: {e}."
-                            raise InvalidArgumentsError(
-                                f"It's not possible to call: '{method_name}' because the passed arguments don't match the expected signature.\n{msg}"
-                            )
-                        new_kwargs[param_name] = created
-                        continue
-                    else:
-                        raise InvalidArgumentsError(
-                            f"Error. The param type '{param_type.__name__}' in '{method_name}' is not supported. Supported parameter types: str, int, float, bool and pydantic.Model."
+                    if model_validate is None:
+                        from sema4ai.actions._raw_types_handler import (
+                            _obtain_raw_types_handler,
                         )
+
+                        try:
+                            model_validate = _obtain_raw_types_handler(
+                                param_name, param_type
+                            ).model_validate
+                        except Exception:
+                            raise InvalidArgumentsError(
+                                f"Error. It was not possible to create the schema for: '{param_name}' in '{method_name}'. Type: {repr(param_type)}."
+                            )
+                    # Support for pydantic models.
+                    try:
+                        created = model_validate(passed_value)
+                    except Exception as e:
+                        msg = f"Error converting received json contents to pydantic model: {e}."
+                        raise InvalidArgumentsError(
+                            f"It's not possible to call: '{method_name}' because the passed arguments don't match the expected signature.\n{msg}"
+                        )
+                    new_kwargs[param_name] = created
+                    continue
 
                 check_type = param_type
                 if param_type == float:
