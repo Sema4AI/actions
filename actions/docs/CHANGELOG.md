@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Added a `Table` data model.
+- It's now possible to use python types such as list/dict directly as action parameters/return type without requiring a pydantic model.
+
 ## 1.1.4 - 2024-11-26
 
 - Accept `*data_source*.py` and not just `*datasource*.py`.

@@ -1,13 +1,4 @@
 {
-  "python.pydev.pythonPath": [
-    "actions/src",
-    "actions/tests",
-    "action_server/src",
-    "action_server/tests",
-    "devutils/src",
-    "sema4ai-http-helper/src",
-    "sema4ai-http-helper/tests"
-  ],
   "python.pydev.preferredImportLocation": "topOfMethod",
 
   "python.pydev.formatter": "ruff",

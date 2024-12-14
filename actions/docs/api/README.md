@@ -16,8 +16,10 @@
 - [`_secret.OAuth2Secret`](./sema4ai.actions._secret.md#class-oauth2secret): This class should be used to specify that OAuth2 secrets should be received.
 - [`_request.Request`](./sema4ai.actions._request.md#class-request): Contains the information exposed in a request (such as headers and cookies).
 - [`_response.Response`](./sema4ai.actions._response.md#class-response): The response class provides a way for the user to signal that the action
+- [`builtins.list`](./builtins.md#class-list): Built-in mutable sequence.
 - [`_secret.Secret`](./sema4ai.actions._secret.md#class-secret): This class should be used to receive secrets.
 - [`_protocols.Status`](./sema4ai.actions._protocols.md#class-status): Action state
+- [`_table.Table`](./sema4ai.actions._table.md#class-table): Table is a simple data structure that represents a table with columns and rows.
 - [`api.DiagnosticsTypedDict`](./sema4ai.actions.api.md#class-diagnosticstypeddict)
 - [`api.PositionTypedDict`](./sema4ai.actions.api.md#class-positiontypeddict)
 - [`api.RangeTypedDict`](./sema4ai.actions.api.md#class-rangetypeddict)

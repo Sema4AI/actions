@@ -149,10 +149,30 @@ class Action:
             description: The description for the property.
             kind: Whether this is a parameter or a return.
         """
+        from sema4ai.actions._exceptions import InvalidArgumentsError
+
         if not param_type:
             param_type_clsname = "string"
         else:
             if param_type not in SUPPORTED_TYPES_IN_SCHEMA:
+                if not hasattr(param_type, "model_json_schema"):
+                    # Not a pydantic type (nor anything with a `model_json_schema`).
+                    # We need to convert it to a pydantic type.
+
+                    from sema4ai.actions._raw_types_handler import (
+                        _obtain_raw_types_handler,
+                    )
+
+                    if param_name is None:
+                        param_name = "return_value"
+
+                    try:
+                        param_type = _obtain_raw_types_handler(param_name, param_type)
+                    except Exception:
+                        raise InvalidArgumentsError(
+                            f"Error. It was not possible to create the schema for: '{param_name}' in '{method_name}'. Type: {repr(param_type)}."
+                        )
+
                 if hasattr(param_type, "model_json_schema"):
                     # Support for pydantic
                     from sema4ai.actions._remove_refs import replace_refs
@@ -168,6 +188,7 @@ class Action:
                     if param_name:
                         ret["title"] = param_name.replace("_", " ").title()
                     return ret
+
                 param_type_clsname = (
                     f"Error. The {kind} type '{param_type.__name__}' in '{method_name}' is not supported. "
                     f"Supported {kind} types: str, int, float, bool or pydantic.BaseModel."
