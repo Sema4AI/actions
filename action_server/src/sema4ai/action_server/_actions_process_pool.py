@@ -8,7 +8,8 @@ import threading
 from collections import namedtuple
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Dict, Iterator, List, Optional, Set
+from queue import Queue
+from typing import Dict, Generator, Iterator, List, Optional, Set
 
 from sema4ai.actions._action_context import ActionContext
 from termcolor import colored
@@ -55,6 +56,7 @@ def _create_server_socket(host: str, port: int):
 
 def _connect_to_socket(host, port):
     """connects to a host/port"""
+
     s = socket(AF_INET, SOCK_STREAM)
 
     #  Set TCP keepalive on an open socket.
@@ -92,8 +94,6 @@ class ProcessHandle:
         action_package: ActionPackage,
         post_run_args: Optional[tuple[str, ...]],
     ):
-        from queue import Queue
-
         from sema4ai.action_server._preload_actions.preload_actions_streams import (
             JsonRpcStreamWriter,
         )
@@ -518,7 +518,7 @@ class ProcessHandle:
         headers: dict,
         cookies: dict,
         reuse_process: bool,
-    ) -> int:
+    ) -> Generator[Queue, dict, int]:
         """
         Runs the action and returns the returncode from running the action.
 
@@ -544,7 +544,7 @@ class ProcessHandle:
                 )
 
                 queue = self._read_queue
-                result_msg = queue.get(block=True)
+                result_msg = yield queue
 
                 if self._post_run_args:
                     log.debug("Calling post run command.")

@@ -210,10 +210,11 @@ def _run_action_in_thread(
             )
 
             initial_time = time.monotonic()
+            returncode = "<unset>"
             try:
                 _set_run_as_running(run, initial_time)
                 reuse_process = settings.reuse_processes
-                returncode = process_handle.run_action(
+                generator = process_handle.run_action(
                     run,
                     action_package,
                     action,
@@ -225,6 +226,13 @@ def _run_action_in_thread(
                     cookies,
                     reuse_process,
                 )
+
+                queue = next(generator)
+                result_msg = queue.get(block=True)
+                try:
+                    generator.send(result_msg)
+                except StopIteration as e:
+                    returncode = e.value
 
                 try:
                     run_result_str: str = result_json.read_text("utf-8", "replace")
@@ -268,10 +276,15 @@ def _run_action_in_thread(
                         )
                         return ret
 
-                raise RuntimeError(result_contents.get("message", "Internal error"))
+                raise RuntimeError(
+                    result_contents.get(
+                        "message",
+                        f"Internal error running action (action={action.name}, returncode={returncode})",
+                    )
+                )
 
             except BaseException as e:
-                log.exception("Internal error running action!")
+                log.exception(f"Internal error running action (action={action.name})")
                 _set_run_as_finished_failed(run, str(e), initial_time)
                 raise HTTPException(status_code=500, detail=str(e))
 
