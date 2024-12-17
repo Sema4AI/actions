@@ -216,3 +216,42 @@ def my_action(
     )
 
     assert not find_issues_in_actions_list(datadir, contents)
+
+
+def test_lint_data_source_docstring_not_required(data_regression, datadir):
+    from sema4ai.actions._customization._extension_points import EPManagedParameters
+    from sema4ai.actions._customization._plugin_manager import PluginManager
+    from sema4ai.actions._lint_action import iter_lint_errors
+    from sema4ai.actions._managed_parameters import ManagedParameters
+
+    contents = """
+from typing import Literal
+
+from sema4ai import actions
+from typing import Annotated
+from sema4ai.data import DataSource, DataSourceSpec, query
+
+MyDataSource = Annotated[DataSource, DataSourceSpec(
+    name="MyDataSourceSpec",
+    engine="postgres",
+    description="My Data Source"
+)]
+
+
+@query
+def my_action(
+    datasource: MyDataSource
+) -> str:
+    '''
+    This is an action with a data source.
+    '''
+    return ""
+"""
+
+    pm = PluginManager()
+    pm.set_instance(EPManagedParameters, ManagedParameters({}))
+    data_regression.check(
+        [x.to_lsp_diagnostic() for x in iter_lint_errors(contents, pm=pm)]
+    )
+
+    assert not find_issues_in_actions_list(datadir, contents)
