@@ -232,6 +232,23 @@ def _check_return_statement(node: ast_module.FunctionDef, kind: str) -> Iterator
         )
 
 
+def _is_data_source_param(param_name: str, node: ast_module.FunctionDef) -> bool:
+    # This is a bit of a hack, but it's a quick way to check if the parameter is a
+    # data source parameter.
+    # Ideally we'd actually do some code inference to get the actual type of the
+    # annotation (and not just check the name of the python variable)
+    import ast
+
+    for arg in node.args.args:
+        if arg.arg == param_name:
+            if arg.annotation:
+                unparsed = ast.unparse(arg.annotation)
+                if unparsed.endswith(("DataSource", "Datasource")):
+                    return True
+            return False
+    return False
+
+
 def _check_docstring_contents(
     pm: Optional[PluginManager], node: ast_module.FunctionDef, docstring: str, kind: str
 ) -> Iterator[Error]:
@@ -288,6 +305,9 @@ def _check_docstring_contents(
                             "secrets metadata explaining the secret).",
                         )
 
+                continue
+
+            if _is_data_source_param(arg.arg, node=node):
                 continue
 
             # Note: at this time we don't do handling for OAuth2 parameters here because
