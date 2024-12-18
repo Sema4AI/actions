@@ -92,6 +92,9 @@ class Table(pydantic.BaseModel):
         return dict(zip(self.columns, self.rows[index]))
 
     def __str__(self):
+        """
+        Return a string representation of the table as markdown.
+        """
         # First calculate max width needed for each column
         col_widths = [len(str(col)) for col in self.columns]
         for row in self.rows:
@@ -100,11 +103,12 @@ class Table(pydantic.BaseModel):
 
         # Build header row with column names
         header = f'| {" | ".join(str(col).ljust(width) for col, width in zip(self.columns, col_widths))} |'
-        separator = f"+-{'-+-'.join('-' * width for width in col_widths)}-+"
+
+        # Build separator row with alignment indicators
+        separator = f"| {' | '.join('-' * (width-1) + ':'for width in col_widths)} |"
 
         # Build table string
         ret = []
-        ret.append(separator)
         ret.append(header)
         ret.append(separator)
 
@@ -112,7 +116,6 @@ class Table(pydantic.BaseModel):
         for row in self.rows:
             row_str = f"| {' | '.join(str(val).ljust(width) for val, width in zip(row, col_widths))} |"
             ret.append(row_str)
-        ret.append(separator)
 
         return "\n".join(ret)
 
