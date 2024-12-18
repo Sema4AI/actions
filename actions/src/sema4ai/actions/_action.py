@@ -541,6 +541,29 @@ class Context:
                 result_as_json_str,
                 flush=True,
             )
+            # Also validate the return type in this case by recreating the class based on the return annotation.
+            try:
+                sig = inspect.signature(action.method)
+                return_annotation = sig.return_annotation
+                if return_annotation is not sig.empty and return_annotation is not None:
+                    if hasattr(return_annotation, "model_validate"):
+                        return_annotation.model_validate(dump)
+                    else:
+                        if not isinstance(dump, return_annotation):
+                            raise RuntimeError("Invalid return type.")
+                else:
+                    show(
+                        "Note: Unable to validate return type (no return type annotation found in method signature).",
+                        kind=self.KIND_ERROR,
+                    )
+
+            except Exception as e:
+                msg = (
+                    f"Although the action: '{action.name}' ran properly, it returned a value of type {type(result)} whereas the expected return type is {return_annotation}.\n"
+                    f'Action location:\n  File "{action.method.__code__.co_filename}", line {action.method.__code__.co_firstlineno}, in {action.method.__code__.co_name}\n'
+                    f"Validation error: {e}"
+                )
+                show(msg, kind=self.KIND_ERROR)
 
         self._show_header([])
 

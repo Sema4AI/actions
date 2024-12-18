@@ -248,7 +248,8 @@ def _run_action_in_thread(
                         if ret is None:
                             show_str = "None"
                         raise RuntimeError(
-                            f"Inconsistent value returned from action: {e} -- i.e.: the returned value ({show_str}) does not match the expected output schema ({output_schema_dict})."
+                            f"Inconsistent value returned from action.\ni.e.: the returned value: {show_str}\ndoes not match the expected output schema.\n"
+                            f"Original error: {e}"
                         )
 
                 if returncode == 0:

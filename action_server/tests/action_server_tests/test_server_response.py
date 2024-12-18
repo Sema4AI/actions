@@ -21,7 +21,7 @@ def test_return_response_ok_action(
         found = json.loads(response.text)
         assert found["error_code"] == "internal-error"
         assert (
-            "Inconsistent value returned from action: 1 is not of type 'object'"
+            "Inconsistent value returned from action.\ni.e.: the returned value: 1\ndoes not match the expected output schema."
             in found["message"]
         )
 

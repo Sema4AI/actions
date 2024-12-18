@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Error messages produced by the `Action Server` are now properly shown in the `Actions Run History`.
+  - i.e.: structure validation failures are now properly shown in the UI.
+
 ## 2.3.0 - 2024-11-21
 
 - The `x-action-context` and `x-data-context` information is now expected to be in the body of the request when the `x-action-invocation-context` header is present.

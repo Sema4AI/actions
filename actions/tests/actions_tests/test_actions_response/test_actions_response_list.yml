@@ -1,4 +1,27 @@
-raise_other_error_action:
+bad_schema:
+  input_schema:
+    properties: {}
+    type: object
+  managed_params_schema: {}
+  output_schema:
+    properties:
+      error:
+        anyOf:
+        - type: string
+        - type: 'null'
+        default: null
+        description: The error message if the action failed for some reason
+        title: Error
+      result:
+        anyOf:
+        - type: string
+        - type: 'null'
+        default: null
+        description: The result for the action if it ran successfully
+        title: Result
+    title: Response[str]
+    type: object
+raise_action_error_action:
   input_schema:
     properties: {}
     type: object
@@ -26,7 +49,7 @@ raise_other_error_action:
         description: The result for the action if it ran successfully
     title: Response[SomeData]
     type: object
-rase_action_error_action:
+raise_other_error_action:
   input_schema:
     properties: {}
     type: object
