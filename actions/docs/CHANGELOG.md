@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.2.0 - 2024-12-18
+
 - Added a `Table` data model.
 - It's now possible to use python types such as list/dict directly as action parameters/return type without requiring a pydantic model.
 - When linting, if a parameter is a `DataSource` it's not required to have a docstring.
