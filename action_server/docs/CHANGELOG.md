@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2.3.1 - 2024-12-18
+
 - Error messages produced by the `Action Server` are now properly shown in the `Actions Run History`.
   - i.e.: structure validation failures are now properly shown in the UI.
 
