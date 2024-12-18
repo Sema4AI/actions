@@ -23,5 +23,10 @@ def raise_other_error_action() -> Response[SomeData]:
 
 
 @action
-def rase_action_error_action() -> Response[SomeData]:
+def raise_action_error_action() -> Response[SomeData]:
     raise ActionError("Action error")
+
+
+@action
+def bad_schema() -> Response[str]:
+    return 1  # type: ignore

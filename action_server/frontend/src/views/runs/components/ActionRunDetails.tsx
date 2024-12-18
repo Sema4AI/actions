@@ -70,10 +70,23 @@ export const ActionRunDetails: FC = () => {
         </Header>
         <Code lang="json" aria-label="Run input" value={inputs} />
 
-        <Header size="small">
-          <Header.Title title="Run result" />
-        </Header>
-        <Code aria-label="Run input" value={run.result || ''} />
+        {run.result && (
+          <>
+            <Header size="small">
+              <Header.Title title="Run result" />
+            </Header>
+            <Code aria-label="Run result" value={run.result || ''} />
+          </>
+        )}
+
+        {run.error_message && (
+          <>
+            <Header size="small">
+              <Header.Title title="Run error message" />
+            </Header>
+            <Code aria-label="Run error message" value={run.error_message || ''} />
+          </>
+        )}
 
         <Header size="small">
           <Header.Title title="Console output" />

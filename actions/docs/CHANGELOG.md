@@ -6,6 +6,7 @@
 - It's now possible to use python types such as list/dict directly as action parameters/return type without requiring a pydantic model.
 - When linting, if a parameter is a `DataSource` it's not required to have a docstring.
   - Note: as it works just on the AST, it currently just checks if the python name ends with `DataSource` (instead of doing full type inference).
+- Verification of the return value is now done after the action is run (and not only in the Action Server) when `--print-result` is passed to `sema4ai.actions`.
 
 ## 1.1.4 - 2024-11-26
 
