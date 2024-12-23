@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Improve heuristic for detecting that a parameter is a data source so that docstrings are not required for data source parameters.
+
 ## 1.2.0 - 2024-12-18
 
 - Added a `Table` data model.

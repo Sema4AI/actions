@@ -1,6 +1,8 @@
 import os
 from pathlib import Path
 
+import pytest
+
 
 def test_lint_action_no_docstring(data_regression):
     from sema4ai.actions._lint_action import iter_lint_errors
@@ -218,13 +220,15 @@ def my_action(
     assert not find_issues_in_actions_list(datadir, contents)
 
 
-def test_lint_data_source_docstring_not_required(data_regression, datadir):
+@pytest.mark.parametrize("scenario", ["simple", "inline", "union"])
+def test_lint_data_source_docstring_not_required(data_regression, datadir, scenario):
     from sema4ai.actions._customization._extension_points import EPManagedParameters
     from sema4ai.actions._customization._plugin_manager import PluginManager
     from sema4ai.actions._lint_action import iter_lint_errors
     from sema4ai.actions._managed_parameters import ManagedParameters
 
-    contents = """
+    if scenario == "simple":
+        contents = """
 from typing import Literal
 
 from sema4ai import actions
@@ -247,6 +251,54 @@ def my_action(
     '''
     return ""
 """
+    elif scenario == "inline":
+        contents = """
+from typing import Literal
+
+from sema4ai import actions
+from typing import Annotated
+from sema4ai.data import DataSource, DataSourceSpec, query
+
+@query
+def my_action(
+    datasource: Annotated[DataSource, DataSourceSpec(
+        name="MyDataSourceSpec",
+        engine="postgres",
+        description="My Data Source"
+    )]
+) -> str:
+    '''
+    This is an action with a data source.
+    '''
+    return ""
+"""
+    elif scenario == "union":
+        contents = """
+from typing import Literal
+
+from sema4ai import actions
+from typing import Annotated
+from sema4ai.data import DataSource, DataSourceSpec, query
+
+@query
+def my_action(
+    datasource: Annotated[DataSource, DataSourceSpec(
+        name="MyDataSourceSpec",
+        engine="postgres",
+        description="My Data Source"
+    )] | Annotated[DataSource, DataSourceSpec(
+        name="MyDataSourceSpec",
+        engine="postgres",
+        description="My Data Source"
+    )]
+) -> str:
+    '''
+    This is an action with a data source.
+    '''
+    return ""
+"""
+    else:
+        raise ValueError(f"Invalid scenario: {scenario}")
 
     pm = PluginManager()
     pm.set_instance(EPManagedParameters, ManagedParameters({}))
