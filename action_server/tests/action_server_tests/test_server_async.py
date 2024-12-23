@@ -45,8 +45,6 @@ def test_server_async_api(
         },
     )
 
-    # TODO: Finish this to do things async!
+    # TODO: Finish checking the async flow
     assert found == '"async-return"', f"{found} != '\"async-return\"'"
-
-    # request_info = fut_uri.result(60 * 5)
-    # print(request_info)
+    assert fut_uri.result(10)["body"] == '"Hello Mr. Foo."'

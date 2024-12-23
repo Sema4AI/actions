@@ -178,10 +178,13 @@ class _ActionsRunner:
         timeout = headers.get("x-actions-async-timeout", None)
         if timeout is not None:
             timeout = float(timeout)
+
+        self.request_id: Optional[str] = headers.get("x-actions-request-id", None)
         self.timeout: Optional[float] = timeout
         self.callback_url: Optional[str] = headers.get("x-actions-async-callback", None)
         self._future: Optional[Future] = None
         self._run_id = gen_uuid("run")
+        self._returning_async_result = False
 
     def run_in_thread(self) -> Any:
         """
@@ -205,7 +208,7 @@ class _ActionsRunner:
 
         self.response.headers["X-Action-Server-Run-Id"] = self._run_id
 
-        fut = run_in_thread.run_in_thread(self._run_action_in_thread)
+        fut = run_in_thread.run_in_thread(self._run_action)
         self._future = fut
 
         if self.timeout is None:
@@ -222,10 +225,29 @@ class _ActionsRunner:
             return self._async_result()
 
     def _async_result(self) -> Any:
+        self._returning_async_result = True
         self.response.headers["x-action-async-completion"] = "1"
         return "async-return"
 
-    def _run_action_in_thread(self) -> Any:
+    def _run_action(self):
+        result = self._run_action_impl()
+        if self._returning_async_result:
+            # We're returning an async result, so, we need to call the callback.
+            if self.callback_url:
+                import sema4ai_http
+
+                result = sema4ai_http.post(
+                    self.callback_url,
+                    json=result,
+                    headers={
+                        "x-action-server-run-id": self._run_id,
+                        "x-actions-request-id": self.request_id,
+                    },
+                )
+            return result
+        return result
+
+    def _run_action_impl(self) -> Any:
         from sema4ai.action_server._actions_process_pool import (
             ActionsProcessPool,
             ProcessHandle,
