@@ -147,9 +147,9 @@ def _create_run(
         relative_artifacts_dir="rel-artifacts-dir",
     )
     with actions_process_pool.obtain_process_for_action(action) as process_handle:
-        fut: Future[int] = run_in_thread(
-            partial(
-                process_handle.run_action,
+
+        def _run_action():
+            generator = process_handle.run_action(
                 run,
                 action_package,
                 action,
@@ -161,7 +161,17 @@ def _create_run(
                 dict(request.cookies),
                 actions_process_pool._reuse_processes,
             )
-        )
+            queue = next(generator)
+            result_msg = queue.get(block=True)
+            try:
+                generator.send(result_msg)
+            except StopIteration as e:
+                returncode = e.value
+                return returncode
+            else:
+                raise RuntimeError("Generator did not stop.")
+
+        fut: Future[int] = run_in_thread(_run_action)
         yield _RunInfo(
             future=fut,
             input_json=input_json,
