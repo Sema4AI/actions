@@ -3,7 +3,6 @@ import json
 import logging
 import time
 import typing
-from functools import partial
 from typing import Any, Callable, Dict, Tuple
 
 from fastapi import HTTPException, Request, Response
@@ -138,155 +137,236 @@ def _set_run_as_running(run: "Run", initial_time: float):
     _update_run(run, initial_time, False, status=RunStatus.RUNNING)
 
 
-def _run_action_in_thread(
-    action_package: "ActionPackage",
-    action: "Action",
-    input_schema_dict: dict,
-    output_schema_dict: dict,
-    input_validator: Callable[[dict], None],
-    output_validator: Callable[[dict], None],
-    inputs: dict,
-    response: Response,
-    headers: dict,
-    cookies: dict,
-):
-    """
-    This is where the user actually runs something.
+class _ActionsRunner:
+    def __init__(
+        self,
+        action_package: "ActionPackage",
+        action: "Action",
+        input_schema_dict: dict,
+        output_schema_dict: dict,
+        input_validator: Callable[[dict], None],
+        output_validator: Callable[[dict], None],
+        inputs: dict,
+        response: Response,
+        headers: dict,
+        cookies: dict,
+    ) -> None:
+        """
+        This is where the user actually runs something.
 
-    This runs in a thread (so, be careful when talking to the database).
+        This runs in a thread (so, be careful when talking to the database).
 
-    We have to take care of making a run with the proper environment,
-    creating the run, collecting output info, etc.
-    """
-    from sema4ai.action_server._gen_ids import gen_uuid
-    from sema4ai.action_server._settings import get_settings
+        We have to take care of making a run with the proper environment,
+        creating the run, collecting output info, etc.
+        """
+        from concurrent.futures import Future
+        from typing import Optional
 
-    from ._actions_process_pool import get_actions_process_pool
-    from ._models import Run, get_db
+        from sema4ai.action_server._gen_ids import gen_uuid
 
-    settings = get_settings()
+        self.action_package = action_package
+        self.action = action
+        self.input_schema_dict = input_schema_dict
+        self.output_schema_dict = output_schema_dict
+        self.input_validator = input_validator
+        self.output_validator = output_validator
+        self.inputs = inputs
+        self.response = response
+        self.headers = headers
+        self.cookies = cookies
 
-    try:
-        input_validator(inputs)
-    except Exception as e:
-        raise RequestValidationError(
-            [
-                f"The received input arguments (sent in the body) do not conform to the expected API. Details: {e}"
-            ]
+        timeout = headers.get("x-actions-async-timeout", None)
+        if timeout is not None:
+            timeout = float(timeout)
+        self.timeout: Optional[float] = timeout
+        self.callback_url: Optional[str] = headers.get("x-actions-async-callback", None)
+        self._future: Optional[Future] = None
+        self._run_id = gen_uuid("run")
+
+    def run_in_thread(self) -> Any:
+        """
+        This is where the user actually runs something.
+
+        This runs in a thread (so, be careful when talking to the database).
+
+        We have to take care of making a run with the proper environment,
+        creating the run, collecting output info, etc.
+
+        The return value is the result of the action (and is what will be returned
+        to the client).
+
+        Note that with async actions, we could do an early return here, but
+        but keep running the action in the background (and the client would
+        be notified when the action is finished and could query it for status,
+        cancel it, etc).
+        """
+        assert self._future is None, "Future already set"
+        from sema4ai.action_server._robo_utils import run_in_thread
+
+        self.response.headers["X-Action-Server-Run-Id"] = self._run_id
+
+        fut = run_in_thread.run_in_thread(self._run_action_in_thread)
+        self._future = fut
+
+        if self.timeout is None:
+            # Wait for the future to be resolved.
+            return fut.result()
+
+        if self.timeout == 0:
+            # Return immediately.
+            return self._async_result()
+
+        try:
+            return fut.result(self.timeout)
+        except TimeoutError:
+            return self._async_result()
+
+    def _async_result(self) -> Any:
+        self.response.headers["x-action-async-completion"] = "1"
+        return "async-return"
+
+    def _run_action_in_thread(self) -> Any:
+        from sema4ai.action_server._actions_process_pool import (
+            ActionsProcessPool,
+            ProcessHandle,
         )
 
-    timeout = headers.get("x-actions-async-timeout", 0)
-    callback_url = headers.get("x-actions-async-callback", None)
+        action_package: "ActionPackage" = self.action_package
+        action: "Action" = self.action
+        input_validator: Callable[[dict], None] = self.input_validator
+        output_validator: Callable[[dict], None] = self.output_validator
+        inputs: dict = self.inputs
+        headers: dict = self.headers
+        cookies: dict = self.cookies
 
-    db = get_db()
-    with db.connect():  # Connection is per-thread, so, we need to create a new one.
-        actions_process_pool = get_actions_process_pool()
+        from sema4ai.action_server._settings import get_settings
 
-        with actions_process_pool.obtain_process_for_action(action) as process_handle:
-            run_id = gen_uuid("run")
-            response.headers["X-Action-Server-Run-Id"] = run_id
-            relative_artifacts_path: str = _create_run_artifacts_dir(action, run_id)
-            run: Run = _create_run(action, run_id, inputs, relative_artifacts_path)
+        from ._actions_process_pool import get_actions_process_pool
+        from ._models import Run, get_db
 
-            input_json = (
-                settings.artifacts_dir
-                / relative_artifacts_path
-                / "__action_server_inputs.json"
-            )
-            input_json.write_bytes(json.dumps(inputs).encode("utf-8"))
+        settings = get_settings()
 
-            run_artifacts_dir = settings.artifacts_dir / relative_artifacts_path
-
-            result_json = (
-                settings.artifacts_dir
-                / relative_artifacts_path
-                / "__action_server_result.json"
+        try:
+            input_validator(inputs)
+        except Exception as e:
+            raise RequestValidationError(
+                [
+                    f"The received input arguments (sent in the body) do not conform to the expected API. Details: {e}"
+                ]
             )
 
-            output_file = (
-                settings.artifacts_dir
-                / relative_artifacts_path
-                / "__action_server_output.txt"
-            )
+        db = get_db()
+        with db.connect():  # Connection is per-thread, so, we need to create a new one.
+            actions_process_pool: ActionsProcessPool = get_actions_process_pool()
+            run_id = self._run_id
+            process_handle: ProcessHandle
+            with actions_process_pool.obtain_process_for_action(
+                action
+            ) as process_handle:
+                relative_artifacts_path: str = _create_run_artifacts_dir(action, run_id)
+                run: Run = _create_run(action, run_id, inputs, relative_artifacts_path)
 
-            initial_time = time.monotonic()
-            returncode = "<unset>"
-            try:
-                _set_run_as_running(run, initial_time)
-                reuse_process = settings.reuse_processes
-                generator = process_handle.run_action(
-                    run,
-                    action_package,
-                    action,
-                    input_json,
-                    run_artifacts_dir,
-                    output_file,
-                    result_json,
-                    headers,
-                    cookies,
-                    reuse_process,
+                input_json = (
+                    settings.artifacts_dir
+                    / relative_artifacts_path
+                    / "__action_server_inputs.json"
+                )
+                input_json.write_bytes(json.dumps(inputs).encode("utf-8"))
+
+                run_artifacts_dir = settings.artifacts_dir / relative_artifacts_path
+
+                result_json = (
+                    settings.artifacts_dir
+                    / relative_artifacts_path
+                    / "__action_server_result.json"
                 )
 
-                queue = next(generator)
-                result_msg = queue.get(block=True)
-                try:
-                    generator.send(result_msg)
-                except StopIteration as e:
-                    returncode = e.value
+                output_file = (
+                    settings.artifacts_dir
+                    / relative_artifacts_path
+                    / "__action_server_output.txt"
+                )
 
+                initial_time = time.monotonic()
+                returncode = "<unset>"
                 try:
-                    run_result_str: str = result_json.read_text("utf-8", "replace")
-                except Exception:
-                    raise RuntimeError(
-                        "It was not possible to collect the contents of the "
-                        "result (json not created)."
+                    _set_run_as_running(run, initial_time)
+                    reuse_process = settings.reuse_processes
+                    generator = process_handle.run_action(
+                        run,
+                        action_package,
+                        action,
+                        input_json,
+                        run_artifacts_dir,
+                        output_file,
+                        result_json,
+                        headers,
+                        cookies,
+                        reuse_process,
                     )
 
-                try:
-                    result_contents = json.loads(run_result_str)
-                except Exception:
-                    raise RuntimeError(
-                        f"Error loading the contents of {run_result_str} as json."
-                    )
-
-                ret = result_contents.get("result")
-                result_str: str = json.dumps(ret, indent=4)
-                if ret is not None or returncode == 0:
+                    queue = next(generator)
+                    result_msg = queue.get(block=True)
                     try:
-                        output_validator(ret)
-                    except Exception as e:
-                        show_str = result_str
-                        if ret is None:
-                            show_str = "None"
+                        generator.send(result_msg)
+                    except StopIteration as e:
+                        returncode = e.value
+
+                    try:
+                        run_result_str: str = result_json.read_text("utf-8", "replace")
+                    except Exception:
                         raise RuntimeError(
-                            f"Inconsistent value returned from action.\ni.e.: the returned value: {show_str}\ndoes not match the expected output schema.\n"
-                            f"Original error: {e}"
+                            "It was not possible to collect the contents of the "
+                            "result (json not created)."
                         )
 
-                if returncode == 0:
-                    _set_run_as_finished_ok(run, result_str, initial_time)
-                    return ret
-
-                else:
-                    if ret:
-                        # We have a return even with a failure. This means it's
-                        # something as a Response(error=error_msg)
-                        _set_run_as_finished_failed_with_response(
-                            run, result_str, initial_time
+                    try:
+                        result_contents = json.loads(run_result_str)
+                    except Exception:
+                        raise RuntimeError(
+                            f"Error loading the contents of {run_result_str} as json."
                         )
+
+                    ret = result_contents.get("result")
+                    result_str: str = json.dumps(ret, indent=4)
+                    if ret is not None or returncode == 0:
+                        try:
+                            output_validator(ret)
+                        except Exception as e:
+                            show_str = result_str
+                            if ret is None:
+                                show_str = "None"
+                            raise RuntimeError(
+                                f"Inconsistent value returned from action.\ni.e.: the returned value: {show_str}\ndoes not match the expected output schema.\n"
+                                f"Original error: {e}"
+                            )
+
+                    if returncode == 0:
+                        _set_run_as_finished_ok(run, result_str, initial_time)
                         return ret
 
-                raise RuntimeError(
-                    result_contents.get(
-                        "message",
-                        f"Internal error running action (action={action.name}, returncode={returncode})",
-                    )
-                )
+                    else:
+                        if ret:
+                            # We have a return even with a failure. This means it's
+                            # something as a Response(error=error_msg)
+                            _set_run_as_finished_failed_with_response(
+                                run, result_str, initial_time
+                            )
+                            return ret
 
-            except BaseException as e:
-                log.exception(f"Internal error running action (action={action.name})")
-                _set_run_as_finished_failed(run, str(e), initial_time)
-                raise HTTPException(status_code=500, detail=str(e))
+                    raise RuntimeError(
+                        result_contents.get(
+                            "message",
+                            f"Internal error running action (action={action.name}, returncode={returncode})",
+                        )
+                    )
+
+                except BaseException as e:
+                    log.exception(
+                        f"Internal error running action (action={action.name})"
+                    )
+                    _set_run_as_finished_failed(run, str(e), initial_time)
+                    raise HTTPException(status_code=500, detail=str(e))
 
 
 def _name_as_class_name(name):
@@ -397,21 +477,19 @@ def generate_func_from_action(
                 headers.update(inputs)
                 inputs = use_inputs
 
-        return await run_in_threadpool(
-            partial(
-                _run_action_in_thread,
-                action_package,
-                action,
-                input_schema_dict,
-                output_schema_dict,
-                input_validator,
-                output_validator,
-                inputs,
-                response,
-                headers,
-                cookies,
-            )
+        runner = _ActionsRunner(
+            action_package,
+            action,
+            input_schema_dict,
+            output_schema_dict,
+            input_validator,
+            output_validator,
+            inputs,
+            response,
+            headers,
+            cookies,
         )
+        return await run_in_threadpool(runner.run_in_thread)
 
     return func, openapi_extra
 

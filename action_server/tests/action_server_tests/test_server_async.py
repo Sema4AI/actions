@@ -39,13 +39,14 @@ def test_server_async_api(
         {"name": "Foo"},
         {
             "Authorization": "Bearer Foo",
-            "x-actions-async-timeout": "0",
+            "x-actions-async-timeout": "0",  # Return immediately
             "x-actions-async-callback": callback_url,
+            "x-actions-request-id": "123",  # Can be used to cancel the action, get status, get the result, ...
         },
     )
 
     # TODO: Finish this to do things async!
-    assert found == '"Hello Mr. Foo."', f"{found} != '\"Hello Mr. Foo.\"'"
+    assert found == '"async-return"', f"{found} != '\"async-return\"'"
 
     # request_info = fut_uri.result(60 * 5)
     # print(request_info)

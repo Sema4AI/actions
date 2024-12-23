@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Fixed usages of `time.time()` to `time.monotonic()` to measure time when elapsed time is needed
+  (to avoid issues with time going backwards).
+- Added support for running actions asynchronously.
+
 ## 2.3.1 - 2024-12-18
 
 - Error messages produced by the `Action Server` are now properly shown in the `Actions Run History`.
