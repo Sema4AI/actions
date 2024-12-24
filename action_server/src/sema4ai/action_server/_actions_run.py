@@ -46,7 +46,11 @@ def _create_run_artifacts_dir(action: "Action", run_id: str) -> str:
 
 
 def _create_run(
-    action: "Action", run_id: str, inputs: dict, relative_artifacts_dir: str
+    action: "Action",
+    run_id: str,
+    inputs: dict,
+    relative_artifacts_dir: str,
+    request_id: str,
 ) -> "Run":
     from sema4ai.action_server._models import RUN_ID_COUNTER, Counter
 
@@ -65,6 +69,7 @@ def _create_run(
         result=None,
         error_message=None,
         relative_artifacts_dir=relative_artifacts_dir,
+        request_id=request_id,
     )
     with db.transaction():
         with db.cursor() as cursor:
@@ -185,7 +190,7 @@ class _ActionsRunner:
         if timeout is not None:
             timeout = float(timeout)
 
-        self.request_id: Optional[str] = headers.get("x-actions-request-id", None)
+        self.request_id: str = headers.get("x-actions-request-id", "")
         self.timeout: Optional[float] = timeout
         self.callback_url: Optional[str] = headers.get("x-actions-async-callback", None)
         self._future: Optional[Future] = None
@@ -316,7 +321,13 @@ class _ActionsRunner:
                 action
             ) as process_handle:
                 relative_artifacts_path: str = _create_run_artifacts_dir(action, run_id)
-                run: Run = _create_run(action, run_id, inputs, relative_artifacts_path)
+                run: Run = _create_run(
+                    action,
+                    run_id,
+                    inputs,
+                    relative_artifacts_path,
+                    request_id=self.request_id,
+                )
 
                 input_json = (
                     settings.artifacts_dir

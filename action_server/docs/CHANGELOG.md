@@ -5,6 +5,16 @@
 - Fixed usages of `time.time()` to `time.monotonic()` to measure time when elapsed time is needed
   (to avoid issues with time going backwards).
 - Added support for running actions asynchronously.
+  - The Run model now has a `request_id` (optional) field which is the id of the request that created this run.
+  - It's possible to get the run id from the request id using the `/api/runs/run-id-from-request-id/<request_id>` endpoint.
+- Added support for cancelling actions.
+  - There's a new "status" in the run model (4=cancelled).
+  - Existing statuses are now:
+    - 0=not run
+    - 1=running
+    - 2=passed
+    - 3=failed
+    - 4=cancelled
 
 ## 2.3.1 - 2024-12-18
 

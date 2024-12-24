@@ -39,10 +39,26 @@ def test_server_async_api_requests_while_waiting_for_action_to_complete(
         headers.get("x-action-async-completion") == "1"
     ), f"Failed to get x-action-async-completion. Headers: {headers}"
 
-    # TODO: Check for the APIs to:
-    # - Get the run id from the request id.
-    # - Get the status of the action.
-    # - Cancel the action.
+    # Get the run id from the request id
+    response = client.get_get_response(
+        "api/runs/run-id-from-request-id/123",
+        data={},
+        # data={"request_id": "123"},
+    )
+    response.raise_for_status()
+    run_id = response.json()["run_id"]
+    assert run_id
+
+    # Get the status of the action
+    response = client.get_get_response(f"api/runs/{run_id}", data={})
+    response.raise_for_status()
+    status = response.json()
+    assert status["status"] == 1  # 1=running
+
+    # # Cancel the action
+    # response = client.post_get_response(f"api/runs/{run_id}/cancel", data={})
+    # response.raise_for_status()
+    # assert response.json()["status"] == "cancelled"
 
 
 def test_server_async_api(
