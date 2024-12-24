@@ -1,10 +1,53 @@
 from sema4ai.action_server._selftest import ActionServerClient, ActionServerProcess
 
 
+def test_server_async_api_requests_while_waiting_for_action_to_complete(
+    action_server_process: ActionServerProcess, client: ActionServerClient, datadir
+):
+    """
+    Test that the server can handle requests while waiting for an action to complete.
+    """
+    from sema4ai.action_server.vendored_deps.url_callback_server import (
+        start_server_in_thread,
+    )
+
+    fut_uri, fut_address = start_server_in_thread(port=0)
+    action_server_process.start(
+        cwd=datadir,
+        actions_sync=True,
+        db_file="server.db",
+    )
+
+    callback_url = fut_address.result(10)
+    assert callback_url
+
+    response = client.post_get_response(
+        "api/actions/test-server-async/sleep-action/run",
+        {"time_to_sleep": 20},  # Sleep for a long time.
+        {
+            "x-actions-async-timeout": "0.2",  # Return after 0.2 seconds
+            "x-actions-async-callback": callback_url,
+            "x-actions-request-id": "123",  # Can be used to cancel the action, get status, get the result, ...
+        },
+    )
+    response.raise_for_status()
+    headers = response.headers
+    assert headers
+
+    # Check for the message we received saying it's an async compute.
+    assert (
+        headers.get("x-action-async-completion") == "1"
+    ), f"Failed to get x-action-async-completion. Headers: {headers}"
+
+    # TODO: Check for the APIs to:
+    # - Get the run id from the request id.
+    # - Get the status of the action.
+    # - Cancel the action.
+
+
 def test_server_async_api(
     action_server_process: ActionServerProcess,
     client: ActionServerClient,
-    datadir,
 ):
     """
     Process for asynchronously calling an action in the action server:
@@ -34,17 +77,41 @@ def test_server_async_api(
     callback_url = fut_address.result(10)
     assert callback_url
 
-    found = client.post_get_str(
+    response = client.post_get_response(
         "api/actions/greeter/greet/run",
         {"name": "Foo"},
         {
-            "Authorization": "Bearer Foo",
             "x-actions-async-timeout": "0",  # Return immediately
             "x-actions-async-callback": callback_url,
             "x-actions-request-id": "123",  # Can be used to cancel the action, get status, get the result, ...
         },
     )
+    response.raise_for_status()
+    found = response.text
 
-    # TODO: Finish checking the async flow
+    headers = response.headers
+    assert headers
+
+    # Check for the message we received saying it's an async compute.
+    assert (
+        headers.get("x-action-async-completion") == "1"
+    ), f"Failed to get x-action-async-completion. Headers: {headers}"
+    assert (
+        headers.get("x-action-server-run-id") is not None
+    ), f"Failed to get x-action-server-run-id. Headers: {headers}"
+
     assert found == '"async-return"', f"{found} != '\"async-return\"'"
-    assert fut_uri.result(10)["body"] == '"Hello Mr. Foo."'
+
+    # Now check for the callback result after it's computed.
+    result = fut_uri.result(10)
+    assert result["body"] == '"Hello Mr. Foo."'
+    headers = result["headers"]
+    assert headers
+    assert (
+        headers.get("x-actions-request-id") == "123"
+    ), f"Failed to get x-actions-request-id. Headers: {headers}"
+
+    # TODO: Check for the APIs to:
+    # - Get the result of the action.
+    # - Get the status of the action.
+    # - Check that cancelling returns that the action was already finished.

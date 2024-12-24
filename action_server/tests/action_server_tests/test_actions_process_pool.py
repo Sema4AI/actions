@@ -4,7 +4,6 @@ import sys
 from concurrent.futures import Future, TimeoutError
 from contextlib import contextmanager
 from dataclasses import dataclass
-from functools import partial
 from pathlib import Path
 from typing import Iterator
 

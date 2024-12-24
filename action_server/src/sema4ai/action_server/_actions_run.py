@@ -109,32 +109,38 @@ def _update_run(run: "Run", initial_time: float, run_finished: bool, **changes):
     global_runs_state.on_run_changed(run, changes)
 
 
-def _set_run_as_finished_ok(run: "Run", result: str, initial_time: float):
+def _set_run_as_finished_ok(run: "Run", result: str, initial_time: float) -> int:
     from ._models import RunStatus
 
     _update_run(run, initial_time, True, result=result, status=RunStatus.PASSED)
+    return RunStatus.PASSED
 
 
 def _set_run_as_finished_failed_with_response(
     run: "Run", result: str, initial_time: float
-):
+) -> int:
     from ._models import RunStatus
 
     _update_run(run, initial_time, True, status=RunStatus.FAILED, result=result)
+    return RunStatus.FAILED
 
 
-def _set_run_as_finished_failed(run: "Run", error_message: str, initial_time: float):
+def _set_run_as_finished_failed(
+    run: "Run", error_message: str, initial_time: float
+) -> int:
     from ._models import RunStatus
 
     _update_run(
         run, initial_time, True, status=RunStatus.FAILED, error_message=error_message
     )
+    return RunStatus.FAILED
 
 
-def _set_run_as_running(run: "Run", initial_time: float):
+def _set_run_as_running(run: "Run", initial_time: float) -> int:
     from ._models import RunStatus
 
     _update_run(run, initial_time, False, status=RunStatus.RUNNING)
+    return RunStatus.RUNNING
 
 
 class _ActionsRunner:
@@ -185,6 +191,7 @@ class _ActionsRunner:
         self._future: Optional[Future] = None
         self._run_id = gen_uuid("run")
         self._returning_async_result = False
+        self._run_status: Optional[int] = None
 
     def run_in_thread(self) -> Any:
         """
@@ -204,6 +211,8 @@ class _ActionsRunner:
         cancel it, etc).
         """
         assert self._future is None, "Future already set"
+        from concurrent.futures import TimeoutError
+
         from sema4ai.action_server._robo_utils import run_in_thread
 
         self.response.headers["X-Action-Server-Run-Id"] = self._run_id
@@ -229,22 +238,50 @@ class _ActionsRunner:
         self.response.headers["x-action-async-completion"] = "1"
         return "async-return"
 
-    def _run_action(self):
+    def _run_action(self) -> Any:
+        # Before even running the action, validate the inputs.
+        inputs: dict = self.inputs
+        input_validator: Callable[[dict], None] = self.input_validator
+        try:
+            input_validator(inputs)
+        except Exception as e:
+            raise RequestValidationError(
+                [
+                    f"The received input arguments (sent in the body) do not conform to the expected API. Details: {e}"
+                ]
+            )
         result = self._run_action_impl()
         if self._returning_async_result:
             # We're returning an async result, so, we need to call the callback.
             if self.callback_url:
-                import sema4ai_http
+                post_result = None
+                try:
+                    import sema4ai_http
 
-                result = sema4ai_http.post(
-                    self.callback_url,
-                    json=result,
-                    headers={
+                    headers: dict[str, str] = {
                         "x-action-server-run-id": self._run_id,
-                        "x-actions-request-id": self.request_id,
-                    },
-                )
-            return result
+                    }
+
+                    if self.request_id:
+                        headers["x-actions-request-id"] = self.request_id
+
+                    for _i in range(3):  # Try up to 3 times before giving up.
+                        post_result = sema4ai_http.post(
+                            self.callback_url,
+                            json=result,
+                            headers=headers,
+                        )
+                        if post_result.status == 200:
+                            break
+                        time.sleep(1)
+                    else:
+                        log.critical(
+                            f"Error posting callback to: {self.callback_url} for run id {self._run_id}.\nRequest id: {self.request_id}.\nResult: {post_result}"
+                        )
+                except Exception:
+                    log.exception(
+                        f"Error posting callback to: {self.callback_url} for run id {self._run_id}.\nRequest id: {self.request_id}.\nResult: {post_result}"
+                    )
         return result
 
     def _run_action_impl(self) -> Any:
@@ -252,10 +289,10 @@ class _ActionsRunner:
             ActionsProcessPool,
             ProcessHandle,
         )
+        from sema4ai.action_server._models import RunStatus
 
         action_package: "ActionPackage" = self.action_package
         action: "Action" = self.action
-        input_validator: Callable[[dict], None] = self.input_validator
         output_validator: Callable[[dict], None] = self.output_validator
         inputs: dict = self.inputs
         headers: dict = self.headers
@@ -268,14 +305,7 @@ class _ActionsRunner:
 
         settings = get_settings()
 
-        try:
-            input_validator(inputs)
-        except Exception as e:
-            raise RequestValidationError(
-                [
-                    f"The received input arguments (sent in the body) do not conform to the expected API. Details: {e}"
-                ]
-            )
+        self._run_status = RunStatus.NOT_RUN
 
         db = get_db()
         with db.connect():  # Connection is per-thread, so, we need to create a new one.
@@ -312,7 +342,7 @@ class _ActionsRunner:
                 initial_time = time.monotonic()
                 returncode = "<unset>"
                 try:
-                    _set_run_as_running(run, initial_time)
+                    self._run_status = _set_run_as_running(run, initial_time)
                     reuse_process = settings.reuse_processes
                     generator = process_handle.run_action(
                         run,
@@ -364,15 +394,19 @@ class _ActionsRunner:
                             )
 
                     if returncode == 0:
-                        _set_run_as_finished_ok(run, result_str, initial_time)
+                        self._run_status = _set_run_as_finished_ok(
+                            run, result_str, initial_time
+                        )
                         return ret
 
                     else:
                         if ret:
                             # We have a return even with a failure. This means it's
                             # something as a Response(error=error_msg)
-                            _set_run_as_finished_failed_with_response(
-                                run, result_str, initial_time
+                            self._run_status = (
+                                _set_run_as_finished_failed_with_response(
+                                    run, result_str, initial_time
+                                )
                             )
                             return ret
 
@@ -387,7 +421,9 @@ class _ActionsRunner:
                     log.exception(
                         f"Internal error running action (action={action.name})"
                     )
-                    _set_run_as_finished_failed(run, str(e), initial_time)
+                    self._run_status = _set_run_as_finished_failed(
+                        run, str(e), initial_time
+                    )
                     raise HTTPException(status_code=500, detail=str(e))
 
 

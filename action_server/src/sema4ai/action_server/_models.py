@@ -168,6 +168,26 @@ class RunStatus:
     FAILED = 3
 
 
+def run_status_to_str(run_status: int) -> str:
+    """
+    Args:
+        run_status: The run status to convert to a string.
+
+    Returns:
+        The string representation of the run status.
+    """
+    if run_status == RunStatus.NOT_RUN:
+        return "not run"
+    elif run_status == RunStatus.RUNNING:
+        return "running"
+    elif run_status == RunStatus.PASSED:
+        return "passed"
+    elif run_status == RunStatus.FAILED:
+        return "failed"
+    else:
+        raise ValueError(f"Invalid run status: {run_status}")
+
+
 def get_all_model_classes():
     from sema4ai.action_server.migrations import Migration
 
