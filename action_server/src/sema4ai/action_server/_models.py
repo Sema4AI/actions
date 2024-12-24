@@ -81,17 +81,18 @@ class Run:
     id: str  # primary key (uuid)
     _db_rules.unique_indexes.add("Run.id")
 
-    status: int  # 0=not run, 1=running, 2=passed, 3=failed
+    status: int  # 0=not run, 1=running, 2=passed, 3=failed, 4=cancelled
     _db_rules.indexes.add("Run.status")
 
     action_id: str  # foreign key to the action
     _db_rules.foreign_keys.add("Run.action_id")
     _db_rules.indexes.add("Run.action_id")
 
-    start_time: str  # The time of the run creation.
-    run_time: Optional[
-        float
-    ]  # The time from the run creation to the run finish (in seconds)
+    start_time: str  # The time that the action started running (empty means it hasn't started yet).
+    # The time to run the action (in seconds).
+    # Does not include the time the run spent queued waiting for the
+    # process to be available.
+    run_time: Optional[float]
     inputs: str  # The json content with the variables used as an input
     result: Optional[str]  # The json content of the output that the run generated
     error_message: Optional[str]  # If the status=failed, this may have an error message
@@ -104,6 +105,10 @@ class Run:
     # workspace while the other one would be global.
     numbered_id: int
     _db_rules.unique_indexes.add("Run.numbered_id")
+
+    # The request id that this run is associated with (if any).
+    request_id: str = ""
+    _db_rules.indexes.add("Run.request_id")
 
 
 @dataclass
@@ -166,6 +171,29 @@ class RunStatus:
     RUNNING = 1
     PASSED = 2
     FAILED = 3
+    CANCELLED = 4
+
+
+def run_status_to_str(run_status: int) -> str:
+    """
+    Args:
+        run_status: The run status to convert to a string.
+
+    Returns:
+        The string representation of the run status.
+    """
+    if run_status == RunStatus.NOT_RUN:
+        return "not run"
+    elif run_status == RunStatus.RUNNING:
+        return "running"
+    elif run_status == RunStatus.PASSED:
+        return "passed"
+    elif run_status == RunStatus.FAILED:
+        return "failed"
+    elif run_status == RunStatus.CANCELLED:
+        return "cancelled"
+    else:
+        raise ValueError(f"Invalid run status: {run_status}")
 
 
 def get_all_model_classes():

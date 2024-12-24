@@ -158,7 +158,7 @@ async def handle_body_payload(
             }
         )
 
-        timeout_at = time.time() + 30  # Retry up to 30 seconds before giving up
+        timeout_at = time.monotonic() + 30  # Retry up to 30 seconds before giving up
         while True:
             ws = await get_ws_coro
 
@@ -170,7 +170,7 @@ async def handle_body_payload(
             try:
                 await ws.send(response_converted)
             except Exception:
-                if timeout_at > time.time():
+                if timeout_at > time.monotonic():
                     log.exception(
                         "Error sending body payload (timed out: will not retry)"
                     )

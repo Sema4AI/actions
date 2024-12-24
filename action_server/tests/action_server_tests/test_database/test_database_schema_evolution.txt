@@ -71,6 +71,7 @@ CREATE TABLE IF NOT EXISTS run(
     error_message TEXT,
     relative_artifacts_dir TEXT NOT NULL,
     numbered_id INTEGER NOT NULL,
+    request_id TEXT NOT NULL DEFAULT '',
     FOREIGN KEY (action_id) REFERENCES action(id)  
 )
 ''',
@@ -93,6 +94,11 @@ CREATE INDEX run_status_non_unique_index ON run(status);
 
 '''
 CREATE INDEX run_action_id_non_unique_index ON run(action_id);
+''',
+
+
+'''
+CREATE INDEX run_request_id_non_unique_index ON run(request_id);
 ''',
 
 

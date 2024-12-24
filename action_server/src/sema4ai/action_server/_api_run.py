@@ -48,6 +48,42 @@ def show_run(run_id: str = fastapi.Path(title="ID for run")):
 
 
 @dataclass
+class RunIdFromRequestId:
+    run_id: str
+
+
+@run_api_router.get(
+    "/run-id-from-request-id/{request_id}", response_model=RunIdFromRequestId
+)
+def run_id_from_request_id(request_id: str = fastapi.Path(title="Request ID")):
+    """
+    Returns the run id associated with the request id.
+    """
+
+    if not request_id:
+        from fastapi.exceptions import HTTPException
+        from starlette import status
+
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Request ID is required.",
+        )
+
+    from ._runs_state_cache import get_global_runs_state
+
+    try:
+        global_runs_state = get_global_runs_state()
+        with global_runs_state.semaphore:
+            run = global_runs_state.get_run_from_request_id(request_id)
+            return RunIdFromRequestId(run_id=run.id)
+    except KeyError as err:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Unknown request id: {request_id}",
+        ) from err
+
+
+@dataclass
 class ArtifactInfo:
     name: str
     size_in_bytes: int

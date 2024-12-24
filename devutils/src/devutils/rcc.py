@@ -192,7 +192,7 @@ class Rcc(object):
 
             log.debug(msg)
 
-            curtime = time.time()
+            curtime = time.monotonic()
             boutput: bytes
             # We have 2 main modes here: one in which we can print the output
             # interactively while the command is running and another where
@@ -244,7 +244,7 @@ class Rcc(object):
 
         output = boutput.decode("utf-8", "replace")
 
-        elapsed = time.time() - curtime
+        elapsed = time.monotonic() - curtime
         msg = f"Output from: {cmdline} (took: {elapsed:.2f}s): {output}"
         if hide_in_log:
             msg = msg.replace(hide_in_log, "<HIDDEN_IN_LOG>")

@@ -51,11 +51,15 @@ class RunsState:
         # Note: we limit to the latest 200 Runs for now...
         # could be tweaked in the future.
         run_id_to_run = {}
+        request_id_to_run = {}
         # order by is important so that we get the latest ones.
         for run in db.all(Run, offset=0, limit=200, order_by="numbered_id DESC"):
             run_id_to_run[run.id] = run
+            if run.request_id:  # Not all runs have a valid request id (i.e.: only available if the client passed it)
+                request_id_to_run[run.request_id] = run
 
         self._run_id_to_run = run_id_to_run
+        self._request_id_to_run = request_id_to_run
 
     def get_current_run_state(self) -> list["Run"]:
         assert (
@@ -64,10 +68,22 @@ class RunsState:
         return list(self._run_id_to_run.values())
 
     def get_run_from_id(self, run_id) -> "Run":
+        """
+        Returns the run associated with the run id (or throws a KeyError if not found).
+        """
         assert (
             self.semaphore._value == 0
         ), "Clients getting the current run state must acquire the semaphore."
         return self._run_id_to_run[run_id]
+
+    def get_run_from_request_id(self, request_id) -> "Run":
+        """
+        Returns the run associated with the request id (or throws a KeyError if not found).
+        """
+        assert (
+            self.semaphore._value == 0
+        ), "Clients getting the current run state must acquire the semaphore."
+        return self._request_id_to_run[request_id]
 
     def register(self, listener):
         assert (
@@ -88,6 +104,8 @@ class RunsState:
         run_copy = Run(**asdict(run))
         with self.semaphore:
             self._run_id_to_run[run_copy.id] = run_copy
+            if run_copy.request_id:
+                self._request_id_to_run[run_copy.request_id] = run_copy
             for listener in self._run_listeners.keys():
                 listener(RunChangeEvent("added", run_copy))
 
@@ -99,6 +117,8 @@ class RunsState:
 
         with self.semaphore:
             self._run_id_to_run[run_copy.id] = run_copy
+            if run_copy.request_id:
+                self._request_id_to_run[run_copy.request_id] = run_copy
             for listener in self._run_listeners.keys():
                 listener(RunChangeEvent("changed", run_copy, changes))
 

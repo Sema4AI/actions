@@ -178,9 +178,9 @@ from sema4ai.actions import setup
 
 @setup
 def measure_time(action):
-    start = time.time()
+    start = time.monotonic()
     yield  # Action executes here
-    duration = time.time() - start
+    duration = time.monotonic() - start
     print(f"Action took {duration} seconds")
 
 @action

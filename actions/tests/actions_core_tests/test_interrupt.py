@@ -17,13 +17,13 @@ def test_interrupt_main_thread():
         interrupt_main_thread()
 
     timeout = 20
-    initial_time = time.time()
+    initial_time = time.monotonic()
     try:
         t = threading.Thread(target=interrupt)
         t.start()
         time.sleep(timeout)
     except KeyboardInterrupt:
-        actual_timeout = time.time() - initial_time
+        actual_timeout = time.monotonic() - initial_time
         # If this fails it means that although we interrupted Python actually
         # waited for the next instruction to send the event and didn't really
         # interrupt the thread.
