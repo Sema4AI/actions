@@ -156,6 +156,10 @@ components:
         relative_artifacts_dir:
           title: Relative Artifacts Dir
           type: string
+        request_id:
+          default: ''
+          title: Request Id
+          type: string
         result:
           anyOf:
           - type: string
@@ -184,6 +188,15 @@ components:
       - relative_artifacts_dir
       - numbered_id
       title: Run
+      type: object
+    RunIdFromRequestId:
+      properties:
+        run_id:
+          title: Run Id
+          type: string
+      required:
+      - run_id
+      title: RunIdFromRequestId
       type: object
     SetSecretData:
       properties:
@@ -285,6 +298,31 @@ paths:
                 type: array
           description: Successful Response
       summary: List Runs
+  /api/runs/run-id-from-request-id/{request_id}:
+    get:
+      description: Returns the run id associated with the request id.
+      operationId: run_id_from_request_id_api_runs_run_id_from_request_id__request_id__get
+      parameters:
+      - in: path
+        name: request_id
+        required: true
+        schema:
+          title: Request ID
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunIdFromRequestId'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Run Id From Request Id
   /api/runs/{run_id}:
     get:
       operationId: show_run_api_runs__run_id__get
