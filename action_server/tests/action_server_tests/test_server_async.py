@@ -55,10 +55,15 @@ def test_server_async_api_requests_while_waiting_for_action_to_complete(
     status = response.json()
     assert status["status"] == 1  # 1=running
 
-    # # Cancel the action
-    # response = client.post_get_response(f"api/runs/{run_id}/cancel", data={})
-    # response.raise_for_status()
-    # assert response.json()["status"] == "cancelled"
+    # Cancel the action
+    response = client.post_get_response(f"api/runs/{run_id}/cancel", data={})
+    response.raise_for_status()
+
+    # Get the status of the action
+    response = client.get_get_response(f"api/runs/{run_id}", data={})
+    response.raise_for_status()
+    status = response.json()
+    assert status["status"] == 4  # 4=cancelled
 
 
 def test_server_async_api(

@@ -22,10 +22,24 @@ class RunChangeEvent:
     changes: Optional[dict[str, Any]] = None
 
 
+class RunRuntimeInfo:
+    def __init__(self, run_id: str):
+        from sema4ai.action_server._robo_utils.callback import Callback
+
+        self._run_id = run_id
+        self._canceled = False
+        self.on_cancel = Callback()
+
+    def cancel(self):
+        self._canceled = True
+        self.on_cancel()  # Notify all listeners that the run was canceled.
+
+    def is_canceled(self) -> bool:
+        return self._canceled
+
+
 class RunsState:
     def __init__(self, db: "Database"):
-        from ._models import Run
-
         # Clients that want to register/unregister must use this semaphore
         # to avoid racing conditions.
         #
@@ -45,45 +59,50 @@ class RunsState:
         # Use dict keys for uniqueness and ordering.
         self._run_listeners: Dict[Any, int] = {}
 
-        # This is an in-memory view of the runs available to be seen by clients.
-        # Older runs are in the db, but we don't provide them for the time being.
+        self._db = db
+        self._run_id_to_runtime_info: dict[str, RunRuntimeInfo] = {}
 
-        # Note: we limit to the latest 200 Runs for now...
-        # could be tweaked in the future.
-        run_id_to_run = {}
-        request_id_to_run = {}
-        # order by is important so that we get the latest ones.
-        for run in db.all(Run, offset=0, limit=200, order_by="numbered_id DESC"):
-            run_id_to_run[run.id] = run
-            if run.request_id:  # Not all runs have a valid request id (i.e.: only available if the client passed it)
-                request_id_to_run[run.request_id] = run
+    def get_current_run_state(self, offset: int = 0, limit: int = 200) -> list["Run"]:
+        from ._models import Run
 
-        self._run_id_to_run = run_id_to_run
-        self._request_id_to_run = request_id_to_run
-
-    def get_current_run_state(self) -> list["Run"]:
         assert (
             self.semaphore._value == 0
         ), "Clients getting the current run state must acquire the semaphore."
-        return list(self._run_id_to_run.values())
+        return self._db.all(
+            Run, offset=offset, limit=limit, order_by="numbered_id DESC"
+        )
 
-    def get_run_from_id(self, run_id) -> "Run":
+    def get_run_from_id(self, run_id: str) -> "Run":
         """
         Returns the run associated with the run id (or throws a KeyError if not found).
         """
+        assert run_id, "Run id cannot be empty."
+        from ._database import Database
+        from ._models import Run
+
         assert (
             self.semaphore._value == 0
         ), "Clients getting the current run state must acquire the semaphore."
-        return self._run_id_to_run[run_id]
+        db: Database = self._db
 
-    def get_run_from_request_id(self, request_id) -> "Run":
+        with db.connect():
+            return db.first(Run, "WHERE id = ?", [run_id])
+
+    def get_run_from_request_id(self, request_id: str) -> "Run":
         """
         Returns the run associated with the request id (or throws a KeyError if not found).
         """
+        assert request_id, "Request id cannot be empty."
+        from ._database import Database
+        from ._models import Run
+
         assert (
             self.semaphore._value == 0
         ), "Clients getting the current run state must acquire the semaphore."
-        return self._request_id_to_run[request_id]
+        db: Database = self._db
+
+        with db.connect():
+            return db.first(Run, "WHERE request_id = ?", [request_id])
 
     def register(self, listener):
         assert (
@@ -103,24 +122,31 @@ class RunsState:
 
         run_copy = Run(**asdict(run))
         with self.semaphore:
-            self._run_id_to_run[run_copy.id] = run_copy
-            if run_copy.request_id:
-                self._request_id_to_run[run_copy.request_id] = run_copy
             for listener in self._run_listeners.keys():
                 listener(RunChangeEvent("added", run_copy))
 
+            self._run_id_to_runtime_info[run_copy.id] = RunRuntimeInfo(run_copy.id)
+
     def on_run_changed(self, run: "Run", changes: Dict[str, Any]):
+        from sema4ai.action_server._models import RunStatus
+
         # Semaphore is acquired internally in this case.
         from ._models import Run
 
         run_copy = Run(**asdict(run))
-
         with self.semaphore:
-            self._run_id_to_run[run_copy.id] = run_copy
-            if run_copy.request_id:
-                self._request_id_to_run[run_copy.request_id] = run_copy
             for listener in self._run_listeners.keys():
                 listener(RunChangeEvent("changed", run_copy, changes))
+
+            if run_copy.status not in (RunStatus.RUNNING, RunStatus.NOT_RUN):
+                # Finished run, remove from runtime info.
+                self._run_id_to_runtime_info.pop(run_copy.id, None)
+
+    def cancel_run(self, run_id: str):
+        with self.semaphore:
+            runtime_info = self._run_id_to_runtime_info.get(run_id)
+            if runtime_info is not None:
+                runtime_info.cancel()
 
 
 _runs_state: Optional[RunsState] = None

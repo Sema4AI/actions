@@ -47,6 +47,18 @@ def show_run(run_id: str = fastapi.Path(title="ID for run")):
     return get_run_by_id(run_id)
 
 
+@run_api_router.post("/{run_id}/cancel")
+def cancel_run(run_id: str = fastapi.Path(title="ID for run")):
+    """
+    Cancels a running action.
+    """
+    from ._runs_state_cache import RunsState, get_global_runs_state
+
+    global_runs_state: RunsState = get_global_runs_state()
+    with global_runs_state.semaphore:
+        global_runs_state.cancel_run(run_id)
+
+
 @dataclass
 class RunIdFromRequestId:
     run_id: str
