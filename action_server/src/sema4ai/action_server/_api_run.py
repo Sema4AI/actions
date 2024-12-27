@@ -2,7 +2,7 @@ import logging
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Annotated, Dict, List, Optional
+from typing import Annotated, Dict, List, Literal, Optional
 
 import fastapi
 from fastapi.params import Param
@@ -48,7 +48,9 @@ def show_run(run_id: str = fastapi.Path(title="ID for run")):
 
 
 @run_api_router.post("/{run_id}/cancel")
-def cancel_run(run_id: str = fastapi.Path(title="ID for run")) -> bool:
+def cancel_run(
+    run_id: str = fastapi.Path(title="ID for run"),
+) -> Literal["cancelled", "not-running"]:
     """
     Cancels a running action.
 
@@ -58,7 +60,10 @@ def cancel_run(run_id: str = fastapi.Path(title="ID for run")) -> bool:
     from ._runs_state_cache import RunsState, get_global_runs_state
 
     global_runs_state: RunsState = get_global_runs_state()
-    return global_runs_state.cancel_run(run_id)
+    if global_runs_state.cancel_run(run_id):
+        return "cancelled"
+    else:
+        return "not-running"
 
 
 @dataclass

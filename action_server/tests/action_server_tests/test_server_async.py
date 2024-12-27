@@ -70,7 +70,7 @@ def test_server_async_api_requests_while_waiting_for_action_to_complete(
     response = client.post_get_response(f"api/runs/{run_id}/cancel", data={})
     response.raise_for_status()
 
-    assert response.json() is True
+    assert response.json() == "cancelled"
 
     # Get the status of the action
     def check_cancelled_status():
@@ -154,7 +154,7 @@ def test_server_async_api(
     response = client.post_get_response(f"api/runs/{run_id}/cancel", data={})
     response.raise_for_status()
     # i.e.: the run was not running (so, it was not canceled)
-    assert response.json() is False
+    assert response.json() == "not-running"
 
     response = client.get_get_response(f"api/runs/{run_id}", data={})
     response.raise_for_status()

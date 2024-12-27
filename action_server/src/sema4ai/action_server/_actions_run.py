@@ -330,7 +330,7 @@ class _ActionsRunner:
         from sema4ai.action_server._settings import get_settings
 
         from ._actions_process_pool import get_actions_process_pool
-        from ._models import Run, get_db
+        from ._models import get_db
 
         settings = get_settings()
 

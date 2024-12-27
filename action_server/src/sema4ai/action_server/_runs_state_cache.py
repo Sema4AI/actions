@@ -63,14 +63,18 @@ class RunsState:
         self._run_id_to_runtime_info: dict[str, RunRuntimeInfo] = {}
 
     def get_current_run_state(self, offset: int = 0, limit: int = 200) -> list["Run"]:
+        from ._database import Database
         from ._models import Run
 
         assert (
             self.semaphore._value == 0
         ), "Clients getting the current run state must acquire the semaphore."
-        return self._db.all(
-            Run, offset=offset, limit=limit, order_by="numbered_id DESC"
-        )
+        db: Database = self._db
+
+        with db.connect():
+            return self._db.all(
+                Run, offset=offset, limit=limit, order_by="numbered_id DESC"
+            )
 
     def get_run_from_id(self, run_id: str) -> "Run":
         """

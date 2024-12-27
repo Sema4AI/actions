@@ -452,6 +452,36 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
           description: Validation Error
       summary: Get Run Artifact Text
+  /api/runs/{run_id}/cancel:
+    post:
+      description: "Cancels a running action.\n\nReturns:\n    True if the run was\
+        \ canceled, False otherwise (if the run was not running)."
+      operationId: cancel_run_api_runs__run_id__cancel_post
+      parameters:
+      - in: path
+        name: run_id
+        required: true
+        schema:
+          title: ID for run
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                enum:
+                - cancelled
+                - not-running
+                title: Response Cancel Run Api Runs  Run Id  Cancel Post
+                type: string
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Cancel Run
   /api/runs/{run_id}/log.html:
     get:
       operationId: get_run_log_html_api_runs__run_id__log_html_get
