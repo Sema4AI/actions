@@ -274,6 +274,15 @@ class _ActionsRunner:
         return "async-return"
 
     def _run_action(self) -> Any:
+        """
+        This is where the action is actually run (to completion).
+
+        If the action is async and the timeout for the async return
+        was reached, this will call the callback url with the result.
+
+        Returns:
+            The result of the action.
+        """
         # Before even running the action, validate the inputs.
         inputs: dict = self.inputs
         input_validator: Callable[[dict], None] = self.input_validator
@@ -285,6 +294,7 @@ class _ActionsRunner:
                     f"The received input arguments (sent in the body) do not conform to the expected API. Details: {e}"
                 ]
             )
+
         result = self._run_action_impl()
         if self._returning_async_result:
             # We're returning an async result, so, we need to call the callback.
@@ -352,6 +362,9 @@ class _ActionsRunner:
             process_handle: ProcessHandle
             relative_artifacts_path = self._relative_artifacts_path
             run = self._run
+
+            # This can take some time to complete if multiple actions are
+            # running in parallel (i.e.: the process pool may be full).
             with actions_process_pool.obtain_process_for_action(
                 action
             ) as process_handle:
@@ -415,7 +428,7 @@ class _ActionsRunner:
                             returncode = e.value
 
                     if runtime_info.is_canceled():
-                        raise RuntimeError("Run canceled")
+                        raise RuntimeError(f"Run canceled, action: {action.name}")
 
                     try:
                         run_result_str: str = result_json.read_text("utf-8", "replace")
