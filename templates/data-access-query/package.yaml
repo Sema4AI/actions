@@ -5,15 +5,15 @@ name: Data Access Queries Template
 description: Actions for querying sales/customer data.
 
 # Package version number, recommend using semver.org
-version: 0.0.2
+version: 0.0.3
 
 dependencies:
   conda-forge:
   - python=3.10.14
   - uv=0.4.17
   pypi:
-  - sema4ai-actions=1.1.4
-  - sema4ai-data=0.0.3
+  - sema4ai-actions=1.2.0
+  - sema4ai-data=0.0.5
 
 packaging:
   # By default, all files and folders in this directory are packaged when uploaded.
