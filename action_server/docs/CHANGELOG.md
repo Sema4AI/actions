@@ -2,12 +2,19 @@
 
 ## Unreleased
 
-- Fixed usages of `time.time()` to `time.monotonic()` to measure time when elapsed time is needed
-  (to avoid issues with time going backwards).
 - Added support for running actions asynchronously.
   - The Run model now has a `request_id` (optional) field which is the id of the request that created this run.
   - It's possible to get the run id from the request id using the `/api/runs/run-id-from-request-id/<request_id>` endpoint.
-- Added support for cancelling actions.
+  - To call an action asynchronously, set the `x-actions-async-timeout` header to the desired timeout (in seconds).
+    - When the timeout is reached a response saying that the action will complete asynchronously is returned.
+    - The client can later use the run id to query the run status, cancel the run, etc.
+  - The client can also set the `x-actions-async-callback` header to the URL to call when the action is finished.
+    - The callback URL will receive the result of the action as a json in the body.
+    - A header `x-action-server-run-id` will be sent with the ID of the action run.
+    - A header `x-actions-request-id` will be sent with the ID of the request.
+- Fixed usages of `time.time()` to `time.monotonic()` to measure time when elapsed time is needed
+  (to avoid issues with time going backwards).
+- Added support for cancelling actions (url: `/api/runs/<run_id>/cancel`).
   - There's a new "status" in the run model (4=cancelled).
   - Existing statuses are now:
     - 0=not run
