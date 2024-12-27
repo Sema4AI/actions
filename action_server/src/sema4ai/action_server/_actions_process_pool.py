@@ -517,7 +517,7 @@ class ProcessHandle:
         headers: dict,
         cookies: dict,
         reuse_process: bool,
-    ) -> Generator[Queue, dict, int]:
+    ) -> int:
         """
         Runs the action and returns the returncode from running the action.
 
@@ -543,7 +543,11 @@ class ProcessHandle:
                 )
 
                 queue = self._read_queue
-                result_msg = yield queue
+
+                result_msg = queue.get(block=True)
+                if result_msg is None:
+                    # This means that the process was actually killed (or crashed).
+                    result_msg = {"returncode": 77}
 
                 if self._post_run_args:
                     log.debug("Calling post run command.")

@@ -330,6 +330,8 @@ class _ActionsRunner:
         return result
 
     def _run_action_impl(self) -> Any:
+        from typing import Literal
+
         from sema4ai.action_server._actions_process_pool import (
             ActionsProcessPool,
             ProcessHandle,
@@ -390,7 +392,7 @@ class _ActionsRunner:
                 )
 
                 initial_time = time.monotonic()
-                returncode = "<unset>"
+                returncode: int | Literal["<unset>"] = "<unset>"
                 try:
                     self._run_status = _set_run_as_running(run, initial_time)
 
@@ -403,7 +405,7 @@ class _ActionsRunner:
                             raise RuntimeError("Run canceled")
 
                         reuse_process = settings.reuse_processes
-                        generator = process_handle.run_action(
+                        returncode = process_handle.run_action(
                             run,
                             action_package,
                             action,
@@ -415,17 +417,6 @@ class _ActionsRunner:
                             cookies,
                             reuse_process,
                         )
-
-                        queue = next(generator)
-                        result_msg = queue.get(block=True)
-                        if result_msg is None:
-                            # This means that the process was actually killed (or crashed).
-                            result_msg = {"returncode": 77}
-
-                        try:
-                            generator.send(result_msg)
-                        except StopIteration as e:
-                            returncode = e.value
 
                     if runtime_info.is_canceled():
                         raise RuntimeError(f"Run canceled, action: {action.name}")
