@@ -160,6 +160,15 @@ def _set_run_as_running(run: "Run", initial_time: float) -> int:
 
 
 class _ActionsRunner:
+    """
+    This is where the user actually runs something.
+
+    Most methods run in a thread (so, be careful when talking to the database).
+
+    We have to take care of making a run with the proper environment,
+    creating the run, collecting output info, etc.
+    """
+
     def __init__(
         self,
         action_package: "ActionPackage",
@@ -174,12 +183,7 @@ class _ActionsRunner:
         cookies: dict,
     ) -> None:
         """
-        This is where the user actually runs something.
-
-        This runs in a thread (so, be careful when talking to the database).
-
-        We have to take care of making a run with the proper environment,
-        creating the run, collecting output info, etc.
+        Constructor. Still running in the main thread.
         """
         from concurrent.futures import Future
         from typing import Optional
@@ -213,6 +217,10 @@ class _ActionsRunner:
         self._relative_artifacts_path: str = _create_run_artifacts_dir(
             action, self._run_id
         )
+
+        # The run is created right away so that new queries related to
+        # this run will be able to find it (for instance, to cancel it
+        # or get the run id from the request id).
         self._run: Run = _create_run(
             action,
             self._run_id,
@@ -223,20 +231,19 @@ class _ActionsRunner:
 
     def run_in_thread(self) -> Any:
         """
-        This is where the user actually runs something.
+        This is where the action is actually run.
 
-        This runs in a thread (so, be careful when talking to the database).
+        This runs in a thread and spawns a new thread to actually run the
+        action (this 2-thread approach is required because we need to be able
+        to return to the client while the action is still running in the
+        background).
 
         We have to take care of making a run with the proper environment,
         creating the run, collecting output info, etc.
 
-        The return value is the result of the action (and is what will be returned
-        to the client).
-
-        Note that with async actions, we could do an early return here, but
-        but keep running the action in the background (and the client would
-        be notified when the action is finished and could query it for status,
-        cancel it, etc).
+        The return value is the result of the action (and is what will be
+        returned to the client) or a return signalling that it's an async
+        return (while the action is still running in the background).
         """
         assert self._future is None, "Future already set"
         from concurrent.futures import TimeoutError
@@ -301,7 +308,7 @@ class _ActionsRunner:
                         )
                         if post_result.status == 200:
                             break
-                        time.sleep(1)
+                        time.sleep(0.5)
                     else:
                         log.critical(
                             f"Error posting callback to: {self.callback_url} for run id {self._run_id}.\nRequest id: {self.request_id}.\nResult: {post_result}"

@@ -35,6 +35,7 @@ def test_server_async_api_requests_while_waiting_for_action_to_complete(
     response.raise_for_status()
     headers = response.headers
     assert headers
+    assert response.json() == "async-return"
 
     # Check for the message we received saying it's an async compute.
     assert (
@@ -45,7 +46,6 @@ def test_server_async_api_requests_while_waiting_for_action_to_complete(
         response = client.get_get_response(
             "api/runs/run-id-from-request-id/123",
             data={},
-            # data={"request_id": "123"},
         )
         response.raise_for_status()
 
@@ -54,7 +54,6 @@ def test_server_async_api_requests_while_waiting_for_action_to_complete(
     response = client.get_get_response(
         "api/runs/run-id-from-request-id/123",
         data={},
-        # data={"request_id": "123"},
     )
     response.raise_for_status()
     run_id = response.json()["run_id"]
