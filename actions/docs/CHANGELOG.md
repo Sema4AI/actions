@@ -3,6 +3,8 @@
 ## Unreleased
 
 - Improve heuristic for detecting that a parameter is a data source so that docstrings are not required for data source parameters.
+- Support for `Union[DataSource, DataSource]` without `typing.Annotated`
+  - i.e.: `def my_query(datasource: FilesDataSource | CustomersDataSource)`
 
 ## 1.2.0 - 2024-12-18
 
