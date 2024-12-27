@@ -86,7 +86,7 @@ class RunsState:
         db: Database = self._db
 
         with db.connect():
-            return db.first(Run, "WHERE id = ?", [run_id])
+            return db.first(Run, "SELECT * FROM run WHERE id = ?", [run_id])
 
     def get_run_from_request_id(self, request_id: str) -> "Run":
         """
@@ -102,7 +102,7 @@ class RunsState:
         db: Database = self._db
 
         with db.connect():
-            return db.first(Run, "WHERE request_id = ?", [request_id])
+            return db.first(Run, "SELECT * FROM run WHERE request_id = ?", [request_id])
 
     def register(self, listener):
         assert (
@@ -125,7 +125,14 @@ class RunsState:
             for listener in self._run_listeners.keys():
                 listener(RunChangeEvent("added", run_copy))
 
-            self._run_id_to_runtime_info[run_copy.id] = RunRuntimeInfo(run_copy.id)
+    def create_run_runtime_info(self, run_id: str) -> RunRuntimeInfo:
+        """
+        Creates the runtime info for a run and returns it.
+        """
+        runtime_info = RunRuntimeInfo(run_id)
+        assert run_id not in self._run_id_to_runtime_info
+        self._run_id_to_runtime_info[run_id] = runtime_info
+        return runtime_info
 
     def on_run_changed(self, run: "Run", changes: Dict[str, Any]):
         from sema4ai.action_server._models import RunStatus
@@ -142,11 +149,23 @@ class RunsState:
                 # Finished run, remove from runtime info.
                 self._run_id_to_runtime_info.pop(run_copy.id, None)
 
-    def cancel_run(self, run_id: str):
+    def cancel_run(self, run_id: str) -> bool:
+        """
+        Cancels a run.
+
+        Args:
+            run_id: The ID of the run to cancel.
+
+        Returns:
+            True if the run was canceled, False otherwise (if the run was not running).
+        """
+
         with self.semaphore:
             runtime_info = self._run_id_to_runtime_info.get(run_id)
             if runtime_info is not None:
                 runtime_info.cancel()
+                return True
+            return False
 
 
 _runs_state: Optional[RunsState] = None

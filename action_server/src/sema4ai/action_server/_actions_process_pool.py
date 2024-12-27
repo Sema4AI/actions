@@ -441,7 +441,6 @@ class ProcessHandle:
         post_run_args: tuple[str, ...],
         initial_action_context_value: Optional[JSONValue],
         msg: dict,
-        result_msg: dict,
         run: Run,
     ) -> None:
         import shlex
@@ -553,7 +552,6 @@ class ProcessHandle:
                             self._post_run_args,
                             initial_action_context_value,
                             msg,
-                            result_msg,
                             run,
                         )
                     except Exception:

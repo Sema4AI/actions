@@ -130,6 +130,17 @@ def _set_run_as_finished_failed_with_response(
     return RunStatus.FAILED
 
 
+def _set_run_as_finished_cancelled(
+    run: "Run", error_message: str, initial_time: float
+) -> int:
+    from ._models import RunStatus
+
+    _update_run(
+        run, initial_time, True, status=RunStatus.CANCELLED, error_message=error_message
+    )
+    return RunStatus.CANCELLED
+
+
 def _set_run_as_finished_failed(
     run: "Run", error_message: str, initial_time: float
 ) -> int:
@@ -174,6 +185,7 @@ class _ActionsRunner:
         from typing import Optional
 
         from sema4ai.action_server._gen_ids import gen_uuid
+        from sema4ai.action_server._models import Run
 
         self.action_package = action_package
         self.action = action
@@ -197,6 +209,17 @@ class _ActionsRunner:
         self._run_id = gen_uuid("run")
         self._returning_async_result = False
         self._run_status: Optional[int] = None
+
+        self._relative_artifacts_path: str = _create_run_artifacts_dir(
+            action, self._run_id
+        )
+        self._run: Run = _create_run(
+            action,
+            self._run_id,
+            inputs,
+            self._relative_artifacts_path,
+            request_id=self.request_id,
+        )
 
     def run_in_thread(self) -> Any:
         """
@@ -295,6 +318,7 @@ class _ActionsRunner:
             ProcessHandle,
         )
         from sema4ai.action_server._models import RunStatus
+        from sema4ai.action_server._runs_state_cache import get_global_runs_state
 
         action_package: "ActionPackage" = self.action_package
         action: "Action" = self.action
@@ -312,23 +336,18 @@ class _ActionsRunner:
 
         self._run_status = RunStatus.NOT_RUN
 
+        global_runs_state = get_global_runs_state()
+        runtime_info = global_runs_state.create_run_runtime_info(self._run_id)
+
         db = get_db()
         with db.connect():  # Connection is per-thread, so, we need to create a new one.
             actions_process_pool: ActionsProcessPool = get_actions_process_pool()
-            run_id = self._run_id
             process_handle: ProcessHandle
+            relative_artifacts_path = self._relative_artifacts_path
+            run = self._run
             with actions_process_pool.obtain_process_for_action(
                 action
             ) as process_handle:
-                relative_artifacts_path: str = _create_run_artifacts_dir(action, run_id)
-                run: Run = _create_run(
-                    action,
-                    run_id,
-                    inputs,
-                    relative_artifacts_path,
-                    request_id=self.request_id,
-                )
-
                 input_json = (
                     settings.artifacts_dir
                     / relative_artifacts_path
@@ -354,26 +373,42 @@ class _ActionsRunner:
                 returncode = "<unset>"
                 try:
                     self._run_status = _set_run_as_running(run, initial_time)
-                    reuse_process = settings.reuse_processes
-                    generator = process_handle.run_action(
-                        run,
-                        action_package,
-                        action,
-                        input_json,
-                        run_artifacts_dir,
-                        output_file,
-                        result_json,
-                        headers,
-                        cookies,
-                        reuse_process,
-                    )
 
-                    queue = next(generator)
-                    result_msg = queue.get(block=True)
-                    try:
-                        generator.send(result_msg)
-                    except StopIteration as e:
-                        returncode = e.value
+                    def on_cancel(*args, **kwargs):
+                        process_handle.kill()
+
+                    with runtime_info.on_cancel.register(on_cancel):
+                        if runtime_info.is_canceled():
+                            # Cancelled before the run was actually started.
+                            raise RuntimeError("Run canceled")
+
+                        reuse_process = settings.reuse_processes
+                        generator = process_handle.run_action(
+                            run,
+                            action_package,
+                            action,
+                            input_json,
+                            run_artifacts_dir,
+                            output_file,
+                            result_json,
+                            headers,
+                            cookies,
+                            reuse_process,
+                        )
+
+                        queue = next(generator)
+                        result_msg = queue.get(block=True)
+                        if result_msg is None:
+                            # This means that the process was actually killed (or crashed).
+                            result_msg = {"returncode": 77}
+
+                        try:
+                            generator.send(result_msg)
+                        except StopIteration as e:
+                            returncode = e.value
+
+                    if runtime_info.is_canceled():
+                        raise RuntimeError("Run canceled")
 
                     try:
                         run_result_str: str = result_json.read_text("utf-8", "replace")
@@ -432,9 +467,15 @@ class _ActionsRunner:
                     log.exception(
                         f"Internal error running action (action={action.name})"
                     )
-                    self._run_status = _set_run_as_finished_failed(
-                        run, str(e), initial_time
-                    )
+
+                    if runtime_info.is_canceled():
+                        self._run_status = _set_run_as_finished_cancelled(
+                            run, str(e), initial_time
+                        )
+                    else:
+                        self._run_status = _set_run_as_finished_failed(
+                            run, str(e), initial_time
+                        )
                     raise HTTPException(status_code=500, detail=str(e))
 
 

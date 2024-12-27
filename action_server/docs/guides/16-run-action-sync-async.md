@@ -29,12 +29,15 @@ the client can request an asynchronous execution of the action.
 
 To run an action asynchronously, the client needs to set the following headers:
 
-- `x-actions-async-timeout`: The maximum time to wait for the action to finish (in seconds).
-- `x-actions-async-callback`: The URL to call when the action is finished.
-- `x-actions-request-id`: The ID of the request. In case the return of the action
+- `x-actions-request-id`: The ID of the request (UUID). In case the return of the action
   is not received by the client, the client can use this ID to get the run id
   of the action (which may then be used to get more information from the action
   server regarding the run).
+- `x-actions-async-timeout`: The maximum time to wait for the action to finish (in seconds).
+- `x-actions-async-callback`: The URL to call when the action is finished.
+  - The callback URL will receive the result of the action as a json in the body.
+  - A header `x-action-server-run-id` will be sent with the ID of the action run.
+  - A header `x-actions-request-id` will be sent with the ID of the request.
 
 If the action is finished before the timeout, the client will receive a response
 as usual (with the result of the action in the response body and the `x-action-server-run-id`

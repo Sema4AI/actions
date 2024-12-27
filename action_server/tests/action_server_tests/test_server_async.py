@@ -7,6 +7,8 @@ def test_server_async_api_requests_while_waiting_for_action_to_complete(
     """
     Test that the server can handle requests while waiting for an action to complete.
     """
+    from devutils.fixtures import wait_for_non_error_condition
+
     from sema4ai.action_server.vendored_deps.url_callback_server import (
         start_server_in_thread,
     )
@@ -39,7 +41,16 @@ def test_server_async_api_requests_while_waiting_for_action_to_complete(
         headers.get("x-action-async-completion") == "1"
     ), f"Failed to get x-action-async-completion. Headers: {headers}"
 
+    def run_id_from_request_id_available():
+        response = client.get_get_response(
+            "api/runs/run-id-from-request-id/123",
+            data={},
+            # data={"request_id": "123"},
+        )
+        response.raise_for_status()
+
     # Get the run id from the request id
+    # wait_for_non_error_condition(run_id_from_request_id_available)
     response = client.get_get_response(
         "api/runs/run-id-from-request-id/123",
         data={},
@@ -59,11 +70,16 @@ def test_server_async_api_requests_while_waiting_for_action_to_complete(
     response = client.post_get_response(f"api/runs/{run_id}/cancel", data={})
     response.raise_for_status()
 
+    assert response.json() is True
+
     # Get the status of the action
-    response = client.get_get_response(f"api/runs/{run_id}", data={})
-    response.raise_for_status()
-    status = response.json()
-    assert status["status"] == 4  # 4=cancelled
+    def check_cancelled_status():
+        response = client.get_get_response(f"api/runs/{run_id}", data={})
+        response.raise_for_status()
+        status = response.json()
+        assert status["status"] == 4  # 4=cancelled
+
+    wait_for_non_error_condition(check_cancelled_status)
 
 
 def test_server_async_api(
@@ -132,7 +148,15 @@ def test_server_async_api(
         headers.get("x-actions-request-id") == "123"
     ), f"Failed to get x-actions-request-id. Headers: {headers}"
 
-    # TODO: Check for the APIs to:
-    # - Get the result of the action.
-    # - Get the status of the action.
-    # - Check that cancelling returns that the action was already finished.
+    run_id = headers.get("x-action-server-run-id")
+    assert run_id
+
+    response = client.post_get_response(f"api/runs/{run_id}/cancel", data={})
+    response.raise_for_status()
+    # i.e.: the run was not running (so, it was not canceled)
+    assert response.json() is False
+
+    response = client.get_get_response(f"api/runs/{run_id}", data={})
+    response.raise_for_status()
+    assert response.json()["status"] == 2  # 2=finished
+    assert response.json()["result"] == '"Hello Mr. Foo."'

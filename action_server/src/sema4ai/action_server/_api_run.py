@@ -48,15 +48,17 @@ def show_run(run_id: str = fastapi.Path(title="ID for run")):
 
 
 @run_api_router.post("/{run_id}/cancel")
-def cancel_run(run_id: str = fastapi.Path(title="ID for run")):
+def cancel_run(run_id: str = fastapi.Path(title="ID for run")) -> bool:
     """
     Cancels a running action.
+
+    Returns:
+        True if the run was canceled, False otherwise (if the run was not running).
     """
     from ._runs_state_cache import RunsState, get_global_runs_state
 
     global_runs_state: RunsState = get_global_runs_state()
-    with global_runs_state.semaphore:
-        global_runs_state.cancel_run(run_id)
+    return global_runs_state.cancel_run(run_id)
 
 
 @dataclass
