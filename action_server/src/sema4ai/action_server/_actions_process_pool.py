@@ -284,7 +284,7 @@ class ProcessHandle:
         log.debug("Subprocess kill [pid=%s]", self._process.pid)
         kill_process_and_subprocesses(self._process.pid)
 
-    def _do_start_action(
+    def _do_run_action(
         self,
         run: Run,
         action_package: ActionPackage,
@@ -295,7 +295,7 @@ class ProcessHandle:
         headers: dict,
         cookies: dict,
         reuse_process: bool,
-    ):
+    ) -> int:
         from sema4ai.action_server._api_oauth2 import (
             get_resolved_provider_settings,
             refresh_tokens,
@@ -434,7 +434,27 @@ class ProcessHandle:
         }
         self._writer.write(msg)
 
-        return initial_action_context_value, msg
+        queue = self._read_queue
+
+        result_msg = queue.get(block=True)
+        if result_msg is None:
+            # This means that the process was actually killed (or crashed).
+            result_msg = {"returncode": 77}
+
+        if self._post_run_args:
+            log.debug("Calling post run command.")
+            try:
+                self._call_post_run_script(
+                    self._post_run_args,
+                    initial_action_context_value,
+                    msg,
+                    run,
+                )
+            except Exception:
+                log.exception("Error runnnig post run command.")
+        else:
+            log.debug("Not running post run command.")
+        return result_msg["returncode"]
 
     def _call_post_run_script(
         self,
@@ -530,7 +550,7 @@ class ProcessHandle:
 
             with self._on_output.register(on_output):
                 # stdout is now used for communicating, so, don't hear on it.
-                initial_action_context_value, msg = self._do_start_action(
+                returncode = self._do_run_action(
                     run,
                     action_package,
                     action,
@@ -541,28 +561,7 @@ class ProcessHandle:
                     cookies,
                     reuse_process,
                 )
-
-                queue = self._read_queue
-
-                result_msg = queue.get(block=True)
-                if result_msg is None:
-                    # This means that the process was actually killed (or crashed).
-                    result_msg = {"returncode": 77}
-
-                if self._post_run_args:
-                    log.debug("Calling post run command.")
-                    try:
-                        self._call_post_run_script(
-                            self._post_run_args,
-                            initial_action_context_value,
-                            msg,
-                            run,
-                        )
-                    except Exception:
-                        log.exception("Error runnnig post run command.")
-                else:
-                    log.debug("Not running post run command.")
-                return result_msg["returncode"]
+                return returncode
 
 
 def _get_process_handle_key(settings: Settings, action_package: ActionPackage) -> _Key:
