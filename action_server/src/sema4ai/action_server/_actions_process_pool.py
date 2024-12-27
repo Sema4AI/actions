@@ -9,7 +9,7 @@ from collections import namedtuple
 from contextlib import contextmanager
 from pathlib import Path
 from queue import Queue
-from typing import Dict, Generator, Iterator, List, Optional, Set
+from typing import Dict, Iterator, List, Optional, Set
 
 from sema4ai.actions._action_context import ActionContext
 from termcolor import colored
