@@ -242,8 +242,8 @@ def _is_data_source_param(param_name: str, node: ast_module.FunctionDef) -> bool
     for arg in node.args.args:
         if arg.arg == param_name:
             if arg.annotation:
-                unparsed = ast.unparse(arg.annotation)
-                if unparsed.endswith(("DataSource", "Datasource")):
+                unparsed = ast.unparse(arg.annotation).lower()
+                if "datasource" in unparsed:
                     return True
             return False
     return False
