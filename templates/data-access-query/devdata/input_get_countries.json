@@ -1,0 +1,20 @@
+{
+    "inputs": [
+        {
+            "inputName": "input-1",
+            "inputValue": {}
+        }
+    ],
+    "metadata": {
+        "actionName": "get_countries",
+        "actionRelativePath": "data_actions.py",
+        "schemaDescription": [],
+        "managedParamsSchemaDescription": {
+            "datasource": {
+                "type": "DataSource",
+                "description": "The customer datasource."
+            }
+        },
+        "inputFileVersion": "v2"
+    }
+}

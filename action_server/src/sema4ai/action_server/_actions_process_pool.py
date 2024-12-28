@@ -8,6 +8,7 @@ import threading
 from collections import namedtuple
 from contextlib import contextmanager
 from pathlib import Path
+from queue import Queue
 from typing import Dict, Iterator, List, Optional, Set
 
 from sema4ai.actions._action_context import ActionContext
@@ -55,6 +56,7 @@ def _create_server_socket(host: str, port: int):
 
 def _connect_to_socket(host, port):
     """connects to a host/port"""
+
     s = socket(AF_INET, SOCK_STREAM)
 
     #  Set TCP keepalive on an open socket.
@@ -92,8 +94,6 @@ class ProcessHandle:
         action_package: ActionPackage,
         post_run_args: Optional[tuple[str, ...]],
     ):
-        from queue import Queue
-
         from sema4ai.action_server._preload_actions.preload_actions_streams import (
             JsonRpcStreamWriter,
         )
@@ -433,8 +433,13 @@ class ProcessHandle:
             "cwd": self._cwd,
         }
         self._writer.write(msg)
+
         queue = self._read_queue
+
         result_msg = queue.get(block=True)
+        if result_msg is None:
+            # This means that the process was actually killed (or crashed).
+            result_msg = {"returncode": 77}
 
         if self._post_run_args:
             log.debug("Calling post run command.")
@@ -443,7 +448,6 @@ class ProcessHandle:
                     self._post_run_args,
                     initial_action_context_value,
                     msg,
-                    result_msg,
                     run,
                 )
             except Exception:
@@ -457,7 +461,6 @@ class ProcessHandle:
         post_run_args: tuple[str, ...],
         initial_action_context_value: Optional[JSONValue],
         msg: dict,
-        result_msg: dict,
         run: Run,
     ) -> None:
         import shlex

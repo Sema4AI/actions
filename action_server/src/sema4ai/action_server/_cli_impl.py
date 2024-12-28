@@ -767,7 +767,7 @@ def _make_import_migrate_or_start(
     from ._runs_state_cache import use_runs_state_ctx
 
     timeout = 3
-    timeout_at = time.time() + timeout
+    timeout_at = time.monotonic() + timeout
     settings: "Settings" = setup_info.settings
 
     shown_first_message = False
@@ -796,7 +796,7 @@ def _make_import_migrate_or_start(
         log.info("Waiting for it to exit...")
         time.sleep(0.3)
 
-        timed_out = time.time() > timeout_at
+        timed_out = time.monotonic() > timeout_at
         if timed_out:
             log.critical(
                 "\nAction server not started (timed out waiting for mutex to be released).",

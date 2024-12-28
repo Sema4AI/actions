@@ -461,12 +461,12 @@ def wait_for_condition(condition, msg=None, timeout=DEFAULT_TIMEOUT, sleep=1 / 2
     """
     import time
 
-    curtime = time.time()
+    curtime = time.monotonic()
 
     while True:
         if condition():
             break
-        if timeout is not None and (time.time() - curtime > timeout):
+        if timeout is not None and (time.monotonic() - curtime > timeout):
             error_msg = f"Condition not reached in {timeout} seconds"
             if msg is not None:
                 error_msg += "\n"
@@ -484,7 +484,7 @@ def wait_for_non_error_condition(
 ):
     import time
 
-    curtime = time.time()
+    curtime = time.monotonic()
 
     while True:
         try:
@@ -495,7 +495,7 @@ def wait_for_non_error_condition(
         if error_msg is None:
             break
 
-        if timeout is not None and (time.time() - curtime > timeout):
+        if timeout is not None and (time.monotonic() - curtime > timeout):
             raise TimeoutError(
                 f"Condition not reached in {timeout} seconds\n{error_msg}"
             )
