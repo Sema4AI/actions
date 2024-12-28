@@ -19,9 +19,9 @@ T = TypeVar("T")
 def wait_for_expose_session_info(action_server_process):
     from json import JSONDecodeError
 
-    timeout_at = time.time() + 15
+    timeout_at = time.monotonic() + 15
     target = action_server_process.datadir / "expose_session.json"
-    while time.time() < timeout_at:
+    while time.monotonic() < timeout_at:
         try:
             expose_session_info = json.loads(target.read_text())
             return expose_session_info

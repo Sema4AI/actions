@@ -30,6 +30,7 @@ class _RedirectWSGIApp(object):
         """
         self.last_request_uri: Optional[str] = None
         self.last_body: Optional[str] = None
+        self.last_headers: Optional[dict[str, str]] = None
         self._success_message = success_message
 
     def __call__(
@@ -45,6 +46,12 @@ class _RedirectWSGIApp(object):
         Returns:
             The response body.
         """
+
+        headers = {}
+
+        for header, value in environ.items():
+            if header.startswith("HTTP_"):
+                headers[header[5:].replace("_", "-").lower()] = value
 
         try:
             content_length = int(environ.get("CONTENT_LENGTH", "0"))
@@ -74,6 +81,7 @@ class _RedirectWSGIApp(object):
             )
             self.last_request_uri = wsgiref.util.request_uri(environ)
             self.last_body = body
+            self.last_headers = headers
             return [self._success_message.encode("utf-8")]
 
 
@@ -207,6 +215,7 @@ def _start_server(
 class LastRequestInfoTypedDict(TypedDict):
     uri: str | None
     body: str | None
+    headers: dict[str, str] | None
 
 
 def start_server_in_thread(
@@ -239,10 +248,11 @@ def start_server_in_thread(
             # local_server.serve_forever()
 
             if not fut_provide_uri.cancelled():
-                if app.last_request_uri or app.last_body:
+                if app.last_request_uri or app.last_body or app.last_headers:
                     result: LastRequestInfoTypedDict = {
                         "uri": app.last_request_uri,
                         "body": app.last_body,
+                        "headers": app.last_headers,
                     }
                     fut_provide_uri.set_result(result)
                 else:
