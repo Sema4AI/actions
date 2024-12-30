@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2.4.0 - 2024-12-30
+
 - Added support for running actions asynchronously.
   - The Run model now has a `request_id` (optional) field which is the id of the request that created this run.
   - It's possible to get the run id from the request id using the `/api/runs/run-id-from-request-id/<request_id>` endpoint.
