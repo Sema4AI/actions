@@ -237,6 +237,19 @@ class ManagedParameterHeuristicDataSource(ManagedParameterHeuristic):
             pass
 
         try:
+            if typing.get_origin(cls) == typing.Union:
+                # Support for Union[DataSource, DataSource] without typing.Annotated
+                # i.e.: def my_query(datasource: DataSource1 | DataSource2 )
+                if all(
+                    self._get_datasource_name(arg) is not None
+                    for arg in typing.get_args(cls)
+                ):
+                    return ""
+
+        except Exception:
+            pass
+
+        try:
             type_and_first_arg = self._get_type_and_first_arg(cls)
             if type_and_first_arg is not None:
                 # Handle Annotated[DataSource, DataSourceSpec(...)]
