@@ -26,6 +26,11 @@ export const StatusBadge: FC<Props> = ({ status, size }) => {
           label: 'Failed',
           variant: 'danger' as const,
         };
+      case RunStatus.CANCELLED:
+        return {
+          label: 'Cancelled',
+          variant: 'danger' as const,
+        };
       case RunStatus.NOT_RUN:
       default:
         return {

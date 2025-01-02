@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from sema4ai.action_server._selftest import ActionServerClient, ActionServerProcess
 
 
@@ -159,3 +161,124 @@ def test_server_async_api(
     response.raise_for_status()
     assert response.json()["status"] == 2  # 2=finished
     assert response.json()["result"] == '"Hello Mr. Foo."'
+
+
+def do_run(
+    client: ActionServerClient, time_to_sleep: float, async_run: bool, request_id: str
+):
+    if async_run:
+        headers = {
+            "x-actions-async-timeout": "0",  # Return immediately
+            "x-actions-request-id": request_id,  # Can be used to cancel the action, get status, get the result, ...
+        }
+    else:
+        headers = {}
+    response = client.post_get_response(
+        "api/actions/test-server-async/sleep-action/run",
+        {"time_to_sleep": time_to_sleep},  # Sleep for a long time.
+        headers,
+    )
+    response.raise_for_status()
+
+    if async_run:
+        found = response.text
+        assert found == '"async-return"', f"{found} != '\"async-return\"'"
+
+    headers = response.headers
+    assert headers
+    run_id = headers.get("x-action-server-run-id")
+    assert run_id
+    return run_id
+
+
+def test_server_async_process_poll_with_cancel(
+    action_server_process: ActionServerProcess,
+    client: ActionServerClient,
+    datadir: Path,
+):
+    from devutils.fixtures import wait_for_non_error_condition
+
+    action_server_process.start(
+        cwd=datadir,
+        actions_sync=True,
+        db_file="server.db",
+        max_processes=1,
+    )
+
+    def get_run_status(run_id: str):
+        response = client.get_get_response(
+            f"api/runs/{run_id}/fields", data={"fields": ["status"]}
+        )
+        response.raise_for_status()
+        return response.json()["status"]
+
+    run_id1 = do_run(client, 20, async_run=True, request_id="123")
+    run_id2 = do_run(client, 20, async_run=True, request_id="456")
+
+    # Cancel the second run (should still be in not-running state)
+    response = client.post_get_response(f"api/runs/{run_id2}/cancel", data={})
+    response.raise_for_status()
+    assert response.json() == "cancelled"
+
+    def check_cancelled_run2():
+        status = get_run_status(run_id2)
+        if status != 4:
+            raise RuntimeError(f"Run {run_id2} is not cancelled. Status: {status}")
+
+    def check_cancelled_run1():
+        status = get_run_status(run_id1)
+        if status != 4:
+            raise RuntimeError(f"Run {run_id1} is not cancelled. Status: {status}")
+
+    wait_for_non_error_condition(check_cancelled_run2, timeout=10)
+
+    response = client.post_get_response(f"api/runs/{run_id1}/cancel", data={})
+    response.raise_for_status()
+    assert response.json() == "cancelled"
+
+    # Check that first is also cancelled.
+
+    wait_for_non_error_condition(check_cancelled_run1, timeout=10)
+
+    # Ok, just cancelled both runs, now, let's check that a new run works properly.
+    run_id3 = do_run(client, 0.01, async_run=False, request_id="789")
+
+    def check_run_id3_completed():
+        status = get_run_status(run_id3)
+        if status != 2:
+            raise RuntimeError(f"Run {run_id3} is not completed. Status: {status}")
+
+    wait_for_non_error_condition(check_run_id3_completed, timeout=10)
+
+
+def test_cancel_existing_runs_on_restart(action_server_datadir, datadir):
+    action_server_process = ActionServerProcess(action_server_datadir)
+    try:
+        action_server_process.start(
+            cwd=datadir,
+            actions_sync=True,
+            db_file="server.db",
+            max_processes=1,
+        )
+        client = ActionServerClient(action_server_process)
+        run_id = do_run(client, 20, async_run=True, request_id="123")
+    finally:
+        action_server_process.stop()
+
+    action_server_process = ActionServerProcess(action_server_datadir)
+    try:
+        # Ok, now, start a new action server and check that the run is cancelled.
+        action_server_process.start(
+            cwd=datadir,
+            actions_sync=True,
+            db_file="server.db",
+            max_processes=1,
+        )
+        client = ActionServerClient(action_server_process)
+        response = client.get_get_response(
+            f"api/runs/{run_id}/fields", data={"fields": ["status"]}
+        )
+        response.raise_for_status()
+        assert response.json()["status"] == 4  # 4=cancelled
+    finally:
+        action_server_process.stop()

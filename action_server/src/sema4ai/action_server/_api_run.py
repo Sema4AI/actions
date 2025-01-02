@@ -47,6 +47,20 @@ def show_run(run_id: str = fastapi.Path(title="ID for run")):
     return get_run_by_id(run_id)
 
 
+@run_api_router.get("/{run_id}/fields", response_model=dict)
+def show_run_fields(
+    run_id: str = fastapi.Path(title="ID for run"),
+    fields: Optional[List[str]] = fastapi.Query(default=None),
+):
+    import dataclasses
+
+    run = get_run_by_id(run_id)
+    dct = dataclasses.asdict(run)
+    if fields:
+        dct = {k: v for k, v in dct.items() if k in fields}
+    return dct
+
+
 @run_api_router.post("/{run_id}/cancel")
 def cancel_run(
     run_id: str = fastapi.Path(title="ID for run"),
@@ -78,11 +92,10 @@ def run_id_from_request_id(request_id: str = fastapi.Path(title="Request ID")):
     """
     Returns the run id associated with the request id.
     """
+    from fastapi.exceptions import HTTPException
+    from starlette import status
 
     if not request_id:
-        from fastapi.exceptions import HTTPException
-        from starlette import status
-
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Request ID is required.",

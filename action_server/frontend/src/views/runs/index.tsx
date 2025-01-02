@@ -1,4 +1,4 @@
-import { FC, MouseEvent, useCallback, useMemo, useState } from 'react';
+import { FC, MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Box,
@@ -32,15 +32,26 @@ import { ActionRunsContext, useActionRunsContext } from './components/context';
 import { ActionRunDetails } from './components/ActionRunDetails';
 
 const RunRow: FC<TableRowProps<RunTableEntry>> = ({ rowData: run }) => {
-  const { setShowRun } = useActionRunsContext();
+  const { setShowRun, showRun } = useActionRunsContext();
   const navigate = useNavigate();
+
+  // Issue: if we have a run and click it, we'll set the showRun to the run,
+  // but afterwards, if the run is changed (so, we have a new run instance
+  // representing the same run), we have to use an effect to update the clicked
+  // run.
+
+  useEffect(() => {
+    if (run && showRun && run.id === showRun.id) {
+      setShowRun(run);
+    }
+  }, [run, showRun, setShowRun]);
 
   const onClickRun = useCallback(
     (event: MouseEvent) => {
       setShowRun(run);
       event.stopPropagation();
     },
-    [run],
+    [run, setShowRun],
   );
 
   const onClickAction = useCallback(
@@ -48,7 +59,7 @@ const RunRow: FC<TableRowProps<RunTableEntry>> = ({ rowData: run }) => {
       navigate(`/actions/${run.action_id}`);
       event.stopPropagation();
     },
-    [run],
+    [run, navigate],
   );
 
   return (
@@ -135,7 +146,7 @@ export const ActionRuns: FC = () => {
       showRun,
       setShowRun,
     }),
-    [showRun, setShowRun],
+    [showRun, setShowRun, loadedRuns],
   );
 
   const stateOptions = useMemo(
@@ -148,6 +159,7 @@ export const ActionRuns: FC = () => {
           { label: 'Not Run', value: `${RunStatus.NOT_RUN}`, itemType: 'checkbox' },
           { label: 'Successful', value: `${RunStatus.PASSED}`, itemType: 'checkbox' },
           { label: 'Running', value: `${RunStatus.RUNNING}`, itemType: 'checkbox' },
+          { label: 'Cancelled', value: `${RunStatus.CANCELLED}`, itemType: 'checkbox' },
         ],
       } satisfies FilterGroup,
     }),

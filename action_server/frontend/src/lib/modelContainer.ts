@@ -8,7 +8,7 @@ export enum ModelType {
 
 export interface CachedModel<T> {
   isPending: boolean;
-  data: T[] | undefined;
+  data: T | undefined;
   errorMessage?: string | undefined;
 }
 

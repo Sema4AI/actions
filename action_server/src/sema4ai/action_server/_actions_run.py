@@ -106,6 +106,7 @@ def _update_run(run: "Run", initial_time: float, run_finished: bool, **changes):
     for k, v in changes.items():
         setattr(run, k, v)
     fields_changed = tuple(changes.keys())
+    log.info(f"Updating run {run.id} with changes: {json.dumps(changes, indent=2)}")
     with db.transaction():
         db.update(run, *fields_changed)
 
@@ -330,13 +331,13 @@ class _ActionsRunner:
         return result
 
     def _run_action_impl(self) -> Any:
+        from concurrent.futures import CancelledError
         from typing import Literal
 
         from sema4ai.action_server._actions_process_pool import (
             ActionsProcessPool,
             ProcessHandle,
         )
-        from sema4ai.action_server._models import RunStatus
         from sema4ai.action_server._runs_state_cache import get_global_runs_state
 
         action_package: "ActionPackage" = self.action_package
@@ -353,8 +354,6 @@ class _ActionsRunner:
 
         settings = get_settings()
 
-        self._run_status = RunStatus.NOT_RUN
-
         global_runs_state = get_global_runs_state()
         runtime_info = global_runs_state.create_run_runtime_info(self._run_id)
 
@@ -365,44 +364,49 @@ class _ActionsRunner:
             relative_artifacts_path = self._relative_artifacts_path
             run = self._run
 
-            # This can take some time to complete if multiple actions are
-            # running in parallel (i.e.: the process pool may be full).
-            with actions_process_pool.obtain_process_for_action(
-                action
-            ) as process_handle:
-                input_json = (
-                    settings.artifacts_dir
-                    / relative_artifacts_path
-                    / "__action_server_inputs.json"
+            try:
+                # This can take some time to complete if multiple actions are
+                # running in parallel (i.e.: the process pool may be full).
+                initial_time = time.monotonic()  # Initial time
+                process_handle_ctx = actions_process_pool.obtain_process_for_action(
+                    action, runtime_info
                 )
-                input_json.write_bytes(json.dumps(inputs).encode("utf-8"))
+                with process_handle_ctx as process_handle:
+                    initial_time = time.monotonic()
+                    input_json = (
+                        settings.artifacts_dir
+                        / relative_artifacts_path
+                        / "__action_server_inputs.json"
+                    )
+                    input_json.write_bytes(json.dumps(inputs).encode("utf-8"))
 
-                run_artifacts_dir = settings.artifacts_dir / relative_artifacts_path
+                    run_artifacts_dir = settings.artifacts_dir / relative_artifacts_path
 
-                result_json = (
-                    settings.artifacts_dir
-                    / relative_artifacts_path
-                    / "__action_server_result.json"
-                )
+                    result_json = (
+                        settings.artifacts_dir
+                        / relative_artifacts_path
+                        / "__action_server_result.json"
+                    )
 
-                output_file = (
-                    settings.artifacts_dir
-                    / relative_artifacts_path
-                    / "__action_server_output.txt"
-                )
+                    output_file = (
+                        settings.artifacts_dir
+                        / relative_artifacts_path
+                        / "__action_server_output.txt"
+                    )
 
-                initial_time = time.monotonic()
-                returncode: int | Literal["<unset>"] = "<unset>"
-                try:
-                    self._run_status = _set_run_as_running(run, initial_time)
+                    returncode: int | Literal["<unset>"] = "<unset>"
+                    _set_run_as_running(run, initial_time)
 
                     def on_cancel(*args, **kwargs):
+                        log.info(
+                            f"Killing process related to run {run.id} due to cancel request (pid: {process_handle.pid})."
+                        )
                         process_handle.kill()
 
                     with runtime_info.on_cancel.register(on_cancel):
                         if runtime_info.is_canceled():
                             # Cancelled before the run was actually started.
-                            raise RuntimeError("Run canceled")
+                            raise CancelledError("Run canceled")
 
                         reuse_process = settings.reuse_processes
                         returncode = process_handle.run_action(
@@ -418,23 +422,29 @@ class _ActionsRunner:
                             reuse_process,
                         )
 
-                    if runtime_info.is_canceled():
-                        raise RuntimeError(f"Run canceled, action: {action.name}")
-
+                    error_msg = None
                     try:
                         run_result_str: str = result_json.read_text("utf-8", "replace")
                     except Exception:
-                        raise RuntimeError(
+                        error_msg = (
                             "It was not possible to collect the contents of the "
                             "result (json not created)."
                         )
+                    else:
+                        try:
+                            result_contents = json.loads(run_result_str)
+                        except Exception:
+                            error_msg = f"Error loading the contents of {run_result_str} as json."
 
-                    try:
-                        result_contents = json.loads(run_result_str)
-                    except Exception:
-                        raise RuntimeError(
-                            f"Error loading the contents of {run_result_str} as json."
-                        )
+                    if error_msg is not None:
+                        if runtime_info.is_canceled():
+                            # When cancelled, these errors are expected (so, throw error that it's cancelled
+                            # instead of the error message).
+                            raise CancelledError(
+                                f"Run cancelled, action: {action.name}"
+                            )
+
+                        raise RuntimeError(error_msg)
 
                     ret = result_contents.get("result")
                     result_str: str = json.dumps(ret, indent=4)
@@ -451,43 +461,48 @@ class _ActionsRunner:
                             )
 
                     if returncode == 0:
-                        self._run_status = _set_run_as_finished_ok(
-                            run, result_str, initial_time
-                        )
+                        _set_run_as_finished_ok(run, result_str, initial_time)
                         return ret
 
                     else:
+                        if runtime_info.is_canceled():
+                            raise CancelledError(
+                                f"Run cancelled, action: {action.name}"
+                            )
+
                         if ret:
                             # We have a return even with a failure. This means it's
                             # something as a Response(error=error_msg)
-                            self._run_status = (
+                            (
                                 _set_run_as_finished_failed_with_response(
                                     run, result_str, initial_time
                                 )
                             )
                             return ret
 
-                    raise RuntimeError(
+                    raise RuntimeError(  # Error in action itself.
                         result_contents.get(
                             "message",
-                            f"Internal error running action (action={action.name}, returncode={returncode})",
+                            f"Action {action.name} failed with returncode={returncode}",
                         )
                     )
 
-                except BaseException as e:
-                    log.exception(
-                        f"Internal error running action (action={action.name})"
-                    )
-
-                    if runtime_info.is_canceled():
-                        self._run_status = _set_run_as_finished_cancelled(
-                            run, str(e), initial_time
+            except BaseException as e:
+                try:
+                    if runtime_info.is_canceled() or isinstance(e, CancelledError):
+                        log.exception(
+                            f"Action {action.name} cancelled (run_id={run.id})"
                         )
+                        _set_run_as_finished_cancelled(run, str(e), initial_time)
                     else:
-                        self._run_status = _set_run_as_finished_failed(
-                            run, str(e), initial_time
-                        )
-                    raise HTTPException(status_code=500, detail=str(e))
+                        log.exception(f"Action {action.name} failed (run_id={run.id})")
+                        _set_run_as_finished_failed(run, str(e), initial_time)
+                except Exception:
+                    log.exception(
+                        f"INTERNAL ERROR (unexpected) IN ACTION SERVER! Error setting run {run.id} as finished."
+                    )
+
+                raise HTTPException(status_code=500, detail=str(e))
 
 
 def _name_as_class_name(name):
