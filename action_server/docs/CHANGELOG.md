@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- It's now possible to cancel a run that is still in the `not_run` state (waiting for a process from the process pool).
+- Add `cancel` buttons to the UI (in the run history and in the run itself).
+- When the Action Server is started, if there were any runs in the `not_run` state or in the `running` state, they'll be marked as cancelled.
+- Fixed a deadlock that could happen in a racing condition when creating/releasing a process from the process pool.
+- Created API: `/api/runs/{run_id}/fields` which can be used to get just a few specified fields from a run (instead of the whole run model with `/api/runs/{run_id}/`).
+
 ## 2.4.0 - 2024-12-30
 
 - Added support for running actions asynchronously.

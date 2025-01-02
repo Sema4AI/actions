@@ -8,6 +8,7 @@ export type ActionRunPayload = {
   args: object;
   apiKey?: string;
   secretsData?: Map<string, string>;
+  requestId?: string;
 };
 
 export const useActionRunMutation = () => {
@@ -18,6 +19,7 @@ export const useActionRunMutation = () => {
       actionName,
       apiKey,
       secretsData,
+      requestId,
     }: ActionRunPayload) => {
       const headers: Record<string, string> = {
         Authorization: `Bearer ${apiKey}`,
@@ -33,6 +35,10 @@ export const useActionRunMutation = () => {
       }
 
       headers['x-action-context'] = btoa(JSON.stringify({ secrets: secretDataAsObject }));
+
+      if (requestId) {
+        headers['x-actions-request-id'] = requestId;
+      }
 
       const request = await fetch(`/api/actions/${actionPackageName}/${actionName}/run`, {
         method: 'POST',

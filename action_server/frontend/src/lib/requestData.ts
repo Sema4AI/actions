@@ -126,7 +126,7 @@ class ModelUpdater {
     this.sio.on('run_added', (data: any) => {
       // console.log('run added', data);
       const { run } = data;
-      const runsModel = this.modelContainer.getCurrentModel<Run>(ModelType.RUNS);
+      const runsModel = this.modelContainer.getCurrentModel<Run[]>(ModelType.RUNS);
       // Runs should be reverse ordered by their id.
       if (runsModel !== undefined && runsModel.data !== undefined && !runsModel.isPending) {
         // Insert but make sure we keep the (reverse) order.
@@ -154,7 +154,7 @@ class ModelUpdater {
       const runId = run.run_id;
       const { changes } = run;
 
-      const runsModel = this.modelContainer.getCurrentModel<Run>(ModelType.RUNS);
+      const runsModel = this.modelContainer.getCurrentModel<Run[]>(ModelType.RUNS);
       if (runsModel !== undefined && runsModel.data !== undefined) {
         // Runs should be reverse ordered by their id and changes are
         // usually in the latest runs, so, just iterating to find
@@ -222,9 +222,9 @@ class ModelUpdater {
 
   private async fetchModelsData(startListening: boolean) {
     // Load data (actions/runs/config)
-    const loadActionsPromise = loadAsync<Action>(`${baseUrl}/api/actionPackages`, 'GET');
-    const loadRunsPromise = loadAsync<Run>(`${baseUrl}/api/runs`, 'GET');
-    const loadConfigPromise = loadAsync<Run>(`${baseUrl}/config`, 'GET');
+    const loadActionsPromise = loadAsync<Action[]>(`${baseUrl}/api/actionPackages`, 'GET');
+    const loadRunsPromise = loadAsync<Run[]>(`${baseUrl}/api/runs`, 'GET');
+    const loadConfigPromise = loadAsync<Run[]>(`${baseUrl}/config`, 'GET');
 
     const actions = await loadActionsPromise;
     const runs = await loadRunsPromise;
@@ -319,7 +319,7 @@ export const collectRunArtifacts = async (
     isPending: true,
     data: undefined,
   });
-  const data = await loadAsync(`${baseUrl}/api/runs/${runId}/artifacts/text-content`, 'GET', {
+  const data = await loadAsync<any>(`${baseUrl}/api/runs/${runId}/artifacts/text-content`, 'GET', {
     params,
   });
   setLoaded(data);
@@ -333,8 +333,32 @@ export const collectOAuth2Status = async (
     isPending: true,
     data: undefined,
   });
-  const data = await loadAsync(`${baseUrl}/oauth2/status`, 'GET', {
+  const data = await loadAsync<any>(`${baseUrl}/oauth2/status`, 'GET', {
     params,
   });
   setLoaded(data);
+};
+
+export const cancelRun = async (runId?: string, requestId?: string) => {
+  if (!runId && !requestId) {
+    throw new Error('Either runId or requestId must be provided.');
+  }
+
+  let useRunId: string;
+
+  if (runId) {
+    useRunId = runId;
+  } else {
+    // If we don't have a runId we have to get the run id from the requestId.
+    const run = await loadAsync<any>(
+      `${baseUrl}/api/runs/run-id-from-request-id/${requestId}`,
+      'GET',
+    );
+    useRunId = run?.data?.run_id;
+    if (!useRunId) {
+      throw new Error(`Error getting run id from request id: ${run.errorMessage}`);
+    }
+  }
+  const data = await loadAsync(`${baseUrl}/api/runs/${useRunId}/cancel`, 'POST');
+  return data;
 };

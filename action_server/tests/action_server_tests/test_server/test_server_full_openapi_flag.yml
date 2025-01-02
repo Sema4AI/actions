@@ -482,6 +482,41 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
           description: Validation Error
       summary: Cancel Run
+  /api/runs/{run_id}/fields:
+    get:
+      operationId: show_run_fields_api_runs__run_id__fields_get
+      parameters:
+      - in: path
+        name: run_id
+        required: true
+        schema:
+          title: ID for run
+          type: string
+      - in: query
+        name: fields
+        required: false
+        schema:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Fields
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                title: Response Show Run Fields Api Runs  Run Id  Fields Get
+                type: object
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Show Run Fields
   /api/runs/{run_id}/log.html:
     get:
       operationId: get_run_log_html_api_runs__run_id__log_html_get

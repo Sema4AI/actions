@@ -4,6 +4,7 @@ Note: this is easy while we're in a single process!
 If we ever change the design to support multiple processes we'd need to have a
 way to synchronize state across multiple processes.
 """
+import logging
 import threading
 import typing
 from contextlib import contextmanager
@@ -13,6 +14,9 @@ from typing import Any, Dict, Literal, Optional
 if typing.TYPE_CHECKING:
     from ._database import Database
     from ._models import Run
+
+
+log = logging.getLogger(__name__)
 
 
 @dataclass(slots=True)
@@ -32,6 +36,12 @@ class RunRuntimeInfo:
 
     def cancel(self):
         self._canceled = True
+
+        if not len(self.on_cancel):
+            log.info(
+                f"No listeners registered during run {self._run_id} cancellation (this means that it is still in the not run state)."
+            )
+
         self.on_cancel()  # Notify all listeners that the run was canceled.
 
     def is_canceled(self) -> bool:
@@ -167,8 +177,10 @@ class RunsState:
         with self.semaphore:
             runtime_info = self._run_id_to_runtime_info.get(run_id)
             if runtime_info is not None:
+                log.info(f"Cancelling run {run_id}.")
                 runtime_info.cancel()
                 return True
+            log.info(f"Unable to cancel run {run_id} (no runtime info found).")
             return False
 
 

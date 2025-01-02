@@ -9,7 +9,7 @@ from collections import namedtuple
 from contextlib import contextmanager
 from pathlib import Path
 from queue import Queue
-from typing import Dict, Iterator, List, Optional, Set
+from typing import TYPE_CHECKING, Dict, Iterator, List, Optional, Set
 
 from sema4ai.actions._action_context import ActionContext
 from termcolor import colored
@@ -18,6 +18,9 @@ from sema4ai.action_server._models import Action, ActionPackage, Run
 from sema4ai.action_server._protocols import JSONValue
 
 from ._settings import Settings, is_frozen
+
+if TYPE_CHECKING:
+    from sema4ai.action_server._runs_state_cache import RunRuntimeInfo
 
 log = logging.getLogger(__name__)
 
@@ -277,11 +280,14 @@ class ProcessHandle:
         from ._robo_utils.process import kill_process_and_subprocesses
 
         if not self.is_alive():
+            log.info(
+                f"Process related to run {self._process.pid} is not running, cannot kill."
+            )
             return
 
         self._kill_called = True
 
-        log.debug("Subprocess kill [pid=%s]", self._process.pid)
+        log.info("Subprocess kill [pid=%s]", self._process.pid)
         kill_process_and_subprocesses(self._process.pid)
 
     def _do_run_action(
@@ -726,7 +732,6 @@ class ActionsProcessPool:
         return count
 
     def _add_to_idle_processes(self, process_handle: ProcessHandle):
-        print("Add to idle", process_handle.pid)
         assert self._lock.locked(), "Lock must be acquired at this point."
         processes = self._idle_processes.get(process_handle.key)
         if processes is None:
@@ -735,7 +740,6 @@ class ActionsProcessPool:
 
     def _add_to_running_processes(self, process_handle: ProcessHandle):
         assert self._lock.locked(), "Lock must be acquired at this point."
-        self._processes_running_semaphore.acquire()
         processes = self._running_processes.get(process_handle.key)
         if processes is None:
             processes = self._running_processes[process_handle.key] = set()
@@ -743,7 +747,6 @@ class ActionsProcessPool:
 
     def _remove_from_running_processes(self, process_handle: ProcessHandle):
         assert self._lock.locked(), "Lock must be acquired at this point."
-        self._processes_running_semaphore.release()
         processes = self._running_processes.get(process_handle.key)
         if not processes:
             return
@@ -759,109 +762,159 @@ class ActionsProcessPool:
                 self._create_process(one_action)
 
     @contextmanager
-    def obtain_process_for_action(self, action: Action) -> Iterator[ProcessHandle]:
+    def obtain_process_for_action(
+        self, action: Action, runtime_info: Optional["RunRuntimeInfo"] = None
+    ) -> Iterator[ProcessHandle]:
+        import time
+        from concurrent.futures import CancelledError
+
         action_package: ActionPackage = self.action_package_id_to_action_package[
             action.action_package_id
         ]
 
         key = _get_process_handle_key(self._settings, action_package)
         process_handle: Optional[ProcessHandle] = None
-        while True:
-            with self._lock:
-                processes = self._idle_processes.get(key)
-                if processes:
-                    # Get any process from the (compatible) idle processes.
-                    process_handle = processes.pop()
-                    log.debug(
-                        f"Process Pool: Using idle process ({process_handle.pid})."
-                    )
-                    if not process_handle.is_alive():
-                        # Process died while trying to get it.
-                        log.critical(
-                            f"Process Pool: Unexpected: Idle process exited "
-                            f"({process_handle.pid})."
-                        )
-                        continue
+        acquired_process_semaphore = False
 
-                    self._add_to_running_processes(process_handle)
-                else:
-                    # No compatible process: we need to create one now.
-                    n_running = self._get_running_processes_count_unlocked()
-                    if n_running < self.max_processes:
-                        self._create_process(action)
-                        processes = self._idle_processes.get(key)
-                        assert (
-                            processes
-                        ), f"Expected idle processes bound to key: {key} at this point!"
-                        process_handle = processes.pop()
-                        log.debug(
-                            f"Process Pool: Created process ({process_handle.pid})."
-                        )
-                        if not process_handle.is_alive():
-                            # Process died while trying to get it.
-                            log.critical(
-                                f"Process Pool: Unexpected: Idle process exited right "
-                                f"after creation ({process_handle.pid})."
-                            )
-                            continue
-                        self._add_to_running_processes(process_handle)
-                    else:
-                        log.critical(
+        # Only print more info regarding delaying after 10 seconds elapse.
+        print_delayed_at = time.monotonic() + 10
+
+        try:
+            while True:
+                if acquired_process_semaphore:
+                    # If we had previously acquired, release it now (for some reason we haven't
+                    # been able to create a process after acquiring the semaphore).
+                    self._processes_running_semaphore.release()
+                    acquired_process_semaphore = False
+
+                if runtime_info is not None and runtime_info.is_canceled():
+                    raise CancelledError(
+                        f"Action: {action.name} cancelled while waiting for process."
+                    )
+
+                # Each 2 seconds check again if we can acquire a process.
+                # Important: do it without acquiring `self._lock` (as it could lead
+                # to a deadlock if one depends on the other)
+                if not self._processes_running_semaphore.acquire(timeout=2):
+                    if time.monotonic() > print_delayed_at:
+                        log.info(
                             f"Delayed running action: {action.name} because "
                             f"{self.max_processes} actions are already running ("
                             f"waiting for another action to finish running)."
                         )
+                        print_delayed_at = time.monotonic() + 10
+                    continue
+                acquired_process_semaphore = True
 
-            if process_handle is not None:
-                break
-            else:
-                # Each 5 seconds check again and print delayed message if still
-                # not able to run.
-                if self._processes_running_semaphore.acquire(timeout=5):
-                    self._processes_running_semaphore.release()
-
-        if process_handle is not None:
-            try:
-                yield process_handle
-            finally:
                 with self._lock:
-                    self._remove_from_running_processes(process_handle)
-                    if process_handle.is_alive():
-                        if self._reuse_processes:
-                            curr_idle = self._get_idle_processes_count_unlocked()
-                            if not process_handle.can_reuse:
-                                log.debug(
-                                    f"Process Pool: Exited process ({process_handle.pid}) -- process marked as non-reusable."
-                                )
-                                # We cannot reuse it!
-                                process_handle.kill()
+                    processes = self._idle_processes.get(key)
+                    if processes:
+                        # Get any process from the (compatible) idle processes.
+                        process_handle = processes.pop()
+                        log.debug(
+                            f"Process Pool: Using idle process ({process_handle.pid})."
+                        )
+                        if not process_handle.is_alive():
+                            # Process died while trying to get it.
+                            log.critical(
+                                f"Process Pool: Unexpected: Idle process exited "
+                                f"({process_handle.pid})."
+                            )
+                            continue
 
-                            elif self.min_processes <= curr_idle:
-                                log.debug(
-                                    f"Process Pool: Exited process ({process_handle.pid}) -- min processes already satisfied."
-                                )
-                                # We cannot reuse it!
-                                process_handle.kill()
-                            else:
-                                log.debug(
-                                    f"Process Pool: Adding back to pool ({process_handle.pid})."
-                                )
-                                self._add_to_idle_processes(process_handle)
-                        else:
+                        self._add_to_running_processes(process_handle)
+                    else:
+                        # No compatible process: we need to create one now.
+                        n_running = self._get_running_processes_count_unlocked()
+                        if n_running < self.max_processes:
+                            self._create_process(action)
+                            processes = self._idle_processes.get(key)
+                            assert processes, f"Expected idle processes bound to key: {key} at this point!"
+                            process_handle = processes.pop()
                             log.debug(
-                                f"Process Pool: Exited process ({process_handle.pid}) -- not reusing processes."
+                                f"Process Pool: Created process ({process_handle.pid})."
+                            )
+                            if not process_handle.is_alive():
+                                # Process died while trying to get it.
+                                log.critical(
+                                    f"Process Pool: Unexpected: Idle process exited right "
+                                    f"after creation ({process_handle.pid})."
+                                )
+                                continue
+                            self._add_to_running_processes(process_handle)
+                        else:
+                            log.critical(
+                                f"Unable to run: {action.name} because "
+                                f"{self.max_processes} actions are already running "
+                                "(waiting for another action to finish running). "
+                                "THIS IS UNEXPECTED AT THIS POINT "
+                                "(the semaphore with the max number of processes is "
+                                "not working as expected)."
+                            )
+
+                if process_handle is not None:
+                    break
+                else:
+                    continue
+        except BaseException as e:
+            if not isinstance(e, CancelledError):
+                log.exception(
+                    "CRITICAL ERROR IN Action Server Process Pool! This may make the Action Server unresponsive. Please report error!"
+                )
+
+            if acquired_process_semaphore:
+                self._processes_running_semaphore.release()
+
+            raise
+
+        if process_handle is None:
+            raise AssertionError(
+                "Expected process_handle to be not None at this point!"
+            )
+
+        if not acquired_process_semaphore:
+            raise AssertionError(
+                "Expected 'acquired_process_semaphore' to be True at this point!"
+            )
+
+        try:
+            yield process_handle
+        finally:
+            self._processes_running_semaphore.release()
+            with self._lock:
+                self._remove_from_running_processes(process_handle)
+                if process_handle.is_alive():
+                    if self._reuse_processes:
+                        curr_idle = self._get_idle_processes_count_unlocked()
+                        if not process_handle.can_reuse:
+                            log.debug(
+                                f"Process Pool: Exited process ({process_handle.pid}) -- process marked as non-reusable."
                             )
                             # We cannot reuse it!
                             process_handle.kill()
 
-                # If needed recreate idle processes which were removed (needed
-                # especially when not reusing processes, but if some process
-                # crashes it's also needed).
-                self._warmup_processes()
+                        elif self.min_processes <= curr_idle:
+                            log.debug(
+                                f"Process Pool: Exited process ({process_handle.pid}) -- min processes already satisfied."
+                            )
+                            # We cannot reuse it!
+                            process_handle.kill()
+                        else:
+                            log.debug(
+                                f"Process Pool: Adding back to pool ({process_handle.pid})."
+                            )
+                            self._add_to_idle_processes(process_handle)
+                    else:
+                        log.debug(
+                            f"Process Pool: Exited process ({process_handle.pid}) -- not reusing processes."
+                        )
+                        # We cannot reuse it!
+                        process_handle.kill()
 
-            return
-
-        raise AssertionError("Expected process_handle to be not None!")
+            # If needed recreate idle processes which were removed (needed
+            # especially when not reusing processes, but if some process
+            # crashes it's also needed).
+            self._warmup_processes()
 
 
 _actions_process_pool: Optional[ActionsProcessPool] = None

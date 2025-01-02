@@ -27,6 +27,7 @@ export enum RunStatus {
   'RUNNING' = 1,
   'PASSED' = 2,
   'FAILED' = 3,
+  'CANCELLED' = 4,
 }
 
 export interface Run {

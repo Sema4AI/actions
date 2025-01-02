@@ -21,7 +21,7 @@ import {
 } from '@sema4ai/components';
 import { IconBolt, IconLoading, IconLogIn, IconLogOut } from '@sema4ai/icons';
 
-import { Action, ActionPackage, AsyncLoaded, ServerConfig } from '~/lib/types';
+import { Action, ActionPackage, AsyncLoaded, RunStatus, ServerConfig } from '~/lib/types';
 import { toKebabCase } from '~/lib/helpers';
 import { useActionServerContext } from '~/lib/actionServerContext';
 import { useLocalStorage } from '~/lib/useLocalStorage';
@@ -43,9 +43,11 @@ import {
   IRequiredOauth2Data,
 } from '~/lib/oauth2';
 import { collectOAuth2Status } from '~/lib/requestData';
+import { CancelButton } from '~/components/CancelButton';
 import { ActionRunResult } from './ActionRunResult';
 import { ErrorDialog, ErrorDialogInfo } from './ErrorDialog';
 
+let lastRequestId: string | undefined;
 type Props = {
   action: Action;
   actionPackage: ActionPackage;
@@ -247,14 +249,15 @@ export const ActionRun: FC<Props> = ({ action, actionPackage }) => {
         return;
       }
       const serverConfig: ServerConfig | undefined = loadedServerConfig.data;
-
       try {
+        lastRequestId = crypto.randomUUID();
         runAction({
           actionPackageName: toKebabCase(actionPackage.name),
           actionName: toKebabCase(action.name),
           args,
           apiKey: serverConfig?.auth_enabled ? apiKey : undefined,
           secretsData,
+          requestId: lastRequestId,
         });
       } catch (error) {
         setErrorDialogMessage({
@@ -579,6 +582,9 @@ export const ActionRun: FC<Props> = ({ action, actionPackage }) => {
         >
           {isPending ? 'Executing...' : 'Execute Action'}
         </Button>
+        {isPending && lastRequestId && (
+          <CancelButton requestId={lastRequestId} status={RunStatus.RUNNING} />
+        )}
         <Switch
           label=""
           value="Use JSON"

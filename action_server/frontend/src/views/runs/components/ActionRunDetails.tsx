@@ -11,6 +11,7 @@ import {
 } from '~/components';
 import { baseUrl } from '~/lib/requestData';
 import { IconFileText } from '@sema4ai/icons';
+import { CancelButton } from '~/components/CancelButton';
 import { useActionRunsContext } from './context';
 
 export const ActionRunDetails: FC = () => {
@@ -47,7 +48,10 @@ export const ActionRunDetails: FC = () => {
       <Drawer.Header>
         <Drawer.Header.Title title={run.action?.name} />
         <Drawer.Header.Description>
-          <StatusBadge status={run.status} size="small" />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <StatusBadge status={run.status} size="medium" />
+            <CancelButton runId={run.id} status={run.status} />
+          </div>
         </Drawer.Header.Description>
       </Drawer.Header>
       <Drawer.Content>
