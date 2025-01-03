@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2.5.0 - 2025-01-03
+
 - It's now possible to cancel a run that is still in the `not_run` state (waiting for a process from the process pool).
 - Add `cancel` buttons to the UI (in the run history and in the run itself).
 - When the Action Server is started, if there were any runs in the `not_run` state or in the `running` state, they'll be marked as cancelled.
