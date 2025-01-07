@@ -1,15 +1,11 @@
 from sema4ai.actions import ActionError, Response, Table
-from sema4ai.data import query, DataSource
-from data_sources import FileSalesDataSource, PostgresCustomersDataSource
-from typing import Annotated
+from sema4ai.data import query, get_connection
 
 
 # The first query is simple select targeting only one data source and has one
 # parameter for country.
 @query
-def get_customers_in_country(
-    country: str,
-    datasource: PostgresCustomersDataSource) -> Response[Table]:
+def get_customers_in_country(country: str) -> Response[Table]:
     """
     Get all customer names, their id's and account managers in a given country.
 
@@ -26,7 +22,7 @@ def get_customers_in_country(
         LIMIT 100;
     """
 
-    result = datasource.query(sql, params={"country": country})
+    result = get_connection().query(sql, params={"country": country})
     return Response(result=result.to_table())
 
 
@@ -35,9 +31,7 @@ def get_customers_in_country(
 # to see how many companies are returned with search criteria, and then based on the results
 # return either an error, or continues to perform the actual data query for monthly sales.
 @query
-def get_customers_orders_per_month(
-    company_name: str,
-    datasource: Annotated[DataSource, FileSalesDataSource | PostgresCustomersDataSource]) -> Response[Table]:
+def get_customers_orders_per_month(company_name: str) -> Response[Table]:
     """
     Get one customer's aggregated order totals (sales) for all historic months.
 
@@ -55,14 +49,16 @@ def get_customers_orders_per_month(
         LIMIT 100;
     """
 
-    result = datasource.query(sql, params={"company": company_name})
+    result = get_connection().query(sql, params={"company": company_name})
 
     number_of_rows = len(result)
     if number_of_rows == 0:
         raise ActionError("No companies found with our criteria")
 
     elif number_of_rows > 1:
-        raise ActionError(f"More than one company found with your criteria, here are all the found companies:\n\n{result.to_markdown()}")
+        raise ActionError(
+            f"More than one company found with your criteria, here are all the found companies:\n\n{result.to_markdown()}"
+        )
 
     else:
         sql = """
@@ -77,13 +73,13 @@ def get_customers_orders_per_month(
             ORDER BY 1;
         """
 
-        result = datasource.query(sql, params={"company": company_name})
+        result = get_connection().query(sql, params={"company": company_name})
         return Response(result=result.to_table())
 
 
 # The base queries enable the Agent to guide the user
 @query
-def get_countries(datasource: PostgresCustomersDataSource) -> Response[Table]:
+def get_countries() -> Response[Table]:
     """
     Get all countries where there are customers. Use this to understand the dataset better.
 
@@ -97,14 +93,14 @@ def get_countries(datasource: PostgresCustomersDataSource) -> Response[Table]:
         LIMIT 100;
     """
 
-    result = datasource.query(sql)
+    result = get_connection().query(sql)
     return Response(result=result.to_table())
 
 
 @query
-def get_customers(datasource: PostgresCustomersDataSource) -> Response[Table]:
+def get_customers() -> Response[Table]:
     """
-    Get all available customers company names and their ids. 
+    Get all available customers company names and their ids.
 
     Returns:
         List of all customers and their IDs.
@@ -116,5 +112,5 @@ def get_customers(datasource: PostgresCustomersDataSource) -> Response[Table]:
         LIMIT 100;
     """
 
-    result = datasource.query(sql)
+    result = get_connection().query(sql)
     return Response(result=result.to_table())
