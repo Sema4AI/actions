@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 2.5.1 - 2025-01-07
+
+- Action Server is now available in MacOS ARM 64.
+- RCC updated to v19.0.1
+
 ## 2.5.0 - 2025-01-03
 
 - It's now possible to cancel a run that is still in the `not_run` state (waiting for a process from the process pool).

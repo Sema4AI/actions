@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sema4ai-action-server"
-version = "2.5.0"
+version = "2.5.1"
 description = """Sema4AI Action Server"""
 authors = ["Fabio Z. <fabio@robocorp.com>"]
 readme = "README.md"
@@ -52,7 +52,7 @@ robocorp-log-pytest = "^0.0.2"
 types-psutil = "^5"
 pyoxidizer = "^0.24.0"
 types-jsonschema = "^4.22.0"
-sema4ai-data = "0.0.1"
+sema4ai-data = "^0.0.5"
 
 
 [tool.mypy]

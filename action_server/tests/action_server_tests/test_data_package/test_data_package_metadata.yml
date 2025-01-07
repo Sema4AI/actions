@@ -2,8 +2,8 @@ metadata:
   action_package_version: '1'
   data:
     datasources:
-    - created-table: churn
-      defined-at:
+    - created_table: churn
+      defined_at:
         file: datasources.py
         line: 35
       description: Datasource which provides a table named 'churn' with customer churn
@@ -11,27 +11,27 @@ metadata:
       engine: files
       file: customer-churn.csv
       name: files
-    - defined-at:
+    - defined_at:
         file: datasources.py
         line: 45
       description: Datasource which provides a project named `simple_data_package_v1`.
       engine: custom
       name: simple_data_package_v1
-      setup-sql:
+      setup_sql:
       - CREATE PROJECT IF NOT EXISTS simple_data_package_v1
-    - defined-at:
+    - defined_at:
         file: datasources.py
         line: 56
       description: Datasource which provides a project named `simple_data_package_v1`
         along with a table named `customer_churn_predictor`.
       engine: prediction:lightwood
-      model-name: customer_churn_predictor
+      model_name: customer_churn_predictor
       name: simple_data_package_v1
-      setup-sql:
+      setup_sql:
       - "\n            CREATE MODEL IF NOT EXISTS simple_data_package_v1.customer_churn_predictor\n\
         \            FROM files\n            (SELECT * FROM churn)\n            PREDICT\
         \ Churn;\n    "
-    - defined-at:
+    - defined_at:
         file: datasources.py
         line: 7
       description: Datasource which provides a table named 'user_info' with information
@@ -82,6 +82,8 @@ openapi.json:
   paths:
     /api/actions/data-package/predict-churn/run:
       post:
+        description: This is a simple query that joins the churn predictor with the
+          churn data.
         operationId: predict_churn
         requestBody:
           content:
@@ -90,7 +92,7 @@ openapi.json:
                 properties:
                   limit:
                     default: 10
-                    description: ''
+                    description: The number of results to return.
                     title: Limit
                     type: integer
                 type: object
@@ -100,6 +102,7 @@ openapi.json:
             content:
               application/json:
                 schema:
+                  description: A list of churn predictions.
                   properties:
                     results:
                       items:
