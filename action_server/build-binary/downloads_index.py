@@ -93,7 +93,8 @@ ENTRY = """
 <p>Release date: %(when)s</p>
 <ul>
 <li>Windows: <a href="%(windows)s">%(windows)s</a></li>
-<li>MacOS: <a href="%(macos)s">%(macos)s</a></li>
+<li>MacOS X86_64: <a href="%(macos)s">%(macos)s</a></li>
+<li>MacOS ARM 64: <a href="%(macos_arm64)s">%(macos_arm64)s</a></li>
 <li>Linux: <a href="%(linux)s">%(linux)s</a></li>
 </ul>
 """.strip()
@@ -173,6 +174,7 @@ def process_versions(options, sink):
         details['windows'] = download(version, 'windows64/action-server.exe')
         details['linux'] = download(version, 'linux64/action-server')
         details['macos'] = download(version, 'macos64/action-server')
+        details['macos_arm64'] = download(version, 'macos-arm64/action-server')
         sink.write(ENTRY % details)
         seen.add(version)
         tested.append(details)
@@ -184,6 +186,7 @@ def process_versions(options, sink):
         details["windows"] = download(version, "windows64/action-server.exe")
         details["linux"] = download(version, "linux64/action-server")
         details["macos"] = download(version, "macos64/action-server")
+        details["macos_arm64"] = download(version, "macos-arm64/action-server")
         sink.write(ENTRY % details)
         if version in seen:
             break

@@ -1,7 +1,5 @@
-from typing import Annotated
-
 import pydantic
-from sema4ai.data import DataSource, predict
+from sema4ai.data import predict
 
 from .datasources import ChurnPredictionDataSource, FileChurnDataSource
 
@@ -19,9 +17,18 @@ class ChurnPredictionResultSet(pydantic.BaseModel):
 
 @predict
 def predict_churn(
-    datasource: Annotated[DataSource, ChurnPredictionDataSource | FileChurnDataSource],
+    datasource: ChurnPredictionDataSource | FileChurnDataSource,
     limit: int = 10,
 ) -> ChurnPredictionResultSet:
+    """
+    This is a simple query that joins the churn predictor with the churn data.
+
+    Args:
+        limit: The number of results to return.
+
+    Returns:
+        A list of churn predictions.
+    """
     sql = """
     SELECT t.customerID AS customer_id, t.Contract AS contract, t.MonthlyCharges AS monthly_charges, m.Churn AS churn
     FROM files.churn AS t
