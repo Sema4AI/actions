@@ -96,22 +96,8 @@ jobs:
           name: action-server-version
           path: "action_server/version.txt"
 
-      - name: Copy assets [Linux]
-        if: matrix.os == 'ubuntu-20.04'
-        run: |
-          cp -R build-binary/build/x86_64-unknown-linux-gnu/release/install/* go-wrapper/assets
-      - name: Copy assets [Mac]
-        if: matrix.os == 'macos-13'
-        run: |
-          cp -R build-binary/build/x86_64-apple-darwin/release/install/* go-wrapper/assets
-      - name: Copy assets [Mac Arm64]
-        if: matrix.os == 'macos-15'
-        run: |
-          cp -R build-binary/build/aarch64-apple-darwin/release/install/* go-wrapper/assets
-      - name: Copy assets [Windows]
-        if: matrix.os == 'windows-2019'
-        run: |
-          xcopy /e /h /i build-binary\\build\\x86_64-pc-windows-msvc\\release\\install go-wrapper\\assets
+      - name: Zip assets
+        run: inv zip-go-wrapper-assets
 
       - uses: actions/download-artifact@v4
         with:
