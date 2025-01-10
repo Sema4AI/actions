@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Action Server Go Wrapper:
+  - Now embeds the assets as a zip file in the binary.
+  - The proper download url is shown for mac os arm64 if the current version is not the latest.
+
 ## 2.5.1 - 2025-01-07
 
 - Action Server is now available in MacOS ARM 64.

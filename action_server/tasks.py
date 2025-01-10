@@ -259,3 +259,72 @@ def update_pyoxidizer_versions(ctx: Context):
         print("pyoxidizer.bzl updated.")
     else:
         print("pyoxidizer.bzl already up to date.")
+
+
+@task
+def zip_go_wrapper_assets(ctx: Context):
+    """
+    Get the assets from the build-binary and zip them up.
+    """
+    import platform
+    import shutil
+    import zipfile
+
+    # Get system info
+    system = platform.system()
+    machine = platform.machine()
+
+    # Determine source path based on platform
+    if system == "Linux":
+        src_path = (
+            CURDIR
+            / "build-binary"
+            / "build"
+            / "x86_64-unknown-linux-gnu"
+            / "release"
+            / "install"
+        )
+    elif system == "Darwin":  # macOS
+        if machine == "arm64":
+            src_path = (
+                CURDIR
+                / "build-binary"
+                / "build"
+                / "aarch64-apple-darwin"
+                / "release"
+                / "install"
+            )
+        else:
+            src_path = (
+                CURDIR
+                / "build-binary"
+                / "build"
+                / "x86_64-apple-darwin"
+                / "release"
+                / "install"
+            )
+    elif system == "Windows":
+        src_path = (
+            CURDIR
+            / "build-binary"
+            / "build"
+            / "x86_64-pc-windows-msvc"
+            / "release"
+            / "install"
+        )
+    else:
+        raise RuntimeError(f"Unsupported platform: {system}")
+
+    if not src_path.exists():
+        raise RuntimeError(f"Source path does not exist: {src_path}")
+
+    dst_path = CURDIR / "go-wrapper" / "assets"
+    zip_path = dst_path / "assets.zip"
+
+    if zip_path.exists():
+        zip_path.unlink()
+
+    with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
+        for file in src_path.rglob("*"):
+            if file.is_file():
+                zf.write(file, file.relative_to(src_path))
