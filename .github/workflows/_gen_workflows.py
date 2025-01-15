@@ -306,6 +306,12 @@ class ActionsTests(BaseTests):
     require_node = True
 
 
+class CommonTests(BaseTests):
+    name = "Common Tests"
+    target = "common_tests.yml"
+    project_name = "common"
+
+
 class HttpHelperTests(BaseTests):
     name = "HTTP Helper Tests"
     target = "http_helper_tests.yml"
