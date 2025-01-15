@@ -322,6 +322,7 @@ TEST_TARGETS = [
     ActionServerTests(),
     ActionsTests(),
     HttpHelperTests(),
+    CommonTests(),
 ]
 
 

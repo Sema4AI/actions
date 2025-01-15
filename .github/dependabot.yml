@@ -12,9 +12,10 @@ updates:
 - package-ecosystem: pip
   directories:
   - /actions
+  - /common
+  - /devutils
   - /action_server
   - /sema4ai-http-helper
-  - /devutils
   schedule:
     interval: daily
   open-pull-requests-limit: 0
