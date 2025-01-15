@@ -14,7 +14,7 @@ import typing
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Optional, Protocol, Union
+from typing import Dict, List, Optional, Protocol, Sequence, Union
 
 from sema4ai.common.protocols import IMonitor
 
@@ -583,10 +583,10 @@ class ProcessRunResult:
 
 
 def launch_and_return_future(
-    cmd,
-    environ,
-    cwd,
-    timeout=100,
+    cmd: Sequence[str],
+    environ: dict[str, str],
+    cwd: str,
+    timeout: int = 100,
     stdin: bytes = b"\n",
     monitor: Optional[IMonitor] = None,
 ) -> "Future[ProcessRunResult]":

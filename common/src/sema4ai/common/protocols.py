@@ -66,21 +66,6 @@ class ActionResult(Generic[T]):
         return ActionResult(success=True, message=None, result=result)
 
 
-class LaunchActionResult(ActionResult[T]):
-    # A string-representation of the command line.
-    command_line: str
-
-    def __init__(
-        self,
-        command_line: str,
-        success: bool,
-        message: str | None = None,
-        result: T | None = None,
-    ):
-        ActionResult.__init__(self, success, message, result)
-        self.command_line = command_line
-
-
 class IMonitorListener(Protocol):
     def __call__(self) -> Any:
         pass
