@@ -9,7 +9,7 @@ license = "Apache-2.0"
 packages = [{ include = "sema4ai/common", from = "src" }]
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.11"
 psutil = ">=5.0,<7.0"
 sema4ai-http-helper = "^1.0.2"
 

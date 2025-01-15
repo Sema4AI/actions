@@ -418,10 +418,12 @@ def generate_dependabot_config():
         configs = [
             {
                 "package-ecosystem": ecosystem,
-                "directories": [
-                    f"/{Path(directory).as_posix()}" if directory != "/" else "/"
-                    for directory in directories
-                ],
+                "directories": sorted(
+                    [
+                        f"/{Path(directory).as_posix()}" if directory != "/" else "/"
+                        for directory in directories
+                    ]
+                ),
                 "schedule": {"interval": "daily"},
                 "open-pull-requests-limit": 0,  # Only notifications, no PRs
                 "allow": [{"dependency-type": "all"}],
