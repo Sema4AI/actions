@@ -18,7 +18,6 @@
 ## Classes
 
 - [`callback.Callback`](./sema4ai.common.callback.md#class-callback): A helper class to register callbacks and call them when notified.
-- [`callback.OnExitContextManager`](./sema4ai.common.callback.md#class-onexitcontextmanager)
 - [`monitor.Monitor`](./sema4ai.common.monitor.md#class-monitor)
 - [`null.Null`](./sema4ai.common.null.md#class-null): Null object pattern.
 - [`process.IProgressReporter`](./sema4ai.common.process.md#class-iprogressreporter)
@@ -48,9 +47,6 @@
 - [`protocols.check_implements`](./sema4ai.common.protocols.md#function-check_implements): Helper to check if a class implements some protocol.
 - [`run_in_thread.run_in_thread`](./sema4ai.common.run_in_thread.md#function-run_in_thread): Runs a given target in a thread returning a Future which can be used to
 - [`run_in_thread.run_in_thread_asyncio`](./sema4ai.common.run_in_thread.md#function-run_in_thread_asyncio): Runs a given target in a thread returning an asyncio Future which can be
-- [`system_mutex.check_valid_mutex_name`](./sema4ai.common.system_mutex.md#function-check_valid_mutex_name)
-- [`system_mutex.generate_mutex_name`](./sema4ai.common.system_mutex.md#function-generate_mutex_name): A mutex name must be a valid filesystem path, so, this generates a hash
-- [`system_mutex.get_tid`](./sema4ai.common.system_mutex.md#function-get_tid)
 - [`system_mutex.timed_acquire_mutex`](./sema4ai.common.system_mutex.md#function-timed_acquire_mutex): Acquires the mutex given its name, a number of attempts and a time to sleep between each attempt.
 - [`wait_for.wait_for_condition`](./sema4ai.common.wait_for.md#function-wait_for_condition): Note: wait_for_non_error_condition or wait_for_expected_func_return are usually a better APIs
 - [`wait_for.wait_for_expected_func_return`](./sema4ai.common.wait_for.md#function-wait_for_expected_func_return): Args:

@@ -410,3 +410,6 @@ def generate_mutex_name(target_name, prefix=""):
         target_name = target_name.encode("utf-8")
 
     return prefix + (hashlib.sha224(target_name).hexdigest()[:16])
+
+
+__all__ = ["timed_acquire_mutex", "SystemMutex"]

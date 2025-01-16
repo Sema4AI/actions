@@ -74,3 +74,6 @@ class Callback:
                 logger.exception(f"Error calling: {c}.")
                 if self.raise_exceptions:
                     raise
+
+
+__all__ = ["Callback"]

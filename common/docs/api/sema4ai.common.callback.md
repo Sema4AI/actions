@@ -54,15 +54,3 @@ ______________________________________________________________________
 ```python
 unregister(callback) → None
 ```
-
-______________________________________________________________________
-
-# Class `OnExitContextManager`
-
-### `__init__`
-
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/common/src/sema4ai/common/callback.py#L7)
-
-```python
-__init__(on_exit)
-```

@@ -4,31 +4,7 @@
 
 Module with utilities for working with processes.
 
-# Variables
-
-- **IS_WINDOWS**
-
 # Functions
-
-______________________________________________________________________
-
-## `is_process_alive`
-
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/common/src/sema4ai/common/process.py#L103)
-
-```python
-is_process_alive(pid)
-```
-
-______________________________________________________________________
-
-## `build_subprocess_kwargs`
-
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/common/src/sema4ai/common/process.py#L256)
-
-```python
-build_subprocess_kwargs(cwd, env, **kwargs) → dict
-```
 
 ______________________________________________________________________
 
@@ -46,12 +22,12 @@ build_python_launch_env(new_env_vars: 'dict[str, str]') → dict[str, str]
 
 ______________________________________________________________________
 
-## `kill_process_and_subprocesses`
+## `build_subprocess_kwargs`
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/common/src/sema4ai/common/process.py#L422)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/common/src/sema4ai/common/process.py#L256)
 
 ```python
-kill_process_and_subprocesses(pid)
+build_subprocess_kwargs(cwd, env, **kwargs) → dict
 ```
 
 ______________________________________________________________________
@@ -77,6 +53,26 @@ check_output_interactive(
     on_stdout=None,
     **kwargs
 ) → bytes
+```
+
+______________________________________________________________________
+
+## `is_process_alive`
+
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/common/src/sema4ai/common/process.py#L103)
+
+```python
+is_process_alive(pid)
+```
+
+______________________________________________________________________
+
+## `kill_process_and_subprocesses`
+
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/common/src/sema4ai/common/process.py#L422)
+
+```python
+kill_process_and_subprocesses(pid)
 ```
 
 ______________________________________________________________________

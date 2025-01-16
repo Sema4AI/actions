@@ -57,3 +57,5 @@ class Null:
 
 # Default instance
 NULL = Null()
+
+__all__ = ["Null", "NULL"]

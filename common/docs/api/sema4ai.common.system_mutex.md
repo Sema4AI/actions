@@ -20,26 +20,6 @@ Copyright: Brainwy Software Author: Fabio Zadrozny
 
 ______________________________________________________________________
 
-## `check_valid_mutex_name`
-
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/common/src/sema4ai/common/system_mutex.py#L42)
-
-```python
-check_valid_mutex_name(mutex_name)
-```
-
-______________________________________________________________________
-
-## `get_tid`
-
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/common/src/sema4ai/common/system_mutex.py#L58)
-
-```python
-get_tid()
-```
-
-______________________________________________________________________
-
 ## `timed_acquire_mutex`
 
 Acquires the mutex given its name, a number of attempts and a time to sleep between each attempt.
@@ -63,18 +43,6 @@ timed_acquire_mutex(
     base_dir=None,
     raise_error_on_timeout=False
 ) → ContextManager
-```
-
-______________________________________________________________________
-
-## `generate_mutex_name`
-
-A mutex name must be a valid filesystem path, so, this generates a hash that can be used in case the original name would have conflicts.
-
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/common/src/sema4ai/common/system_mutex.py#L402)
-
-```python
-generate_mutex_name(target_name, prefix='')
 ```
 
 ______________________________________________________________________
