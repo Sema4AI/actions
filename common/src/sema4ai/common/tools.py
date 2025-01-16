@@ -11,7 +11,7 @@ class BaseTool:
     mutex_name: str
     base_url: str
     executable_name: str
-    version_command: tuple[str, ...]
+    version_command: tuple[str, ...] = ("--version",)
     available_in_mac_os_arm64: bool = True
     arm_64_download_path: str = "macos-arm64"
 
@@ -223,6 +223,8 @@ class ActionServerTool(BaseTool):
     mutex_name = "sema4ai-get-action-server"
     base_url = "https://cdn.sema4.ai/action-server/releases"
     executable_name = "action-server"
+
+    # Version command for the action-server tool is different from the other tools.
     version_command = ("version",)
 
     def __init__(self, target_location: str, tool_version: str):
@@ -233,7 +235,6 @@ class AgentCliTool(BaseTool):
     mutex_name = "sema4ai-get-agent-cli"
     base_url = "https://cdn.sema4.ai/agent-cli/releases"
     executable_name = "agent-cli"
-    version_command = ("--version",)
     available_in_mac_os_arm64 = False
 
     def __init__(self, target_location: str, tool_version: str):
@@ -241,10 +242,9 @@ class AgentCliTool(BaseTool):
 
 
 class RccTool(BaseTool):
-    mutex_name = "robocorp_get_rcc"
+    mutex_name = "sema4ai-get-rcc"
     base_url = "https://cdn.sema4.ai/rcc/releases"
     executable_name = "rcc"
-    version_command = ("--version",)
 
     def __init__(self, target_location: str, tool_version: str):
         super().__init__(target_location, tool_version)
@@ -254,7 +254,6 @@ class DataServerTool(BaseTool):
     mutex_name = "sema4ai-get-data-server"
     base_url = "https://cdn.sema4.ai/data-server-cli/beta"
     executable_name = "data-server-cli"
-    version_command = ("--version",)
 
     # Different naming for arm64 on macos for the data-server-cli tool
     arm_64_download_path = "macos_arm64"
