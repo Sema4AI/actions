@@ -472,10 +472,10 @@ def check_output_interactive(
     """
 
     if on_stderr is None:
-        on_stderr = lambda *args, **kwargs: None
+        on_stderr = lambda *args, **kwargs: None  # noqa: E731
 
     if on_stdout is None:
-        on_stdout = lambda *args, **kwargs: None
+        on_stdout = lambda *args, **kwargs: None  # noqa: E731
 
     if kwargs.get("stdout", subprocess.PIPE) != subprocess.PIPE:
         raise AssertionError("stdout must be subprocess.PIPE")
