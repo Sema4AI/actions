@@ -306,6 +306,12 @@ class ActionsTests(BaseTests):
     require_node = True
 
 
+class CommonTests(BaseTests):
+    name = "Common Tests"
+    target = "common_tests.yml"
+    project_name = "common"
+
+
 class HttpHelperTests(BaseTests):
     name = "HTTP Helper Tests"
     target = "http_helper_tests.yml"
@@ -316,6 +322,7 @@ TEST_TARGETS = [
     ActionServerTests(),
     ActionsTests(),
     HttpHelperTests(),
+    CommonTests(),
 ]
 
 
@@ -411,10 +418,12 @@ def generate_dependabot_config():
         configs = [
             {
                 "package-ecosystem": ecosystem,
-                "directories": [
-                    f"/{Path(directory).as_posix()}" if directory != "/" else "/"
-                    for directory in directories
-                ],
+                "directories": sorted(
+                    [
+                        f"/{Path(directory).as_posix()}" if directory != "/" else "/"
+                        for directory in directories
+                    ]
+                ),
                 "schedule": {"interval": "daily"},
                 "open-pull-requests-limit": 0,  # Only notifications, no PRs
                 "allow": [{"dependency-type": "all"}],

@@ -11,10 +11,11 @@ updates:
   - dependency-type: all
 - package-ecosystem: pip
   directories:
-  - /actions
   - /action_server
-  - /sema4ai-http-helper
+  - /actions
+  - /common
   - /devutils
+  - /sema4ai-http-helper
   schedule:
     interval: daily
   open-pull-requests-limit: 0
