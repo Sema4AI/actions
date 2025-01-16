@@ -73,8 +73,8 @@ check_output_interactive(
     *popenargs,
     timeout=None,
     progress_reporter: 'Optional[IProgressReporter]' = None,
-    on_stderr=<function <lambda> at 0x103899da0>,
-    on_stdout=<function <lambda> at 0x10389a020>,
+    on_stderr=None,
+    on_stdout=None,
     **kwargs
 ) → bytes
 ```
@@ -99,7 +99,7 @@ If the future itself is cancelled the process will be killed and an exception wi
 **Returns:**
 A Future[ProcessRunResult] which can be used to wait for the process to finishand get its output.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/common/src/sema4ai/common/process.py#L585)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/common/src/sema4ai/common/process.py#L591)
 
 ```python
 launch_and_return_future(
