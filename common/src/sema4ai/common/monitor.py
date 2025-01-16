@@ -1,6 +1,6 @@
 import logging
 
-from sema4ai.common.protocols import IMonitor, IMonitorListener
+from sema4ai.common.protocols import ICancelMonitorListener, IMonitor
 
 log = logging.getLogger(__name__)
 
@@ -9,9 +9,9 @@ class Monitor:
     def __init__(self, title: str = ""):
         self._title = title
         self._cancelled: bool = False
-        self._listeners: tuple[IMonitorListener, ...] = ()
+        self._listeners: tuple[ICancelMonitorListener, ...] = ()
 
-    def add_listener(self, listener: IMonitorListener):
+    def add_cancel_listener(self, listener: ICancelMonitorListener):
         if self._cancelled:
             listener()
         else:

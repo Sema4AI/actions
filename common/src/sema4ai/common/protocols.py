@@ -66,7 +66,7 @@ class ActionResult(Generic[T]):
         return ActionResult(success=True, message=None, result=result)
 
 
-class IMonitorListener(Protocol):
+class ICancelMonitorListener(Protocol):
     def __call__(self) -> Any:
         pass
 
@@ -85,7 +85,7 @@ class IMonitor(Protocol):
         returns True if cancelled, False otherwise.
         """
 
-    def add_listener(self, listener: IMonitorListener):
+    def add_cancel_listener(self, listener: ICancelMonitorListener):
         """
         Adds a listener that'll be called when the monitor is cancelled.
         """

@@ -679,7 +679,7 @@ def launch_and_return_future(
         kill_if_running()
 
     if monitor is not None:
-        monitor.add_listener(on_monitor_cancelled)
+        monitor.add_cancel_listener(on_monitor_cancelled)
 
     def cancel_if_needed(*args, **kwargs):
         if future.cancelled():
