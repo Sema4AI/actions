@@ -56,22 +56,15 @@ while True:
     )
 
     with pytest.raises(TimeoutError):
-        future.result(1)
+        future.result(0.1 if scenario == "timeout" else 1)
 
     if scenario == "monitor":
         monitor.cancel()
-    elif scenario == "future":
-        future.cancel()
-    elif scenario == "timeout":
-        pass
-    else:
-        raise ValueError(f"Invalid scenario: {scenario}")
-
-    if scenario == "monitor":
         result = future.result(1)
         assert result.returncode != 0
         assert result.status == ProcessResultStatus.CANCELLED
     elif scenario == "future":
+        future.cancel()
         with pytest.raises(CancelledError):
             future.result(1)
     elif scenario == "timeout":
@@ -80,5 +73,6 @@ while True:
         assert result.status == ProcessResultStatus.TIMED_OUT
     else:
         raise ValueError(f"Invalid scenario: {scenario}")
+
     process = future._process_weak_ref()
     wait_for_condition(lambda: process.poll() is not None)

@@ -598,6 +598,20 @@ def launch_and_return_future(
 
     If the future itself is cancelled the process will be killed and an exception
     will set in the future.
+
+    Args:
+        cmd: The command to run.
+        environ: The environment variables to set.
+        cwd: The current working directory.
+        timeout: The timeout in seconds to timeout the process (note: no exception is raised
+          when the timeout is reached, the ProcessRunResult will have the status set to
+          ProcessResultStatus.TIMED_OUT).
+        stdin: The contents to write to the process's stdin.
+        monitor: The monitor to use to cancel the process.
+
+    Returns:
+        A Future[ProcessRunResult] which can be used to wait for the process to finish
+        and get its output.
     """
     import weakref
     from concurrent.futures import Future
