@@ -10,13 +10,8 @@ log = logging.getLogger(__name__)
 # No real build, just download RCC at this point.
 
 # Note: referenced here and in sema4ai.action_server._download_rcc
-RCC_VERSION = "18.3.0"
+RCC_VERSION = "19.0.1"
 
-RCC_URLS = {
-    "Windows": f"https://cdn.sema4.ai/rcc/releases/v{RCC_VERSION}/windows64/rcc.exe",
-    "Darwin": f"https://cdn.sema4.ai/rcc/releases/v{RCC_VERSION}/macos64/rcc",
-    "Linux": f"https://cdn.sema4.ai/rcc/releases/v{RCC_VERSION}/linux64/rcc",
-}
 
 CURDIR = Path(__file__).parent.absolute()
 
@@ -125,36 +120,50 @@ def _resume_download(url: str, filename: str | Path, chunk_size: int = 1024):
             stream.write(chunk)
 
 
-def _download_rcc(system: Optional[str] = None, target: Optional[str] = None):
+def _download_rcc():
     """
     Downloads RCC in the place where the action server expects it.
     """
     import stat
     import urllib.request
 
-    if target:
-        rcc_path = Path(target)
+    if sys.platform == "win32":
+        rcc_path = (
+            CURDIR
+            / "src"
+            / "sema4ai"
+            / "action_server"
+            / "bin"
+            / f"rcc-{RCC_VERSION}.exe"
+        )
     else:
-        if sys.platform == "win32":
-            rcc_path = (
-                CURDIR
-                / "src"
-                / "sema4ai"
-                / "action_server"
-                / "bin"
-                / f"rcc-{RCC_VERSION}.exe"
-            )
-        else:
-            rcc_path = (
-                CURDIR
-                / "src"
-                / "sema4ai"
-                / "action_server"
-                / "bin"
-                / f"rcc-{RCC_VERSION}"
-            )
+        rcc_path = (
+            CURDIR / "src" / "sema4ai" / "action_server" / "bin" / f"rcc-{RCC_VERSION}"
+        )
 
-    rcc_url = RCC_URLS[system or platform.system()]
+    machine = platform.machine()
+    is_64 = not machine or "64" in machine
+
+    if sys.platform == "win32":
+        if is_64:
+            relative_path = "/windows64/rcc.exe"
+        else:
+            raise RuntimeError("Unsupported platform (windows 32 bits)")
+
+    elif sys.platform == "darwin":
+        if machine == "arm64":
+            relative_path = "/macos-arm64/rcc"
+        else:
+            relative_path = "/macos64/rcc"
+
+    else:
+        if is_64:
+            relative_path = "/linux64/rcc"
+        else:
+            relative_path = "/linux32/rcc"
+
+    prefix = f"https://cdn.sema4.ai/rcc/releases/v{RCC_VERSION}"
+    rcc_url = prefix + relative_path
 
     print(f"Downloading '{rcc_url}' to '{rcc_path}'")
     return _download_with_resume(rcc_url, rcc_path)

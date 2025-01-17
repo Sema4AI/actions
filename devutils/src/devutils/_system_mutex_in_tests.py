@@ -342,10 +342,10 @@ def timed_acquire_mutex(
         Should only be False if this mutex is expected to be released in
         a different thread.
     """
-    finish_at = time.time() + timeout
+    finish_at = time.monotonic() + timeout
     logged = False
     while True:
-        last_attempt = time.time() >= finish_at
+        last_attempt = time.monotonic() >= finish_at
         mutex = SystemMutex(
             mutex_name,
             check_reentrant=check_reentrant,

@@ -763,11 +763,12 @@ def _make_import_migrate_or_start(
     )
     from sema4ai.action_server.migrations import MigrationStatus
 
+    from ._models import Run, RunStatus, run_status_to_str
     from ._robo_utils.system_mutex import SystemMutex
     from ._runs_state_cache import use_runs_state_ctx
 
     timeout = 3
-    timeout_at = time.time() + timeout
+    timeout_at = time.monotonic() + timeout
     settings: "Settings" = setup_info.settings
 
     shown_first_message = False
@@ -796,7 +797,7 @@ def _make_import_migrate_or_start(
         log.info("Waiting for it to exit...")
         time.sleep(0.3)
 
-        timed_out = time.time() > timeout_at
+        timed_out = time.monotonic() > timeout_at
         if timed_out:
             log.critical(
                 "\nAction server not started (timed out waiting for mutex to be released).",
@@ -904,6 +905,27 @@ information from this datadir.
                     )
                     if code != 0:
                         return code
+
+                # Ok, we're starting the server. At this point, if there are any
+                # runs in the `not_run` state, or in the `running` state, we should
+                # mark them as cancelled.
+
+                runs_to_cancel = db.all(
+                    Run,
+                    where="status IN (?, ?)",
+                    values=[RunStatus.NOT_RUN, RunStatus.RUNNING],
+                )
+                if runs_to_cancel:
+                    with db.transaction():
+                        for run in runs_to_cancel:
+                            current_status_str = run_status_to_str(run.status)
+                            if not run.error_message:
+                                run.error_message = f"Run marked as cancelled in Action Server Start (when the Action Server was last shutdown its state was: '{current_status_str}')"
+                                log.warning(
+                                    f"Run {run.id} marked as cancelled in Action Server Start (when the Action Server was last shutdown its state was: '{current_status_str}')"
+                                )
+                            run.status = RunStatus.CANCELLED
+                            db.update(run, "status", "error_message")
 
                 with use_runs_state_ctx(db):
                     from ._server import start_server

@@ -10,6 +10,7 @@ name: Action Server Tests
     - .github/workflows/action_server_tests.yml
     - devutils/**
     - actions/**
+    - sema4ai-http-helper/**
   pull_request:
     branches:
     - master
@@ -18,6 +19,7 @@ name: Action Server Tests
     - .github/workflows/action_server_tests.yml
     - devutils/**
     - actions/**
+    - sema4ai-http-helper/**
 defaults:
   run:
     working-directory: ./action_server

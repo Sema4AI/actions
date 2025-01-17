@@ -1,6 +1,8 @@
 package main
 
 import (
+	"archive/zip"
+	"bytes"
 	"embed"
 	"fmt"
 	"io"
@@ -22,6 +24,8 @@ var content embed.FS
 const ACTION_SERVER_LATEST_BASE_URL = "https://cdn.sema4.ai/action-server/releases/latest/"
 const VERSION_LATEST_URL = ACTION_SERVER_LATEST_BASE_URL + "version.txt"
 
+var debugGoWrapper = os.Getenv("SEMA4AI_ACTION_SERVER_GO_WRAPPER_DEBUG") == "1"
+
 type ColorType struct{}
 
 func (ct *ColorType) Bold(str string) string {
@@ -35,6 +39,9 @@ func (ct *ColorType) Green(str string) string {
 }
 
 func getLatestVersion() (string, error) {
+	if debugGoWrapper {
+		fmt.Fprintf(os.Stderr, "Getting latest version from %s\n", VERSION_LATEST_URL)
+	}
 	// Get the data from the URL
 	versionResponse, err := http.Get(VERSION_LATEST_URL)
 	if err != nil {
@@ -74,8 +81,15 @@ func checkAvailableUpdate(version string) {
 			actionOS = "linux64"
 			actionExe = "action-server"
 		case "darwin":
-			actionOS = "macos64"
 			actionExe = "action-server"
+			switch runtime.GOARCH {
+			case "arm64":
+				actionOS = "macos-arm64"
+			case "amd64":
+				actionOS = "macos64"
+			default:
+				fmt.Printf("Unknown architecture: %s\n", runtime.GOARCH)
+			}
 		default:
 			fmt.Fprintf(os.Stderr, "Unsupported operating system\n")
 			os.Exit(1)
@@ -92,37 +106,70 @@ func checkAvailableUpdate(version string) {
 	}
 }
 
-func copyFiles(src, dest string) error {
-	files, err := content.ReadDir(src)
+func expandAssets(src, dest string) error {
+	// Read the zip file from the embedded filesystem
+	zipPath := fmt.Sprintf("%s/assets.zip", src)
+	if debugGoWrapper {
+		fmt.Fprintf(os.Stderr, "Expanding assets from %s to %s\n", zipPath, dest)
+	}
+	zipContent, err := content.ReadFile(zipPath)
 	if err != nil {
 		return err
 	}
 
-	for _, file := range files {
-		// srcPath can't be constructed with filepath.Join because embed needs `/` as sep even on Windows
-		srcPath := fmt.Sprintf("%s/%s", src, file.Name())
-		destPath := filepath.Join(dest, file.Name())
+	// Create a reader for the zip content
+	zipReader, err := zip.NewReader(bytes.NewReader(zipContent), int64(len(zipContent)))
+	if err != nil {
+		return err
+	}
 
-		if file.IsDir() {
-			err := copyFiles(srcPath, destPath)
-			if err != nil {
-				return err
-			}
-		} else {
-			fileContent, err := content.ReadFile(srcPath)
-			if err != nil {
-				return err
-			}
+	// Extract each file from the zip
+	for _, file := range zipReader.File {
+		if strings.Contains(file.Name, "..") {
+			// This is a security check to avoid directory traversal attacks (CodeQL: go/zipslip)
+			panic(fmt.Sprintf("Error: found '..' in file name %s (in embedded zip assets)\n", file.Name))
+		}
+		destPath := filepath.Join(dest, file.Name)
 
-			err = os.MkdirAll(filepath.Dir(destPath), 0755)
+		if file.FileInfo().IsDir() {
+			err := os.MkdirAll(destPath, 0755)
 			if err != nil {
 				return err
 			}
+			continue
+		}
 
-			err = os.WriteFile(destPath, fileContent, 0755)
-			if err != nil {
-				return err
-			}
+		// Create destination directory if it doesn't exist
+		err := os.MkdirAll(filepath.Dir(destPath), 0755)
+		if err != nil {
+			return err
+		}
+
+		// Open the file from the zip
+		rc, err := file.Open()
+		if err != nil {
+			return err
+		}
+
+		// Create the destination file
+		destFile, err := os.Create(destPath)
+		if err != nil {
+			rc.Close()
+			return err
+		}
+
+		// Copy the contents
+		_, err = io.Copy(destFile, rc)
+		rc.Close()
+		destFile.Close()
+		if err != nil {
+			return err
+		}
+
+		// Set the file permissions
+		err = os.Chmod(destPath, 0755)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -130,6 +177,10 @@ func copyFiles(src, dest string) error {
 }
 
 func main() {
+	if debugGoWrapper {
+		fmt.Fprintf(os.Stderr, "Debug mode enabled (SEMA4AI_ACTION_SERVER_GO_WRAPPER_DEBUG=1)\n")
+	}
+
 	var actionServerPath string
 	var executablePath string
 
@@ -166,6 +217,11 @@ func main() {
 		os.Exit(1)
 	}
 
+	if debugGoWrapper {
+		fmt.Fprintf(os.Stderr, "actionServerPath: %s\n", actionServerPath)
+		fmt.Fprintf(os.Stderr, "executablePath: %s\n", executablePath)
+	}
+
 	// If the folder doesn't exist already, we create it and copy all files
 	_, err = os.Stat(actionServerPath)
 	if os.IsNotExist(err) {
@@ -175,10 +231,14 @@ func main() {
 			os.Exit(1)
 		}
 
-		err = copyFiles("assets", actionServerPath)
+		err = expandAssets("assets", actionServerPath)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error copying files: %s\n", err)
+			fmt.Fprintf(os.Stderr, "Error extracting the zip file with the assets: %s\n", err)
 			os.Exit(1)
+		}
+	} else {
+		if debugGoWrapper {
+			fmt.Fprintf(os.Stderr, "Skipping asset expansion (actionServerPath already exists: %s)\n", actionServerPath)
 		}
 	}
 

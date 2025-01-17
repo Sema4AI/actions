@@ -4,7 +4,6 @@ import sys
 from concurrent.futures import Future, TimeoutError
 from contextlib import contextmanager
 from dataclasses import dataclass
-from functools import partial
 from pathlib import Path
 from typing import Iterator
 
@@ -147,9 +146,9 @@ def _create_run(
         relative_artifacts_dir="rel-artifacts-dir",
     )
     with actions_process_pool.obtain_process_for_action(action) as process_handle:
-        fut: Future[int] = run_in_thread(
-            partial(
-                process_handle.run_action,
+
+        def _run_action():
+            return process_handle.run_action(
                 run,
                 action_package,
                 action,
@@ -161,7 +160,8 @@ def _create_run(
                 dict(request.cookies),
                 actions_process_pool._reuse_processes,
             )
-        )
+
+        fut: Future[int] = run_in_thread(_run_action)
         yield _RunInfo(
             future=fut,
             input_json=input_json,

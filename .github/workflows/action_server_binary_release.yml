@@ -6,7 +6,7 @@ on:
 
   push:
     # branches:
-    #   - wip2
+    #   - macos_arm64
     tags:
       - "sema4ai-action_server-*"
 
@@ -20,7 +20,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, windows-2019, macos-13]
+        # Important: Changing os requires updating the related references in this yml.
+        os: [
+            ubuntu-20.04,
+            windows-2019,
+            macos-13, # used for the x86_64 binary
+            macos-15, # used for the arm64 binary
+          ]
     steps:
       - uses: actions/checkout@v4
 
@@ -77,32 +83,21 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ${{ runner.os }}-binaries
+          name: ${{ matrix.os }}-binaries
           path: "action_server/build-binary/build/*"
 
       # Having a separate artifact for version.txt helps downstream workflows
       - name: Get version
-        if: matrix.os == 'ubuntu-20.04'
         run: |
           poetry version | awk '{print $2}' > version.txt
       - uses: actions/upload-artifact@v4
-        if: matrix.os == 'ubuntu-20.04'
+        continue-on-error: true # Continue on error because only the first upload will succeed (the other jobs will fail to upload the same file, but that's ok)
         with:
           name: action-server-version
           path: "action_server/version.txt"
 
-      - name: Copy assets [Linux]
-        if: matrix.os == 'ubuntu-20.04'
-        run: |
-          cp -R build-binary/build/x86_64-unknown-linux-gnu/release/install/* go-wrapper/assets
-      - name: Copy assets [Mac]
-        if: matrix.os == 'macos-13'
-        run: |
-          cp -R build-binary/build/x86_64-apple-darwin/release/install/* go-wrapper/assets
-      - name: Copy assets [Windows]
-        if: matrix.os == 'windows-2019'
-        run: |
-          xcopy /e /h /i build-binary\\build\\x86_64-pc-windows-msvc\\release\\install go-wrapper\\assets
+      - name: Zip assets
+        run: inv zip-go-wrapper-assets
 
       - uses: actions/download-artifact@v4
         with:
@@ -116,7 +111,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ${{ runner.os }}-action-server-unsigned
+          name: ${{ matrix.os }}-action-server-unsigned
           path: "action_server/go-wrapper/action-server-unsigned"
 
   sign-macos:
@@ -127,14 +122,21 @@ jobs:
     defaults:
       run:
         working-directory: ./action_server
-    runs-on: macos-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [
+            macos-13, # used for the x86_64 binary
+            macos-15, # used for the arm64 binary
+          ]
 
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/download-artifact@v4
         with:
-          name: macOS-action-server-unsigned
+          name: ${{ matrix.os }}-action-server-unsigned
           path: action_server/build
 
       - uses: actions/download-artifact@v4
@@ -177,7 +179,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: action-server-signed-macos
+          name: action-server-signed-${{ matrix.os }}
           path: action_server/build/action-server
 
   sign-windows:
@@ -186,14 +188,18 @@ jobs:
     defaults:
       run:
         working-directory: ./action_server
-    runs-on: windows-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [windows-2019]
 
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/download-artifact@v4
         with:
-          name: Windows-action-server-unsigned
+          name: ${{ matrix.os }}-action-server-unsigned
           path: action_server/build
 
       - name: Action Server Signing [Windows]
@@ -245,11 +251,15 @@ jobs:
           path: action_server/build/windows64/
       - uses: actions/download-artifact@v4
         with:
-          name: action-server-signed-macos
+          name: action-server-signed-macos-13
           path: action_server/build/macos64/
       - uses: actions/download-artifact@v4
         with:
-          name: Linux-action-server-unsigned
+          name: action-server-signed-macos-15
+          path: action_server/build/macos-arm64/
+      - uses: actions/download-artifact@v4
+        with:
+          name: ubuntu-20.04-action-server-unsigned
           path: action_server/build/linux64/
       - uses: actions/download-artifact@v4
         with:
@@ -264,6 +274,7 @@ jobs:
           mv build/linux64/action-server-unsigned build/linux64/action-server
           mv build/version.txt s3-drop/
           mv build/macos64 s3-drop/
+          mv build/macos-arm64 s3-drop/
           mv build/linux64 s3-drop/
           mv build/windows64 s3-drop/
           ls -l s3-drop/
@@ -289,6 +300,7 @@ jobs:
             aws s3 cp s3-drop/version.txt $S3_BASE_URL/version.txt --cache-control max-age=120 --content-type "text/plain"
             aws s3 cp s3-drop/windows64/action-server.exe $S3_BASE_URL/windows64/action-server.exe --cache-control max-age=120 --content-type "application/octet-stream"
             aws s3 cp s3-drop/macos64/action-server $S3_BASE_URL/macos64/action-server --cache-control max-age=120 --content-type "application/octet-stream"
+            aws s3 cp s3-drop/macos-arm64/action-server $S3_BASE_URL/macos-arm64/action-server --cache-control max-age=120 --content-type "application/octet-stream"
             aws s3 cp s3-drop/linux64/action-server $S3_BASE_URL/linux64/action-server --cache-control max-age=120 --content-type "application/octet-stream"
           fi
 
@@ -367,11 +379,15 @@ jobs:
           path: windows64/
       - uses: actions/download-artifact@v4
         with:
-          name: action-server-signed-macos
+          name: action-server-signed-macos-13
           path: macos64/
       - uses: actions/download-artifact@v4
         with:
-          name: Linux-action-server-unsigned
+          name: action-server-signed-macos-15
+          path: macos-arm64/
+      - uses: actions/download-artifact@v4
+        with:
+          name: ubuntu-20.04-action-server-unsigned
           path: linux64/
       - name: Rename Linux binary
         run: mv linux64/action-server-unsigned linux64/action-server
@@ -392,6 +408,14 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: ./macos64/action-server
           asset_name: $tag-macos64
+          tag: ${{ github.ref }}
+          overwrite: true
+      - name: Upload MacOS arm binary
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./macos-arm64/action-server
+          asset_name: $tag-macos-arm64
           tag: ${{ github.ref }}
           overwrite: true
       - name: Upload Windows binary

@@ -51,7 +51,7 @@ def data_server_cli() -> DataServerCli:
     from sema4ai_http import DownloadStatus, download_with_resume
 
     # urls are something as:
-    # Mac - https://cdn.sema4.ai/data-server-cli/beta/v0.0.3/macos64/data-server-cli
+    # Mac - https://cdn.sema4.ai/data-server-cli/beta/v0.0.3/macos_arm64/data-server-cli
     # Win - https://cdn.sema4.ai/data-server-cli/beta/v0.0.3/windows64/data-server-cli.exe
     # Linux - https://cdn.sema4.ai/data-server-cli/beta/v0.0.3/linux64/data-server-cli
     # Latest released version: https://cdn.sema4.ai/data-server-cli/beta/v0.0.3/version.txt

@@ -83,12 +83,12 @@ def test_system_mutex():
             f"  get_tid(): {threading.get_ident()}\n"
         )
 
-    initial_time = time.time()
+    initial_time = time.monotonic()
     with timed_acquire_mutex(
         mutex_name, check_reentrant=False, raise_error_on_timeout=True
     ):  # The current mutex will be released in a thread, so, check_reentrant=False.
         assert released_mutex[0], "Error: entered before mutex was released!"
-        acquired_time = time.time()
+        acquired_time = time.monotonic()
 
         # At this point the lock is acquired (and it was done in this thread).
         # So, check that we get the error saying that it's not possible to get

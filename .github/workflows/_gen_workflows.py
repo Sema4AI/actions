@@ -21,7 +21,12 @@ def collect_deps_pyprojects(root_pyproject: Path, found=None) -> Iterator[Path]:
         pass  # Ignore if it's not there.
     for key in dependencies:
         if key.startswith("sema4ai-"):
-            dep_name = key[len("sema4ai-") :].replace("-", "_")
+            if key == "sema4ai-data":
+                continue
+            if key == "sema4ai-http-helper":
+                dep_name = key
+            else:
+                dep_name = key[len("sema4ai-") :].replace("-", "_")
             dep_pyproject = root_pyproject.parent.parent / dep_name / "pyproject.toml"
             assert dep_pyproject.exists(), f"Expected {dep_pyproject} to exist."
             if dep_pyproject not in found:
@@ -301,6 +306,12 @@ class ActionsTests(BaseTests):
     require_node = True
 
 
+class CommonTests(BaseTests):
+    name = "Common Tests"
+    target = "common_tests.yml"
+    project_name = "common"
+
+
 class HttpHelperTests(BaseTests):
     name = "HTTP Helper Tests"
     target = "http_helper_tests.yml"
@@ -311,12 +322,143 @@ TEST_TARGETS = [
     ActionServerTests(),
     ActionsTests(),
     HttpHelperTests(),
+    CommonTests(),
 ]
 
 
 def main():
     for t in TEST_TARGETS:
         t.generate()
+
+
+def generate_dependabot_config():
+    """
+    We want to generate a dependabot yaml that's roughly as what's below, but
+    we want to define `directories` instead of `directory` where the directories
+    has the paths that have the files that need to be targeted.
+
+    For:
+    - "gomod" this is any file with a `go.mod` file
+    - "pip" this is any file with a `pyproject.toml` file.
+    - "github-actions" this is any file with a `workflow` file.
+    - "npm" this is any file with a `package.json` file.
+
+    Template yaml is below (note: in the code we must actually create a python dict and then dump it as yaml)
+
+    # See: https://docs.github.com/en/code-security/dependabot/working-with-dependabot/dependabot-options-reference
+
+    --- Template yaml ---
+    version: 2
+    updates:
+    - package-ecosystem: "gomod"
+        directory: "/"
+        schedule:
+        interval: "daily" # Options: "daily", "weekly", "monthly"
+        allow:
+        - dependency-type: "all" # Allows updates for all types of dependencies (direct and indirect)
+        # Disable all pull requests (we just want notifications)
+        open-pull-requests-limit: 0
+
+    # Enable version updates for GitHub Actions
+    - package-ecosystem: "github-actions"
+        # Workflow files stored in the default location of `.github/workflows`
+        # You don't need to specify `/.github/workflows` for `directory`. You can use `directory: "/"`.
+        directory: "/"
+        schedule:
+        interval: "daily"
+        # Disable all pull requests (we just want notifications)
+        open-pull-requests-limit: 0
+
+    - package-ecosystem: "pip"
+        directory: "/"
+        schedule:
+        interval: "daily" # Options: "daily", "weekly", "monthly"
+        allow:
+        - dependency-type: "all" # Allows updates for all types of dependencies (direct and indirect)
+        commit-message:
+        prefix: "deps" # Prefix to add to the commit message
+        # Disable all pull requests (we just want notifications)
+        open-pull-requests-limit: 0
+
+    # Enable version updates for npm
+    - package-ecosystem: "npm"
+        # Look for `package.json` and `lock` files in the `root` directory
+        directory: "/"
+        schedule:
+        interval: "daily"
+        # Disable all pull requests (we just want notifications)
+        open-pull-requests-limit: 0
+    """
+    """Generate dependabot.yml configuration based on repository structure."""
+    from pathlib import Path
+
+    root = CURDIR.parent.parent
+
+    # Find all relevant files
+    go_mod_dirs = {str(f.parent.relative_to(root)) for f in root.rglob("go.mod")}
+    pyproject_dirs = {
+        str(f.parent.relative_to(root))
+        for f in root.rglob("pyproject.toml")
+        if "/tests/" not in f.as_posix()
+    }
+    package_json_dirs = {
+        str(f.parent.relative_to(root))
+        for f in root.rglob("package.json")
+        if "node_modules" not in str(f)
+    }
+
+    # GitHub Actions is always in .github/workflows
+    github_actions_dirs = {"/"}  # Root directory contains .github/workflows
+
+    # Base configuration
+    config = {"version": 2, "updates": []}
+
+    # Helper to create ecosystem config
+    def create_ecosystem_config(ecosystem, directories):
+        configs = [
+            {
+                "package-ecosystem": ecosystem,
+                "directories": sorted(
+                    [
+                        f"/{Path(directory).as_posix()}" if directory != "/" else "/"
+                        for directory in directories
+                    ]
+                ),
+                "schedule": {"interval": "daily"},
+                "open-pull-requests-limit": 0,  # Only notifications, no PRs
+                "allow": [{"dependency-type": "all"}],
+            }
+        ]
+
+        return configs
+
+    # Add configurations for each ecosystem
+    if go_mod_dirs:
+        config["updates"].extend(create_ecosystem_config("gomod", go_mod_dirs))
+
+    if pyproject_dirs:
+        config["updates"].extend(create_ecosystem_config("pip", pyproject_dirs))
+
+    if package_json_dirs:
+        config["updates"].extend(create_ecosystem_config("npm", package_json_dirs))
+
+    # Always add GitHub Actions
+    config["updates"].extend(
+        create_ecosystem_config("github-actions", github_actions_dirs)
+    )
+
+    # Write the configuration file
+    dependabot_file = root / ".github" / "dependabot.yml"
+    dependabot_file.parent.mkdir(exist_ok=True)
+
+    contents = yaml.safe_dump(config, sort_keys=False)
+    print(f"Writing dependabot config to {dependabot_file}")
+
+    dependabot_file.write_text(
+        f"""# Note: auto-generated by `_gen_workflows.py`
+{contents}""",
+        encoding="utf-8",
+    )
 
 
 def load_curr():
@@ -333,3 +475,4 @@ def load_curr():
 if __name__ == "__main__":
     # load_curr()
     main()
+    generate_dependabot_config()

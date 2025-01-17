@@ -32,7 +32,7 @@ def _fix_file_info(info_json):
 
 def _sort_datasources_in_data(data):
     data["datasources"] = sorted(
-        data["datasources"], key=lambda x: (x["name"], x["defined-at"]["file"])
+        data["datasources"], key=lambda x: (x["name"], x["defined_at"]["file"])
     )
 
 

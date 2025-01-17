@@ -8,12 +8,7 @@ from typing import Optional
 log = logging.getLogger(__name__)
 
 # Note: also referenced in action_server/build.py
-RCC_VERSION = "18.3.0"
-RCC_URLS = {
-    "Windows": f"https://cdn.sema4.ai/rcc/releases/v{RCC_VERSION}/windows64/rcc.exe",
-    "Darwin": f"https://cdn.sema4.ai/rcc/releases/v{RCC_VERSION}/macos64/rcc",
-    "Linux": f"https://cdn.sema4.ai/rcc/releases/v{RCC_VERSION}/linux64/rcc",
-}
+RCC_VERSION = "19.0.1"
 
 
 def get_default_rcc_location() -> Path:
@@ -26,7 +21,6 @@ def get_default_rcc_location() -> Path:
 
 
 def download_rcc(
-    system: Optional[str] = None,
     target: Optional[str] = None,
     force=False,
 ) -> Path:
@@ -47,7 +41,30 @@ def download_rcc(
 
     rcc_path.parent.mkdir(parents=True, exist_ok=True)
 
-    rcc_url = RCC_URLS[system or platform.system()]
+    machine = platform.machine()
+    is_64 = not machine or "64" in machine
+
+    if sys.platform == "win32":
+        if is_64:
+            relative_path = "/windows64/rcc.exe"
+        else:
+            raise RuntimeError("Unsupported platform (windows 32 bits)")
+
+    elif sys.platform == "darwin":
+        if machine == "arm64":
+            relative_path = "/macos-arm64/rcc"
+        else:
+            relative_path = "/macos64/rcc"
+
+    else:
+        if is_64:
+            relative_path = "/linux64/rcc"
+        else:
+            relative_path = "/linux32/rcc"
+
+    prefix = f"https://cdn.sema4.ai/rcc/releases/v{RCC_VERSION}"
+    rcc_url = prefix + relative_path
+
     return _download_with_resume(rcc_url, rcc_path)
 
 

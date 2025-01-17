@@ -9,6 +9,7 @@ name: Actions Tests
     - actions/**
     - .github/workflows/actions_tests.yml
     - devutils/**
+    - sema4ai-http-helper/**
   pull_request:
     branches:
     - master
@@ -16,6 +17,7 @@ name: Actions Tests
     - actions/**
     - .github/workflows/actions_tests.yml
     - devutils/**
+    - sema4ai-http-helper/**
 defaults:
   run:
     working-directory: ./actions
