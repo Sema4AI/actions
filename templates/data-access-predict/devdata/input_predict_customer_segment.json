@@ -1,0 +1,31 @@
+{
+    "inputs": [
+        {
+            "inputName": "input-1",
+            "inputValue": {
+                "gender": "Male",
+                "ever_married": "Yes",
+                "age": 40,
+                "graduated": "Yes"
+            }
+        }
+    ],
+    "metadata": {
+        "actionName": "predict_customer_segment",
+        "actionRelativePath": "data_actions.py",
+        "schemaDescription": [
+            "gender: string: Gender of the customer, one of \"Male\" or \"Female",
+            "ever_married: string: If the customer has ever been married, one of \"Yes\" or \"No\"",
+            "age: integer: Age of the customer at the time of segmentation, numeric value",
+            "graduated: string: If the customer has graduated, one of \"Yes\" or \"No\""
+        ],
+        "managedParamsSchemaDescription": {
+            "datasource": {
+                "type": "DataSource"
+            }
+        },
+        "inputFileVersion": "v3",
+        "kind": "predict",
+        "actionSignature": "predict/args: 'datasource: CustomerClassificationModelDataSource, gender: str, ever_married: str, age: int, graduated: str'"
+    }
+}

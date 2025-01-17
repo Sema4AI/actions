@@ -1,0 +1,42 @@
+{
+    "inputs": [
+        {
+            "inputName": "all-values",
+            "inputValue": {
+                "building_type": "Residential",
+                "square_footage": 20000,
+                "number_of_occupants": 1,
+                "appliances_used": 2,
+                "average_temperature": 10,
+                "day_of_week": "Weekday"
+            }
+        },
+        {
+            "inputName": "some-values",
+            "inputValue": {
+                "building_type": "Commercial",
+                "square_footage": 10000
+            }
+        }
+    ],
+    "metadata": {
+        "actionName": "predict_energy_consumption",
+        "actionRelativePath": "data_actions.py",
+        "schemaDescription": [
+            "building_type: string: Type of the building, must be one of these: \"Residential\", \"Industrial\" or \"Commercial\"",
+            "square_footage: string: Size of the property in square feet, numeric value like 15000",
+            "number_of_occupants: string: Number of occupants in the property, a numeric value like 2",
+            "appliances_used: string: Number of appliances in use in the property, a numeric value like 5",
+            "average_temperature: string: Average temperature during the period in Celsius, like 15",
+            "day_of_week: string: Defines if prediction is for weekday or weekend, possible values: \"Weekday\" or \"Weekend\""
+        ],
+        "managedParamsSchemaDescription": {
+            "datasource": {
+                "type": "DataSource"
+            }
+        },
+        "inputFileVersion": "v3",
+        "kind": "predict",
+        "actionSignature": "predict/args: 'datasource: EnergyConsumptionModelDataSource, building_type: Optional[str]=None, square_footage: Optional[int]=None, number_of_occupants: Optional[int]=None, appliances_used: Optional[int]=None, average_temperature: Optional[int]=None, day_of_week: Optional[str]=None'"
+    }
+}

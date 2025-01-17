@@ -1,0 +1,27 @@
+{
+    "inputs": [
+        {
+            "inputName": "input-1",
+            "inputValue": {
+                "type": "house",
+                "beds": 2
+            }
+        }
+    ],
+    "metadata": {
+        "actionName": "predict_house_price",
+        "actionRelativePath": "data_actions.py",
+        "schemaDescription": [
+            "type: string: Type of the property, one of \"house\" or \"unit\".",
+            "beds: integer: How many bedrooms the property has. Numeric value between 1-5."
+        ],
+        "managedParamsSchemaDescription": {
+            "datasource": {
+                "type": "DataSource"
+            }
+        },
+        "inputFileVersion": "v3",
+        "kind": "predict",
+        "actionSignature": "predict/args: 'datasource: Annotated[DataSource, HouseSalesModelDataSource | HouseSalesDataSource], type: str, beds: int'"
+    }
+}
