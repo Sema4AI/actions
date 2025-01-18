@@ -30,27 +30,6 @@ EnergyConsumptionModelDataSource = Annotated[
     ),
 ]
 
-FileCustomerDataSource = Annotated[
-    DataSource,
-    DataSourceSpec(
-        created_table="customer_classification",
-        file="files/customer_classification.csv",
-        engine="files",
-        description="Customer classification dataset.",
-    ),
-]
-
-CustomerClassificationModelDataSource = Annotated[
-    DataSource,
-    DataSourceSpec(
-        name="models",
-        model_name="customer_classification_model",
-        engine="prediction:lightwood",
-        description="Please provide a description for this model",
-        setup_sql="CREATE MODEL models.customer_classification_model FROM files (SELECT * FROM customer_classification) PREDICT Segmentation USING engine = 'lightwood';",
-    ),
-]
-
 HouseSalesDataSource = Annotated[
     DataSource,
     DataSourceSpec(

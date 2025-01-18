@@ -9,7 +9,7 @@ TIP! Try running predics in the SDK before publishing them to the agent!
 from typing import Optional
 from sema4ai.actions import Response
 from sema4ai.data import predict
-from data_sources import HouseSalesModelDataSource, CustomerClassificationModelDataSource, EnergyConsumptionModelDataSource
+from data_sources import HouseSalesModelDataSource, EnergyConsumptionModelDataSource
 
 @predict
 def predict_energy_consumption(
@@ -77,44 +77,6 @@ def predict_energy_consumption(
 
     # Finally we execute the query and return the result.
     result = datasource.query(base_query, params)
-    return Response(result=result.to_markdown())
-
-@predict
-def predict_customer_segment(
-    datasource: CustomerClassificationModelDataSource,
-    gender: str,
-    ever_married: str,
-    age: int,
-    graduated: str
-) -> Response[str]:
-    """
-    Predicts the customer segment with given parameters. Segments are denoted by letter A to D.
-
-    Args:
-        gender: Gender of the customer, one of "Male" or "Female
-        ever_married: If the customer has ever been married, one of "Yes" or "No"
-        age: Age of the customer at the time of segmentation, numeric value
-        graduated: If the customer has graduated, one of "Yes" or "No"
-
-    Returns:
-        The result of the query execution.
-    """
-    query = """
-    SELECT 
-        Segmentation, 
-        json_extract(Segmentation_explain, '$.confidence') AS confidence 
-    FROM 
-        `models`.customer_classification_model 
-    WHERE 
-        Gender = $gender 
-        AND Ever_Married = $ever_married 
-        AND Age = $age 
-        AND Graduated = $graduated
-    """
-
-    params = {'gender': gender,'ever_married': ever_married,'age': age,'graduated': graduated}
-
-    result = datasource.query(query, params)
     return Response(result=result.to_markdown())
 
 @predict
