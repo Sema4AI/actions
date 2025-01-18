@@ -22,6 +22,6 @@
         },
         "inputFileVersion": "v3",
         "kind": "predict",
-        "actionSignature": "predict/args: 'datasource: Annotated[DataSource, HouseSalesModelDataSource | HouseSalesDataSource], type: str, beds: int'"
+        "actionSignature": "predict/args: 'datasource: HouseSalesModelDataSource, type: str, beds: int'"
     }
 }

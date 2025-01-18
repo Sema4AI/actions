@@ -26,7 +26,13 @@ EnergyConsumptionModelDataSource = Annotated[
         model_name="energy_consumption_model",
         engine="prediction:lightwood",
         description="Please provide a description for this model",
-        setup_sql="CREATE MODEL models.energy_consumption_model FROM files (SELECT * FROM energy_consumption) PREDICT energy_consumption USING engine = 'lightwood';",
+        setup_sql="""
+            CREATE MODEL models.energy_consumption_model
+            FROM files
+            (SELECT * FROM energy_consumption) 
+            PREDICT energy_consumption 
+            USING engine = 'lightwood';
+        """,
     ),
 ]
 
@@ -47,6 +53,12 @@ HouseSalesModelDataSource = Annotated[
         model_name="house_sales_model",
         engine="prediction:lightwood",
         description="Please provide a description for this model",
-        setup_sql="CREATE MODEL models.house_sales_model FROM files (SELECT * FROM house_sales) PREDICT MA ORDER BY saledate GROUP BY bedrooms, type -- as the data is quarterly, look back two years to forecast the next one year WINDOW 8 HORIZON 4 -- use the statsforecast engine for this model USING engine = 'statsforecast';",
+        setup_sql="""
+            CREATE MODEL models.house_sales_model
+            FROM files
+            (SELECT * FROM house_sales) 
+            PREDICT MA ORDER BY saledate GROUP BY bedrooms, type -- as the data is quarterly, look back two years to forecast the next one year WINDOW 8 HORIZON 4 -- use the statsforecast engine for this model
+            USING engine = 'statsforecast';
+        """,
     ),
 ]

@@ -7,7 +7,7 @@ TIP! Try running predics in the SDK before publishing them to the agent!
 """
 
 from typing import Optional
-from sema4ai.actions import Response
+from sema4ai.actions import Response, Table
 from sema4ai.data import predict
 from data_sources import HouseSalesModelDataSource, EnergyConsumptionModelDataSource
 
@@ -20,7 +20,7 @@ def predict_energy_consumption(
     appliances_used: Optional[int] = None,
     average_temperature: Optional[int] = None,
     day_of_week: Optional[str] = None
-) -> Response[str]:
+) -> Response[Table]:
     """
     Use linear regression to predict the energy consumption of a property based on given parameters. All parameters are optional - the prediction will be made based on provided values.
 
@@ -77,14 +77,14 @@ def predict_energy_consumption(
 
     # Finally we execute the query and return the result.
     result = datasource.query(base_query, params)
-    return Response(result=result.to_markdown())
+    return Response(result=result.to_table())
 
 @predict
 def predict_house_price(
     datasource: HouseSalesModelDataSource,
     type: str,
     beds: int
-) -> Response[str]:
+) -> Response[Table]:
     """
     Predicts the house price based on median values of properties per quarter.
 
@@ -114,4 +114,4 @@ def predict_house_price(
     params = {'type': type,'beds': beds}
 
     result = datasource.query(query, params)
-    return Response(result=result.to_markdown())
+    return Response(result=result.to_table())
