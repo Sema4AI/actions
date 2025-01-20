@@ -13,12 +13,9 @@
         "schemaDescription": [
             "country: string: Name of the country in english, for example \"France\""
         ],
-        "managedParamsSchemaDescription": {
-            "datasource": {
-                "type": "DataSource",
-                "description": "The customer datasource."
-            }
-        },
-        "inputFileVersion": "v2"
+        "managedParamsSchemaDescription": {},
+        "inputFileVersion": "v3",
+        "kind": "query",
+        "actionSignature": "query/args: 'country: str'"
     }
 }

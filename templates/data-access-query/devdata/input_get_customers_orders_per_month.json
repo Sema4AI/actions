@@ -25,12 +25,9 @@
         "schemaDescription": [
             "company_name: string: Company name or part of it like \"GermanSys\""
         ],
-        "managedParamsSchemaDescription": {
-            "datasource": {
-                "type": "DataSource",
-                "description": "The customer datasource."
-            }
-        },
-        "inputFileVersion": "v2"
+        "managedParamsSchemaDescription": {},
+        "inputFileVersion": "v3",
+        "kind": "query",
+        "actionSignature": "query/args: 'company_name: str'"
     }
 }

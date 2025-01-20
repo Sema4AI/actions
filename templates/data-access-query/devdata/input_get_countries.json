@@ -9,12 +9,9 @@
         "actionName": "get_countries",
         "actionRelativePath": "data_actions.py",
         "schemaDescription": [],
-        "managedParamsSchemaDescription": {
-            "datasource": {
-                "type": "DataSource",
-                "description": "The customer datasource."
-            }
-        },
-        "inputFileVersion": "v2"
+        "managedParamsSchemaDescription": {},
+        "inputFileVersion": "v3",
+        "kind": "query",
+        "actionSignature": "query/args: ''"
     }
 }
