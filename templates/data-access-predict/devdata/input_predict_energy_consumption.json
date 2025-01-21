@@ -3,19 +3,20 @@
         {
             "inputName": "all-values",
             "inputValue": {
-                "building_type": "Residential",
-                "square_footage": 20000,
-                "number_of_occupants": 1,
-                "appliances_used": 2,
-                "average_temperature": 10,
+                "building_type": "Commercial",
+                "square_footage": "20000",
+                "number_of_occupants": "2",
+                "appliances_used": "2",
+                "average_temperature": "10",
                 "day_of_week": "Weekday"
             }
         },
         {
-            "inputName": "some-values",
+            "inputName": "partial-values",
             "inputValue": {
-                "building_type": "Commercial",
-                "square_footage": 10000
+                "building_type": "Residential",
+                "square_footage": "5000",
+                "day_of_week": "Weekend"
             }
         }
     ],
@@ -30,13 +31,9 @@
             "average_temperature: string: Average temperature during the period in Celsius, like 15",
             "day_of_week: string: Defines if prediction is for weekday or weekend, possible values: \"Weekday\" or \"Weekend\""
         ],
-        "managedParamsSchemaDescription": {
-            "datasource": {
-                "type": "DataSource"
-            }
-        },
+        "managedParamsSchemaDescription": {},
         "inputFileVersion": "v3",
         "kind": "predict",
-        "actionSignature": "predict/args: 'datasource: EnergyConsumptionModelDataSource, building_type: Optional[str]=None, square_footage: Optional[int]=None, number_of_occupants: Optional[int]=None, appliances_used: Optional[int]=None, average_temperature: Optional[int]=None, day_of_week: Optional[str]=None'"
+        "actionSignature": "predict/args: 'building_type: Optional[str]=None, square_footage: Optional[int]=None, number_of_occupants: Optional[int]=None, appliances_used: Optional[int]=None, average_temperature: Optional[int]=None, day_of_week: Optional[str]=None'"
     }
 }

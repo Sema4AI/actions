@@ -13,7 +13,7 @@ https://sema4.ai/docs/solutions/data-access/models
 Dataset source: https://www.kaggle.com/datasets/kaushiksuresh147/customer-segmentation
 */
 
-SELECT * FROM files.customer_classification;
+SELECT * FROM files.customer_classification LIMIT 5;
 
 -- The model is created using the lightwood engine with the prediction target being Segmentation.
 CREATE MODEL models.customer_classification_model
@@ -33,3 +33,5 @@ AND Ever_Married = 'Yes'
 AND Age = 40
 AND Graduated = 'Yes';
 
+-- Retrain the model
+RETRAIN models.customer_classification_model;

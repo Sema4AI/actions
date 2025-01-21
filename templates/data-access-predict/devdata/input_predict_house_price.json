@@ -15,13 +15,9 @@
             "type: string: Type of the property, one of \"house\" or \"unit\".",
             "beds: integer: How many bedrooms the property has. Numeric value between 1-5."
         ],
-        "managedParamsSchemaDescription": {
-            "datasource": {
-                "type": "DataSource"
-            }
-        },
+        "managedParamsSchemaDescription": {},
         "inputFileVersion": "v3",
         "kind": "predict",
-        "actionSignature": "predict/args: 'datasource: HouseSalesModelDataSource, type: str, beds: int'"
+        "actionSignature": "predict/args: 'type: str, beds: int'"
     }
 }

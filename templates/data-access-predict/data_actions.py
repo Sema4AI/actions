@@ -8,12 +8,10 @@ TIP! Try running predics in the SDK before publishing them to the agent!
 
 from typing import Optional
 from sema4ai.actions import Response, Table
-from sema4ai.data import predict
-from data_sources import HouseSalesModelDataSource, EnergyConsumptionModelDataSource
+from sema4ai.data import predict, get_connection
 
 @predict
 def predict_energy_consumption(
-    datasource: EnergyConsumptionModelDataSource,
     building_type: Optional[str] = None,
     square_footage: Optional[int] = None,
     number_of_occupants: Optional[int] = None,
@@ -76,12 +74,11 @@ def predict_energy_consumption(
         base_query += " WHERE " + " AND ".join(conditions)
 
     # Finally we execute the query and return the result.
-    result = datasource.query(base_query, params)
+    result = get_connection().query(base_query, params)
     return Response(result=result.to_table())
 
 @predict
 def predict_house_price(
-    datasource: HouseSalesModelDataSource,
     type: str,
     beds: int
 ) -> Response[Table]:
@@ -113,5 +110,5 @@ def predict_house_price(
 
     params = {'type': type,'beds': beds}
 
-    result = datasource.query(query, params)
+    result = get_connection().query(query, params)
     return Response(result=result.to_table())
