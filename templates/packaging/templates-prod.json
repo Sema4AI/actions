@@ -20,6 +20,11 @@
             "id": "data-access-query",
             "name": "Data Access/Query",
             "desc": "Give agents access to various data sources using named queries."
+        },
+        {
+            "id": "data-access-predict",
+            "name": "Data Access/Predict",
+            "desc": "Train predictive models and expose predict actions to agents."
         }
     ]
 }
