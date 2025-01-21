@@ -9,9 +9,9 @@ Follow the full tutorial using this template in our [documentation](https://sema
 This example contains two complete example scenarios:
 
 1. **Linear Regression** using the energy consumption data
-2. **Classification** using the customer classification data
+2. **Time Series Forecasting** using the house price data
 
 And a third example for tutorial in the [tutorial.sql](tutorial.sql) file:
-3. **Time Series Forecasting** using the house price data
+1. **Classification** using the customer classification data
 
 👉 Check [Action Server](https://github.com/Sema4AI/actions/tree/master/action_server/docs) and [Actions](https://github.com/Sema4AI/actions/tree/master/actions/docs) docs for more information.
