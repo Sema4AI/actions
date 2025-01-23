@@ -55,7 +55,7 @@ Dataset source: https://www.kaggle.com/datasets/htagholdings/property-sales
 
 SELECT * FROM files.house_sales;
 
--- The model is created using the stats engine with the prediction target being median price in the period (MA).
+-- The model is created using the lightwood engine with the prediction target being median price in the period (MA).
 CREATE MODEL models.house_sales_model
 FROM files
 (SELECT * FROM house_sales)
@@ -65,10 +65,10 @@ GROUP BY bedrooms, type
 -- as the data is quarterly, look back two years to forecast the next one year
 WINDOW 8
 HORIZON 4
--- use the statsforecast engine for this model
-USING engine = 'statsforecast';
+USING engine = 'lightwood';
 
 DESCRIBE MODEL models.house_sales_model;
+
 DROP MODEL IF EXISTS models.house_sales_model;
 
 -- To use the model to predict the median price in the period (MA) for houses

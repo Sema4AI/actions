@@ -57,8 +57,12 @@ HouseSalesModelDataSource = Annotated[
             CREATE MODEL models.house_sales_model
             FROM files
             (SELECT * FROM house_sales) 
-            PREDICT MA ORDER BY saledate GROUP BY bedrooms, type -- as the data is quarterly, look back two years to forecast the next one year WINDOW 8 HORIZON 4 -- use the statsforecast engine for this model
-            USING engine = 'statsforecast';
+            PREDICT MA
+            ORDER BY saledate
+            GROUP BY bedrooms, type
+            WINDOW 8
+            HORIZON 4 
+            USING engine = 'lightwood';
         """,
     ),
 ]
