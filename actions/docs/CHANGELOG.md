@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Improved `sema4ai.actions.chat` to properly get the `thread_id` under different conditions (new versions of ACE and when the
+  action server is coupled directly with the agent server).
+
 ## 1.3.0 - 2024-12-30
 
 - Improve heuristic for detecting that a parameter is a data source so that docstrings are not required for data source parameters.
