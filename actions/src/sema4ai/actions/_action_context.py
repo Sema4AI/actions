@@ -97,11 +97,11 @@ class BaseContext:
                 {
                   'secrets': {'secret_name': 'secret_value'},
                   'invocation_context': {
-                    'workroom_base_url': str | None,
                     'agent_id': str | None,
                     'invoked_on_behalf_of_user_id': str | None,
                     'thread_id': str | None,
                     'tenant_id': str,
+                    'action_invocation_id': str,
                   },
                 }
 
@@ -298,6 +298,16 @@ class DataContext(BaseContext):
 
 
 class InvocationContext(BaseContext):
+    """
+    The invocation context should have a dict with the following keys:
+
+    "agent_id"
+    "invoked_on_behalf_of_user_id"
+    "thread_id"
+    "tenant_id"
+    "action_invocation_id"
+    """
+
     @classmethod
     def _header_name(cls) -> str:
         return "x-action-invocation-context"

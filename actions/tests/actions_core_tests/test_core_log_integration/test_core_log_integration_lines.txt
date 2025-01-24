@@ -3,11 +3,11 @@ SR: main_check_lines.py
     ST: Collect actions (line: 0)
     ET: PASS
     ST: entry_at_line_10 (line: 11)
-        SE: METHOD: RequestContexts.__init__ (line: 307)
+        SE: METHOD: RequestContexts.__init__ (line: 317)
             EA: _RequestImpl: request: <sema4ai.actions._request_impl._RequestImpl object at 0xXXXXXXXXX>
         EE: METHOD: PASS
-        SE: METHOD: RequestContexts.action_context (line: 322)
-            SE: IF_SCOPE: if self._action_context is None and self._request is not None (line: 323)
+        SE: METHOD: RequestContexts.action_context (line: 332)
+            SE: IF_SCOPE: if self._action_context is None and self._request is not None (line: 333)
                 SE: METHOD: BaseContext.from_request (line: 256)
                     EA: type: cls: <class 'sema4ai.actions._action_context.ActionContext'>
                     EA: _RequestImpl: request: <sema4ai.actions._request_impl._RequestImpl object at 0xXXXXXXXXX>
@@ -18,7 +18,7 @@ SR: main_check_lines.py
                     EE: IF_SCOPE: PASS
                 EE: METHOD: PASS
             EE: IF_SCOPE: PASS
-            R: NoneType: None (line: 327)
+            R: NoneType: None (line: 337)
         EE: METHOD: PASS
         SE: METHOD: entry_at_line_10 (line: 11)
             L: D: 'debug at line 11' (line: 12)

@@ -49,12 +49,14 @@ def test_new_list_templates(tmpdir) -> None:
 
     templates: list[dict[str, str]] = json.loads(output.stdout)
 
-    assert len(templates) == 4
-
-    assert templates[0].get("name") == "minimal"
-    assert templates[1].get("name") == "basic"
-    assert templates[2].get("name") == "advanced"
-    assert templates[3].get("name") == "data-access-query"
+    template_names = {template.get("name") for template in templates}
+    assert template_names == {
+        "advanced",
+        "basic",
+        "data-access-query",
+        "minimal",
+        "data-access-predict",
+    }
 
 
 def test_help(str_regression):

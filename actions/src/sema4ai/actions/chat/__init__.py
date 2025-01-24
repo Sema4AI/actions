@@ -1,12 +1,16 @@
 import logging
 import os
+import typing
 from functools import lru_cache
 from pathlib import Path
-from typing import Union
+from typing import Optional, Union
 
 from sema4ai.actions._protocols import JSONValue
 
 log = logging.getLogger(__name__)
+
+if typing.TYPE_CHECKING:
+    from ._client import _Client
 
 
 def _check_that_name_is_valid_in_filesystem(name: str):
@@ -52,46 +56,102 @@ def _check_that_name_is_valid_in_filesystem(name: str):
         raise ValueError(f"Name {name} cannot end in a space or dot.")
 
 
-def _get_client_and_thread_id():
-    from sema4ai.actions._action import get_current_action_context
+def _get_thread_id_from_action_context(action_context) -> str:
+    value = action_context.value
+    if not isinstance(value, dict):
+        raise RuntimeError(
+            "Action context value is not a dictionary, as such it's not possible to upload files!"
+        )
+
+    invocation_context = value.get("invocation_context")
+    if not invocation_context:
+        raise RuntimeError(
+            "No invocation context found in the action context, as such it's not possible to upload files!"
+        )
+    if not isinstance(invocation_context, dict):
+        raise RuntimeError(
+            "invocation_context is not a dictionary, as such it's not possible to upload files!"
+        )
+
+    thread_id = invocation_context.get("thread_id")
+    if not thread_id:
+        raise RuntimeError(
+            "No thread_id found in the invocation_context, as such it's not possible to upload files!"
+        )
+    if not isinstance(thread_id, str):
+        raise RuntimeError(
+            f"thread_id is not a string (found: {thread_id} ({type(thread_id)})), as such it's not possible to upload files!"
+        )
+    return thread_id
+
+
+def _get_thread_id_from_invocation_context(invocation_context_object) -> Optional[str]:
+    invocation_context = invocation_context_object.value
+    if not invocation_context:
+        return None
+    if not isinstance(invocation_context, dict):
+        raise RuntimeError(
+            "invocation_context is not a dictionary, as such it's not possible to upload files!"
+        )
+
+    # If we have an invocation context, we should always have a thread_id!
+    thread_id = invocation_context.get("thread_id")
+
+    if not thread_id:
+        raise RuntimeError(
+            "No thread_id found in the invocation_context, as such it's not possible to upload files!"
+        )
+    if not isinstance(thread_id, str):
+        raise RuntimeError(
+            f"thread_id is not a string (found: {thread_id} ({type(thread_id)})), as such it's not possible to upload files!"
+        )
+    return thread_id
+
+
+def _get_client_and_thread_id() -> tuple["_Client", str]:
+    from sema4ai.actions._action import get_current_requests_contexts
 
     from ._client import _Client
 
     client = _Client()
-    if not client.is_local_mode():
-        action_context = get_current_action_context()
-        if not action_context:
-            raise RuntimeError(
-                "No action context found, as such it's not possible to upload files!"
-            )
+    if client.is_local_mode():
+        # Ok, we're in local mode, so we don't need the thread_id!
+        return client, "local"
 
-        value = action_context.value
-        if not isinstance(value, dict):
-            raise RuntimeError(
-                "Action context value is not a dictionary, as such it's not possible to upload files!"
-            )
+    thread_id = None
+    request_contexts = get_current_requests_contexts()
+    if request_contexts is None:
+        raise RuntimeError(
+            "Unable to get the thread_id (no context available), as such it's not possible to upload files!"
+        )
 
-        invocation_context = value.get("invocation_context")
-        if not invocation_context:
-            raise RuntimeError(
-                "No invocation context found in the action context, as such it's not possible to upload files!"
-            )
-        if not isinstance(invocation_context, dict):
-            raise RuntimeError(
-                "invocation_context is not a dictionary, as such it's not possible to upload files!"
-            )
+    # Prefer invocation context.
+    if request_contexts.invocation_context:
+        thread_id = _get_thread_id_from_invocation_context(
+            request_contexts.invocation_context
+        )
 
-        thread_id = invocation_context.get("thread_id")
-        if not thread_id:
-            raise RuntimeError(
-                "No thread_id found in the invocation_context, as such it's not possible to upload files!"
-            )
-        if not isinstance(thread_id, str):
-            raise RuntimeError(
-                f"thread_id is not a string (found: {thread_id} ({type(thread_id)})), as such it's not possible to upload files!"
-            )
-    else:
-        thread_id = "local"  # Ok, we're in local mode, so we don't need the thread_id!
+    if thread_id is None:
+        # Alternative use case when coupled directly with the
+        # agent server without a router to make the invocation/action context
+        # available.
+        request = request_contexts._request
+        if request:
+            thread_id = request.headers.get("x-invoked_for_thread_id")
+
+    if thread_id is None:
+        action_context = request_contexts.action_context
+        if action_context:
+            # Old use case (without separate thread_id in the action context)
+            thread_id = _get_thread_id_from_action_context(action_context)
+
+    if thread_id is None:
+        # Ok, unable to get the thread_id through any of the heuristics,
+        # let's raise an error.
+        raise RuntimeError(
+            "Unable to get the thread_id, as such it's not possible to upload files!"
+        )
+
     return client, thread_id
 
 
