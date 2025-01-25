@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.3.1 - 2025-01-25
+
 - Improved `sema4ai.actions.chat` to properly get the `thread_id` under different conditions (new versions of ACE and when the
   action server is coupled directly with the agent server).
 
