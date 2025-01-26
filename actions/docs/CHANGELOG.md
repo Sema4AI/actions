@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 1.3.2 - 2025-01-26
+
+- Properly passing "x-action-context" to files chat API.
+
 ## 1.3.1 - 2025-01-25
 
 - Improved `sema4ai.actions.chat` to properly get the `thread_id` under different conditions (new versions of ACE and when the
