@@ -45,7 +45,13 @@ files will be stored."""
         return self._is_local_mode
 
     def get_x_action_context(self) -> str:
-        return "{}"  # The value is the x-action-context to be used in the header
+        from sema4ai.actions._action import get_current_requests_contexts
+
+        request_contexts = get_current_requests_contexts()
+        if request_contexts is None or request_contexts.action_context is None:
+            return "{}"  # The value is the x-action-context to be used in the header
+
+        return request_contexts.action_context.initial_data
 
     def get_bytes(self, filename: str, thread_id: str) -> bytes:
         import os.path
