@@ -70,7 +70,7 @@ files will be stored."""
             return p.read_bytes()
         else:
             # In this case we have the following protocol to follow: a GET request
-            # is done to the server (to <_url>/threads) sending the `x-action-context`
+            # is done to the server (to <_url>/threads) sending the `x-action-invocation-context`
             # header with a body with a json with {"file_name": <filename>}. The server
             # will then respond with a body with:
             # response.body {

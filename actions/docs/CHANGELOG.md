@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 1.3.3 - 2025-01-27
+
+- Passing "x-action-invocation-context" instead of "x-action-context".
+- Overwriting file if that's what the agent server requested.
+
 ## 1.3.2 - 2025-01-26
 
 - Properly passing "x-action-context" to files chat API.

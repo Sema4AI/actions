@@ -20,8 +20,8 @@ class _SimpleFileServer(BaseHTTPRequestHandler):
         if body:
             self.wfile.write(body.encode("utf-8"))
 
-    def _check_action_context_header(self):
-        return "x-action-context" in self.headers
+    def _check_action_invocation_context_header(self):
+        return "x-action-invocation-context" in self.headers
 
     def do_GET(self):
         from urllib.parse import parse_qs
@@ -44,11 +44,13 @@ class _SimpleFileServer(BaseHTTPRequestHandler):
                 )
                 return
 
-            if not self._check_action_context_header():
+            if not self._check_action_invocation_context_header():
                 self._send_response(
                     400,
                     headers={"Content-Type": "application/json"},
-                    body=json.dumps({"error": "Missing x-action-context header"}),
+                    body=json.dumps(
+                        {"error": "Missing x-action-invocation-context header"}
+                    ),
                 )
                 return
 
@@ -116,11 +118,13 @@ class _SimpleFileServer(BaseHTTPRequestHandler):
             self._send_response(200, headers={"Content-Type": "application/json"})
             return
 
-        if not self._check_action_context_header():
+        if not self._check_action_invocation_context_header():
             self._send_response(
                 400,
                 headers={"Content-Type": "application/json"},
-                body=json.dumps({"error": "Missing x-action-context header"}),
+                body=json.dumps(
+                    {"error": "Missing x-action-invocation-context header"}
+                ),
             )
             return
 
