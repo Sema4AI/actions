@@ -44,14 +44,14 @@ files will be stored."""
     def is_local_mode(self) -> bool:
         return self._is_local_mode
 
-    def get_x_action_context(self) -> str:
+    def get_x_action_invocation_context(self) -> str:
         from sema4ai.actions._action import get_current_requests_contexts
 
         request_contexts = get_current_requests_contexts()
-        if request_contexts is None or request_contexts.action_context is None:
-            return "{}"  # The value is the x-action-context to be used in the header
+        if request_contexts is None or request_contexts.invocation_context is None:
+            return "{}"  # The value is the x-action-invocation-context to be used in the header
 
-        return request_contexts.action_context.initial_data
+        return request_contexts.invocation_context.initial_data
 
     def get_bytes(self, filename: str, thread_id: str) -> bytes:
         import os.path
@@ -85,7 +85,7 @@ files will be stored."""
             url = f"{self._url}/threads/{thread_id}/file-by-ref"
             headers = {
                 "Content-Type": "application/json",
-                "x-action-context": self.get_x_action_context(),
+                "x-action-invocation-context": self.get_x_action_invocation_context(),
             }
 
             # Send the initial request
@@ -148,15 +148,13 @@ files will be stored."""
                 self._local_path is not None
             ), "Expected local_path to be set when in local mode."
             path = Path(self._local_path) / filename
-            if path.exists():
-                raise IOError(f"File {filename} already exists.")
 
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(content)
             file_id = filename
         else:
             # In this case we have the following protocol to follow: a POST request
-            # is done to the server (to <_url>/threads/:threadId/files/request-upload) sending the `x-action-context`
+            # is done to the server (to <_url>/threads/:threadId/files/request-upload) sending the `x-action-invocation-context`
             # header with a body with a json with {"file_name": <filename>}. The server
             # will then respond with a body with:
             # response.body {
@@ -175,7 +173,7 @@ files will be stored."""
             url = f"{self._url}/threads/{thread_id}/files/request-upload"
             headers = {
                 "Content-Type": "application/json",
-                "x-action-context": self.get_x_action_context(),
+                "x-action-invocation-context": self.get_x_action_invocation_context(),
             }
             data = json.dumps(
                 {"file_name": filename, "file_size": len(content)}
@@ -217,7 +215,7 @@ files will be stored."""
             url = f"{self._url}/threads/{thread_id}/files/confirm-upload"
             headers = {
                 "Content-Type": "application/json",
-                "x-action-context": self.get_x_action_context(),
+                "x-action-invocation-context": self.get_x_action_invocation_context(),
             }
             data = json.dumps({"file_ref": file_ref, "file_id": file_id}).encode(
                 "utf-8"
