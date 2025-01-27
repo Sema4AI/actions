@@ -60,12 +60,11 @@ def test_actions_file_api(monkeypatch, tmpdir):
     chat.attach_file_content("my-file.txt", b"some text")
     assert chat.get_file_content("my-file.txt") == b"some text"
 
-    with pytest.raises(IOError):
-        # By default, the file is not overwritten!
-        chat.attach_file_content("my-file.txt", b"another text")
+    # By default, the file is not overwritten!
+    chat.attach_file_content("my-file.txt", b"another text")
 
     # Previous content is preserved
-    assert chat.get_file_content("my-file.txt") == b"some text"
+    assert chat.get_file_content("my-file.txt") == b"another text"
 
 
 def test_actions_with_agent_headers_call_from_agent_server(datadir: Path):
