@@ -34,3 +34,33 @@ ORDER BY 1;
 - Group by month - we want sales aggregated by month
 - Order the months so that earliest is first
 */
+
+
+-- NATIVE QUERY on Postgres
+-- Get all customers in a country
+SELECT * FROM public_demo (
+    SELECT 
+        country,
+        jsonb_build_object(
+            'total_customers', COUNT(*),
+            'account_managers', array_agg(DISTINCT account_manager),
+            'companies', string_agg(company_name, ', ' ORDER BY company_name)
+        ) as country_summary,
+        array_agg(customer_id) as customer_ids
+    FROM demo_customers
+    WHERE country ILIKE '%fra%'  -- Case-insensitive pattern matching
+    GROUP BY country
+    LIMIT 100
+);
+
+/* QUERY EXPLAINED
+
+- Uses a Native Query on Postgres, meaning that the query in executed without using the Data Server's query planner. This allows usage of any database specific features that are not available in the Data Server's federated query dialect.
+- Read more about native queries here: https://sema4.ai/docs/solutions/data-access/queries#native-queries
+- Get all customers in a country
+- Return results in a json format
+- Filter only ones in France
+- Only return max 100 results
+*/
+
+
