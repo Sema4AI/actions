@@ -56,10 +56,11 @@ SELECT * FROM public_demo (
 /* QUERY EXPLAINED
 
 - Uses a Native Query on Postgres, meaning that the query in executed without using the Data Server's query planner. This allows usage of any database specific features that are not available in the Data Server's federated query dialect.
+- Read more about native queries here: https://sema4.ai/docs/solutions/data-access/queries#native-queries
 - Get all customers in a country
 - Return results in a json format
 - Filter only ones in France
-- Only return max 100 results - protecting against too big result sets
+- Only return max 100 results
 */
 
 
