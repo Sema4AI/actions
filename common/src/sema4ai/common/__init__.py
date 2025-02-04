@@ -8,5 +8,5 @@ Each module should be a single utility (thus, sema4ai.common doesn't directly
 contain anything).
 """
 
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 version_info = [int(x) for x in __version__.split(".")]
