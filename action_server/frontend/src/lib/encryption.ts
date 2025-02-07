@@ -95,7 +95,7 @@ export const encrypt = async (
 
   // Encode the string to base64
   const value = btoa(ab2str(trimmedEncryptedValueBuf));
-  const iv = btoa(ab2str(generatedIv.buffer));
+  const iv = btoa(ab2str(generatedIv.buffer as ArrayBuffer));
   const authTag = btoa(ab2str(authTagBuf));
 
   return {
