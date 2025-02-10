@@ -8,7 +8,7 @@ from typing import Optional
 log = logging.getLogger(__name__)
 
 # Note: also referenced in action_server/build.py
-RCC_VERSION = "19.0.1"
+RCC_VERSION = "19.0.2"
 
 
 def get_default_rcc_location() -> Path:
