@@ -10,7 +10,7 @@ log = logging.getLogger(__name__)
 # No real build, just download RCC at this point.
 
 # Note: referenced here and in sema4ai.action_server._download_rcc
-RCC_VERSION = "19.0.1"
+RCC_VERSION = "19.0.2"
 
 
 CURDIR = Path(__file__).parent.absolute()

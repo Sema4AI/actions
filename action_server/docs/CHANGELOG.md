@@ -2,9 +2,13 @@
 
 ## Unreleased
 
+## 2.5.2 - 2025-02-10
+
 - Action Server Go Wrapper:
   - Now embeds the assets as a zip file in the binary.
   - The proper download url is shown for mac os arm64 if the current version is not the latest.
+  - Updated Go to 1.23.6 (CVE fixes)
+- Updated RCC to 19.0.2 (go v1.23.6 CVE fixes)
 
 ## 2.5.1 - 2025-01-07
 

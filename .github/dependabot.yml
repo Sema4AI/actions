@@ -3,7 +3,7 @@ version: 2
 updates:
 - package-ecosystem: gomod
   directories:
-  - /action_server/go-wrapper
+  - action_server/go-wrapper
   schedule:
     interval: daily
   open-pull-requests-limit: 0
@@ -11,11 +11,11 @@ updates:
   - dependency-type: all
 - package-ecosystem: pip
   directories:
-  - /action_server
-  - /actions
-  - /common
-  - /devutils
-  - /sema4ai-http-helper
+  - action_server
+  - actions
+  - common
+  - devutils
+  - sema4ai-http-helper
   schedule:
     interval: daily
   open-pull-requests-limit: 0

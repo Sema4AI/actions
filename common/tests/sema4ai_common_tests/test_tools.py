@@ -55,13 +55,13 @@ def test_rcc_tool(tmpdir):
     target = tmpdir / f"action_server{suffix}"
 
     # See: https://github.com/Sema4AI/rcc/blob/master/docs/changelog.md for versions
-    tool = RccTool(target, "v19.0.1")
+    tool = RccTool(target, "v19.0.2")
     assert not tool.verify()
     tool.download()
     assert tool.verify()
 
     target = tmpdir / "rcc-in_mac_arm"
-    tool = RccTool(target, "v19.0.1")
+    tool = RccTool(target, "v19.0.2")
     tool.force_sys_platform = "darwin"
     tool.force_machine = "arm64"
     tool.make_run_check = False
