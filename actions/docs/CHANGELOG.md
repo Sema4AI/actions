@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 1.3.5 - 2025-02-15
+
+- Fixed error message to show correct url if upload fails.
+
 ## 1.3.4 - 2025-02-15
 
 - Passing contents to the presigned post url as a multipart/form-data (as S3 expects).
