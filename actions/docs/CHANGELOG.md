@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 1.3.4 - 2025-02-15
+
+- Passing contents to the presigned post url as a multipart/form-data (as S3 expects).
+
 ## 1.3.3 - 2025-01-27
 
 - Passing "x-action-invocation-context" instead of "x-action-context".
