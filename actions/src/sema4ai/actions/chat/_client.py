@@ -182,7 +182,7 @@ files will be stored."""
             # Send the initial request
             response = sema4ai_http.post(url, body=data, headers=headers)
             self._raise_for_status(
-                f"Failed when requesting upload for file {filename} to {self._url}.",
+                f"Failed when requesting upload for file {filename} to {url}.",
                 response,
                 (200,),
             )
@@ -236,7 +236,7 @@ files will be stored."""
             )
             response = sema4ai_http.post(url, body=data, headers=headers)
             self._raise_for_status(
-                f"Failed when completing upload for file {filename} to {self._url}.",
+                f"Failed when completing upload for file {filename} to {url}.",
                 response,
                 (303, 200),
             )
