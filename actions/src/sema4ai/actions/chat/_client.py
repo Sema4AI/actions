@@ -200,11 +200,25 @@ files will be stored."""
                 p.write_bytes(content)
             else:
                 # We have a presigned-post URL, upload to it!
+
+                # Note: The file must be sent as a multipart/form-data request.
+                from urllib3.filepost import encode_multipart_formdata
+
+                fields = []
+                for key, value in response_data["form_data"].items():
+                    fields.append((key, value))
+
+                # Add the file to the request after the form data (the order
+                # of the fields is important -- the "key" field must
+                # be the first field).
+                fields.append(("file", content))
+
+                encoded_data, content_type = encode_multipart_formdata(fields)
+
                 response = sema4ai_http.post(
-                    file_url,
-                    fields={**response_data["form_data"], "file": (file_ref, content)},
-                    headers={"Content-Type": content_type},
+                    file_url, body=encoded_data, headers={"Content-Type": content_type}
                 )
+
                 self._raise_for_status(
                     f"Failed when uploading file {filename} to {file_url}.",
                     response,
