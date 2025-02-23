@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Improved logging on post run command failure.
+
 ## 2.5.2 - 2025-02-10
 
 - Action Server Go Wrapper:

@@ -510,16 +510,22 @@ class ProcessHandle:
             env = build_python_launch_env(mapping_as_env_vars)
 
             def run_post_run_command_in_thread():
+                import io
+
                 try:
                     # Note: should log when starting automatically.
                     p = process.Process(use_args, cwd=cwd, env=env)
+                    output = io.StringIO()
+                    p.on_stderr.register(lambda line: output.write(line))
+                    p.on_stdout.register(lambda line: output.write(line))
                     p.start()
                     p.join()
                     if p.returncode != 0:
                         log.error(
-                            "Post run command return code is: %s (full command: %s)",
+                            "Post run command failed. Return code is: %s (full command: %s)\nOutput:\n%s",
                             p.returncode,
                             shlex.join(use_args),
+                            output.getvalue(),
                         )
                     else:
                         log.debug("Post run command finished successfuly.")
