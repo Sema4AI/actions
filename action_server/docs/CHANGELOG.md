@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2.5.3 - 2025-02-24
+
 - Improved logging on post run command failure.
 
 ## 2.5.2 - 2025-02-10
