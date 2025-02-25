@@ -1,0 +1,25 @@
+{
+    "inputs": [
+        {
+            "inputName": "input-1",
+            "inputValue": {
+                "search_string": "er"
+            }
+        }
+    ],
+    "metadata": {
+        "actionName": "search_customers_per_country_substring",
+        "actionRelativePath": "data_actions.py",
+        "schemaDescription": [
+            "search_string: string: The substring to search for in the country name, for example \"er\""
+        ],
+        "managedParamsSchemaDescription": {
+            "datasource": {
+                "type": "DataSource"
+            }
+        },
+        "inputFileVersion": "v3",
+        "kind": "query",
+        "actionSignature": "query/args: 'search_string: str, datasource: PostgresCustomersDataSource'"
+    }
+}

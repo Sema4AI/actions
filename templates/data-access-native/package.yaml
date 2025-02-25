@@ -1,0 +1,30 @@
+# Required: A short name for the action package
+name: template-native-query
+
+# Required: A description of what's in the action package.
+description: Showcases the use of native queries with a PostgreSQL datasource.
+
+# Package version number, recommend using semver.org
+version: 0.0.1
+
+dependencies:
+  conda-forge:
+  - python=3.10.16
+  - uv=0.4.17
+  pypi:
+  - sema4ai-actions=1.3.5
+  - sema4ai-data=0.1.0
+
+packaging:
+  # By default, all files and folders in this directory are packaged when uploaded.
+  # Add exclusion rules below (expects glob format: https://docs.python.org/3/library/glob.html)
+  exclude:
+  - ./.git/**
+  - ./.vscode/**
+  - ./devdata/**
+  - ./output/**
+  - ./venv/**
+  - ./.venv/**
+  - ./.DS_store/**
+  - ./**/*.pyc
+  - ./**/*.zip
