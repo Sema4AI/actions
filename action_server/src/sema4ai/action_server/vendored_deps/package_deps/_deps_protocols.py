@@ -2,17 +2,17 @@
 import datetime
 import sys
 import typing
+from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Dict, Iterator, List, Optional, Sequence, Set, Tuple, Union
 
 # Hack so that we don't break the runtime on versions prior to Python 3.8.
 if sys.version_info[:2] < (3, 8):
 
-    class Protocol(object):
+    class Protocol:
         pass
 
-    class TypedDict(object):
+    class TypedDict:
         pass
 
 else:
@@ -31,7 +31,7 @@ class Versions(Protocol):
 class ReleaseData:
     version: Versions
     version_str: VersionStr
-    upload_time: Optional[str]  # "2020-02-05T14:11:38"
+    upload_time: str | None  # "2020-02-05T14:11:38"
 
     def __lt__(self, other):
         return self.version < other.version
@@ -46,12 +46,12 @@ class PyPiInfoTypedDict(TypedDict):
     description_content_type: str
     home_page: str
     package_url: str
-    project_urls: Dict[UrlDescription, UrlStr]
+    project_urls: dict[UrlDescription, UrlStr]
 
     # Info for the latest version
     # The constraints. i.e.: ['rpaframework-windows (>=7.3.2,<8.0.0) ; sys_platform == "win32"']
     # Something as ">=3.7,<4.0"
-    requires_dist: List[str]
+    requires_dist: list[str]
     requires_python: str
     version: VersionStr
 
@@ -59,7 +59,7 @@ class PyPiInfoTypedDict(TypedDict):
 class IPackageData(Protocol):
     package_name: str
 
-    def add_release(self, version_str: VersionStr, release_info: List[dict]) -> None:
+    def add_release(self, version_str: VersionStr, release_info: list[dict]) -> None:
         """
         Args:
             version_str: The version we have info on.
@@ -70,7 +70,7 @@ class IPackageData(Protocol):
     def latest_version(self) -> VersionStr:
         pass
 
-    def get_last_release_data(self) -> Optional[ReleaseData]:
+    def get_last_release_data(self) -> ReleaseData | None:
         pass
 
     def iter_versions_released_after(
@@ -85,17 +85,17 @@ class IPackageData(Protocol):
     def info(self):
         pass
 
-    def get_release_data(self, version: VersionStr) -> Optional[ReleaseData]:
+    def get_release_data(self, version: VersionStr) -> ReleaseData | None:
         pass
 
 
 class IPyPiCloud(Protocol):
-    def get_package_data(self, package_name: str) -> Optional[IPackageData]:
+    def get_package_data(self, package_name: str) -> IPackageData | None:
         pass
 
     def get_versions_newer_than(
-        self, package_name: str, version: Union[Versions, VersionStr]
-    ) -> List[VersionStr]:
+        self, package_name: str, version: Versions | VersionStr
+    ) -> list[VersionStr]:
         """
         Args:
             package_name: The name of the package
@@ -107,7 +107,7 @@ class IPyPiCloud(Protocol):
         """
 
 
-SubdirToBuildAndDependsJsonBytesType = Dict[str, List[Tuple[str, bytes]]]
+SubdirToBuildAndDependsJsonBytesType = dict[str, list[tuple[str, bytes]]]
 
 
 @dataclass(unsafe_hash=True)
@@ -134,23 +134,23 @@ class LatestIndexInfoTypedDict(TypedDict):
 class ISqliteQueries(Protocol):
     @contextmanager
     def db_cursors(
-        self, db_cursor: Optional[Sequence[Cursor]] = None
+        self, db_cursor: Sequence[Cursor] | None = None
     ) -> Iterator[Sequence[Cursor]]:
         pass
 
-    def query_names(self, db_cursors: Optional[Sequence[Cursor]] = None) -> Set[str]:
+    def query_names(self, db_cursors: Sequence[Cursor] | None = None) -> set[str]:
         pass
 
     def query_versions(
-        self, package_name, db_cursors: Optional[Sequence[Cursor]] = None
-    ) -> Set[str]:
+        self, package_name, db_cursors: Sequence[Cursor] | None = None
+    ) -> set[str]:
         pass
 
     def query_version_info(
         self,
         package_name: str,
         version: str,
-        db_cursors: Optional[Sequence[Cursor]] = None,
+        db_cursors: Sequence[Cursor] | None = None,
     ) -> CondaVersionInfo:
         pass
 
@@ -164,10 +164,10 @@ class ICondaCloud(Protocol):
     def is_information_cached(self) -> bool:
         pass
 
-    def sqlite_queries(self) -> Optional[ISqliteQueries]:
+    def sqlite_queries(self) -> ISqliteQueries | None:
         pass
 
     def schedule_update(
-        self, on_finished: Optional[IOnFinished] = None, wait=False, force=False
+        self, on_finished: IOnFinished | None = None, wait=False, force=False
     ) -> None:
         pass

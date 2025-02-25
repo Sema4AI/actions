@@ -227,7 +227,7 @@ def parse_requirement(req):
     if not versions:
         rs = distname
     else:
-        rs = "%s %s" % (distname, ", ".join(["%s %s" % con for con in versions]))
+        rs = "{} {}".format(distname, ", ".join(["%s %s" % con for con in versions]))
     return Container(
         name=distname,
         extras=extras,

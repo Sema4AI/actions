@@ -1,5 +1,6 @@
+from collections.abc import Iterator
 from dataclasses import dataclass
-from typing import Any, Iterator, List, Optional, Tuple
+from typing import Any
 
 from ..ls_protocols import _RangeTypedDict
 
@@ -8,12 +9,12 @@ from ..ls_protocols import _RangeTypedDict
 class PipDepInfo:
     name: str  # rpaframework
     extras: Any
-    constraints: Optional[List[Tuple[str, str]]]  # i.e.: [('==', '22.5.3')]
+    constraints: list[tuple[str, str]] | None  # i.e.: [('==', '22.5.3')]
     marker: Any
     url: str
     requirement: str  #'rpaframework == 22.5.3'
     dep_range: _RangeTypedDict
-    error_msg: Optional[str]  # Error if we couldn't parse it.
+    error_msg: str | None  # Error if we couldn't parse it.
 
 
 class PipDeps:

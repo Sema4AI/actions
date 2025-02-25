@@ -1,0 +1,8 @@
+- 'Error: ''additional-info-link'' must be a string if provided. Found: True (type:
+  bool)'
+- 'Error: ''description'' is required in ''external-endpoint''.'
+- 'Error: ''name'' must be a string in ''external-endpoint''. Found: 33 (type: int)'
+- 'Error: ''port'' must be a valid integer between 0 and 65535 if provided in a rule.
+  Found: ''443'' (type: str)'
+- 'Warning: unexpected key(s) in ''external-endpoint'': [''bad-not-description''].
+  Expected keys are: [''additional-info-link'', ''description'', ''name'', ''rules''].'

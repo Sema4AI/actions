@@ -1,0 +1,17 @@
+name: pack2 external endpoints
+version: 0.0.1
+spec-version: v2
+dependencies:
+  conda-forge:
+    - python=3.10.12
+    - pip=24
+  pypi:
+    - sema4ai-actions=1.3.5
+
+external-endpoints:
+  - name: 33
+    bad-not-description: "Accesses your ServiceNow to retrieve status of incidents and create new ones."
+    additional-info-link: true
+    rules:
+      - host: "coX.servicenow.com"
+        port: "443"

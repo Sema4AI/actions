@@ -6,7 +6,8 @@ import collections
 import itertools
 import re
 import warnings
-from typing import Callable, Iterator, List, Optional, SupportsInt, Tuple, Union
+from collections.abc import Callable, Iterator
+from typing import SupportsInt, Union
 
 from .pip_packaging_structure import (
     Infinity,
@@ -18,23 +19,23 @@ from .pip_packaging_structure import (
 __all__ = ["parse", "Version", "LegacyVersion", "InvalidVersion", "VERSION_PATTERN"]
 
 InfiniteTypes = Union[InfinityType, NegativeInfinityType]
-PrePostDevType = Union[InfiniteTypes, Tuple[str, int]]
+PrePostDevType = Union[InfiniteTypes, tuple[str, int]]
 SubLocalType = Union[InfiniteTypes, int, str]
 LocalType = Union[
     NegativeInfinityType,
-    Tuple[
+    tuple[
         Union[
             SubLocalType,
-            Tuple[SubLocalType, str],
-            Tuple[NegativeInfinityType, SubLocalType],
+            tuple[SubLocalType, str],
+            tuple[NegativeInfinityType, SubLocalType],
         ],
         ...,
     ],
 ]
-CmpKey = Tuple[
-    int, Tuple[int, ...], PrePostDevType, PrePostDevType, PrePostDevType, LocalType
+CmpKey = tuple[
+    int, tuple[int, ...], PrePostDevType, PrePostDevType, PrePostDevType, LocalType
 ]
-LegacyCmpKey = Tuple[int, Tuple[str, ...]]
+LegacyCmpKey = tuple[int, tuple[str, ...]]
 VersionComparisonMethod = Callable[
     [Union[CmpKey, LegacyCmpKey], Union[CmpKey, LegacyCmpKey]], bool
 ]
@@ -63,7 +64,7 @@ class InvalidVersion(ValueError):
 
 
 class _BaseVersion:
-    _key: Union[CmpKey, LegacyCmpKey]
+    _key: CmpKey | LegacyCmpKey
 
     def __hash__(self) -> int:
         return hash(self._key)
@@ -207,7 +208,7 @@ def _legacy_cmpkey(version: str) -> LegacyCmpKey:
 
     # This scheme is taken from pkg_resources.parse_version setuptools prior to
     # it's adoption of the packaging library.
-    parts: List[str] = []
+    parts: list[str] = []
     for part in _parse_version_parts(version.lower()):
         if part.startswith("*"):
             # remove "-" before a prerelease tag
@@ -326,25 +327,25 @@ class Version(_BaseVersion):
         return _epoch
 
     @property
-    def release(self) -> Tuple[int, ...]:
-        _release: Tuple[int, ...] = self._version.release
+    def release(self) -> tuple[int, ...]:
+        _release: tuple[int, ...] = self._version.release
         return _release
 
     @property
-    def pre(self) -> Optional[Tuple[str, int]]:
-        _pre: Optional[Tuple[str, int]] = self._version.pre
+    def pre(self) -> tuple[str, int] | None:
+        _pre: tuple[str, int] | None = self._version.pre
         return _pre
 
     @property
-    def post(self) -> Optional[int]:
+    def post(self) -> int | None:
         return self._version.post[1] if self._version.post else None
 
     @property
-    def dev(self) -> Optional[int]:
+    def dev(self) -> int | None:
         return self._version.dev[1] if self._version.dev else None
 
     @property
-    def local(self) -> Optional[str]:
+    def local(self) -> str | None:
         if self._version.local:
             return ".".join(str(x) for x in self._version.local)
         else:
@@ -393,8 +394,8 @@ class Version(_BaseVersion):
 
 
 def _parse_letter_version(
-    letter: str, number: Union[str, bytes, SupportsInt]
-) -> Optional[Tuple[str, int]]:
+    letter: str, number: str | bytes | SupportsInt
+) -> tuple[str, int] | None:
     if letter:
         # We consider there to be an implicit 0 in a pre-release if there is
         # not a numeral associated with it.
@@ -430,7 +431,7 @@ def _parse_letter_version(
 _local_version_separators = re.compile(r"[\._-]")
 
 
-def _parse_local_version(local: str) -> Optional[LocalType]:
+def _parse_local_version(local: str) -> LocalType | None:
     """
     Takes a string like abc.1.twelve and turns it into ("abc", 1, "twelve").
     """
@@ -444,11 +445,11 @@ def _parse_local_version(local: str) -> Optional[LocalType]:
 
 def _cmpkey(
     epoch: int,
-    release: Tuple[int, ...],
-    pre: Optional[Tuple[str, int]],
-    post: Optional[Tuple[str, int]],
-    dev: Optional[Tuple[str, int]],
-    local: Optional[Tuple[SubLocalType]],
+    release: tuple[int, ...],
+    pre: tuple[str, int] | None,
+    post: tuple[str, int] | None,
+    dev: tuple[str, int] | None,
+    local: tuple[SubLocalType] | None,
 ) -> CmpKey:
     # When we compare a release version, we want to compare it with all of the
     # trailing zeros removed. So we'll use a reverse the list, drop all the now

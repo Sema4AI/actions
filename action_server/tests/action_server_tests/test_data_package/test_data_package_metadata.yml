@@ -39,7 +39,7 @@ metadata:
       engine: sqlite
       name: sqlite-test-db
   description: ''
-  metadata_version: 3
+  metadata_version: 4
   name: data_package
   secrets: {}
 openapi.json:

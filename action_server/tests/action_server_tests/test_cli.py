@@ -53,9 +53,10 @@ def test_new_list_templates(tmpdir) -> None:
     assert template_names == {
         "advanced",
         "basic",
-        "data-access-query",
         "minimal",
+        "data-access-query",
         "data-access-predict",
+        "data-access-native",
     }
 
 

@@ -163,6 +163,48 @@ def test_package_metadata(datadir, data_regression):
     data_regression.check(fix_metadata(json.loads(output.stdout)))
 
 
+def test_package_metadata_external_endpoints(datadir, data_regression):
+    from sema4ai.action_server._selftest import sema4ai_action_server_run
+
+    output = sema4ai_action_server_run(
+        [
+            "package",
+            "metadata",
+            "--input-dir",
+            str(Path(datadir, "pack_external_endpoints")),
+            "--datadir",
+            str(datadir / "data"),
+        ],
+        returncode=0,
+        cwd=datadir / "pack_external_endpoints",
+    )
+    data_regression.check(fix_metadata(json.loads(output.stdout)))
+
+
+def test_package_metadata_external_endpoints_bad(datadir, data_regression):
+    import itertools
+
+    from sema4ai.action_server._selftest import sema4ai_action_server_run
+
+    output = sema4ai_action_server_run(
+        [
+            "package",
+            "metadata",
+            "--input-dir",
+            str(Path(datadir, "pack_external_endpoints_bad")),
+            "--datadir",
+            str(datadir / "data"),
+        ],
+        returncode="error",
+        cwd=datadir / "pack_external_endpoints_bad",
+    )
+    found_entries = set()
+    for line in itertools.chain(output.stdout.splitlines(), output.stderr.splitlines()):
+        if line.startswith("Error:") or line.startswith("Warning:"):
+            found_entries.add(line)
+    data_regression.check(sorted(found_entries))
+
+
 def test_package_metadata_oauth2_secrets(datadir, data_regression):
     from sema4ai.action_server._selftest import sema4ai_action_server_run
 

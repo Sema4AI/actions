@@ -1,21 +1,21 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 
 @dataclass
 class OAuth2ProviderSettings:
-    mode: Optional[str] = None  # custom/sema4ai
-    name: Optional[str] = None
-    clientId: Optional[str] = None
-    clientSecret: Optional[str] = None
-    server: Optional[str] = None
-    tokenEndpoint: Optional[str] = None
-    revocationEndpoint: Optional[str] = None
-    authorizationEndpoint: Optional[str] = None
-    authParams: Optional[dict[str, str]] = None
-    additionalHeaders: Optional[dict[str, str]] = None
-    requiresHttps: Optional[bool] = False
+    mode: str | None = None  # custom/sema4ai
+    name: str | None = None
+    clientId: str | None = None
+    clientSecret: str | None = None
+    server: str | None = None
+    tokenEndpoint: str | None = None
+    revocationEndpoint: str | None = None
+    authorizationEndpoint: str | None = None
+    authParams: dict[str, str] | None = None
+    additionalHeaders: dict[str, str] | None = None
+    requiresHttps: bool | None = False
 
     # Some replacement functions to keep pydantic API without actually
     # relying on it.
@@ -124,7 +124,7 @@ _DEFAULT_OAUTH2_SETTINGS: dict[str, OAuth2ProviderSettings] = {
 }
 
 
-def _get_oauthlib2_user_settings(
+def get_oauthlib2_user_settings(
     oauth2_settings_file: str,
 ) -> dict[str, Any]:
     """
@@ -139,8 +139,13 @@ def _get_oauthlib2_user_settings(
             f"Unable to make OAuth2 login because the oauth2 settings file: {oauth2_settings_file} does not exist."
         )
 
-    with p.open("rb") as stream:
-        contents = yaml.safe_load(stream)
+    try:
+        with p.open("rb") as stream:
+            contents = yaml.safe_load(stream)
+    except Exception as e:
+        raise RuntimeError(
+            f"Unable to load file: {oauth2_settings_file} as YAML.\nDetails: {e}"
+        )
 
     if not isinstance(contents, dict):
         raise RuntimeError(
@@ -153,7 +158,7 @@ def _get_oauthlib2_user_settings(
 def _get_oauthlib2_sema4ai_settings(provider: str) -> dict:
     import yaml
 
-    from sema4ai.action_server._oauth2 import get_sema4ai_provided_oauth2_config
+    from .._oauth2 import get_sema4ai_provided_oauth2_config
 
     contents = get_sema4ai_provided_oauth2_config()
     dct = yaml.safe_load(contents)
@@ -188,7 +193,7 @@ def get_oauthlib2_provider_settings(
     """
     Gets the OAuth2 settings to be used for a given provider.
     """
-    contents = _get_oauthlib2_user_settings(oauth2_settings_file)
+    contents = get_oauthlib2_user_settings(oauth2_settings_file)
     oauth2_config = _require("oauth2Config", contents)
     providers = _require("providers", oauth2_config)
 

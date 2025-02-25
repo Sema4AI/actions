@@ -9,7 +9,6 @@ from collections import namedtuple
 from functools import lru_cache
 from getpass import getpass
 from os.path import abspath, expanduser
-from typing import Tuple
 from urllib.parse import quote_plus  # noqa: F401
 from urllib.parse import unquote  # noqa (add to public API).
 from urllib.parse import ParseResult
@@ -134,7 +133,7 @@ def path_to_url(path):
     return path
 
 
-url_attrs: Tuple[str, ...] = (
+url_attrs: tuple[str, ...] = (
     "scheme",
     "path",
     "query",

@@ -266,7 +266,7 @@ def make_exe():
             "pyyaml>=6,<7",
             "requests>=2,<3",
             "requests_oauthlib~=2.0",
-            "sema4ai-actions~=1.1",
+            "sema4ai-actions~=1.3",
             "sema4ai-http-helper~=1.0",
             "termcolor~=2.4",
             "uvicorn~=0.30",

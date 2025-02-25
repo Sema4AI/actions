@@ -2,7 +2,7 @@ import datetime
 import logging
 import typing
 import weakref
-from typing import Dict, Iterator, List, Optional, Sequence, Union
+from collections.abc import Iterator, Sequence
 
 from ._deps_protocols import PyPiInfoTypedDict, ReleaseData, Versions, VersionStr
 
@@ -17,9 +17,9 @@ class PackageData:
         self.package_name = package_name
         self._info: PyPiInfoTypedDict = info
 
-        self._releases: Dict[str, ReleaseData] = {}
+        self._releases: dict[str, ReleaseData] = {}
 
-    def add_release(self, version_str: VersionStr, release_info: List[dict]) -> None:
+    def add_release(self, version_str: VersionStr, release_info: list[dict]) -> None:
         """
         Args:
             version_str: The version we have info on.
@@ -28,7 +28,7 @@ class PackageData:
         from .pip_impl import pip_packaging_version
 
         version = pip_packaging_version.parse(version_str)
-        upload_time: Optional[str] = None
+        upload_time: str | None = None
         for dct in release_info:
             upload_time = dct.get("upload_time")
             if upload_time:
@@ -40,7 +40,7 @@ class PackageData:
     def latest_version(self) -> VersionStr:
         return self._info["version"]
 
-    def get_release_data(self, version: VersionStr) -> Optional[ReleaseData]:
+    def get_release_data(self, version: VersionStr) -> ReleaseData | None:
         if not self._releases:
             return None
         try:
@@ -48,14 +48,14 @@ class PackageData:
         except KeyError:
             return None
 
-    def get_last_release_data(self) -> Optional[ReleaseData]:
+    def get_last_release_data(self) -> ReleaseData | None:
         """
         Provides the last release data (if there's any release).
         """
         return self.get_release_data(self.latest_version)
 
     def iter_versions_released_after(
-        self, after_datetime: Optional[datetime.datetime]
+        self, after_datetime: datetime.datetime | None
     ) -> Iterator[ReleaseData]:
         """
         Args:
@@ -64,7 +64,7 @@ class PackageData:
         """
 
         last_release_data = self.get_last_release_data()
-        latest_upload_datetime: Optional[datetime.datetime] = None
+        latest_upload_datetime: datetime.datetime | None = None
         if last_release_data and last_release_data.upload_time:
             latest_upload_datetime = datetime.datetime.strptime(
                 last_release_data.upload_time, "%Y-%m-%dT%H:%M:%S"
@@ -96,10 +96,10 @@ class PackageData:
 
 class PyPiCloud:
     def __init__(
-        self, get_base_urls_weak_method: Optional[weakref.WeakMethod] = None
+        self, get_base_urls_weak_method: weakref.WeakMethod | None = None
     ) -> None:
-        self._cached_package_data: Dict[str, PackageData] = {}
-        self._cached_cloud: Dict[str, PackageData] = {}
+        self._cached_package_data: dict[str, PackageData] = {}
+        self._cached_cloud: dict[str, PackageData] = {}
         self._last_base_urls: Sequence[str] = ()
 
         if get_base_urls_weak_method is None:
@@ -114,7 +114,7 @@ class PyPiCloud:
         else:
             self.get_base_urls_weak_method = get_base_urls_weak_method
 
-    def _get_json_from_cloud(self, url: str) -> Optional[dict]:
+    def _get_json_from_cloud(self, url: str) -> dict | None:
         try:
             return typing.cast(dict, self._cached_cloud[url])
         except KeyError:
@@ -142,7 +142,7 @@ class PyPiCloud:
 
         return typing.cast(dict, self._cached_cloud[url])
 
-    def get_package_data(self, package_name: str) -> Optional[PackageData]:
+    def get_package_data(self, package_name: str) -> PackageData | None:
         get_base_urls = self.get_base_urls_weak_method()
         if get_base_urls is None:
             return None
@@ -188,8 +188,8 @@ class PyPiCloud:
         return None
 
     def get_versions_newer_than(
-        self, package_name: str, version: Union[Versions, VersionStr]
-    ) -> List[VersionStr]:
+        self, package_name: str, version: Versions | VersionStr
+    ) -> list[VersionStr]:
         """
         Args:
             package_name: The name of the package
