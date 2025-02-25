@@ -1,0 +1,25 @@
+name: pack2 external endpoints
+version: 0.0.1
+spec-version: v2
+dependencies:
+  conda-forge:
+    - python=3.10.12
+    - pip=24
+  pypi:
+    - sema4ai-actions=1.3.5
+
+external-endpoints:
+  - name: "ServiceNow"
+    description: "Accesses your ServiceNow to retrieve status of incidents and create new ones."
+    additional-info-link: "https://developer.servicenow.com/dev.do#!/reference/api/rome/rest/c_IncidentAPI.html"
+    rules:
+      - host: "coX.servicenow.com"
+        port: 443
+      - host: "*.servicenow.eu"
+        port: 443
+  - name: "Google"
+    description: "Accesses Google to retrieve daily weather forecast."
+    additional-info-link: "https://www.google.com"
+    rules:
+      - host: "*.google.com"
+        port: 443

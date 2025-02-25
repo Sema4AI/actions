@@ -1,8 +1,24 @@
 metadata:
   action_package_version: 0.0.1
-  description: pack1 description
+  description: ''
+  external-endpoints:
+  - additional-info-link: https://developer.servicenow.com/dev.do#!/reference/api/rome/rest/c_IncidentAPI.html
+    description: Accesses your ServiceNow to retrieve status of incidents and create
+      new ones.
+    name: ServiceNow
+    rules:
+    - host: coX.servicenow.com
+      port: 443
+    - host: '*.servicenow.eu'
+      port: 443
+  - additional-info-link: https://www.google.com
+    description: Accesses Google to retrieve daily weather forecast.
+    name: Google
+    rules:
+    - host: '*.google.com'
+      port: 443
   metadata_version: 4
-  name: pack1 name
+  name: pack2 external endpoints
   secrets: {}
 openapi.json:
   components:
@@ -42,10 +58,10 @@ openapi.json:
     version: <removed-for-compare>
   openapi: 3.1.0
   paths:
-    /api/actions/pack1-name/hello/run:
+    /api/actions/pack2-external-endpoints/nothing-here/run:
       post:
         description: Provides a greeting for a person.
-        operationId: hello
+        operationId: nothing_here
         requestBody:
           content:
             application/json:
@@ -70,7 +86,7 @@ openapi.json:
               application/json:
                 schema:
                   description: The greeting for the person.
-                  title: Response for Hello
+                  title: Response for Nothing Here
                   type: string
             description: Successful Response
           '422':
@@ -79,7 +95,7 @@ openapi.json:
                 schema:
                   $ref: '#/components/schemas/HTTPValidationError'
             description: Validation Error
-        summary: Hello
+        summary: Nothing Here
         x-operation-kind: action
   servers:
   - url: http://localhost:8080

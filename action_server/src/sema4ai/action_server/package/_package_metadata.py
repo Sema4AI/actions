@@ -3,7 +3,48 @@ import logging
 from pathlib import Path
 from typing import Any, Dict
 
+from sema4ai.action_server.vendored_deps.package_deps._deps_protocols import (
+    ICondaCloud,
+    IOnFinished,
+    IPackageData,
+    IPyPiCloud,
+    ISqliteQueries,
+    Versions,
+    VersionStr,
+)
+
 log = logging.getLogger(__name__)
+
+
+class DummyCondaCloud:
+    def is_information_cached(self) -> bool:
+        return True
+
+    def sqlite_queries(self) -> ISqliteQueries | None:
+        return None
+
+    def schedule_update(
+        self, on_finished: IOnFinished | None = None, wait=False, force=False
+    ) -> None:
+        pass
+
+
+class DummyPyPiCloud:
+    def get_package_data(self, package_name: str) -> IPackageData | None:
+        return None
+
+    def get_versions_newer_than(
+        self, package_name: str, version: Versions | VersionStr
+    ) -> list[VersionStr]:
+        return []
+
+
+def create_dummy_conda_cloud() -> ICondaCloud:
+    return DummyCondaCloud()
+
+
+def create_dummy_pypi_cloud() -> IPyPiCloud:
+    return DummyPyPiCloud()
 
 
 def collect_package_metadata(package_dir: Path, datadir: str) -> str | int:
@@ -36,6 +77,10 @@ def collect_package_metadata(package_dir: Path, datadir: str) -> str | int:
         data_package_metadata: dict | None,
     ):
         from sema4ai.action_server._server import build_url_api_run
+        from sema4ai.action_server.vendored_deps.ls_protocols import _DiagnosticSeverity
+        from sema4ai.action_server.vendored_deps.package_deps.analyzer import (
+            PackageYamlAnalyzer,
+        )
 
         action_info: ActionsListActionTypedDict
         for action_info in actions_list_result:
@@ -60,6 +105,7 @@ def collect_package_metadata(package_dir: Path, datadir: str) -> str | int:
 
         package_yaml_path = Path(package_dir) / "package.yaml"
         action_package_version: str
+        external_endpoints = []
 
         if not package_yaml_path.exists():
             action_package_version = "pre-alpha"
@@ -72,20 +118,45 @@ def collect_package_metadata(package_dir: Path, datadir: str) -> str | int:
         else:
             import yaml
 
-            with package_yaml_path.open() as f:
-                package_yaml = yaml.safe_load(f)
-                if not isinstance(package_yaml, dict):
-                    raise ActionServerValidationError(
-                        f"Error: expected {package_yaml_path} to have a dictionary as top-level."
-                    )
-                package_description = package_yaml.get("description", "")
-                try:
-                    action_package_version = str(package_yaml["version"])
-                except KeyError:
-                    raise ActionServerValidationError(
-                        "The Action Package 'version' is not set. "
-                        f"Please set the 'version' field in {package_yaml_path}."
-                    )
+            contents = package_yaml_path.read_text()
+
+            package_yaml = yaml.safe_load(contents)
+            if not isinstance(package_yaml, dict):
+                raise ActionServerValidationError(
+                    f"Error: expected {package_yaml_path} to have a dictionary as top-level."
+                )
+            package_description = package_yaml.get("description", "")
+            try:
+                action_package_version = str(package_yaml["version"])
+            except KeyError:
+                raise ActionServerValidationError(
+                    "The Action Package 'version' is not set. "
+                    f"Please set the 'version' field in {package_yaml_path}."
+                )
+
+            analyzer = PackageYamlAnalyzer(
+                contents,
+                str(package_yaml_path),
+                create_dummy_conda_cloud(),
+                create_dummy_pypi_cloud(),
+            )
+
+            errors = []
+            for issue in analyzer.iter_package_yaml_issues():
+                if issue["severity"] == _DiagnosticSeverity.Error:
+                    errors.append(issue["message"])
+                elif issue["severity"] == _DiagnosticSeverity.Warning:
+                    log.warning(issue["message"])
+                else:
+                    log.info(issue["message"])
+
+            if errors:
+                raise ActionServerValidationError(
+                    "The Action Package 'package.yaml' contains the following errors:\n"
+                    + "\n".join(errors)
+                )
+
+            external_endpoints = package_yaml.get("external-endpoints", [])
 
         metadata["metadata"] = {
             "name": action_package.name,
@@ -96,11 +167,15 @@ def collect_package_metadata(package_dir: Path, datadir: str) -> str | int:
             # when the info in the metadata itself changes.
             # Version 2 means that the action package has a version now.
             # Version 3 added 'data/datasources' to the metadata.
-            "metadata_version": 3,
+            # Version 4 added 'external-endpoints' to the metadata.
+            "metadata_version": 4,
         }
 
         if data_package_metadata:
             metadata["metadata"]["data"] = data_package_metadata
+
+        if external_endpoints:
+            metadata["metadata"]["external-endpoints"] = external_endpoints
 
     def collect_metadata_and_cancel_startup(app: FastAPI) -> bool:
         nonlocal metadata

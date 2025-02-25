@@ -3,7 +3,7 @@ metadata:
   data:
     datasources: []
   description: Action package without a 'package.yaml' file (testing only).
-  metadata_version: 3
+  metadata_version: 4
   name: pack_secrets
   secrets:
     /api/actions/pack-secrets/hello-greeting/run:

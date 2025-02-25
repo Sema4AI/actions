@@ -8,11 +8,11 @@ import shutil
 import threading
 import time
 import typing
+from collections.abc import Iterator, Sequence
 from concurrent.futures import Future
 from contextlib import contextmanager
 from functools import partial
 from pathlib import Path
-from typing import Dict, Iterator, List, Optional, Sequence, Set, Tuple, Union
 
 from ._deps_protocols import (
     CondaVersionInfo,
@@ -77,7 +77,7 @@ def timestamp_to_datetime(timestamp_milliseconds: float) -> datetime.datetime:
 
 
 class SqliteQueries:
-    def __init__(self, sqlite_file: Union[Path, Sequence[Path]]):
+    def __init__(self, sqlite_file: Path | Sequence[Path]):
         sqlite_files: Sequence[Path]
         if isinstance(sqlite_file, Path):
             sqlite_files = [sqlite_file]
@@ -87,7 +87,7 @@ class SqliteQueries:
 
     @contextmanager
     def db_cursors(
-        self, db_cursor: Optional[Sequence[Cursor]] = None
+        self, db_cursor: Sequence[Cursor] | None = None
     ) -> Iterator[Sequence[Cursor]]:
         if db_cursor is not None:
             yield db_cursor
@@ -95,7 +95,7 @@ class SqliteQueries:
 
         import sqlite3
 
-        db_cursors: List[Cursor] = []
+        db_cursors: list[Cursor] = []
         db_connections: list = []
         for path in self.sqlite_files:
             db_connections.append(sqlite3.connect(path))
@@ -115,9 +115,9 @@ class SqliteQueries:
                 except Exception:
                     log.exception("Error closing sqlite connection.")
 
-    def query_names(self, db_cursors: Optional[Sequence[Cursor]] = None) -> Set[str]:
+    def query_names(self, db_cursors: Sequence[Cursor] | None = None) -> set[str]:
         with self.db_cursors(db_cursors) as db_cursors:
-            package_names: Set[str] = set()
+            package_names: set[str] = set()
             for db_cursor in db_cursors:
                 db_cursor.execute("SELECT package_name FROM packages")
                 rows = db_cursor.fetchall()
@@ -126,10 +126,10 @@ class SqliteQueries:
             return package_names
 
     def query_versions(
-        self, package_name, db_cursors: Optional[Sequence[Cursor]] = None
-    ) -> Set[str]:
+        self, package_name, db_cursors: Sequence[Cursor] | None = None
+    ) -> set[str]:
         with self.db_cursors(db_cursors) as db_cursors:
-            versions: Set[str] = set()
+            versions: set[str] = set()
             for db_cursor in db_cursors:
                 db_cursor.execute(
                     """
@@ -155,7 +155,7 @@ WHERE Packages.package_name = ?
         self,
         package_name: str,
         version: str,
-        db_cursors: Optional[Sequence[Cursor]] = None,
+        db_cursors: Sequence[Cursor] | None = None,
     ) -> CondaVersionInfo:
         """
         Note that the same package/version may have multiple infos
@@ -202,8 +202,8 @@ def version_key(version_info: CondaVersionInfo):
 
 
 def sort_conda_version_infos(
-    versions: Union[Sequence[CondaVersionInfo], Set[CondaVersionInfo]],
-) -> List[CondaVersionInfo]:
+    versions: Sequence[CondaVersionInfo] | set[CondaVersionInfo],
+) -> list[CondaVersionInfo]:
     return list(sorted(versions, key=version_key))
 
 
@@ -215,13 +215,13 @@ def version_str_key(version: str):
 
 
 def sort_conda_versions(
-    versions: Union[Sequence[str], Set[str]],
-) -> List[str]:
+    versions: Sequence[str] | set[str],
+) -> list[str]:
     return list(sorted(versions, key=version_str_key))
 
 
 # Can be used in tests to index just a few libraries.
-INDEX_FOR_LIBRARIES: Optional[Set[str]] = None
+INDEX_FOR_LIBRARIES: set[str] | None = None
 
 
 def index_conda_info(json_file: Path, target_sqlite_file: Path):
@@ -238,19 +238,19 @@ def index_conda_info(json_file: Path, target_sqlite_file: Path):
     # the fields we actually need.
     class Package(msgspec.Struct):
         name: str
-        depends: Optional[List[str]] = []
-        version: Optional[str] = ""
-        subdir: Optional[str] = ""
-        timestamp: Optional[int] = 0
-        build: Optional[str] = ""
+        depends: list[str] | None = []
+        version: str | None = ""
+        subdir: str | None = ""
+        timestamp: int | None = 0
+        build: str | None = ""
 
     class Info(msgspec.Struct):
         subdir: str = ""
 
     class RepoData(msgspec.Struct):
         info: Info
-        packages: Optional[Dict[str, Package]]
-        packages_conda: Optional[Dict[str, Package]] = msgspec.field(
+        packages: dict[str, Package] | None
+        packages_conda: dict[str, Package] | None = msgspec.field(
             name="packages.conda",
             default=None,
         )
@@ -275,7 +275,7 @@ def index_conda_info(json_file: Path, target_sqlite_file: Path):
             for sql in CREATE_INDEXES_SQL:
                 db_cursor.execute(sql)
 
-            package_name_to_id: Dict[str, int] = {}
+            package_name_to_id: dict[str, int] = {}
             rows = []
             # Step 4: Insert package information into the database
             for package_filename, package_info in itertools.chain(
@@ -344,7 +344,7 @@ def index_conda_info(json_file: Path, target_sqlite_file: Path):
 Arch = str
 
 
-class _Callback(object):
+class _Callback:
     """
     Note that it's thread safe to register/unregister callbacks while callbacks
     are being notified, but it's not thread-safe to register/unregister at the
@@ -379,14 +379,14 @@ class _Callback(object):
 
 class _AfterDownloadMakeSqlite:
     def __init__(
-        self, available_arch: List[Arch], cache_dir: Path, index_cache_dir: Path
+        self, available_arch: list[Arch], cache_dir: Path, index_cache_dir: Path
     ):
         self._available_arch = available_arch
         self._lock = threading.Lock()
         self._count = 0
         self._call_on_finished = _Callback()
         self._finished = False
-        self._arch_to_sqlite: Dict[str, Path] = {}
+        self._arch_to_sqlite: dict[str, Path] = {}
         self._index_cache_dir = index_cache_dir
         self._cache_dir = cache_dir
 
@@ -395,7 +395,7 @@ class _AfterDownloadMakeSqlite:
         index_conda_info(json_file, target_sqlite_file)
         return target_sqlite_file
 
-    def __call__(self, download_future: "Future[Tuple[Path, Arch]]"):
+    def __call__(self, download_future: "Future[tuple[Path, Arch]]"):
         json_file = None
         try:
             json_file, arch = download_future.result()
@@ -483,7 +483,7 @@ class CondaCloud:
 
         self._lock = threading.Lock()
         self._state: State = State.initial
-        self._call_on_finished: List[IOnFinished] = []
+        self._call_on_finished: list[IOnFinished] = []
 
         if self.is_information_cached():
             if reindex_if_old:
@@ -498,7 +498,7 @@ class CondaCloud:
             else:
                 self._state = State.done
 
-    def _download(self, url: str, target_json: Path, arch: str) -> Tuple[Path, Arch]:
+    def _download(self, url: str, target_json: Path, arch: str) -> tuple[Path, Arch]:
         import urllib.request
 
         CHUNK_SIZE = 32768
@@ -528,7 +528,7 @@ class CondaCloud:
         del self._call_on_finished[:]
 
     def schedule_update(
-        self, on_finished: Optional[IOnFinished] = None, wait=False, force=False
+        self, on_finished: IOnFinished | None = None, wait=False, force=False
     ) -> None:
         """
         This can be called at any time (in any thread). It schedules the download
@@ -566,7 +566,7 @@ class CondaCloud:
             # We need to compute the target for the files
             dir_entries = os.listdir(self._cache_dir)
 
-            stale_dirs: List[Path] = []
+            stale_dirs: list[Path] = []
             max_tries = 3
             for i in range(max_tries):
                 max_number: int = 0
@@ -638,7 +638,7 @@ class CondaCloud:
             future.add_done_callback(on_done)
         executor.shutdown(wait=wait)
 
-    def load_latest_index_info(self) -> Optional[LatestIndexInfoTypedDict]:
+    def load_latest_index_info(self) -> LatestIndexInfoTypedDict | None:
         try:
             latest_dir_info = self._cache_dir / "latest_index_info.json"
             with latest_dir_info.open("rb") as stream:
@@ -653,7 +653,7 @@ class CondaCloud:
         except Exception:
             return None
 
-    def _load_latest_index_dir_location(self) -> Optional[Path]:
+    def _load_latest_index_dir_location(self) -> Path | None:
         latest_dir_info = self.load_latest_index_info()
         if not latest_dir_info:
             return None
@@ -692,7 +692,7 @@ class CondaCloud:
 
         return True
 
-    def sqlite_queries(self) -> Optional[SqliteQueries]:
+    def sqlite_queries(self) -> SqliteQueries | None:
         index_dir_files = tuple(self._iter_index_files())
         if not index_dir_files:
             return None

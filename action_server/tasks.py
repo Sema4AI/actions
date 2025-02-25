@@ -267,7 +267,6 @@ def zip_go_wrapper_assets(ctx: Context):
     Get the assets from the build-binary and zip them up.
     """
     import platform
-    import shutil
     import zipfile
 
     # Get system info

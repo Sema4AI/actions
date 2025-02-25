@@ -1,6 +1,9 @@
-# Changelog
-
 ## Unreleased
+
+- Support `external-endpoints` in `package.yaml` (to allow configuring firewall settings for egress rules).
+  - The information in the `package.yaml` is added to the metadata given by the Action Server.
+  - The Action Server will now check that the `external-endpoints` are properly configured for the deployed environment.
+  - See: [17-external-endpoints.md](./guides/17-external-endpoints.md) for more information.
 
 ## 2.5.3 - 2025-02-24
 

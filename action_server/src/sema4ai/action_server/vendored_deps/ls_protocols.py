@@ -1,7 +1,7 @@
-from typing import Any, Optional, TypedDict, Union
+from typing import Any, TypedDict
 
 
-class _DiagnosticSeverity(object):
+class _DiagnosticSeverity:
     Error = 1
     Warning = 2
     Information = 3
@@ -32,10 +32,10 @@ class _DiagnosticsTypedDict(TypedDict, total=False):
 
     # The diagnostic's severity. Can be omitted. If omitted it is up to the
     # client to interpret diagnostics as error, warning, info or hint.
-    severity: Optional[int]  # DiagnosticSeverity
+    severity: int | None  # DiagnosticSeverity
 
     # The diagnostic's code, which might appear in the user interface.
-    code: Union[int, str]
+    code: int | str
 
     # An optional property to describe the error code.
     #
@@ -44,7 +44,7 @@ class _DiagnosticsTypedDict(TypedDict, total=False):
 
     # A human-readable string describing the source of this
     # diagnostic, e.g. 'typescript' or 'super lint'.
-    source: Optional[str]
+    source: str | None
 
     # The diagnostic's message.
     message: str
@@ -63,4 +63,4 @@ class _DiagnosticsTypedDict(TypedDict, total=False):
     # `textDocument/codeAction` request.
     #
     # @since 3.16.0
-    data: Optional[Any]  # unknown;
+    data: Any | None  # unknown;

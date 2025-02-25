@@ -5,7 +5,8 @@ it a standalone package in the future (maybe with a command line UI).
 
 import pathlib
 import typing
-from typing import Iterator, List, Optional, Union
+from collections.abc import Iterator
+from typing import Optional, Union
 
 from ..ls_protocols import _DiagnosticSeverity, _DiagnosticsTypedDict
 from ._deps_protocols import ICondaCloud, IPyPiCloud
@@ -28,7 +29,7 @@ class BaseAnalyzer:
         contents: str,
         path: str,
         conda_cloud: ICondaCloud,
-        pypi_cloud: Optional[IPyPiCloud] = None,
+        pypi_cloud: IPyPiCloud | None = None,
     ):
         """
         Args:
@@ -41,8 +42,8 @@ class BaseAnalyzer:
         self.path = path
 
         self._loaded_yaml = False
-        self._load_errors: List[_DiagnosticsTypedDict] = []
-        self._yaml_data: Optional[dict] = None
+        self._load_errors: list[_DiagnosticsTypedDict] = []
+        self._yaml_data: dict | None = None
 
         if pypi_cloud is None:
             self._pypi_cloud = PyPiCloud()
@@ -185,7 +186,7 @@ class BaseAnalyzer:
         if sqlite_queries:
             with sqlite_queries.db_cursors() as db_cursors:
                 for conda_dep in self._conda_deps.iter_deps_infos():
-                    if conda_dep.name in ("python", "pip"):
+                    if conda_dep.name in ("python", "pip", "uv"):
                         continue
 
                     if conda_dep.error_msg:
@@ -252,19 +253,50 @@ class BaseAnalyzer:
         return None
 
 
+def extract_range(*items):
+    from ..yaml_with_location import create_range_from_location
+
+    for item in items:
+        if hasattr(item, "as_range"):
+            return item.as_range()
+    return create_range_from_location(0, 0)
+
+
+def type_repr(obj):
+    # Needed to deal with the `str_with_location`, `dict_with_location`, etc.
+    if isinstance(obj, str):
+        return "str"
+    elif isinstance(obj, bool):
+        return "bool"
+    elif isinstance(obj, int):
+        return "int"
+    elif isinstance(obj, float):
+        return "float"
+    elif isinstance(obj, list):
+        return "list"
+    elif isinstance(obj, dict):
+        return "dict"
+    elif isinstance(obj, tuple):
+        return "tuple"
+    try:
+        return type(obj).__name__
+    except Exception:
+        return str(type(obj))
+
+
 class PackageYamlAnalyzer(BaseAnalyzer):
     def __init__(
         self,
         contents: str,
         path: str,
         conda_cloud: ICondaCloud,
-        pypi_cloud: Optional[IPyPiCloud] = None,
+        pypi_cloud: IPyPiCloud | None = None,
     ):
         from ._package_deps import PackageDepsConda, PackageDepsPip
 
         self._pip_deps = PackageDepsPip()
         self._conda_deps = PackageDepsConda()
-        self._additional_load_errors: List[_DiagnosticsTypedDict] = []
+        self._additional_load_errors: list[_DiagnosticsTypedDict] = []
 
         BaseAnalyzer.__init__(self, contents, path, conda_cloud, pypi_cloud=pypi_cloud)
 
@@ -281,6 +313,131 @@ class PackageYamlAnalyzer(BaseAnalyzer):
         yield from iter(self._additional_load_errors)
         yield from self.iter_conda_issues()
         yield from self.iter_pip_issues()
+        yield from self._iter_external_endpoints_issues()
+
+    def _iter_external_endpoints_issues(self) -> Iterator[_DiagnosticsTypedDict]:
+        from ..yaml_with_location import dict_with_location
+
+        data = self._yaml_data
+        if not data:
+            return
+
+        external_endpoints = data.get("external-endpoints")
+        if not external_endpoints:
+            return
+
+        if not isinstance(external_endpoints, list):
+            yield {
+                "range": extract_range(external_endpoints),
+                "severity": _DiagnosticSeverity.Error,
+                "source": "sema4ai",
+                "message": f"Error: expected 'external-endpoints' to be a list. Found: {external_endpoints!r}",
+            }
+            return  # Unable to proceed
+
+        expected_keys = {"name", "description", "additional-info-link", "rules"}
+        endpoint: dict_with_location
+        for endpoint in external_endpoints:
+            if not isinstance(endpoint, dict):
+                yield {
+                    "range": extract_range(endpoint),
+                    "severity": _DiagnosticSeverity.Error,
+                    "source": "sema4ai",
+                    "message": f"Error: 'external-endpoint' must be a dictionary. Found: {endpoint!r}",
+                }
+                continue  # Unable to proceed
+
+            # Check for unexpected keys
+            unexpected_keys = set(endpoint.keys()) - expected_keys
+            if unexpected_keys:
+                yield {
+                    "range": extract_range(endpoint),
+                    "severity": _DiagnosticSeverity.Warning,
+                    "source": "sema4ai",
+                    "message": f"Warning: unexpected key(s) in 'external-endpoint': {sorted(unexpected_keys)}. Expected keys are: {sorted(expected_keys)}.",
+                }
+
+            # Validate required fields
+            if "name" not in endpoint:
+                yield {
+                    "range": extract_range(endpoint),
+                    "severity": _DiagnosticSeverity.Error,
+                    "source": "sema4ai",
+                    "message": "Error: 'name' is required and must be a string in 'external-endpoint'.",
+                }
+            elif not isinstance(endpoint["name"], str):
+                yield {
+                    "range": extract_range(endpoint["name"], endpoint),
+                    "severity": _DiagnosticSeverity.Error,
+                    "source": "sema4ai",
+                    "message": f"Error: 'name' must be a string in 'external-endpoint'. Found: {endpoint['name']!r} (type: {type_repr(endpoint['name'])})",
+                }
+
+            if "description" not in endpoint:
+                yield {
+                    "range": extract_range(endpoint),
+                    "severity": _DiagnosticSeverity.Error,
+                    "source": "sema4ai",
+                    "message": "Error: 'description' is required in 'external-endpoint'.",
+                }
+            elif not isinstance(endpoint["description"], str):
+                yield {
+                    "range": extract_range(endpoint["description"], endpoint),
+                    "severity": _DiagnosticSeverity.Error,
+                    "source": "sema4ai",
+                    "message": f"Error: 'description' must be a string in 'external-endpoint'. Found: {endpoint['description']!r}",
+                }
+
+            # Validate optional fields
+            if "additional-info-link" in endpoint and not isinstance(
+                endpoint["additional-info-link"], str
+            ):
+                additional_info_link = endpoint["additional-info-link"]
+                yield {
+                    "range": extract_range(additional_info_link, endpoint),
+                    "severity": _DiagnosticSeverity.Error,
+                    "source": "sema4ai",
+                    "message": f"Error: 'additional-info-link' must be a string if provided. Found: {additional_info_link!r} (type: {type_repr(additional_info_link)})",
+                }
+
+            if "rules" in endpoint:
+                rules = endpoint["rules"]
+                if not isinstance(rules, list):
+                    yield {
+                        "range": extract_range(rules, endpoint),
+                        "severity": _DiagnosticSeverity.Error,
+                        "source": "sema4ai",
+                        "message": f"Error: 'rules' must be a list if provided. Found: {rules!r} (type: {type_repr(rules)})",
+                    }
+                else:
+                    for rule in rules:
+                        if not isinstance(rule, dict):
+                            yield {
+                                "range": extract_range(rule, endpoint),
+                                "severity": _DiagnosticSeverity.Error,
+                                "source": "sema4ai",
+                                "message": f"Error: each rule in 'rules' must be a dictionary. Found: {rule!r} (type: {type_repr(rule)})",
+                            }
+                            continue
+
+                        if "host" in rule and not isinstance(rule["host"], str):
+                            yield {
+                                "range": extract_range(rule.get("host"), rule),
+                                "severity": _DiagnosticSeverity.Error,
+                                "source": "sema4ai",
+                                "message": f"Error: 'host' must be a string if provided in a rule. Found: {rule['host']!r} (type: {type_repr(rule['host'])})",
+                            }
+
+                        if "port" in rule:
+                            if not isinstance(rule["port"], int) or not (
+                                0 <= rule["port"] <= 65535
+                            ):
+                                yield {
+                                    "range": extract_range(rule.get("port"), rule),
+                                    "severity": _DiagnosticSeverity.Error,
+                                    "source": "sema4ai",
+                                    "message": f"Error: 'port' must be a valid integer between 0 and 65535 if provided in a rule. Found: {rule['port']!r} (type: {type_repr(rule['port'])})",
+                                }
 
     def _load_yaml_info(self) -> None:
         if self._loaded_yaml:
@@ -327,7 +484,7 @@ class PackageYamlAnalyzer(BaseAnalyzer):
                 "range": create_range_from_location(0, 0),
                 "severity": _DiagnosticSeverity.Error,
                 "source": "sema4ai",
-                "message": f"Error: expected 'dependencies' entry to be a dict (with 'conda-forge' and 'pypi' entries). Found: '{type(dependencies)}'",
+                "message": f"Error: expected 'dependencies' entry to be a dict (with 'conda-forge' and 'pypi' entries). Found: '{type_repr(dependencies)}'",
             }
             self._additional_load_errors.append(diagnostic)
         else:
@@ -339,7 +496,7 @@ class PackageYamlAnalyzer(BaseAnalyzer):
                                 "range": dep_name.as_range(),
                                 "severity": _DiagnosticSeverity.Error,
                                 "source": "sema4ai",
-                                "message": f"Error: expected the entries of pypi to be a list. Found: {type(dep)}",
+                                "message": f"Error: expected the entries of pypi to be a list. Found: {type_repr(dep)}",
                             }
                             self._additional_load_errors.append(diagnostic)
                             continue
@@ -350,7 +507,7 @@ class PackageYamlAnalyzer(BaseAnalyzer):
                                     "range": dep_name.as_range(),
                                     "severity": _DiagnosticSeverity.Error,
                                     "source": "sema4ai",
-                                    "message": f"Error: expected the entries of pypi to be strings. Found: {type(entry)}: {entry}",
+                                    "message": f"Error: expected the entries of pypi to be strings. Found: {type_repr(entry)}: {entry}",
                                 }
                                 self._additional_load_errors.append(diagnostic)
                                 continue
@@ -388,7 +545,7 @@ class PackageYamlAnalyzer(BaseAnalyzer):
                                     "range": dep_name.as_range(),
                                     "severity": _DiagnosticSeverity.Error,
                                     "source": "sema4ai",
-                                    "message": f"Error: expected the entries of conda-forge to be strings. Found: {type(entry)}: {entry}",
+                                    "message": f"Error: expected the entries of conda-forge to be strings. Found: {type_repr(entry)}: {entry}",
                                 }
                                 self._additional_load_errors.append(diagnostic)
                                 continue
@@ -422,7 +579,7 @@ class CondaYamlAnalyzer(BaseAnalyzer):
         contents: str,
         path: str,
         conda_cloud: ICondaCloud,
-        pypi_cloud: Optional[IPyPiCloud] = None,
+        pypi_cloud: IPyPiCloud | None = None,
     ):
         from ._conda_deps import CondaDeps
         from ._pip_deps import PipDeps

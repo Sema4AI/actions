@@ -3,7 +3,6 @@ import os
 import platform
 import sys
 from pathlib import Path
-from typing import Optional
 
 log = logging.getLogger(__name__)
 
@@ -124,8 +123,6 @@ def _download_rcc():
     """
     Downloads RCC in the place where the action server expects it.
     """
-    import stat
-    import urllib.request
 
     if sys.platform == "win32":
         rcc_path = (
