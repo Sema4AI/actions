@@ -14,19 +14,17 @@ an action package is deployed in the action server, the appropriate rules are ap
 
 ```yaml
 external-endpoints:
-  - name: "ServiceNow"
-    description: "Accesses your ServiceNow to retrieve status of incidents and create new ones."
-    additional-info-link: "https://developer.servicenow.com/dev.do#!/reference/api/rome/rest/c_IncidentAPI.html"
+  - name: "OpenWeatherMap"
+    description: "Accesses OpenWeatherMap to retrieve daily weather forecast."
+    additional-info-link: "https://openweathermap.org/api/one-call-3"
     rules:
-      - host: "coX.servicenow.com"
+      - host: "*.openweathermap.org"
         port: 443
-      - host: "*.servicenow.eu"
-        port: 443
-  - name: "Google"
-    description: "Accesses Google to retrieve daily weather forecast."
-    additional-info-link: "https://www.google.com"
+  - name: "GoogleMaps"
+    description: "Accesses GoogleMaps to retrieve daily weather forecast."
+    additional-info-link: "https://maps.google.com"
     rules:
-      - host: "*.google.com"
+      - host: "maps.google.com"
         port: 443
 ```
 
@@ -40,7 +38,7 @@ external-endpoints:
 
 - `rules` (list) optional
 
-  - `host`: hostname url in a `firewall rule format` e.g. `\*.servicenow.eu`, `coX.servicenow.com`
+  - `host`: hostname url in a `firewall rule format` e.g. `\*.openweathermap.org`, `maps.google.com`
 
   - `port`: optional port number (needs to be a valid port number)
 
