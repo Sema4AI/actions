@@ -7,18 +7,24 @@
                     "owner_id": "RobotCode",
                     "name": "scraper"
                 },
-                "limit": 10,
+                "issue_data": {
+                    "title": "Testing issue",
+                    "body": "Testing body"
+                },
                 "github_access_token": "<specify-secret>"
             }
         }
     ],
     "metadata": {
-        "actionName": "get_repository_commits",
-        "actionRelativePath": "get_actions.py",
+        "actionName": "create_repository_issue",
+        "actionRelativePath": "create_actions.py",
         "schemaDescription": [
             "repository_info.owner_id: string: The owner of the repository",
             "repository_info.name: string: The name of the repository",
-            "limit: integer: The maximum number of commits to return (max 100)."
+            "issue_data.owner_id: string: The owner of the repository",
+            "issue_data.name: string: The name of the repository",
+            "issue_data.title: string: The title of the issue",
+            "issue_data.body: string: The body of the issue"
         ],
         "managedParamsSchemaDescription": {
             "github_access_token": {
@@ -28,6 +34,6 @@
         },
         "inputFileVersion": "v3",
         "kind": "action",
-        "actionSignature": "action/args: 'github_access_token: Secret, repository_info: RepositoryInfo, limit: int=10'"
+        "actionSignature": "action/args: 'github_access_token: Secret, repository_info: RepositoryInfo, issue_data: CreateIssueData'"
     }
 }

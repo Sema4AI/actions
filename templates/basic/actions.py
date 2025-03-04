@@ -7,13 +7,15 @@ https://github.com/sema4ai/actions/blob/master/README.md
 """
 
 import os
-from sema4ai.actions import action
+
 from robocorp import browser
+from sema4ai.actions import Response, action
 
 HEADLESS_BROWSER = not os.getenv("HEADLESS_BROWSER")
 
+
 @action
-def get_wikipedia_article_summary(article_url: str) -> str:
+def get_wikipedia_article_summary(article_url: str) -> Response[str]:
     """
     Retrieves the summary (first paragraph) of given Wikipedia article.
 
@@ -31,10 +33,10 @@ def get_wikipedia_article_summary(article_url: str) -> str:
     page.wait_for_load_state("domcontentloaded")
     page.wait_for_load_state("networkidle")
 
-    paragraphs = page.query_selector_all('.mw-content-ltr>p:not(.mw-empty-elt)')
+    paragraphs = page.query_selector_all(".mw-content-ltr>p:not(.mw-empty-elt)")
     summary = paragraphs[0].inner_text()
 
     # Pretty print for log
     print(summary)
 
-    return summary
+    return Response(result=summary)
