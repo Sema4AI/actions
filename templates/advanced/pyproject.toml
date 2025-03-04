@@ -1,0 +1,7 @@
+[tool.pytest.ini_options]
+pythonpath = ["src", "tests"]
+addopts = "--capture=no"
+
+[tool.mypy]
+mypy_path = "src:tests"
+strict = true

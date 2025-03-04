@@ -16,6 +16,22 @@ dependencies:
     - pydantic=2.10.6
     - requests=2.32.3
 
+dev-dependencies:
+  conda-forge:
+    - pytest=8.3.4
+    - types-requests=2.32.0.20250301
+    - ruff=0.9.9
+    - mypy=1.15.0
+
+dev-tasks:
+  test: pytest tests
+  lint: |
+    ruff check src tests
+    ruff format --check src tests
+  typecheck: mypy --follow-imports=silent --strict src tests
+  prettify: |
+    ruff format src tests
+
 packaging:
   # By default, all files and folders in this directory are packaged when uploaded.
   # Add exclusion rules below (expects glob format: https://docs.python.org/3/library/glob.html)

@@ -6,20 +6,16 @@ https://github.com/sema4ai/actions/blob/master/README.md
 
 """
 
-from sema4ai.actions import action, Secret
-from pydantic import BaseModel, Field
 import requests
+from sema4ai.actions import ActionError, Response, Secret, action
 
-
-class RepositoryInfo(BaseModel):
-    owner_id: str = Field(description="The owner of the repository", default="")
-    name: str = Field(description="The name of the repository", default="")
+from .models import RepositoryInfo
 
 
 @action(is_consequential=False)
 def get_repository_commits(
     github_access_token: Secret, repository_info: RepositoryInfo, limit: int = 10
-) -> str:
+) -> Response[list]:
     """
     Returns commit messages from given repository.
 
@@ -32,7 +28,7 @@ def get_repository_commits(
         A list of commit messages.
     """
     if limit < 1 or limit > 100:
-        return "Limit must be between 1 and 100"
+        raise ActionError("Limit must be between 1 and 100")
 
     response = requests.get(
         f"https://api.github.com/repos/{repository_info.owner_id}/{repository_info.name}/commits?per_page={limit}",
@@ -50,4 +46,4 @@ def get_repository_commits(
     # Pretty print for log
     print(output)
 
-    return output
+    return Response(result=commit_messages)
