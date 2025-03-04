@@ -17,10 +17,9 @@ def create_repository_issue(
         github_access_token: Your private GitHub access token.
         repository_info: Information needed to locate the repository.
         issue_data: Information about the issue to create.
-        limit: The maximum number of commits to return (max 100).
 
     Returns:
-        A list of commit messages.
+        Link to the created issue.
     """
     response = requests.post(
         f"https://api.github.com/repos/{repository_info.owner_id}/{repository_info.name}/issues",

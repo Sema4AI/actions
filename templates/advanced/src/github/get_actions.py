@@ -15,7 +15,7 @@ from .models import RepositoryInfo
 @action(is_consequential=False)
 def get_repository_commits(
     github_access_token: Secret, repository_info: RepositoryInfo, limit: int = 10
-) -> Response[str]:
+) -> Response[list]:
     """
     Returns commit messages from given repository.
 
@@ -46,4 +46,4 @@ def get_repository_commits(
     # Pretty print for log
     print(output)
 
-    return Response(result=output)
+    return Response(result=commit_messages)
