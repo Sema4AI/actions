@@ -28,6 +28,10 @@ def test_action_server_tool(tmpdir):
     tool.download()
     assert tool.verify()
 
+    executable = ActionServerTool.get_default_executable(version="2.5.1", download=True)
+    assert executable.exists()
+    assert executable.is_file()
+
 
 def test_agent_cli_tool(tmpdir):
     import sys
@@ -43,6 +47,10 @@ def test_agent_cli_tool(tmpdir):
     assert not tool.verify()
     tool.download()
     assert tool.verify()
+
+    executable = AgentCliTool.get_default_executable(version="v0.2.2", download=True)
+    assert executable.exists()
+    assert executable.is_file()
 
 
 def test_rcc_tool(tmpdir):
@@ -68,6 +76,10 @@ def test_rcc_tool(tmpdir):
     tool.download()
     assert tool.verify()
 
+    executable = RccTool.get_default_executable(version="v19.0.2", download=True)
+    assert executable.exists()
+    assert executable.is_file()
+
 
 def test_data_server_tool(tmpdir):
     import sys
@@ -90,3 +102,7 @@ def test_data_server_tool(tmpdir):
     tool.make_run_check = False
     tool.download()
     assert tool.verify()
+
+    executable = DataServerTool.get_default_executable(version="v1.0.2", download=True)
+    assert executable.exists()
+    assert executable.is_file()
