@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 0.0.4 - 2025-03-06
+
+Added utilities previously used with git subtree (vendored_deps) in action server and vscode extension.
+
 ## 0.0.3 - 2025-02-04
 
 Add sema4ai.common.uris module for uri <-> path translations.
