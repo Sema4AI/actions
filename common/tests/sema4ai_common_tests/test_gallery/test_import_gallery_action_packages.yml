@@ -1,0 +1,13 @@
+message: null
+result:
+  Google Docs 1.2.0:
+    description: Pre-built AI actions to read Google documents in Markdown format
+    name: Google Docs
+    version: 1.2.0
+    zip: https://cdn.sema4.ai/gallery/actions/google-docs/1.2.0/google-docs.zip
+  Google Docs 1.2.1:
+    description: Get contents of Google Docs as Markdown
+    name: Google Docs
+    version: 1.2.1
+    zip: https://cdn.sema4.ai/gallery/actions/google-docs/1.2.1/google-docs.zip
+success: true

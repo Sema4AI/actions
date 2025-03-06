@@ -1,6 +1,7 @@
 import logging
 import os
 import sys
+from pathlib import Path
 
 from sema4ai.common.process import ProcessRunResult
 
@@ -21,6 +22,38 @@ class BaseTool:
     force_machine: str | None = None
     # May be set in the subclass or instance to configure the run check to be done when verifying the tool.
     make_run_check: bool = True
+
+    @classmethod
+    def get_default_executable(cls, *, version: str, download: bool = False) -> Path:
+        """
+        This should be the preferred way to get the executable.
+
+        i.e.:
+
+        action_server_executable = ActionServerTool.get_executable_path(
+            version="0.1.0", download=True
+        )
+
+        Then the `action_server_executable` will be a Path to the executable and will be
+        downloaded if `download` is True (otherwise it will be checked if the executable
+        exists and is executable).
+        """
+        from sema4ai.common.locations import get_default_executable_path
+
+        target_location = get_default_executable_path(
+            name=cls.executable_name, version=version
+        )
+
+        if download:
+            target_location.parent.mkdir(parents=True, exist_ok=True)
+            action_server_tool = cls(
+                target_location=str(target_location),
+                tool_version=version,
+            )
+
+            action_server_tool.download()
+
+        return target_location
 
     def __init__(self, target_location: str, tool_version: str):
         self._target_location = target_location
