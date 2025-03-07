@@ -252,6 +252,12 @@ class Process:
     def pid(self):
         return self._proc.pid
 
+    def __str__(self):
+        return f"Process [{subprocess.list2cmdline(self._args)}, cwd={self._cwd}, pid={self._proc.pid}, uid={self._uid}]"
+
+    def __repr__(self):
+        return str(self)
+
 
 def build_subprocess_kwargs(cwd, env, **kwargs) -> dict:
     startupinfo = None
