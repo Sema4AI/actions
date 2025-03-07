@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 0.0.6 - 2025-03-07
+
+Improve `Process.__str__` and `Process.__repr__`.
+
 ## 0.0.5 - 2025-03-07
 
 Improve BaseTool to define target paths for windows and linux too (not just mac os).
