@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 0.0.5 - 2025-03-07
+
+Improve BaseTool to define target paths for windows and linux too (not just mac os).
+
 ## 0.0.4 - 2025-03-06
 
 Added utilities previously used with git subtree (vendored_deps) in action server and vscode extension.

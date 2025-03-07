@@ -14,7 +14,11 @@ class BaseTool:
     executable_name: str
     version_command: tuple[str, ...] = ("--version",)
     available_in_mac_os_arm64: bool = True
-    arm_64_download_path: str = "macos-arm64"
+
+    macos_arm_64_download_path: str = "macos-arm64"
+    macos_download_path: str = "macos64"
+    win64_download_path: str = "windows64"
+    linux64_download_path: str = "linux64"
 
     # May be set in the subclass or instance to configure the platform to download the tool for.
     force_sys_platform: str | None = None
@@ -87,21 +91,25 @@ class BaseTool:
 
         if sys_platform == "win32":
             if is_64:
-                return f"windows64/{executable_name}.exe"
+                return f"{self.win64_download_path}/{executable_name}.exe"
             else:
-                return f"windows32/{executable_name}.exe"
+                raise RuntimeError("32-bit windows is no longer supported")
 
         elif sys_platform == "darwin":
             if machine == "arm64" and self.available_in_mac_os_arm64:
-                return f"{self.arm_64_download_path}/{executable_name}"
+                # Backwards compatibility (older version defined macos arm64 in "arm_64_download_path")
+                macos_arm64_path = getattr(self, "arm_64_download_path", None)
+                if not macos_arm64_path:
+                    macos_arm64_path = self.macos_arm_64_download_path
+                return f"{macos_arm64_path}/{executable_name}"
             else:
-                return f"macos64/{executable_name}"
+                return f"{self.macos_download_path}/{executable_name}"
 
         else:
             if is_64:
-                return f"linux64/{executable_name}"
+                return f"{self.linux64_download_path}/{executable_name}"
             else:
-                return f"linux32/{executable_name}"
+                raise RuntimeError("32-bit linux is no longer supported")
 
 
 def _get_tool_version(tool: BaseTool, location: str) -> ProcessRunResult:
@@ -289,7 +297,7 @@ class DataServerTool(BaseTool):
     executable_name = "data-server-cli"
 
     # Different naming for arm64 on macos for the data-server-cli tool
-    arm_64_download_path = "macos_arm64"
+    macos_arm_64_download_path = "macos_arm64"
 
     def __init__(self, target_location: str, tool_version: str):
         super().__init__(target_location, tool_version)
