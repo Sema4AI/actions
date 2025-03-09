@@ -179,8 +179,8 @@ def _os_exit(retcode: int):
                 except Exception as e:
                     # Expected: process no longer exists.
                     log.debug(f"Exception when killing process: {p.pid}: {e}")
-                # Wait a bit more after terminate.
-                psutil.wait_procs(alive, 5)
+            # Wait a bit more after terminate.
+            psutil.wait_procs(alive, 2)
         except Exception as e:
             log.debug(f"Exception when listing/killing processes: {e}")
 

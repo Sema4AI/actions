@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 0.0.7 - 2025-03-09
+
+Add utility to automatically exit when another pid exits (`exit_when_pid_exists`).
+
 ## 0.0.6 - 2025-03-07
 
 Improve `Process.__str__` and `Process.__repr__`.
