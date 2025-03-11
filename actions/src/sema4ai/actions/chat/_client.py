@@ -211,7 +211,8 @@ files will be stored."""
                 # Add the file to the request after the form data (the order
                 # of the fields is important -- the "key" field must
                 # be the first field).
-                fields.append(("file", content))
+                filename = "file"
+                fields.append(("file", (filename, content)))
 
                 encoded_data, content_type = encode_multipart_formdata(fields)
 
