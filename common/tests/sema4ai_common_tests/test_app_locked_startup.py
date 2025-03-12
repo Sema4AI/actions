@@ -99,7 +99,7 @@ time.sleep(100)
                 return True
             return f"Waiting for PID: {other_process_pid} to be in the lock file contents:\n{contents!r}\nCurrent process PID: {os.getpid()}"
 
-        # Mutex must not be gotten once (so that we know the other process is holding it)
+        # Check that the other process is holding the mutex
         wait_for_expected_func_return(other_process_has_mutex, True, timeout=10)
         assert process_holding_lock.is_alive()
 
