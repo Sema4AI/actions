@@ -42,7 +42,7 @@ def exit_when_pid_exits(
                             if is_process_alive(pid):
                                 # Note: just exit since the parent process already
                                 # exited.
-                                log.debug(
+                                log.info(
                                     f"Force-quit process: {os.getpid()} because parent: {pid} exited"
                                 )
                                 _os_exit(0, soft_kill_timeout=soft_kill_timeout)
