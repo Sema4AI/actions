@@ -449,7 +449,12 @@ def kill_subprocesses(pid: int | None = None, soft_kill_timeout: float = 2) -> N
     if pid is None:
         parent_process = psutil.Process()
     else:
-        parent_process = psutil.Process(pid)
+        try:
+            parent_process = psutil.Process(pid)
+        except Exception:
+            # If the process doesn't exist, just return (unable to kill processes of process that doesn't exist or we don't have permission to access).
+            log.exception(f"Error getting process with pid: {pid}")
+            return
 
     try:
         try:
