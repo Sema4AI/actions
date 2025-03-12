@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Make it possible to customize the SystemMutex message saved to the file.
+- Create kill_subprocesses API.
+- Fixed typo on `exit_when_pid_exists` -> `exit_when_pid_exits` (kept API with typo for backward compatibility)
+
 ## 0.0.7 - 2025-03-09
 
 Add utility to automatically exit when another pid exits (`exit_when_pid_exists`).

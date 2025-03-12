@@ -440,6 +440,51 @@ def kill_process_and_subprocesses(pid):
         _kill_process_and_subprocess_linux(pid)
 
 
+def kill_subprocesses(pid: int | None = None) -> None:
+    """
+    Kills all subprocesses of the given pid (if not passed, kills all subprocesses of the current process).
+    """
+    import psutil
+
+    if pid is None:
+        parent_process = psutil.Process()
+    else:
+        parent_process = psutil.Process(pid)
+
+    try:
+        try:
+            children_processes = list(parent_process.children(recursive=True))
+        except Exception:
+            # Retry once
+            children_processes = list(parent_process.children(recursive=True))
+
+        try:
+            names = ",".join(f"{x.name()} (x.pid)" for x in children_processes)
+        except Exception as e:
+            log.debug(f"Exception when collecting process names: {e}")
+            names = "<unable to get>"
+
+        log.info(f"Killing processes: {names}")
+        for p in children_processes:
+            try:
+                p.kill()
+            except Exception as e:
+                log.debug(f"Exception when terminating process: {p.pid}: {e}")
+
+        # Give processes 2 seconds to exit cleanly and force-kill afterwards
+        _gone, alive = psutil.wait_procs(children_processes, 2)
+        for p in alive:
+            try:
+                p.terminate()
+            except Exception as e:
+                # Expected: process no longer exists.
+                log.debug(f"Exception when killing process: {p.pid}: {e}")
+        # Wait a bit more after terminate.
+        psutil.wait_procs(alive, 2)
+    except Exception as e:
+        log.debug(f"Exception when listing/killing processes: {e}")
+
+
 class IProgressReporter(Protocol):
     @property
     def cancelled(self) -> bool:
