@@ -15,7 +15,7 @@ def obtain_app_mutex(
     data_dir: Path,
     lock_basename: str,
     app_name: str,
-    timeout: int = 5,
+    timeout: int = 10,
     mutex_creation_kwargs: dict[str, Any] | None = None,
 ) -> "SystemMutex | None":
     """
@@ -69,7 +69,9 @@ def obtain_app_mutex(
         acquired = mutex.get_mutex_aquired()
         if acquired:
             if shown_first_message:
-                log.info(f"Exited. Proceeding with {app_name} startup.")
+                log.info(
+                    f"Process holding lock exited. Proceeding with {app_name} startup."
+                )
             return mutex
 
         msg = mutex.mutex_creation_info or ""
