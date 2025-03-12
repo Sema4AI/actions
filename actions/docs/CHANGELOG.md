@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 1.3.6 - 2025-03-12
+
+- Pass filename in multipart form data when uploading file.
+
 ## 1.3.5 - 2025-02-15
 
 - Fixed error message to show correct url if upload fails.
