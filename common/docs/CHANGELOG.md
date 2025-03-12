@@ -5,9 +5,10 @@
 ## 0.0.8 - 2025-03-12
 
 - Make it possible to customize the SystemMutex message saved to the file.
-- Create kill_subprocesses API.
+- Create `kill_subprocesses` API.
 - Fixed typo on `exit_when_pid_exists` -> `exit_when_pid_exits` (kept API with typo for backward compatibility)
 - Created `sema4ai.common.app_mutex.obtain_app_mutex` API to help with logic starting up Application.
+- Customize `soft_kill_timeout` in `exit_when_pid_exits` and `kill_subprocesses`.
 
 ## 0.0.7 - 2025-03-09
 

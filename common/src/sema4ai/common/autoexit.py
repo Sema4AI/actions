@@ -9,9 +9,14 @@ log = logging.getLogger(__name__)
 _track_pids_to_exit = set()
 _watching_thread_global = None
 PARENT_PROCESS_WATCH_INTERVAL = 2
+SOFT_KILL_TIMEOUT = 2
 
 
-def exit_when_pid_exits(pid: str | int, interval=PARENT_PROCESS_WATCH_INTERVAL) -> None:
+def exit_when_pid_exits(
+    pid: str | int,
+    interval=PARENT_PROCESS_WATCH_INTERVAL,
+    soft_kill_timeout: float = SOFT_KILL_TIMEOUT,
+) -> None:
     """
     Exit the current process when the given pid exists (may be called multiple times and if
     any of the pids we're tracking exit, the current process will exit).
@@ -40,7 +45,7 @@ def exit_when_pid_exits(pid: str | int, interval=PARENT_PROCESS_WATCH_INTERVAL) 
                                 log.debug(
                                     f"Force-quit process: {os.getpid()} because parent: {pid} exited"
                                 )
-                                _os_exit(0)
+                                _os_exit(0, soft_kill_timeout=soft_kill_timeout)
                     except Exception:
                         log.exception(f"Error detecting if parent process {pid} exited")
 
@@ -57,14 +62,14 @@ def exit_when_pid_exits(pid: str | int, interval=PARENT_PROCESS_WATCH_INTERVAL) 
 exit_when_pid_exists = exit_when_pid_exits
 
 
-def _os_exit(retcode: int) -> None:
+def _os_exit(retcode: int, soft_kill_timeout: float = 2) -> None:
     """
     Kills subprocesses and exits with the given returncode.
     """
     from sema4ai.common.process import kill_subprocesses
 
     try:
-        kill_subprocesses()
+        kill_subprocesses(soft_kill_timeout=soft_kill_timeout)
         sys.stdout.flush()
         sys.stderr.flush()
         # Give some time for other threads to run just a little bit more.

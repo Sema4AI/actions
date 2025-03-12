@@ -440,7 +440,7 @@ def kill_process_and_subprocesses(pid):
         _kill_process_and_subprocess_linux(pid)
 
 
-def kill_subprocesses(pid: int | None = None) -> None:
+def kill_subprocesses(pid: int | None = None, soft_kill_timeout: float = 2) -> None:
     """
     Kills all subprocesses of the given pid (if not passed, kills all subprocesses of the current process).
     """
@@ -472,7 +472,7 @@ def kill_subprocesses(pid: int | None = None) -> None:
                 log.debug(f"Exception when terminating process: {p.pid}: {e}")
 
         # Give processes 2 seconds to exit cleanly and force-kill afterwards
-        _gone, alive = psutil.wait_procs(children_processes, 2)
+        _gone, alive = psutil.wait_procs(children_processes, soft_kill_timeout)
         for p in alive:
             try:
                 p.terminate()
