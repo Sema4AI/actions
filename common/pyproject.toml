@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sema4ai-common"
-version = "0.0.7"
+version = "0.0.8"
 description = "Sema4AI Common"
 authors = ["Sema4.ai Engineering <engineering@sema4.ai>"]
 readme = "README.md"

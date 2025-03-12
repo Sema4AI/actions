@@ -32,7 +32,7 @@ import threading
 import time
 import traceback
 import weakref
-from typing import ContextManager
+from typing import Any, ContextManager
 
 from .null import NULL
 
@@ -139,13 +139,24 @@ if sys.platform == "win32":
     import os
 
     class SystemMutex(object):
+        _release_mutex: Any
+
         def __init__(
-            self, mutex_name, check_reentrant=True, log_info=False, base_dir=None
+            self,
+            mutex_name,
+            check_reentrant=True,
+            log_info=False,
+            base_dir=None,
+            write_to_mutex_file: str | None = None,
         ):
             """
-            :param check_reentrant:
-                Should only be False if this mutex is expected to be released in
-                a different thread.
+            Args:
+                write_to_mutex_file:
+                    If provided, the given string will be written to the mutex file.
+                    If not provided, the default message will be used.
+                check_reentrant:
+                    Should only be False if this mutex is expected to be released in
+                    a different thread.
             """
             if base_dir is None:
                 base_dir = tempfile.gettempdir()
@@ -163,7 +174,9 @@ if sys.platform == "win32":
             try:
                 handle = os.open(filename, os.O_CREAT | os.O_EXCL | os.O_RDWR)
                 try:
-                    contents = _collect_mutex_allocation_msg(mutex_name)
+                    contents = write_to_mutex_file or _collect_mutex_allocation_msg(
+                        mutex_name
+                    )
                     os.write(handle, contents.encode("utf-8", "replace"))
                 except Exception:
                     pass  # Ignore this as it's pretty much optional
@@ -228,13 +241,24 @@ else:  # Linux
     import os
 
     class SystemMutex(object):
+        _release_mutex: Any
+
         def __init__(
-            self, mutex_name, check_reentrant=True, log_info=False, base_dir=None
+            self,
+            mutex_name,
+            check_reentrant=True,
+            log_info=False,
+            base_dir=None,
+            write_to_mutex_file: str | None = None,
         ):
             """
-            :param check_reentrant:
-                Should only be False if this mutex is expected to be released in
-                a different thread.
+            Args:
+                write_to_mutex_file:
+                    If provided, the given string will be written to the mutex file.
+                    If not provided, the default message will be used.
+                check_reentrant:
+                    Should only be False if this mutex is expected to be released in
+                    a different thread.
             """
             if base_dir is None:
                 base_dir = tempfile.gettempdir()
@@ -247,7 +271,9 @@ else:  # Linux
             try:
                 handle = open(filename, "a+")
                 fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
-                contents = _collect_mutex_allocation_msg(mutex_name)
+                contents = write_to_mutex_file or _collect_mutex_allocation_msg(
+                    mutex_name
+                )
                 handle.seek(0)
                 handle.truncate()
                 handle.write(contents)

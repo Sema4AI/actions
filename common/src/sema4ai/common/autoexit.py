@@ -6,13 +6,16 @@ import time
 
 log = logging.getLogger(__name__)
 
-_track_pids_to_exit = {}
+_track_pids_to_exit = set()
 _watching_thread_global = None
 PARENT_PROCESS_WATCH_INTERVAL = 2
+SOFT_KILL_TIMEOUT = 2
 
 
-def exit_when_pid_exists(
-    pid: str | int, interval=PARENT_PROCESS_WATCH_INTERVAL
+def exit_when_pid_exits(
+    pid: str | int,
+    interval=PARENT_PROCESS_WATCH_INTERVAL,
+    soft_kill_timeout: float = SOFT_KILL_TIMEOUT,
 ) -> None:
     """
     Exit the current process when the given pid exists (may be called multiple times and if
@@ -22,26 +25,29 @@ def exit_when_pid_exists(
         pid: The pid of the process to watch.
         interval: The interval to check if the process is alive.
     """
+    from sema4ai.common.process import is_process_alive
+
     pid = int(pid)
     if pid:
-        import psutil
-
-        if pid not in _track_pids_to_exit:
-            _track_pids_to_exit[pid] = psutil.Process(pid)
+        _track_pids_to_exit.add(pid)
         global _watching_thread_global
         if _watching_thread_global is None:
 
             def watch_parent_process():
                 # exit when any of the ids we're tracking exit.
+                log.debug("Watching for parent process to exit")
                 while True:
-                    for p in tuple(_track_pids_to_exit.values()):
-                        if not p.is_running():
-                            # Note: just exit since the parent process already
-                            # exited.
-                            log.debug(
-                                f"Force-quit process: {os.getpid()} because parent: {p.pid} exited"
-                            )
-                            _os_exit(0)
+                    try:
+                        for pid in tuple(_track_pids_to_exit):
+                            if is_process_alive(pid):
+                                # Note: just exit since the parent process already
+                                # exited.
+                                log.info(
+                                    f"Force-quit process: {os.getpid()} because parent: {pid} exited"
+                                )
+                                _os_exit(0, soft_kill_timeout=soft_kill_timeout)
+                    except Exception:
+                        log.exception(f"Error detecting if parent process {pid} exited")
 
                     time.sleep(interval)
 
@@ -52,47 +58,18 @@ def exit_when_pid_exists(
             _watching_thread_global.start()
 
 
-def _os_exit(retcode: int) -> None:
+# Keep old API (which has a typo).
+exit_when_pid_exists = exit_when_pid_exits
+
+
+def _os_exit(retcode: int, soft_kill_timeout: float = 2) -> None:
     """
     Kills subprocesses and exits with the given returncode.
     """
+    from sema4ai.common.process import kill_subprocesses
+
     try:
-        import psutil
-
-        curr_process = psutil.Process()
-        try:
-            try:
-                children_processes = list(curr_process.children(recursive=True))
-            except Exception:
-                # Retry once
-                children_processes = list(curr_process.children(recursive=True))
-
-            try:
-                names = ",".join(f"{x.name()} (x.pid)" for x in children_processes)
-            except Exception as e:
-                log.debug(f"Exception when collecting process names: {e}")
-                names = "<unable to get>"
-
-            log.info(f"sema4ai-action-server killing processes after run: {names}")
-            for p in children_processes:
-                try:
-                    p.kill()
-                except Exception as e:
-                    log.debug(f"Exception when terminating process: {p.pid}: {e}")
-
-            # Give processes 2 seconds to exit cleanly and force-kill afterwards
-            _gone, alive = psutil.wait_procs(children_processes, 2)
-            for p in alive:
-                try:
-                    p.terminate()
-                except Exception as e:
-                    # Expected: process no longer exists.
-                    log.debug(f"Exception when killing process: {p.pid}: {e}")
-            # Wait a bit more after terminate.
-            psutil.wait_procs(alive, 2)
-        except Exception as e:
-            log.debug(f"Exception when listing/killing processes: {e}")
-
+        kill_subprocesses(soft_kill_timeout=soft_kill_timeout)
         sys.stdout.flush()
         sys.stderr.flush()
         # Give some time for other threads to run just a little bit more.

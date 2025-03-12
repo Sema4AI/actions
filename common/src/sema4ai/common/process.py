@@ -208,6 +208,10 @@ class Process:
             )
         self._proc.wait()
 
+    def stream_to(self, stream):
+        self.on_stdout.register(stream.write)
+        self.on_stderr.register(stream.write)
+
     def start(
         self, read_stderr: bool = True, read_stdout: bool = True, **kwargs
     ) -> None:
@@ -438,6 +442,56 @@ def kill_process_and_subprocesses(pid):
             raise CalledProcessError(retcode, args)
     else:
         _kill_process_and_subprocess_linux(pid)
+
+
+def kill_subprocesses(pid: int | None = None, soft_kill_timeout: float = 2) -> None:
+    """
+    Kills all subprocesses of the given pid (if not passed, kills all subprocesses of the current process).
+    """
+    import psutil
+
+    if pid is None:
+        parent_process = psutil.Process()
+    else:
+        try:
+            parent_process = psutil.Process(pid)
+        except Exception:
+            # If the process doesn't exist, just return (unable to kill processes of process that doesn't exist or we don't have permission to access).
+            log.exception(f"Error getting process with pid: {pid}")
+            return
+
+    try:
+        try:
+            children_processes = list(parent_process.children(recursive=True))
+        except Exception:
+            # Retry once
+            children_processes = list(parent_process.children(recursive=True))
+
+        try:
+            names = ",".join(f"{x.name()} (x.pid)" for x in children_processes)
+        except Exception as e:
+            log.debug(f"Exception when collecting process names: {e}")
+            names = "<unable to get>"
+
+        log.info(f"Killing processes: {names}")
+        for p in children_processes:
+            try:
+                p.kill()
+            except Exception as e:
+                log.debug(f"Exception when terminating process: {p.pid}: {e}")
+
+        # Give processes 2 seconds to exit cleanly and force-kill afterwards
+        _gone, alive = psutil.wait_procs(children_processes, soft_kill_timeout)
+        for p in alive:
+            try:
+                p.terminate()
+            except Exception as e:
+                # Expected: process no longer exists.
+                log.debug(f"Exception when killing process: {p.pid}: {e}")
+        # Wait a bit more after terminate.
+        psutil.wait_procs(alive, 2)
+    except Exception as e:
+        log.debug(f"Exception when listing/killing processes: {e}")
 
 
 class IProgressReporter(Protocol):
@@ -767,6 +821,7 @@ __all__ = [
     "IProgressReporter",
     "is_process_alive",
     "kill_process_and_subprocesses",
+    "kill_subprocesses",
     "launch_and_return_future",
     "Process",
     "ProcessResultStatus",
