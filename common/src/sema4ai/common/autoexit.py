@@ -6,7 +6,7 @@ import time
 
 log = logging.getLogger(__name__)
 
-_track_pids_to_exit = {}
+_track_pids_to_exit = set()
 _watching_thread_global = None
 PARENT_PROCESS_WATCH_INTERVAL = 2
 
@@ -20,26 +20,29 @@ def exit_when_pid_exits(pid: str | int, interval=PARENT_PROCESS_WATCH_INTERVAL) 
         pid: The pid of the process to watch.
         interval: The interval to check if the process is alive.
     """
+    from sema4ai.common.process import is_process_alive
+
     pid = int(pid)
     if pid:
-        import psutil
-
-        if pid not in _track_pids_to_exit:
-            _track_pids_to_exit[pid] = psutil.Process(pid)
+        _track_pids_to_exit.add(pid)
         global _watching_thread_global
         if _watching_thread_global is None:
 
             def watch_parent_process():
                 # exit when any of the ids we're tracking exit.
+                log.debug("Watching for parent process to exit")
                 while True:
-                    for p in tuple(_track_pids_to_exit.values()):
-                        if not p.is_running():
-                            # Note: just exit since the parent process already
-                            # exited.
-                            log.debug(
-                                f"Force-quit process: {os.getpid()} because parent: {p.pid} exited"
-                            )
-                            _os_exit(0)
+                    try:
+                        for pid in tuple(_track_pids_to_exit):
+                            if is_process_alive(pid):
+                                # Note: just exit since the parent process already
+                                # exited.
+                                log.debug(
+                                    f"Force-quit process: {os.getpid()} because parent: {pid} exited"
+                                )
+                                _os_exit(0)
+                    except Exception:
+                        log.exception(f"Error detecting if parent process {pid} exited")
 
                     time.sleep(interval)
 

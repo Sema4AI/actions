@@ -812,6 +812,7 @@ __all__ = [
     "IProgressReporter",
     "is_process_alive",
     "kill_process_and_subprocesses",
+    "kill_subprocesses",
     "launch_and_return_future",
     "Process",
     "ProcessResultStatus",

@@ -5,20 +5,19 @@ def test_exit_when_pid_exists():
     # Create the first process that will run indefinitely
     target_process = Process(["python", "-c", "import time; time.sleep(100000)"])
     target_process.start()
+    wait_for_condition(lambda: target_process.is_alive())
 
     # Create the second process that will watch the first one
     args = [
         "python",
         "-c",
-        f"from sema4ai.common.autoexit import exit_when_pid_exists; exit_when_pid_exists({target_process.pid})",
+        f"from sema4ai.common.autoexit import exit_when_pid_exits; exit_when_pid_exits({target_process.pid})",
     ]
     watcher_process = Process(args=args)
     watcher_process.start()
 
     try:
-        wait_for_condition(
-            lambda: target_process.is_alive() and watcher_process.is_alive(), timeout=10
-        )
+        wait_for_condition(lambda: watcher_process.is_alive(), timeout=10)
 
         # Kill the target process
         target_process.stop()

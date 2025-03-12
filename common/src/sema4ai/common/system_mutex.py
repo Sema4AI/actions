@@ -32,7 +32,7 @@ import threading
 import time
 import traceback
 import weakref
-from typing import ContextManager
+from typing import Any, ContextManager
 
 from .null import NULL
 
@@ -139,18 +139,24 @@ if sys.platform == "win32":
     import os
 
     class SystemMutex(object):
+        _release_mutex: Any
+
         def __init__(
             self,
             mutex_name,
             check_reentrant=True,
             log_info=False,
             base_dir=None,
-            write_to_mutex_file=None,
+            write_to_mutex_file: str | None = None,
         ):
             """
-            :param check_reentrant:
-                Should only be False if this mutex is expected to be released in
-                a different thread.
+            Args:
+                write_to_mutex_file:
+                    If provided, the given string will be written to the mutex file.
+                    If not provided, the default message will be used.
+                check_reentrant:
+                    Should only be False if this mutex is expected to be released in
+                    a different thread.
             """
             if base_dir is None:
                 base_dir = tempfile.gettempdir()
@@ -235,18 +241,24 @@ else:  # Linux
     import os
 
     class SystemMutex(object):
+        _release_mutex: Any
+
         def __init__(
             self,
             mutex_name,
             check_reentrant=True,
             log_info=False,
             base_dir=None,
-            write_to_mutex_file=None,
+            write_to_mutex_file: str | None = None,
         ):
             """
-            :param check_reentrant:
-                Should only be False if this mutex is expected to be released in
-                a different thread.
+            Args:
+                write_to_mutex_file:
+                    If provided, the given string will be written to the mutex file.
+                    If not provided, the default message will be used.
+                check_reentrant:
+                    Should only be False if this mutex is expected to be released in
+                    a different thread.
             """
             if base_dir is None:
                 base_dir = tempfile.gettempdir()
