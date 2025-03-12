@@ -243,3 +243,28 @@ time.sleep(30)
         return mutex.get_mutex_aquired()
 
     wait_for_condition(acquire_mutex, timeout=5)
+
+
+def test_custom_info_to_mutex(tmpdir):
+    from sema4ai.common.system_mutex import SystemMutex
+
+    mutex = SystemMutex(
+        "test_custom_info_to_mutex",
+        write_to_mutex_file="custom-message",
+        base_dir=str(tmpdir),
+    )
+    assert mutex.get_mutex_aquired()
+    with open(tmpdir / "test_custom_info_to_mutex", "r") as f:
+        assert f.read() == "custom-message"
+
+    mutex2 = SystemMutex(
+        "test_custom_info_to_mutex",
+        write_to_mutex_file="custom-message-2",
+        base_dir=str(tmpdir),
+        check_reentrant=False,
+    )
+    assert not mutex2.get_mutex_aquired()
+
+    # Previous mutex message kept
+    with open(tmpdir / "test_custom_info_to_mutex", "r") as f:
+        assert f.read() == "custom-message"

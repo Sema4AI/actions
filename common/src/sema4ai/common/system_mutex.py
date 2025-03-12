@@ -140,7 +140,12 @@ if sys.platform == "win32":
 
     class SystemMutex(object):
         def __init__(
-            self, mutex_name, check_reentrant=True, log_info=False, base_dir=None
+            self,
+            mutex_name,
+            check_reentrant=True,
+            log_info=False,
+            base_dir=None,
+            write_to_mutex_file=None,
         ):
             """
             :param check_reentrant:
@@ -163,7 +168,9 @@ if sys.platform == "win32":
             try:
                 handle = os.open(filename, os.O_CREAT | os.O_EXCL | os.O_RDWR)
                 try:
-                    contents = _collect_mutex_allocation_msg(mutex_name)
+                    contents = write_to_mutex_file or _collect_mutex_allocation_msg(
+                        mutex_name
+                    )
                     os.write(handle, contents.encode("utf-8", "replace"))
                 except Exception:
                     pass  # Ignore this as it's pretty much optional
@@ -229,7 +236,12 @@ else:  # Linux
 
     class SystemMutex(object):
         def __init__(
-            self, mutex_name, check_reentrant=True, log_info=False, base_dir=None
+            self,
+            mutex_name,
+            check_reentrant=True,
+            log_info=False,
+            base_dir=None,
+            write_to_mutex_file=None,
         ):
             """
             :param check_reentrant:
@@ -247,7 +259,9 @@ else:  # Linux
             try:
                 handle = open(filename, "a+")
                 fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
-                contents = _collect_mutex_allocation_msg(mutex_name)
+                contents = write_to_mutex_file or _collect_mutex_allocation_msg(
+                    mutex_name
+                )
                 handle.seek(0)
                 handle.truncate()
                 handle.write(contents)
