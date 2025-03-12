@@ -208,6 +208,10 @@ class Process:
             )
         self._proc.wait()
 
+    def stream_to(self, stream):
+        self.on_stdout.register(stream.write)
+        self.on_stderr.register(stream.write)
+
     def start(
         self, read_stderr: bool = True, read_stdout: bool = True, **kwargs
     ) -> None:
