@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 0.0.9 - 2025-03-13
+
+- Fix critical issue in autoexit.
+
 ## 0.0.8 - 2025-03-12
 
 - Make it possible to customize the SystemMutex message saved to the file.

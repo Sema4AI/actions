@@ -39,7 +39,7 @@ def exit_when_pid_exits(
                 while True:
                     try:
                         for pid in tuple(_track_pids_to_exit):
-                            if is_process_alive(pid):
+                            if not is_process_alive(pid):
                                 # Note: just exit since the parent process already
                                 # exited.
                                 log.info(
