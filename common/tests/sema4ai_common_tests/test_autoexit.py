@@ -1,5 +1,6 @@
 def test_exit_when_pid_exists():
     import sys
+    import time
 
     from sema4ai.common.process import Process
     from sema4ai.common.wait_for import wait_for_condition
@@ -13,7 +14,7 @@ def test_exit_when_pid_exists():
     args = [
         sys.executable,
         "-c",
-        f"from sema4ai.common.autoexit import exit_when_pid_exits; exit_when_pid_exits({target_process.pid})",
+        f"from sema4ai.common.autoexit import exit_when_pid_exits; exit_when_pid_exits({target_process.pid}); import time; time.sleep(100000)",
     ]
     watcher_process = Process(args=args)
     import io
@@ -28,6 +29,11 @@ def test_exit_when_pid_exists():
             msg=lambda: f"Watcher process was not created in time. Output:\n{stream.getvalue()}",
         )
 
+        # Just wait a bit to make sure that we don't kill before the pid to track is killed.
+        time.sleep(0.2)
+        assert target_process.is_alive()
+        assert watcher_process.is_alive()
+
         # Kill the target process
         target_process.stop()
 
@@ -35,6 +41,9 @@ def test_exit_when_pid_exists():
 
         # Verify the watcher process has exited
         assert not watcher_process.is_alive()
+
+    except Exception as e:
+        raise RuntimeError("Test failed. Output:\n" + stream.getvalue()) from e
 
     finally:
         # Cleanup processes if they're still running
