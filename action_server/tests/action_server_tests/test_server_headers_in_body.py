@@ -3,6 +3,7 @@ import pytest
 from sema4ai.action_server._selftest import ActionServerClient, ActionServerProcess
 
 
+@pytest.mark.integration_test
 @pytest.mark.parametrize(
     "scenario",
     [

@@ -3,7 +3,7 @@ package main
 import (
 	"archive/zip"
 	"bytes"
-	"embed"
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -13,18 +13,28 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"time"
 
+	"github.com/gofrs/flock"
 	"golang.org/x/mod/semver"
+
+	_ "embed"
 )
 
-//go:embed all:assets/*
-var content embed.FS
+//go:embed assets/assets.zip
+var ASSETS_ZIP []byte
+
+//go:embed assets/version.txt
+var ASSETS_VERSION []byte
+
+//go:embed assets/app_hash
+var ASSETS_APP_HASH []byte
 
 // Constants
-const ACTION_SERVER_LATEST_BASE_URL = "https://cdn.sema4.ai/action-server/releases/latest/"
-const VERSION_LATEST_URL = ACTION_SERVER_LATEST_BASE_URL + "version.txt"
+var debugGoWrapper = os.Getenv("SEMA4AI_GO_WRAPPER_DEBUG") == "1"
 
-var debugGoWrapper = os.Getenv("SEMA4AI_ACTION_SERVER_GO_WRAPPER_DEBUG") == "1"
+// read/write/execute for the owner, read/execute for the group and others
+const DEFAULT_PERMISSIONS = 0755
 
 type ColorType struct{}
 
@@ -38,12 +48,12 @@ func (ct *ColorType) Green(str string) string {
 	return fmt.Sprintf("\033[32m%s\033[0m", str)
 }
 
-func getLatestVersion() (string, error) {
+func getLatestVersion(versionLatestUrl string) (string, error) {
 	if debugGoWrapper {
-		fmt.Fprintf(os.Stderr, "Getting latest version from %s\n", VERSION_LATEST_URL)
+		fmt.Fprintf(os.Stderr, "Getting latest version from %s\n", versionLatestUrl)
 	}
 	// Get the data from the URL
-	versionResponse, err := http.Get(VERSION_LATEST_URL)
+	versionResponse, err := http.Get(versionLatestUrl)
 	if err != nil {
 		return "", err
 	}
@@ -59,9 +69,9 @@ func getLatestVersion() (string, error) {
 	return strings.TrimSpace(versionAsString), nil
 }
 
-func checkAvailableUpdate(version string) {
+func checkAvailableUpdate(version string, config RunConfig) {
 	// Get the latest version
-	latestVersion, err := getLatestVersion()
+	latestVersion, err := getLatestVersion(config.VersionLatestURL)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Verifying latest version failed:%s\n", err)
 		return
@@ -71,54 +81,24 @@ func checkAvailableUpdate(version string) {
 
 	// If the current version is a previous version than the latest print the update suggestions
 	if compareResult == -1 {
-		// Construct the needed URL path to get to the downloadable object
-		var actionOS, actionExe string
-		switch runtime.GOOS {
-		case "windows":
-			actionOS = "windows64"
-			actionExe = "action-server.exe"
-		case "linux":
-			actionOS = "linux64"
-			actionExe = "action-server"
-		case "darwin":
-			actionExe = "action-server"
-			switch runtime.GOARCH {
-			case "arm64":
-				actionOS = "macos-arm64"
-			case "amd64":
-				actionOS = "macos64"
-			default:
-				fmt.Printf("Unknown architecture: %s\n", runtime.GOARCH)
-			}
-		default:
-			fmt.Fprintf(os.Stderr, "Unsupported operating system\n")
-			os.Exit(1)
-		}
 		colorT := &ColorType{}
-		urlPath, _ := url.JoinPath(ACTION_SERVER_LATEST_BASE_URL, actionOS, actionExe)
-		fmt.Fprintf(os.Stderr, "\n ⏫ A new version of action-server is now available: %s → %s \n", colorT.Yellow(version), colorT.Green(latestVersion))
-		if runtime.GOOS == "darwin" {
-			fmt.Fprintf(os.Stderr, "    To update, download from: %s \n", colorT.Bold(urlPath))
-			fmt.Fprintf(os.Stderr, "    Or run: %s \n\n", colorT.Bold("brew update && brew install sema4ai/tools/action-server"))
+		fmt.Fprintf(os.Stderr, "\n ⏫ A new version of %s is now available: %s → %s \n", config.ExecutableName, colorT.Yellow(version), colorT.Green(latestVersion))
+		if runtime.GOOS == "darwin" && config.ShowBrewMessage != "" {
+			fmt.Fprintf(os.Stderr, "    To update, download from: %s \n", colorT.Bold(config.DownloadLatestURL))
+			fmt.Fprintf(os.Stderr, "    Or run: %s \n\n", colorT.Bold(config.ShowBrewMessage))
 		} else {
-			fmt.Fprintf(os.Stderr, "    To update, download from: %s \n\n", colorT.Bold(urlPath))
+			fmt.Fprintf(os.Stderr, "    To update, download from: %s \n\n", colorT.Bold(config.DownloadLatestURL))
 		}
 	}
 }
 
-func expandAssets(src, dest string) error {
-	// Read the zip file from the embedded filesystem
-	zipPath := fmt.Sprintf("%s/assets.zip", src)
+func expandAssets(dest string) error {
 	if debugGoWrapper {
-		fmt.Fprintf(os.Stderr, "Expanding assets from %s to %s\n", zipPath, dest)
-	}
-	zipContent, err := content.ReadFile(zipPath)
-	if err != nil {
-		return err
+		fmt.Fprintf(os.Stderr, "Expanding assets to: %s (pid: %d)\n", dest, os.Getpid())
 	}
 
 	// Create a reader for the zip content
-	zipReader, err := zip.NewReader(bytes.NewReader(zipContent), int64(len(zipContent)))
+	zipReader, err := zip.NewReader(bytes.NewReader(ASSETS_ZIP), int64(len(ASSETS_ZIP)))
 	if err != nil {
 		return err
 	}
@@ -132,7 +112,7 @@ func expandAssets(src, dest string) error {
 		destPath := filepath.Join(dest, file.Name)
 
 		if file.FileInfo().IsDir() {
-			err := os.MkdirAll(destPath, 0755)
+			err := os.MkdirAll(destPath, DEFAULT_PERMISSIONS)
 			if err != nil {
 				return err
 			}
@@ -140,7 +120,7 @@ func expandAssets(src, dest string) error {
 		}
 
 		// Create destination directory if it doesn't exist
-		err := os.MkdirAll(filepath.Dir(destPath), 0755)
+		err := os.MkdirAll(filepath.Dir(destPath), DEFAULT_PERMISSIONS)
 		if err != nil {
 			return err
 		}
@@ -167,7 +147,7 @@ func expandAssets(src, dest string) error {
 		}
 
 		// Set the file permissions
-		err = os.Chmod(destPath, 0755)
+		err = os.Chmod(destPath, DEFAULT_PERMISSIONS)
 		if err != nil {
 			return err
 		}
@@ -176,71 +156,196 @@ func expandAssets(src, dest string) error {
 	return nil
 }
 
-func main() {
+func isDirEmpty(path string) bool {
+	entries, err := os.ReadDir(path)
+	if err != nil {
+		return false
+	}
+	return len(entries) == 0
+}
+
+func zipHashMatches(zipHash, targetDirectory string) bool {
+	currentZipHash, err := os.ReadFile(filepath.Join(targetDirectory, "app_hash"))
+	if err != nil {
+		return false
+	}
+	matches := zipHash == strings.TrimSpace(string(currentZipHash))
 	if debugGoWrapper {
-		fmt.Fprintf(os.Stderr, "Debug mode enabled (SEMA4AI_ACTION_SERVER_GO_WRAPPER_DEBUG=1)\n")
+		fmt.Fprintf(os.Stderr, "App hash matches: %t\n", matches)
+	}
+	return matches
+}
+
+const LOCK_TIMEOUT = 120 * time.Second
+
+func obtainLock(lockFile string) (*flock.Flock, error) {
+	fileLock := flock.New(lockFile)
+
+	ctx, cancel := context.WithTimeout(context.Background(), LOCK_TIMEOUT)
+	defer cancel()
+
+	locked, err := fileLock.TryLockContext(ctx, 250*time.Millisecond) // try to lock every 1/4 second
+	if err != nil {
+		// unable to lock the cache, something is wrong, refuse to use it.
+		return nil, fmt.Errorf("unable to read lock file %s: %v", lockFile, err)
 	}
 
-	var actionServerPath string
-	var executablePath string
+	if locked {
+		if debugGoWrapper {
+			fmt.Fprintf(os.Stderr, "> Locked the file %s (pid: %d)\n", fileLock.Path(), os.Getpid())
+		}
+	}
 
-	// Read the version
-	versionData, err := content.ReadFile("assets/version.txt")
+	return fileLock, nil
+}
+
+func makeAssetExpansion(targetDirectory string, zipHash string) error {
+	if debugGoWrapper {
+		fmt.Fprintf(os.Stderr, "Requesting assets expansion to: %s\n", targetDirectory)
+	}
+
+	// Create parent directory if it doesn't exist
+	err := os.MkdirAll(targetDirectory, DEFAULT_PERMISSIONS)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error reading version.txt: %s\n", err)
+		return fmt.Errorf("Error creating parent directory: %s\n", err)
+	}
+
+	lockFile := filepath.Join(targetDirectory, "extract.lock")
+	fileLock, err := obtainLock(lockFile)
+	if err != nil {
+		return fmt.Errorf("Error obtaining lock: %s\n", err)
+	}
+
+	locked := fileLock.Locked()
+
+	if zipHashMatches(zipHash, targetDirectory) {
+		if debugGoWrapper {
+			fmt.Fprintf(os.Stderr, "Zip hash matches, skipping asset expansion (pid: %d)\n", os.Getpid())
+		}
+		return nil // Someone wrote it while we were waiting for the lock (ok whether locked or not)
+	}
+
+	if !locked {
+		fmt.Fprintf(os.Stderr, "> Unable to lock the file %s to extract assets in %s seconds (pid: %d). EXITING NOW.\n", fileLock.Path(), LOCK_TIMEOUT, os.Getpid())
 		os.Exit(1)
 	}
-	version := strings.TrimSpace(string(versionData))
 
-	// Check if there is an update available, but only do it if there is
-	// no `SEMA4AI_OPTIMIZE_FOR_CONTAINER` environment variable set to 1.
-	if os.Getenv("SEMA4AI_OPTIMIZE_FOR_CONTAINER") != "1" && os.Getenv("SEMA4AI_SKIP_UPDATE_CHECK") != "1" {
-		checkAvailableUpdate(version)
+	// Extract assets to the target path
+	err = expandAssets(targetDirectory)
+	if err != nil {
+		unlock(fileLock)
+		return fmt.Errorf("Error extracting the zip file with the assets: %s\n", err)
+	}
+
+	// To finalize, write the zip hash to the target directory
+	err = os.WriteFile(filepath.Join(targetDirectory, "app_hash"), []byte(zipHash), 0644)
+	if err != nil {
+		unlock(fileLock)
+		return fmt.Errorf("Error writing app_hash: %s\n", err)
+	}
+
+	unlock(fileLock)
+
+	return nil
+}
+
+func unlock(fileLock *flock.Flock) {
+	if debugGoWrapper {
+		fmt.Fprintf(os.Stderr, "> Unlocking the file %s (pid: %d)\n", fileLock.Path(), os.Getpid())
+	}
+	if err := fileLock.Unlock(); err != nil {
+		fmt.Fprintf(os.Stderr, "Error unlocking the file %s: %s (pid: %d)\n", fileLock.Path(), err, os.Getpid())
+	}
+}
+
+// RunConfig holds configuration for extracting and running the executable
+type RunConfig struct {
+	ExecutableName    string
+	DownloadLatestURL string
+	VersionLatestURL  string
+	DoUpdateCheck     bool
+	ShowBrewMessage   string
+}
+
+func forceTouchWhen(path string, when time.Time) {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		err = os.WriteFile(path, []byte{}, 0o644)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "(ignored) Error creating file to touch %s: %s\n", path, err)
+		}
+	}
+	err := os.Chtimes(path, when, when)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "(ignored) Error touching file %s: %s\n", path, err)
+	}
+}
+
+func extractAndRun(config RunConfig) {
+	if debugGoWrapper {
+		fmt.Fprintf(os.Stderr, "Debug mode enabled (SEMA4AI_GO_WRAPPER_DEBUG=1)\n")
+	}
+
+	var targetDirectory string
+	var executablePath string
+
+	// Get the app hash for the zip file
+	zipHash := strings.TrimSpace(string(ASSETS_APP_HASH))
+
+	// Get the version
+	version := strings.TrimSpace(string(ASSETS_VERSION))
+
+	if config.DoUpdateCheck {
+		// Check if there is an update available, but only do it if there is
+		// no `SEMA4AI_OPTIMIZE_FOR_CONTAINER` environment variable set to 1.
+		if os.Getenv("SEMA4AI_OPTIMIZE_FOR_CONTAINER") != "1" && os.Getenv("SEMA4AI_SKIP_UPDATE_CHECK") != "1" {
+			checkAvailableUpdate(version, config)
+		}
 	}
 
 	// Determine the appropriate path based on the operating system
 	switch runtime.GOOS {
 	case "windows":
 		appDataDir := os.Getenv("LOCALAPPDATA")
-		actionServerPath = fmt.Sprintf("%s\\sema4ai\\action-server\\%s", appDataDir, version)
-		executablePath = filepath.Join(actionServerPath, "action-server.exe")
+		if appDataDir == "" {
+			fmt.Fprintf(os.Stderr, "Error getting local app data directory (LOCALAPPDATA environment variable is not set)\n")
+			os.Exit(1)
+		}
+		targetDirectory = fmt.Sprintf("%s\\sema4ai\\bin\\%s\\internal\\%s", appDataDir, config.ExecutableName, version)
+		executablePath = filepath.Join(targetDirectory, fmt.Sprintf("%s.exe", config.ExecutableName))
 	case "linux", "darwin":
 		homeDir, err := os.UserHomeDir()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error getting user home directory: %s\n", err)
 			os.Exit(1)
 		}
-		actionServerPath = fmt.Sprintf("%s/.sema4ai/action-server/%s", homeDir, version)
-		executablePath = filepath.Join(actionServerPath, "action-server")
+		targetDirectory = fmt.Sprintf("%s/.sema4ai/bin/%s/internal/%s", homeDir, config.ExecutableName, version)
+		executablePath = filepath.Join(targetDirectory, config.ExecutableName)
 	default:
 		fmt.Fprintf(os.Stderr, "Unsupported operating system\n")
 		os.Exit(1)
 	}
 
 	if debugGoWrapper {
-		fmt.Fprintf(os.Stderr, "actionServerPath: %s\n", actionServerPath)
+		fmt.Fprintf(os.Stderr, "targetDirectory: %s\n", targetDirectory)
 		fmt.Fprintf(os.Stderr, "executablePath: %s\n", executablePath)
 	}
 
 	// If the folder doesn't exist already, we create it and copy all files
-	_, err = os.Stat(actionServerPath)
-	if os.IsNotExist(err) {
-		err = os.MkdirAll(actionServerPath, 0755)
+	_, err := os.Stat(targetDirectory)
+	if os.IsNotExist(err) || isDirEmpty(targetDirectory) || !zipHashMatches(zipHash, targetDirectory) {
+		err = makeAssetExpansion(targetDirectory, zipHash)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error creating directory: %s\n", err)
-			os.Exit(1)
-		}
-
-		err = expandAssets("assets", actionServerPath)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error extracting the zip file with the assets: %s\n", err)
+			fmt.Fprintf(os.Stderr, "Error expanding assets to %s.\n%s", targetDirectory, err)
 			os.Exit(1)
 		}
 	} else {
 		if debugGoWrapper {
-			fmt.Fprintf(os.Stderr, "Skipping asset expansion (actionServerPath already exists: %s)\n", actionServerPath)
+			fmt.Fprintf(os.Stderr, "Skipping asset expansion (path already exists: %s)\n", targetDirectory)
 		}
 	}
+
+	touchFile := filepath.Join(targetDirectory, "lastLaunchTouch")
+	forceTouchWhen(touchFile, time.Now())
 
 	cmd := exec.Command(executablePath, os.Args[1:]...)
 	cmd.Stdout = os.Stdout
@@ -249,7 +354,47 @@ func main() {
 
 	err = cmd.Run()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error executing action-server: %s\n", err)
+		fmt.Fprintf(os.Stderr, "Error executing %s: %s\n", config.ExecutableName, err)
 		os.Exit(1)
 	}
+}
+
+func main() {
+	const ACTION_SERVER_LATEST_BASE_URL = "https://cdn.sema4.ai/action-server/releases/latest/"
+	const VERSION_LATEST_URL = ACTION_SERVER_LATEST_BASE_URL + "version.txt"
+
+	var osPathInUrl, actionExe string
+	switch runtime.GOOS {
+	case "windows":
+		osPathInUrl = "windows64"
+		actionExe = "action-server.exe"
+	case "linux":
+		osPathInUrl = "linux64"
+		actionExe = "action-server"
+	case "darwin":
+		actionExe = "action-server"
+		switch runtime.GOARCH {
+		case "arm64":
+			osPathInUrl = "macos-arm64"
+		case "amd64":
+			osPathInUrl = "macos64"
+		default:
+			fmt.Printf("Unknown architecture: %s\n", runtime.GOARCH)
+		}
+	default:
+		fmt.Fprintf(os.Stderr, "Unsupported operating system\n")
+		os.Exit(1)
+	}
+	downloadLatestUrl, _ := url.JoinPath(ACTION_SERVER_LATEST_BASE_URL, osPathInUrl, actionExe)
+
+	// Create the configuration struct instead of passing multiple parameters
+	config := RunConfig{
+		ExecutableName:    "action-server",
+		DownloadLatestURL: downloadLatestUrl,
+		VersionLatestURL:  VERSION_LATEST_URL,
+		DoUpdateCheck:     true,
+		ShowBrewMessage:   "brew update && brew install sema4ai/tools/action-server",
+	}
+
+	extractAndRun(config)
 }

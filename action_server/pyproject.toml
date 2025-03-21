@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sema4ai-action-server"
-version = "2.6.0"
+version = "2.7.0"
 description = """Sema4AI Action Server"""
 authors = ["Fabio Z. <fabio@robocorp.com>"]
 readme = "README.md"
@@ -19,33 +19,32 @@ action-server = "sema4ai.action_server.cli:main"
 
 
 [tool.poetry.dependencies]
-# Important: when these versions change, pyoxidizer.bzl needs
-# to be updated too for the binary build.
-# Use 'inv update-pyoxidizer-versions'.
-aiohttp = "^3.10.6"
-fastapi-slim = "^0.115.2"
+aiohttp = "^3.11.14"
+fastapi-slim = "^0.115.11"
 jsonschema = "^4.23.0"
 # This one needs a `_fix_jsonschema_specifications` hack
 # See: https://github.com/python-jsonschema/jsonschema-specifications/issues/61
-jsonschema-specifications = "^2023.12.1"
+jsonschema-specifications = "^2024.10.1"
 msgspec = "^0.18"
 psutil = ">=5.0,<7.0"
 pydantic = "^2.9.2"
 pyyaml = "^6"
-python = "^3.10"
+python = ">=3.12.0,<3.14"
 requests = "^2"
-sema4ai-actions = "^1.3.5"
+sema4ai-actions = "^1.3.6"
 termcolor = "^2.4.0"
-uvicorn = "^0.30.6"
+uvicorn = "^0.34.0"
 websockets = "^13.1"
 cryptography = "^43.0.1"
 requests_oauthlib = "^2.0"
 watchfiles = "^0.24.0"
 sema4ai-http-helper = "^1.0.2"
+sema4ai-common = "^0.0.9"
 
 
 [tool.poetry.group.dev.dependencies]
 sema4ai-devutils = { path = "../devutils/", develop = true }
+sema4ai-build-common = { path = "../build_common/", develop = true }
 types-requests = "^2"
 types-PyYAML = "^6"
 robocorp-log-pytest = "^0.0.2"
@@ -53,6 +52,7 @@ types-psutil = "^5"
 pyoxidizer = "^0.24.0"
 types-jsonschema = "^4.22.0"
 sema4ai-data = "^0.0.5"
+pyinstaller = "^6.12.0"
 
 
 [tool.mypy]

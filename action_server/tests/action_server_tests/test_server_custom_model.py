@@ -1,8 +1,11 @@
 import json
 
+import pytest
+
 from sema4ai.action_server._selftest import ActionServerClient, ActionServerProcess
 
 
+@pytest.mark.integration_test
 def test_server_custom_model_argument(
     action_server_process: ActionServerProcess,
     client: ActionServerClient,

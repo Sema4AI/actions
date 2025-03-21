@@ -236,19 +236,12 @@ def start_server(
     if os.getenv("RC_ADD_SHUTDOWN_API", "").lower() in ("1", "true"):
 
         def shutdown(timeout: int = -1):
+            # Note: timeout no longer used (the timeout to kill is
+            # now handled by the timeout_graceful_shutdown parameter
+            # of uvicorn.Config).
             import _thread
-            import time
-
-            from sema4ai.action_server._robo_utils.run_in_thread import run_in_thread
 
             _thread.interrupt_main()
-
-            def interrupt_again():
-                time.sleep(timeout)
-                _thread.interrupt_main()
-
-            if timeout > 0:
-                run_in_thread(interrupt_again, daemon=True)
 
         app.add_api_route("/api/shutdown/", shutdown, methods=["POST"])
 
@@ -565,7 +558,7 @@ def start_server(
         action_routes.actions,
     ):
         kwargs = settings.to_uvicorn()
-        config = uvicorn.Config(app=app, **kwargs)
+        config = uvicorn.Config(app=app, **kwargs, timeout_graceful_shutdown=5)
         server = uvicorn.Server(config)
         server._log_started_message = _on_started_message  # type: ignore[assignment]
 

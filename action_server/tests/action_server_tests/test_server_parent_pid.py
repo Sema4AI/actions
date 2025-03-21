@@ -1,9 +1,11 @@
+import pytest
 from devutils.fixtures import wait_for_condition
 
 from sema4ai.action_server._robo_utils.process import Process
 from sema4ai.action_server._selftest import ActionServerClient, ActionServerProcess
 
 
+@pytest.mark.integration_test
 def test_action_server_parent_pid(
     action_server_process: ActionServerProcess, data_regression
 ):

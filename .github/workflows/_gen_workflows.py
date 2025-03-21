@@ -1,3 +1,4 @@
+import subprocess
 from pathlib import Path
 from typing import Iterator
 
@@ -54,13 +55,14 @@ def get_python_version(pyproject):
 
 class BaseTests:
     require_node = False
+    require_go = False
     require_build_frontend = False
     require_build_oauth2_config = False
     validate_docstrings = False
     before_run_custom_additional_steps = ()
     after_run_custom_additional_steps = ()
 
-    run_tests = {
+    run_tests: list[dict] | dict = {
         "name": "Test",
         "env": {
             "GITHUB_ACTIONS_MATRIX_NAME": "${{ matrix.name }}",
@@ -182,6 +184,13 @@ class BaseTests:
                 "scope": "@robocorp",
             },
         }
+        setup_go = {
+            "name": "Setup go",
+            "uses": "actions/setup-go@v5",
+            "with": {
+                "go-version": "1.23",
+            },
+        }
 
         build_frontend = {
             "name": "Build frontend",
@@ -262,8 +271,13 @@ inv docs --validate
 
         steps.extend([install, devinstall])
 
-        if self.require_build_frontend:
+        if self.require_go:
+            steps.append(setup_go)
+
+        if self.require_build_frontend or self.require_node:
             steps.append(setup_node)
+
+        if self.require_build_frontend:
             steps.append(build_frontend)
 
         if self.require_build_oauth2_config:
@@ -271,7 +285,13 @@ inv docs --validate
 
         steps.extend(self.before_run_custom_additional_steps)
 
-        steps.extend([self.run_tests, run_lint, run_typecheck, run_docs])
+        run_tests = self.run_tests
+        if isinstance(run_tests, list):
+            steps.extend(run_tests)
+        else:
+            steps.append(run_tests)
+
+        steps.extend([run_lint, run_typecheck, run_docs])
 
         if self.validate_docstrings:
             steps.append(run_docstrings_validation)
@@ -295,8 +315,60 @@ class ActionServerTests(BaseTests):
     target = "action_server_tests.yml"
     project_name = "action_server"
     require_node = True
+    require_go = True
     require_build_frontend = True
     require_build_oauth2_config = True
+
+    run_tests = [
+        # As we want to run the tests in the binary, we do the following:
+        # 1. Build the binary
+        # 2. Run the unit-tests (not integration) in the current environment
+        # 3. Run the integration-tests in the binary
+        {
+            "name": "Build binary",
+            "env": {
+                "RC_ACTION_SERVER_FORCE_DOWNLOAD_RCC": "true",
+                "RC_ACTION_SERVER_DO_SELFTEST": "true",
+                "MACOS_SIGNING_CERT": "${{ secrets.MACOS_SIGNING_CERT_SEMA4AI }}",
+                "MACOS_SIGNING_CERT_PASSWORD": "${{ secrets.MACOS_SIGNING_CERT_PASSWORD_SEMA4AI }}",
+                "MACOS_SIGNING_CERT_NAME": "${{ secrets.MACOS_SIGNING_CERT_NAME_SEMA4AI }}",
+                "APPLEID": "${{ secrets.MACOS_APP_ID_FOR_NOTARIZATION_SEMA4AI }}",
+                "APPLETEAMID": "${{ secrets.MACOS_TEAM_ID_FOR_NOTARIZATION_SEMA4AI }}",
+                "APPLEIDPASS": "${{ secrets.MACOS_APP_ID_PASSWORD_FOR_NOTARIZATION_SEMA4AI }}",
+                "VAULT_URL": "${{ secrets.WIN_SIGN_AZURE_KEY_VAULT_URL_SEMA4AI }}",
+                "CLIENT_ID": "${{ secrets.WIN_SIGN_AZURE_KEY_VAULT_CLIENT_ID_SEMA4AI }}",
+                "TENANT_ID": "${{ secrets.WIN_SIGN_AZURE_KEY_VAULT_TENANT_ID_SEMA4AI }}",
+                "CLIENT_SECRET": "${{ secrets.WIN_SIGN_AZURE_KEY_VAULT_CLIENT_SECRET_SEMA4AI }}",
+                "CERTIFICATE_NAME": "${{ secrets.WIN_SIGN_AZURE_KEY_VAULT_CERTIFICATE_NAME_SEMA4AI }}",
+                "GITHUB_EVENT_NAME": "${{ github.event_name }}",
+                "GITHUB_REF_NAME": "${{ github.ref_name }}",
+                "GITHUB_PR_NUMBER": "${{ github.event.pull_request.number }}",
+            },
+            "run": "poetry run inv build-executable --sign --go-wrapper",
+        },
+        {
+            "name": "Test (not integration)",
+            "env": {
+                "GITHUB_ACTIONS_MATRIX_NAME": "${{ matrix.name }}",
+                "CI_CREDENTIALS": "${{ secrets.CI_CREDENTIALS }}",
+                "CI_ENDPOINT": "${{ secrets.CI_ENDPOINT }}",
+                "ACTION_SERVER_TEST_ACCESS_CREDENTIALS": "${{ secrets.ACTION_SERVER_TEST_ACCESS_CREDENTIALS }}",
+                "ACTION_SERVER_TEST_HOSTNAME": "${{ secrets.ACTION_SERVER_TEST_HOSTNAME }}",
+            },
+            "run": "poetry run inv test-not-integration",
+        },
+        {
+            "name": "Test (integration)",
+            "env": {
+                "GITHUB_ACTIONS_MATRIX_NAME": "${{ matrix.name }}",
+                "CI_CREDENTIALS": "${{ secrets.CI_CREDENTIALS }}",
+                "CI_ENDPOINT": "${{ secrets.CI_ENDPOINT }}",
+                "ACTION_SERVER_TEST_ACCESS_CREDENTIALS": "${{ secrets.ACTION_SERVER_TEST_ACCESS_CREDENTIALS }}",
+                "ACTION_SERVER_TEST_HOSTNAME": "${{ secrets.ACTION_SERVER_TEST_HOSTNAME }}",
+            },
+            "run": "poetry run inv test-binary --jobs 0",
+        },
+    ]
 
 
 class ActionsTests(BaseTests):
@@ -399,7 +471,7 @@ def generate_dependabot_config():
     pyproject_dirs = {
         str(f.parent.relative_to(root))
         for f in root.rglob("pyproject.toml")
-        if "/tests/" not in f.as_posix()
+        if ("/tests/" not in f.as_posix() and "/.venv/" not in f.as_posix())
     }
     package_json_dirs = {
         str(f.parent.relative_to(root))
@@ -415,15 +487,16 @@ def generate_dependabot_config():
 
     # Helper to create ecosystem config
     def create_ecosystem_config(ecosystem, directories):
+        directories = sorted(
+            [
+                f"{Path(directory).as_posix()}" if directory != "/" else "/"
+                for directory in directories
+            ]
+        )
         configs = [
             {
                 "package-ecosystem": ecosystem,
-                "directories": sorted(
-                    [
-                        f"/{Path(directory).as_posix()}" if directory != "/" else "/"
-                        for directory in directories
-                    ]
-                ),
+                "directories": directories,
                 "schedule": {"interval": "daily"},
                 "open-pull-requests-limit": 0,  # Only notifications, no PRs
                 "allow": [{"dependency-type": "all"}],

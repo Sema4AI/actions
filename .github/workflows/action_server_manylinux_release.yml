@@ -21,15 +21,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, windows-2019, macos-13]
+        os: [ubuntu-20.04, windows-2019, macos-15]
     steps:
       - uses: actions/checkout@v4
 
       # Used to host cibuildwheel
-      - name: Set up Python 3.10
+      - name: Set up Python 3.12
         uses: actions/setup-python@v4
         with:
-          python-version: "3.10"
+          python-version: "3.12"
 
       - name: Setup node
         uses: actions/setup-node@v3
@@ -40,7 +40,7 @@ jobs:
 
       - name: Install cibuildwheel
         run: |
-          python -m pip install cibuildwheel==2.16.2
+          python -m pip install cibuildwheel==2.23.1
           python -m pip install invoke
           python -m invoke build-frontend
           python -m invoke build-oauth2-config
@@ -53,7 +53,7 @@ jobs:
         run: python -m cibuildwheel --output-dir wheelhouse
         env:
           CIBW_SKIP: pp*
-          CIBW_BUILD: cp31*-*macos*x86_64 cp31*-*manylinux*x86_64 cp31*-*win*amd64
+          CIBW_BUILD: cp312-*macos*arm64 cp312-*manylinux*x86_64 cp312-*win*amd64 cp313-*macos*arm64 cp313-*manylinux*x86_64 cp313-*win*amd64
           CIBW_BUILD_VERBOSITY: 1
 
       - uses: actions/upload-artifact@v4

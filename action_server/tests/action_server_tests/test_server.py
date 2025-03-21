@@ -8,6 +8,7 @@ import pytest
 from action_server_tests.fixtures import ActionServerClient, ActionServerProcess
 
 
+@pytest.mark.integration_test
 def test_action_server_starts(action_server_process: ActionServerProcess, tmpdir):
     action_server_process.start(db_file="server.db")
     assert action_server_process.port > 0
@@ -18,6 +19,7 @@ def test_action_server_starts(action_server_process: ActionServerProcess, tmpdir
     assert (p / "server.db").exists()
 
 
+@pytest.mark.integration_test
 def test_action_server_in_memory_db(action_server_process: ActionServerProcess, tmpdir):
     action_server_process.start()  # Default is starting in-memory
     assert action_server_process.port > 0
@@ -28,6 +30,7 @@ def test_action_server_in_memory_db(action_server_process: ActionServerProcess, 
     assert not (p / "server.db").exists()
 
 
+@pytest.mark.integration_test
 def test_schema_request_no_actions_registered(
     client: ActionServerClient, data_regression
 ) -> None:
@@ -37,18 +40,22 @@ def test_schema_request_no_actions_registered(
     data_regression.check(fix_openapi_json(json.loads(openapi_json)))
 
 
+@pytest.mark.integration_test
 def test_bad_return_on_no_conda(
     action_server_process: ActionServerProcess,
     client: ActionServerClient,
 ) -> None:
-    from action_server_tests.fixtures import get_in_resources
+    from action_server_tests.fixtures import (
+        BUILD_ENV_IN_TESTS_TIMEOUT,
+        get_in_resources,
+    )
 
     calculator = get_in_resources("no_conda", "calculator")
     action_server_process.start(
         db_file="server.db",
         cwd=calculator,
         actions_sync=True,
-        timeout=300,
+        timeout=BUILD_ENV_IN_TESTS_TIMEOUT,
         lint=False,
     )
     found = client.post_error("api/actions/calculator/bad-return-none/run", 500)
@@ -64,11 +71,15 @@ def test_bad_return_on_no_conda(
     )
 
 
+@pytest.mark.integration_test
 def test_run_id_in_response_header(
     action_server_process: ActionServerProcess,
     client: ActionServerClient,
 ) -> None:
-    from action_server_tests.fixtures import get_in_resources
+    from action_server_tests.fixtures import (
+        BUILD_ENV_IN_TESTS_TIMEOUT,
+        get_in_resources,
+    )
     from robocorp.log._log_formatting import pretty_format_logs_from_log_html_contents
 
     calculator = get_in_resources("no_conda", "calculator")
@@ -76,7 +87,7 @@ def test_run_id_in_response_header(
         db_file="server.db",
         cwd=calculator,
         actions_sync=True,
-        timeout=300,
+        timeout=BUILD_ENV_IN_TESTS_TIMEOUT,
     )
     import requests
 
@@ -132,18 +143,22 @@ ER: PASS
         assert line in log_pretty_printed, f"'{line}' not in:\n{log_pretty_printed}"
 
 
+@pytest.mark.integration_test
 def test_global_return_reuse_process(
     action_server_process: ActionServerProcess,
     client: ActionServerClient,
 ) -> None:
-    from action_server_tests.fixtures import get_in_resources
+    from action_server_tests.fixtures import (
+        BUILD_ENV_IN_TESTS_TIMEOUT,
+        get_in_resources,
+    )
 
     calculator = get_in_resources("no_conda", "calculator")
     action_server_process.start(
         db_file="server.db",
         cwd=calculator,
         actions_sync=True,
-        timeout=300,
+        timeout=BUILD_ENV_IN_TESTS_TIMEOUT,
         min_processes=1,
         max_processes=1,
         reuse_processes=True,
@@ -275,6 +290,7 @@ def calculator_sum(v1: int = 5) -> float:
             }
 
 
+@pytest.mark.integration_test
 def test_is_consequential_openapi_spec(
     action_server_process: ActionServerProcess,
     data_regression,
@@ -306,6 +322,7 @@ def calculator_sum(v1: float, v2: float) -> float:
     data_regression.check(fix_openapi_json(json.loads(client.get_openapi_json())))
 
 
+@pytest.mark.integration_test
 def test_import_no_conda(
     action_server_process: ActionServerProcess,
     data_regression,
@@ -428,6 +445,7 @@ def calculator_sum(v1: float, v2: float) -> float:
     assert action_name_to_enabled == {"calculator_sum": True, "another_action": False}
 
 
+@pytest.mark.integration_test
 def test_full_run(
     action_server_process: ActionServerProcess,
     data_regression,
@@ -537,13 +555,17 @@ def test_full_run(
             assert "R: str: 'Hello Mr. Foo.'" in contents
 
 
+@pytest.mark.integration_test
 def test_full_run_with_env_build(
     action_server_process: ActionServerProcess,
     data_regression,
     client: ActionServerClient,
     tmpdir,
 ) -> None:
-    from action_server_tests.fixtures import get_in_resources
+    from action_server_tests.fixtures import (
+        BUILD_ENV_IN_TESTS_TIMEOUT,
+        get_in_resources,
+    )
     from robocorp.log._log_formatting import pretty_format_logs_from_log_html_contents
 
     project = get_in_resources("hello_uv")
@@ -551,7 +573,7 @@ def test_full_run_with_env_build(
         db_file="server.db",
         cwd=project,
         actions_sync=True,
-        timeout=300,
+        timeout=BUILD_ENV_IN_TESTS_TIMEOUT,
         lint=False,
         env={
             "ROBOT_ROOT": str(tmpdir / "bad_root")
@@ -579,6 +601,7 @@ def test_full_run_with_env_build(
     assert "R: str: 'Hello Mr. Foo.'" in contents
 
 
+@pytest.mark.integration_test
 def test_routes(action_server_process: ActionServerProcess, data_regression):
     from action_server_tests.fixtures import fix_openapi_json
     from action_server_tests.sample_data import ACTION, ACTION_PACKAGE, RUN, RUN2
@@ -611,6 +634,7 @@ def test_routes(action_server_process: ActionServerProcess, data_regression):
     client.get_error("/api/runs/bad-run-id", 404)
 
 
+@pytest.mark.integration_test
 def test_server_url_flag(action_server_process: ActionServerProcess, data_regression):
     from action_server_tests.fixtures import fix_openapi_json
 
@@ -622,6 +646,7 @@ def test_server_url_flag(action_server_process: ActionServerProcess, data_regres
     data_regression.check(fix_openapi_json(spec))
 
 
+@pytest.mark.integration_test
 def test_server_full_openapi_flag(
     action_server_process: ActionServerProcess, data_regression
 ):
@@ -635,6 +660,7 @@ def test_server_full_openapi_flag(
     data_regression.check(fix_openapi_json(spec))
 
 
+@pytest.mark.integration_test
 def test_auth_routes(action_server_process: ActionServerProcess, data_regression):
     from action_server_tests.fixtures import fix_openapi_json, get_in_resources
 
@@ -661,6 +687,7 @@ def test_auth_routes(action_server_process: ActionServerProcess, data_regression
     assert found == '"Hello Mr. Foo."', f"{found} != '\"Hello Mr. Foo.\"'"
 
 
+@pytest.mark.integration_test
 def test_server_process_pool(
     action_server_process: ActionServerProcess, data_regression
 ):
@@ -679,6 +706,7 @@ def test_server_process_pool(
     )
 
 
+@pytest.mark.integration_test
 def test_subprocesses_killed(
     action_server_process: ActionServerProcess, client: ActionServerClient
 ):
@@ -715,7 +743,7 @@ def test_subprocesses_killed(
     request_result = fut.result(10)
     assert request_result.status_code == 500
 
-    times = 4
+    times = 10
     for i in range(times):
 
         def is_process_alive(pid):
@@ -743,6 +771,7 @@ def test_subprocesses_killed(
             return  # Ok, everything worked
 
 
+@pytest.mark.integration_test
 def test_import_task_options(
     action_server_process: ActionServerProcess,
     data_regression,
@@ -850,6 +879,7 @@ def calculator_sum(v1: str, v2: str) -> str:
             assert actions[0].is_consequential is False
 
 
+@pytest.mark.integration_test
 def test_port_in_use(action_server_process: ActionServerProcess, tmpdir):
     from sema4ai.action_server._selftest import ActionServerExitedError
 
@@ -873,6 +903,7 @@ def test_port_in_use(action_server_process: ActionServerProcess, tmpdir):
     )
 
 
+@pytest.mark.integration_test
 def test_action_package_rename(
     action_server_process: ActionServerProcess, client: ActionServerClient, tmpdir
 ):
@@ -915,6 +946,7 @@ def calculator_sum(v1: float, v2: float) -> float:
     ]
 
 
+@pytest.mark.integration_test
 def test_action_package_cwd(
     action_server_process: ActionServerProcess, client: ActionServerClient, tmpdir
 ):

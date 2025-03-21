@@ -60,7 +60,7 @@ def _change_to_frontend_dir():
 
 @contextmanager
 def _change_to_build_binary():
-    RESOLVED_CURDIR = CURDIR.resolve()
+    RESOLVED_CURDIR = CURDIR.absolute()
 
     with chdir(RESOLVED_CURDIR / "build-binary"):
         yield
@@ -68,7 +68,7 @@ def _change_to_build_binary():
 
 @contextmanager
 def _change_to_build_go_wrapper():
-    RESOLVED_CURDIR = CURDIR.resolve()
+    RESOLVED_CURDIR = CURDIR.absolute()
 
     with chdir(RESOLVED_CURDIR / "go-wrapper"):
         yield
@@ -172,16 +172,70 @@ FILE_CONTENTS = {repr(file_contents)}
         )
 
 
+@task(
+    help={
+        "debug": "Build in debug mode",
+        "ci": "Build in CI mode, disabling interactive prompts",
+        "dist_path": "Path to the dist directory",
+        "sign": "Sign the executable",
+        "go_wrapper": "Build the Go wrapper too",
+        "version": "Version of the executable (gotten from github tag/pr if not passed)",
+    }
+)
+def build_executable(
+    ctx: Context,
+    debug: bool = False,
+    ci: bool = True,
+    dist_path: str = "dist",
+    sign: bool = False,
+    go_wrapper: bool = False,
+    version: str = None,
+) -> None:
+    """Build the project executable via PyInstaller."""
+    from sema4ai.build_common.root_dir import get_root_dir
+    from sema4ai.build_common.workflows import build_and_sign_executable
+
+    if version is None:
+        from sema4ai.action_server import __version__
+
+        version = __version__
+
+    root_dir = get_root_dir()
+    build_and_sign_executable(
+        root_dir=root_dir,
+        name="action-server",
+        debug=debug,
+        ci=ci,
+        dist_path=root_dir / dist_path,
+        sign=sign,
+        go_wrapper=go_wrapper,
+        version=version,
+    )
+
+    # to check if signed:  spctl -a -vvv -t install dist/final/action-server
+
+
 @task
-def build_binary(ctx: Context) -> None:
-    with _change_to_build_binary():
-        run(ctx, "pyoxidizer", "run", "--release")
+def clean(ctx: Context):
+    """Clean build artifacts."""
+    from sema4ai.build_common.root_dir import get_root_dir
+    from sema4ai.build_common.workflows import clean_common_build_artifacts
+
+    clean_common_build_artifacts(get_root_dir())
 
 
 @task
 def build_go_wrapper(ctx: Context) -> None:
     with _change_to_build_go_wrapper():
-        run(ctx, "go", "build", "-o", "action-server-unsigned")
+        target = "action-server-unsigned" + (".exe" if sys.platform == "win32" else "")
+        run(
+            ctx,
+            "go",
+            "build",
+            "-o",
+            target,
+        )
+        print(f"Built go wrapper at: {os.path.abspath(target)}")
 
 
 @task
@@ -219,111 +273,120 @@ def _replace_deps(content, new_deps):
 
 
 @task
-def update_pyoxidizer_versions(ctx: Context):
-    """
-    Updates the dependencies for pyoxidizer given the versions in pyproject.toml.
-    """
-    import tomlkit
+def test_not_integration(ctx: Context):
+    from sema4ai.build_common.process_call import run
+    from sema4ai.build_common.root_dir import get_root_dir
 
-    pyproject: dict = tomlkit.loads(Path("pyproject.toml").read_text(encoding="utf-8"))
-    deps = pyproject["tool"]["poetry"]["dependencies"]
-    use_versions = []
-    for dep_name, version in deps.items():
-        if dep_name == "python":
-            continue
-
-        parts = version.split(".")
-        if len(parts) >= 3:
-            # Drop the minor for compatibility
-            version = ".".join(parts[:-1])
-
-        elif len(parts) == 1:
-            # Just the major version is specified
-            assert version.startswith("^")
-            v = int(version[1:])
-            version = f">={v},<{v+1}"
-
-        version = version.replace("^", "~=")
-        use_versions.append(f'"{dep_name}{version}",')
-    use_versions = sorted(use_versions)
-
-    blz_file = CURDIR / "build-binary" / "pyoxidizer.bzl"
-    assert blz_file.exists()
-    contents = blz_file.read_text().replace("\r\n", "\n").replace("\r", "\n")
-    indent = "            "
-    new_contents = _replace_deps(
-        contents, indent + f"\n{indent}".join(use_versions) + f"\n{indent}"
+    action_server_dir = get_root_dir()
+    run(
+        [
+            sys.executable,
+            "-m",
+            "pytest",
+            "-m",
+            "not integration_test",
+            "-rfE",
+            "-vv",
+            "--force-regen",
+            "-n",
+            "auto",
+        ],
+        cwd=str(action_server_dir / "tests"),
     )
-    if new_contents != contents:
-        blz_file.write_text(new_contents)
-        print("pyoxidizer.bzl updated.")
-    else:
-        print("pyoxidizer.bzl already up to date.")
 
 
 @task
-def zip_go_wrapper_assets(ctx: Context):
-    """
-    Get the assets from the build-binary and zip them up.
-    """
-    import platform
-    import zipfile
+def test_binary(ctx: Context, test: str = "", jobs: str = "auto"):
+    """Test the binary"""
+    import subprocess
 
-    # Get system info
-    system = platform.system()
-    machine = platform.machine()
+    from sema4ai.build_common.process_call import run
+    from sema4ai.build_common.root_dir import get_root_dir
 
-    # Determine source path based on platform
-    if system == "Linux":
-        src_path = (
-            CURDIR
-            / "build-binary"
-            / "build"
-            / "x86_64-unknown-linux-gnu"
-            / "release"
-            / "install"
-        )
-    elif system == "Darwin":  # macOS
-        if machine == "arm64":
-            src_path = (
-                CURDIR
-                / "build-binary"
-                / "build"
-                / "aarch64-apple-darwin"
-                / "release"
-                / "install"
-            )
+    # The binary should be in the dist directory already.
+    # Run all the tests using pytest -m integration_test
+    # While setting an environment variable to point to the
+    # created executable.
+    action_server_dir = get_root_dir()
+    action_server_executable = (
+        action_server_dir
+        / "dist"
+        / "final"
+        / ("action-server" + (".exe" if sys.platform == "win32" else ""))
+    )
+    assert (
+        action_server_executable.exists()
+    ), f"Expected: {action_server_executable} to exist."
+    env = os.environ.copy()
+    env.pop("PYTHONPATH", "")
+    env.pop("PYTHONHOME", "")
+    env.pop("VIRTUAL_ENV", "")
+    env["PYTHONIOENCODING"] = "utf-8"
+    env["PYTHON_EXE"] = str(sys.executable)
+
+    env["SEMA4AI_INTEGRATION_TEST_ACTION_SERVER_EXECUTABLE"] = str(
+        action_server_executable
+    )
+    args = [
+        sys.executable,
+        "-m",
+        "pytest",
+        "-m",
+        "integration_test",
+        "-rfE",
+        "-vv",
+        "--force-regen",
+        "-n",
+        "0",  # Bad rcc: when we run too many rcc tests in parallel from the binary, tests fail because rcc seems to crash (needs more investigation)
+    ]
+    if test:
+        args.append("-k")
+        args.append(test)
+    run(
+        args,
+        cwd=str(action_server_dir / "tests"),
+        env=env,
+    )
+
+
+@task
+def print_env(ctx: Context):
+    import os
+
+    print(" ============== ENV ============== ")
+    for key, value in os.environ.items():
+        if len(value) > 100:
+            print(f"{key}:")
+            parts = value.split(os.pathsep)
+            for part in parts:
+                print(f"  {part}")
         else:
-            src_path = (
-                CURDIR
-                / "build-binary"
-                / "build"
-                / "x86_64-apple-darwin"
-                / "release"
-                / "install"
-            )
-    elif system == "Windows":
-        src_path = (
-            CURDIR
-            / "build-binary"
-            / "build"
-            / "x86_64-pc-windows-msvc"
-            / "release"
-            / "install"
-        )
-    else:
-        raise RuntimeError(f"Unsupported platform: {system}")
+            print(f"{key}={value}")
+    print(" ============== END ENV ============== ")
 
-    if not src_path.exists():
-        raise RuntimeError(f"Source path does not exist: {src_path}")
 
-    dst_path = CURDIR / "go-wrapper" / "assets"
-    zip_path = dst_path / "assets.zip"
+@task
+def test_run_in_parallel(ctx: Context):
+    """
+    Just runs the action server in dist/final/action-server 3 times in parallel
+    (may be used to manually check issues with the lock file).
+    """
+    import subprocess
 
-    if zip_path.exists():
-        zip_path.unlink()
+    from sema4ai.build_common.process_call import run
+    from sema4ai.build_common.root_dir import get_root_dir
 
-    with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
-        for file in src_path.rglob("*"):
-            if file.is_file():
-                zf.write(file, file.relative_to(src_path))
+    # The binary should be in the dist directory already.
+    action_server_dir = get_root_dir()
+    action_server_executable = (
+        action_server_dir
+        / "dist"
+        / "final"
+        / ("action-server" + (".exe" if sys.platform == "win32" else ""))
+    )
+    assert (
+        action_server_executable.exists()
+    ), f"Expected: {action_server_executable} to exist."
+    subprocess.Popen([action_server_executable, "-h"])
+    subprocess.Popen([action_server_executable, "-h"])
+    subprocess.Popen([action_server_executable, "-h"])

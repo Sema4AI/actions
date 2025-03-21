@@ -1,3 +1,5 @@
+import sys
+
 if __name__ == "__main__":
     from sema4ai.action_server.cli import main
 
@@ -12,4 +14,10 @@ if __name__ == "__main__":
 
     # args = "start --port 61080 --actions-sync=false --datadir=/Users/fabioz/.sema4ai/.sema4ai_code/oauth2/datadir".split()
 
-    main(args)
+    try:
+        main(args)
+    except Exception:
+        import traceback
+
+        traceback.print_exc()
+        sys.exit(1)

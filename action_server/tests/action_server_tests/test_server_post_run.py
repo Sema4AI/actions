@@ -1,6 +1,9 @@
+import pytest
+
 from sema4ai.action_server._selftest import ActionServerClient, ActionServerProcess
 
 
+@pytest.mark.integration_test
 def test_server_post_run(
     action_server_process: ActionServerProcess,
     client: ActionServerClient,
@@ -65,6 +68,7 @@ def test_server_post_run(
     wait_for_non_error_condition(func)
 
 
+@pytest.mark.integration_test
 def test_server_post_run_on_failure(
     action_server_process: ActionServerProcess,
     client: ActionServerClient,
@@ -128,6 +132,7 @@ def test_server_post_run_on_failure(
     wait_for_non_error_condition(func)
 
 
+@pytest.mark.integration_test
 def test_server_bad_post_run_command(
     action_server_process: ActionServerProcess,
     client: ActionServerClient,

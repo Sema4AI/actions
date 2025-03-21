@@ -1,9 +1,12 @@
+import pytest
+
 from sema4ai.action_server._selftest import ActionServerClient, ActionServerProcess
 
 # Used in test so that the information is static (no random key or iv).
 USE_STATIC_INFO = False
 
 
+@pytest.mark.integration_test
 def test_secrets_simple(
     action_server_process: ActionServerProcess, client: ActionServerClient, tmpdir
 ):
@@ -14,6 +17,7 @@ def test_secrets_simple(
     check_secrets_simple(Path(tmpdir), action_server_process, client, verbose=False)
 
 
+@pytest.mark.integration_test
 def test_secrets_encrypted(
     action_server_process: ActionServerProcess,
     client: ActionServerClient,
@@ -67,6 +71,7 @@ def test_secrets_encrypted(
     assert "my-secret-value" == json.loads(found)
 
 
+@pytest.mark.integration_test
 def test_secrets_not_encrypted(
     action_server_process: ActionServerProcess,
     client: ActionServerClient,
@@ -98,6 +103,7 @@ def test_secrets_not_encrypted(
     assert "my-secret-value" == json.loads(found)
 
 
+@pytest.mark.integration_test
 def test_secrets_unencrypted_set_through_separate_post_request(
     action_server_process: ActionServerProcess,
     client: ActionServerClient,
@@ -150,6 +156,7 @@ def test_secrets_unencrypted_set_through_separate_post_request(
     )
 
 
+@pytest.mark.integration_test
 def test_secrets_encrypted_set_through_separate_post_request(
     action_server_process: ActionServerProcess,
     client: ActionServerClient,
@@ -203,6 +210,7 @@ def test_secrets_encrypted_set_through_separate_post_request(
     assert "my-secret-value" == json.loads(found)
 
 
+@pytest.mark.integration_test
 def test_secrets_encrypted_oauth2(
     action_server_process: ActionServerProcess,
     client: ActionServerClient,
@@ -265,6 +273,7 @@ def test_secrets_encrypted_oauth2(
     assert "Hello foo. Access token: foobar" == json.loads(found)
 
 
+@pytest.mark.integration_test
 def test_secrets_oauth2_encrypted_set_through_separate_post_request(
     action_server_process: ActionServerProcess,
     client: ActionServerClient,

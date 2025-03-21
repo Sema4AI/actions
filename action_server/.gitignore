@@ -8,3 +8,4 @@ rcc
 sema4ai-oauth-config.yaml
 oauth-config.yaml
 src/**/bin/data-server-cli-*
+go-wrapper/action-server-unsigned*

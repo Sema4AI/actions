@@ -33,8 +33,8 @@ def get_python_exe_from_env(env):
     if not python:
         if is_frozen():
             raise RuntimeError(
-                "Unable to run because no 'action-server.yaml' was present to bootstrap the environment\n"
-                "(note: when the action server is distributed without sources, an 'action-server.yaml' for "
+                "Unable to run because no 'package.yaml' was present to bootstrap the environment\n"
+                "(note: when the action server is distributed without sources, an 'package.yaml' for "
                 "the target environment is always required)."
             )
         else:
