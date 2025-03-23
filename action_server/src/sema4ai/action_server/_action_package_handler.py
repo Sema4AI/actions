@@ -25,6 +25,8 @@ def _raise_deprecated_conda(found: Path):
 
 class ActionPackageHandler:
     def __init__(self, action_package_dir: str, datadir: Path):
+        import os
+
         import yaml
 
         from sema4ai.action_server.vendored_deps.action_package_handling.cli_errors import (
@@ -92,7 +94,9 @@ class ActionPackageHandler:
                 if (import_path / yaml_name).exists():
                     _raise_deprecated_conda(import_path / yaml_name)
 
-            if is_frozen():
+            if is_frozen() and not os.environ.get(
+                "SEMA4AI_INTEGRATION_TEST_ACTION_SERVER_EXECUTABLE"
+            ):
                 raise ActionServerValidationError(
                     f"Unable to proceed because `package.yaml` is not available at: {original_package_yaml}."
                 )

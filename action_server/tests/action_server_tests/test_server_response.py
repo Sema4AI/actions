@@ -3,9 +3,12 @@ import json
 import sys
 from concurrent.futures.thread import ThreadPoolExecutor
 
+import pytest
+
 from sema4ai.action_server._selftest import ActionServerClient, ActionServerProcess
 
 
+@pytest.mark.integration_test
 def test_return_response_ok_action(
     action_server_process: ActionServerProcess,
     client: ActionServerClient,
@@ -110,6 +113,7 @@ def test_return_response_ok_action(
     executor.shutdown(wait=False)
 
 
+@pytest.mark.integration_test
 def test_action_package_json(
     action_server_process: ActionServerProcess, client: ActionServerClient, tmpdir
 ):

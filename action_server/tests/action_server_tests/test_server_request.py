@@ -1,8 +1,11 @@
 import json
 
+import pytest
+
 from sema4ai.action_server._selftest import ActionServerClient, ActionServerProcess
 
 
+@pytest.mark.integration_test
 def test_issue_167_access_headers(
     action_server_process: ActionServerProcess,
     client: ActionServerClient,

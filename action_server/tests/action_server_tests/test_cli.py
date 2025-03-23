@@ -22,6 +22,7 @@ def test_download_rcc(tmpdir) -> None:
     assert os.path.exists(rcc_location)
 
 
+@pytest.mark.integration_test
 def test_new(
     tmpdir, action_server_process: ActionServerProcess, client: ActionServerClient
 ) -> None:
@@ -60,14 +61,21 @@ def test_new_list_templates(tmpdir) -> None:
     }
 
 
-def test_help(str_regression):
+def fix_eol(text: str) -> str:
+    return text.replace("\r\n", "\n").replace("\r", "\n").strip()
+
+
+def test_help(str_regression, datadir):
     import re
 
     from action_server_tests.fixtures import sema4ai_action_server_run
 
     result = sema4ai_action_server_run(["-h"], returncode=0)
     out = re.sub(r"\(\d+.\d+.\d+\)", "(<version>)", result.stdout)
-    str_regression.check(out)
+    v2_expected = datadir / "test_help_v2.txt"
+    found = v2_expected.read_text()
+    if fix_eol(found) != fix_eol(out):
+        str_regression.check(out)
 
 
 def test_migrate(database_v0):

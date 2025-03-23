@@ -1,47 +1,135 @@
-import os
-import sys
 from pathlib import Path
 
 
-def test_binary_build():
-    import subprocess
+def get_internal_version_location(version: str) -> Path:
+    import os
+    import sys
 
-    # Checks if the versions in pyoxidizer are correct
-    # and if the binary selftest works properly
-    CURDIR = Path(__file__).absolute()
-    action_server_dir = CURDIR.parent.parent.parent
-    blz_file = action_server_dir / "build-binary" / "pyoxidizer.bzl"
-    assert blz_file.exists()
-
-    # TODO: Remove when https://github.com/robocorp/robocorp/pull/322 is
-    # added as it adds the dep to the dev deps (not adding it in this PR
-    # to avoid conflicts).
-    subprocess.check_call(
-        [sys.executable, "-m", "pip", "install", "pyoxidizer"],
-    )
-
-    before = blz_file.read_text().replace("\r\n", "\n").replace("\r", "\n")
-    subprocess.check_call(
-        [sys.executable, "-m", "invoke", "update-pyoxidizer-versions"],
-        cwd=action_server_dir,
-    )
-    after = blz_file.read_text().replace("\r\n", "\n").replace("\r", "\n")
-
-    if before != after:
-        raise AssertionError(
-            "inv update-pyoxidizer-versions must be run to update binary versions"
+    if sys.platform == "win32":
+        app_data_dir = os.getenv("LOCALAPPDATA")
+        if not app_data_dir:
+            raise RuntimeError("LOCALAPPDATA environment variable is not set")
+        target_path = os.path.join(
+            app_data_dir, "sema4ai", "bin", "action-server", "internal"
         )
+    else:
+        home_dir = os.path.expanduser("~")
+        target_path = os.path.join(
+            home_dir, ".sema4ai", "bin", "action-server", "internal"
+        )
+
+    return Path(target_path) / version
+
+
+def manual_test_binary_build():
+    import os
+    import shutil
+    import sys
+
+    from sema4ai.common.run_in_thread import run_in_thread
+
+    CURDIR = Path(__file__).absolute().parent
+    action_server_dir = CURDIR.parent.parent
+    assert (action_server_dir / "pyproject.toml").exists()
+
+    import subprocess
 
     env = os.environ.copy()
     env.pop("PYTHONPATH", "")
     env.pop("PYTHONHOME", "")
     env.pop("VIRTUAL_ENV", "")
-    env["RC_ACTION_SERVER_FORCE_DOWNLOAD_RCC"] = "True"
-    env["RC_ACTION_SERVER_DO_SELFTEST"] = "True"
     env["PYTHONIOENCODING"] = "utf-8"
 
-    subprocess.check_call(
-        ["pyoxidizer", "run", "--release"],
-        cwd=action_server_dir / "build-binary",
-        env=env,
+    dist_dir = action_server_dir / "dist" / "final"
+    target_executable = dist_dir / (
+        "action-server" + ".exe" if sys.platform == "win32" else ""
     )
+
+    if target_executable.exists():
+        try:
+            os.remove(target_executable)
+        except Exception:
+            raise RuntimeError(f"Failed to remove {target_executable}")
+
+    assets = action_server_dir / "go-wrapper" / "assets"
+    for asset_name in ("app_hash", "version.txt", "assets.zip"):
+        asset_path = assets / asset_name
+        if asset_path.exists():
+            asset_path.unlink()
+
+    version = f"test_binary_build-{os.getpid()}"
+    subprocess.check_output(
+        [
+            sys.executable,
+            "-m",
+            "invoke",
+            "build-executable",
+            "--go-wrapper",
+            "--version",
+            version,
+        ],
+        cwd=action_server_dir,
+        env=env,
+        stderr=subprocess.STDOUT,
+    )
+
+    # Binary should be in the dist directory
+    assert target_executable.exists()
+
+    env["SEMA4AI_GO_WRAPPER_DEBUG"] = "1"
+
+    # Run the executable
+    def run_executable():
+        proc = subprocess.Popen(
+            [target_executable, "-h"],
+            cwd=action_server_dir,
+            env=env,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+        )
+        stdout, _ = proc.communicate()
+        return stdout.decode("utf-8", errors="replace")
+
+    extracted_location = get_internal_version_location(version)
+    if extracted_location.exists():
+        shutil.rmtree(extracted_location)
+
+    try:
+        fut1 = run_in_thread(run_executable)
+        fut2 = run_in_thread(run_executable)
+        fut3 = run_in_thread(run_executable)
+
+        futures = [fut1, fut2, fut3]
+
+        outputs = [fut.result() for fut in futures]
+        skipped = 0
+        extracted = 0
+        for output in outputs:
+            if "Zip hash matches, skipping asset expansion" in output:
+                skipped += 1
+            if "Expanding assets to: " in output:
+                extracted += 1
+
+        full_outputs = "\n".join(outputs)
+        assert (
+            skipped == 2
+        ), f"Expected 2 skipped, got {skipped}. Full outputs:\n{full_outputs}"
+        assert (
+            extracted == 1
+        ), f"Expected 1 extracted, got {extracted}. Full outputs:\n{full_outputs}"
+
+        assert "(ignored) Error touching" not in full_outputs, full_outputs
+        assert "(ignored) Error creating" not in full_outputs, full_outputs
+
+        assert extracted_location.exists()
+
+        assert (extracted_location / "app_hash").exists()
+        assert (extracted_location / "lastLaunchTouch").exists()
+    finally:
+        shutil.rmtree(extracted_location)
+
+        if target_executable.exists():
+            try:
+                os.remove(target_executable)
+            except Exception:
+                raise RuntimeError(f"Failed to remove {target_executable}")

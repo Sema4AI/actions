@@ -108,7 +108,13 @@ class ActionServerProcess:
         if actions_sync:
             assert cwd, "cwd must be passed when synchronizing the actions."
 
-        if is_frozen():
+        if "SEMA4AI_INTEGRATION_TEST_ACTION_SERVER_EXECUTABLE" in os.environ:
+            executable = os.environ["SEMA4AI_INTEGRATION_TEST_ACTION_SERVER_EXECUTABLE"]
+            assert os.path.isfile(
+                executable
+            ), f"Expected executable to exist: {executable}"
+            base_args = [executable]
+        elif is_frozen():
             base_args = [sys.executable]
         else:
             base_args = [
@@ -192,7 +198,10 @@ class ActionServerProcess:
                             raise ActionServerExitedError(
                                 f"The process already exited with returncode: "
                                 f"{process.returncode}\n"
-                                f"Args: {new_args}"
+                                f"Args: {new_args}\n"
+                                f"Elapsed time: {time.monotonic() - initial_time:.2f}s\n"
+                                f"Stdout: {self.get_stdout()}\n"
+                                f"Stderr: {self.get_stderr()}\n"
                             )
             else:
                 host, port = future.result(timeout)

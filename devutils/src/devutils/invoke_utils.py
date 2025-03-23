@@ -178,15 +178,33 @@ def build_common_tasks(
     TARGETS = " ".join(source_directories)
     RUFF_ARGS = f"--config {ROOT / 'ruff.toml'} {ruff_format_arguments}".strip()
 
-    def run(ctx, *cmd, **options):
+    def run(
+        ctx,
+        *cmd,
+        env: Optional[dict] = None,
+        cwd: Optional[str | Path] = None,
+        **options,
+    ):
         options.setdefault("pty", sys.platform != "win32")
         options.setdefault("echo", True)
 
-        os.chdir(root)
-        args = " ".join(str(c) for c in cmd)
+        if cwd is None:
+            cwd = root
+        os.chdir(cwd)
+
+        if env is not None:
+            options["env"] = env
+
+        args = " ".join(cmd)
         return ctx.run(args, **options)
 
-    def poetry(ctx, *cmd, verbose: bool = False):
+    def poetry(
+        ctx,
+        *cmd,
+        verbose: bool = False,
+        cwd: Optional[str] = None,
+        env: Optional[dict] = None,
+    ):
         prefix = []
         if _use_conda():
             prefix.extend(["conda", "run", "--no-capture-output", "-n", CONDA_ENV_NAME])
@@ -195,7 +213,7 @@ def build_common_tasks(
         if verbose:
             prefix.append("-vv")
 
-        return run(ctx, *prefix, *cmd)
+        return run(ctx, *prefix, *cmd, env=env, cwd=cwd)
 
     def _make_conda_env_if_needed():
         if _use_conda():
@@ -232,7 +250,7 @@ def build_common_tasks(
         )
         if projects:
             with mark_as_develop_mode(projects):
-                poetry(ctx, "lock --no-update")
+                poetry(ctx, "lock")
                 poetry(ctx, "install", verbose=verbose)
         else:
             poetry(ctx, "install", verbose=verbose)
@@ -248,7 +266,7 @@ def build_common_tasks(
         _make_conda_env_if_needed()
 
         with mark_as_develop_mode(all_packages=True):
-            poetry(ctx, "lock --no-update")
+            poetry(ctx, "lock")
             poetry(ctx, "install", verbose=verbose)
 
     @contextmanager

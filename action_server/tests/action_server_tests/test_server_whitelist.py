@@ -1,6 +1,8 @@
 import json
 from pathlib import Path
 
+import pytest
+
 from sema4ai.action_server._selftest import ActionServerClient, ActionServerProcess
 from sema4ai.action_server._whitelist import accept_action
 
@@ -37,6 +39,7 @@ def test_whitelist_hyphen_underscore_match():
     assert accept_action("action-2", "any-name", "action_2")
 
 
+@pytest.mark.integration_test
 def test_whitelist_on_import(
     str_regression,
     tmpdir,
@@ -90,6 +93,7 @@ def calculator_subtract(v1: float, v2: float) -> float:
             assert len(actions) == 1
 
 
+@pytest.mark.integration_test
 def test_whitelist_on_start(
     action_server_process: ActionServerProcess,
     str_regression,
@@ -127,6 +131,7 @@ def calculator_subtract(v1: float, v2: float) -> float:
     str_regression.check(spec)
 
 
+@pytest.mark.integration_test
 def test_whitelist_on_start_run(
     action_server_process: ActionServerProcess,
     str_regression,

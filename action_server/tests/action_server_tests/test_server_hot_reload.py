@@ -1,6 +1,9 @@
+import pytest
+
 from sema4ai.action_server._selftest import ActionServerClient, ActionServerProcess
 
 
+@pytest.mark.integration_test
 def test_server_hot_reload(
     action_server_process: ActionServerProcess, client: ActionServerClient, tmpdir
 ) -> None:

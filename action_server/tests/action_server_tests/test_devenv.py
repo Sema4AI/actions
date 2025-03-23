@@ -1,3 +1,5 @@
+import pytest
+
 from sema4ai.action_server._selftest import ActionServerClient, ActionServerProcess
 
 
@@ -30,6 +32,7 @@ def test_devenv(datadir):
     assert [x.strip() for x in result.stdout.splitlines()] == ["['arg1']", "['arg2']"]
 
 
+@pytest.mark.integration_test
 def test_run_actions_with_custom_pythonpath(
     action_server_process: ActionServerProcess,
     client: ActionServerClient,
@@ -38,10 +41,16 @@ def test_run_actions_with_custom_pythonpath(
     import json
     from pathlib import Path
 
+    from action_server_tests.fixtures import BUILD_ENV_IN_TESTS_TIMEOUT
+
     cwd = Path(datadir) / "pack1"
 
     action_server_process.start(
-        cwd=cwd, actions_sync=True, db_file="server.db", lint=True, timeout=300
+        cwd=cwd,
+        actions_sync=True,
+        db_file="server.db",
+        lint=True,
+        timeout=BUILD_ENV_IN_TESTS_TIMEOUT,
     )
 
     found = client.post_get_str(

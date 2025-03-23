@@ -32,12 +32,15 @@ def wait_for_expose_session_info(action_server_process):
 
 
 @pytest.mark.parametrize("use_https", [True, False])
+@pytest.mark.integration_test
 def manual_test_server_expose(
     datadir, action_server_process: ActionServerProcess, data_regression, use_https
 ):
     """
     Tests the action server --expose against the real server.
     """
+    from action_server_tests.fixtures import BUILD_ENV_IN_TESTS_TIMEOUT
+
     from sema4ai.action_server._selftest import ActionServerClient
 
     additional_args = ["--expose"]
@@ -48,7 +51,7 @@ def manual_test_server_expose(
         db_file="server.db",
         cwd=datadir,
         actions_sync=True,
-        timeout=300,
+        timeout=BUILD_ENV_IN_TESTS_TIMEOUT,
         lint=True,
         min_processes=2,
         max_processes=2,
@@ -172,6 +175,7 @@ def wrangler_process() -> Iterator[WranglerProcess]:
     wrangler_process.stop()
 
 
+@pytest.mark.integration_test
 def test_server_expose_local(
     datadir,
     action_server_process: ActionServerProcess,
@@ -190,6 +194,8 @@ def test_server_expose_local(
 
     Then this test can be run.
     """
+    from action_server_tests.fixtures import BUILD_ENV_IN_TESTS_TIMEOUT
+
     from sema4ai.action_server import _server_expose
     from sema4ai.action_server._robo_utils.run_in_thread import run_in_thread
     from sema4ai.action_server._selftest import ActionServerClient
@@ -209,7 +215,7 @@ def test_server_expose_local(
         db_file="server.db",
         cwd=datadir,
         actions_sync=True,
-        timeout=300,
+        timeout=BUILD_ENV_IN_TESTS_TIMEOUT,
         lint=True,
         min_processes=2,
         max_processes=2,

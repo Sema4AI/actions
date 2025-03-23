@@ -13,9 +13,11 @@ updates:
   directories:
   - action_server
   - actions
+  - build_common
   - common
   - devutils
   - sema4ai-http-helper
+  - templates/advanced
   schedule:
     interval: daily
   open-pull-requests-limit: 0
@@ -23,7 +25,7 @@ updates:
   - dependency-type: all
 - package-ecosystem: npm
   directories:
-  - /action_server/frontend
+  - action_server/frontend
   schedule:
     interval: daily
   open-pull-requests-limit: 0

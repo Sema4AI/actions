@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+## 2.7.0 - 2025-03-23
+
+- `Action Server` now requires Python 3.12 or Python 3.13.
+  - Updated some dependencies (`jsonschema-specifications`, `aihttp`, `fastapi-slim`, `sema4ai-actions`, `uvicorn`)
+- The `go-wrapper` executable now uses a lock before extracting the assets (to avoid issues when running multiple instances in parallel).
+- PyInstaller is used instead of PyOxidizer now to build the Python distribution (PyOxidizer is now unsupported and didn't support Python 3.12).
+- When the `Action Server` is launched, a `lastLaunchTouch` file is touched (so, it's possible to check the time of the last `Action Server` usage).
+- All integration tests are now run against the binary distribution (previously only a smoke test was run).
+- Wheels are now available in pypi for mac os arm64 (and mac os x86_64 is now no longer available).
+
 ## 2.6.0 - 2025-02-26
 
 - Support `external-endpoints` in `package.yaml` (to allow configuring firewall settings for egress rules).

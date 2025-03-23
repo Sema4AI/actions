@@ -1,9 +1,12 @@
 from pathlib import Path
 
+import pytest
+
 from sema4ai.action_server._selftest import ActionServerProcess
 from sema4ai.action_server.migrations import MigrationStatus
 
 
+@pytest.mark.integration_test
 def test_automigrate(
     database_v0, datadir, action_server_process: ActionServerProcess, tmpdir
 ):

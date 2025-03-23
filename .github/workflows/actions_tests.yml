@@ -59,6 +59,12 @@ jobs:
     - name: Install project (dev)
       if: contains(matrix.name, '-devmode')
       run: inv devinstall
+    - name: Setup node
+      uses: actions/setup-node@v3
+      with:
+        node-version: 20.x
+        registry-url: https://npm.pkg.github.com
+        scope: '@robocorp'
     - name: Test
       env:
         GITHUB_ACTIONS_MATRIX_NAME: ${{ matrix.name }}

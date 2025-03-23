@@ -758,6 +758,8 @@ def _make_import_migrate_or_start(
     use_db: Optional["Database"] = None,
     before_start: Sequence[IBeforeStartCallback] = (),
 ) -> int:
+    from sema4ai.common.process import kill_subprocesses
+
     from sema4ai.action_server._preload_actions.preload_actions_autoexit import (
         exit_when_pid_exists,
     )
@@ -974,6 +976,8 @@ information from this datadir.
                     except KeyboardInterrupt:
                         log.critical("Exiting action server...")
                         return 1
+                    finally:
+                        kill_subprocesses()
                     return 0
 
             else:

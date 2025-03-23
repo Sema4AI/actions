@@ -12,6 +12,8 @@ from sema4ai.action_server._selftest import (
     sema4ai_action_server_run,
 )
 
+BUILD_ENV_IN_TESTS_TIMEOUT = 600
+
 
 def _fix_file_info(info_json):
     import os.path
@@ -106,7 +108,20 @@ def disable_feedback(temp_directory_session, rcc_config_location) -> None:
 
 
 @pytest.fixture
-def action_server_process(action_server_datadir) -> Iterator[ActionServerProcess]:
+def action_server_process(
+    action_server_datadir, request
+) -> Iterator[ActionServerProcess]:
+    if not request.node.get_closest_marker("integration_test"):
+        raise RuntimeError(
+            "All tests using the `action_server_process` fixture must be marked with the `integration_test` marker.\n"
+            "Please fix this for the following test:\n"
+            f"    {request.node.name}"
+            "\n"
+            "Example:\n"
+            "    @pytest.mark.integration_test\n"
+            "    def test_name(action_server_process: ActionServerProcess):\n"
+            "        ...\n"
+        )
     ret = ActionServerProcess(action_server_datadir)
 
     yield ret

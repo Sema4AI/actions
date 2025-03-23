@@ -11,6 +11,8 @@ name: Action Server Tests
     - devutils/**
     - actions/**
     - sema4ai-http-helper/**
+    - common/**
+    - build_common/**
   pull_request:
     branches:
     - master
@@ -20,6 +22,8 @@ name: Action Server Tests
     - devutils/**
     - actions/**
     - sema4ai-http-helper/**
+    - common/**
+    - build_common/**
 defaults:
   run:
     working-directory: ./action_server
@@ -30,19 +34,19 @@ jobs:
       fail-fast: false
       matrix:
         name:
-        - ubuntu-py3.10-devmode
-        - windows-py3.10-devmode
-        - macos-py3.10-devmode
+        - ubuntu-py3.12.9-devmode
+        - windows-py3.12.9-devmode
+        - macos-py3.12.9-devmode
         include:
-        - name: ubuntu-py3.10-devmode
-          python: '3.10'
+        - name: ubuntu-py3.12.9-devmode
+          python: 3.12.9
           os: ubuntu-latest
-        - name: windows-py3.10-devmode
-          python: '3.10'
+        - name: windows-py3.12.9-devmode
+          python: 3.12.9
           os: windows-latest
-        - name: macos-py3.10-devmode
+        - name: macos-py3.12.9-devmode
           os: macos-latest
-          python: '3.10'
+          python: 3.12.9
     steps:
     - name: Checkout repository and submodules
       uses: actions/checkout@v3
@@ -61,6 +65,10 @@ jobs:
     - name: Install project (dev)
       if: contains(matrix.name, '-devmode')
       run: inv devinstall
+    - name: Setup go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.23'
     - name: Setup node
       uses: actions/setup-node@v3
       with:
@@ -76,7 +84,29 @@ jobs:
       run: inv build-oauth2-config
       env:
         GH_TOKEN: ${{ secrets.GH_PAT_GHA_TO_ANOTHER_REPO }}
-    - name: Test
+    - name: Build binary
+      env:
+        RC_ACTION_SERVER_FORCE_DOWNLOAD_RCC: 'true'
+        RC_ACTION_SERVER_DO_SELFTEST: 'true'
+        MACOS_SIGNING_CERT: ${{ secrets.MACOS_SIGNING_CERT_SEMA4AI }}
+        MACOS_SIGNING_CERT_PASSWORD: ${{ secrets.MACOS_SIGNING_CERT_PASSWORD_SEMA4AI
+          }}
+        MACOS_SIGNING_CERT_NAME: ${{ secrets.MACOS_SIGNING_CERT_NAME_SEMA4AI }}
+        APPLEID: ${{ secrets.MACOS_APP_ID_FOR_NOTARIZATION_SEMA4AI }}
+        APPLETEAMID: ${{ secrets.MACOS_TEAM_ID_FOR_NOTARIZATION_SEMA4AI }}
+        APPLEIDPASS: ${{ secrets.MACOS_APP_ID_PASSWORD_FOR_NOTARIZATION_SEMA4AI }}
+        VAULT_URL: ${{ secrets.WIN_SIGN_AZURE_KEY_VAULT_URL_SEMA4AI }}
+        CLIENT_ID: ${{ secrets.WIN_SIGN_AZURE_KEY_VAULT_CLIENT_ID_SEMA4AI }}
+        TENANT_ID: ${{ secrets.WIN_SIGN_AZURE_KEY_VAULT_TENANT_ID_SEMA4AI }}
+        CLIENT_SECRET: ${{ secrets.WIN_SIGN_AZURE_KEY_VAULT_CLIENT_SECRET_SEMA4AI
+          }}
+        CERTIFICATE_NAME: ${{ secrets.WIN_SIGN_AZURE_KEY_VAULT_CERTIFICATE_NAME_SEMA4AI
+          }}
+        GITHUB_EVENT_NAME: ${{ github.event_name }}
+        GITHUB_REF_NAME: ${{ github.ref_name }}
+        GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
+      run: poetry run inv build-executable --sign --go-wrapper
+    - name: Test (not integration)
       env:
         GITHUB_ACTIONS_MATRIX_NAME: ${{ matrix.name }}
         CI_CREDENTIALS: ${{ secrets.CI_CREDENTIALS }}
@@ -84,7 +114,16 @@ jobs:
         ACTION_SERVER_TEST_ACCESS_CREDENTIALS: ${{ secrets.ACTION_SERVER_TEST_ACCESS_CREDENTIALS
           }}
         ACTION_SERVER_TEST_HOSTNAME: ${{ secrets.ACTION_SERVER_TEST_HOSTNAME }}
-      run: inv test
+      run: poetry run inv test-not-integration
+    - name: Test (integration)
+      env:
+        GITHUB_ACTIONS_MATRIX_NAME: ${{ matrix.name }}
+        CI_CREDENTIALS: ${{ secrets.CI_CREDENTIALS }}
+        CI_ENDPOINT: ${{ secrets.CI_ENDPOINT }}
+        ACTION_SERVER_TEST_ACCESS_CREDENTIALS: ${{ secrets.ACTION_SERVER_TEST_ACCESS_CREDENTIALS
+          }}
+        ACTION_SERVER_TEST_HOSTNAME: ${{ secrets.ACTION_SERVER_TEST_HOSTNAME }}
+      run: poetry run inv test-binary --jobs 0
     - name: '`inv lint`, potentially fixed with `inv pretty`'
       if: always()
       run: '

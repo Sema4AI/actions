@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "sema4ai-build-common"
+version = "0.0.1"
+description = "Sema4AI Build Common"
+authors = ["Sema4.ai Engineering <engineering@sema4.ai>"]
+readme = "README.md"
+repository = "https://github.com/Sema4AI/actions/"
+license = "Apache-2.0"
+packages = [{ include = "sema4ai/build_common", from = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+[tool.poetry.group.dev.dependencies]
+sema4ai-devutils = { path = "../devutils/", develop = true }
+
+[tool.mypy]
+mypy_path = "src:tests"
+
+[tool.black]
+skip-string-normalization = false
+skip-magic-trailing-comma = false
+
+[tool.isort]
+profile = "black"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

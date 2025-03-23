@@ -165,6 +165,7 @@ def _get_timeout():
     return 20
 
 
+@pytest.mark.integration_test
 def test_server_websockets(
     action_server_process: ActionServerProcess,
     asyncio_thread: AsyncIOThread,

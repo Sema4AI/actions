@@ -1,8 +1,11 @@
 import json
 
+import pytest
+
 from sema4ai.action_server._selftest import ActionServerClient, ActionServerProcess
 
 
+@pytest.mark.integration_test
 def test_serve_https(action_server_process: ActionServerProcess):
     from action_server_tests.fixtures import get_in_resources
 

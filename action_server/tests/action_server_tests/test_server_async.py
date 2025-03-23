@@ -1,8 +1,11 @@
 from pathlib import Path
 
+import pytest
+
 from sema4ai.action_server._selftest import ActionServerClient, ActionServerProcess
 
 
+@pytest.mark.integration_test
 def test_server_async_api_requests_while_waiting_for_action_to_complete(
     action_server_process: ActionServerProcess, client: ActionServerClient, datadir
 ):
@@ -83,6 +86,7 @@ def test_server_async_api_requests_while_waiting_for_action_to_complete(
     wait_for_non_error_condition(check_cancelled_status)
 
 
+@pytest.mark.integration_test
 def test_server_async_api(
     action_server_process: ActionServerProcess,
     client: ActionServerClient,
@@ -191,6 +195,7 @@ def do_run(
     return run_id
 
 
+@pytest.mark.integration_test
 def test_server_async_process_poll_with_cancel(
     action_server_process: ActionServerProcess,
     client: ActionServerClient,
@@ -251,6 +256,7 @@ def test_server_async_process_poll_with_cancel(
     wait_for_non_error_condition(check_run_id3_completed, timeout=10)
 
 
+@pytest.mark.integration_test
 def test_cancel_existing_runs_on_restart(action_server_datadir, datadir):
     action_server_process = ActionServerProcess(action_server_datadir)
     try:

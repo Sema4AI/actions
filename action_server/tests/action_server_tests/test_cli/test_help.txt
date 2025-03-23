@@ -1,6 +1,4 @@
-usage: action-server [-h]
-                     {start,import,download-rcc,new,version,migrate,package,env,cloud,oauth2,devenv}
-                     ...
+usage: action-server [-h] {start,import,download-rcc,new,version,migrate,package,env,cloud,oauth2,devenv} ...
 
 Sema4.ai Action Server (<version>)
 
