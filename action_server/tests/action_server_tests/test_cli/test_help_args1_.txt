@@ -1,0 +1,91 @@
+usage: action-server start [-h] [-a ADDRESS] [-p PORT] [--expose]
+                           [--server-url SERVER_URL] [--expose-allow-reuse]
+                           [--api-key API_KEY] [--actions-sync ACTIONS_SYNC]
+                           [--dir PATH] [--skip-lint]
+                           [--min-processes MIN_PROCESSES]
+                           [--max-processes MAX_PROCESSES] [--reuse-processes]
+                           [--full-openapi-spec] [--auto-reload]
+                           [--parent-pid PARENT_PID] [--https]
+                           [--ssl-self-signed] [--ssl-keyfile [PATH]]
+                           [--ssl-certfile [PATH]] [--oauth2-settings [PATH]]
+                           [-d PATH] [--db-file DB_FILE] [--kill-lock-holder]
+                           [-v] [--whitelist WHITELIST]
+
+options:
+  -h, --help            show this help message and exit
+  -a ADDRESS, --address ADDRESS
+                        Server address (default: localhost)
+  -p PORT, --port PORT  Server port (default: 8080)
+  --expose              Expose the server to the world
+  --server-url SERVER_URL
+                        Explicit server url to be defined in the OpenAPI spec
+                        'servers' section. Defaults to the localhost url.
+  --expose-allow-reuse  Always answer yes to expose reuse confirmation
+  --api-key API_KEY     Adds authentication. Pass it as `{"Authorization":
+                        "Bearer <API_KEY>"}` header. Pass `--api-key None` to
+                        disable authentication.
+  --actions-sync ACTIONS_SYNC
+                        By default the actions will be synchronized
+                        (added/removed) given the directories provided (if not
+                        specified the current directory is used). To start
+                        without synchronizing it's possible to use `--actions-
+                        sync=false`
+  --dir PATH            By default, when starting, actions will be collected
+                        from the current directory to serve, but it's also
+                        possible to use `--dir` to load actions from a
+                        different directory
+  --skip-lint           Skip `@action` linting when an action is found (by
+                        default any `@action` is linted for errors when
+                        found).
+  --min-processes MIN_PROCESSES
+                        The minimum number of action processes that should
+                        always be kept alive, ready to process any incoming
+                        request.
+  --max-processes MAX_PROCESSES
+                        The maximum number of processes that may be created to
+                        handle the actions.
+  --reuse-processes     By default actions are run once and then after the
+                        action runs the process that ran the action exits.
+                        This can be changed by using --reuse-processes. With
+                        this flag, after running the action instead of exiting
+                        the process will be available to run another action in
+                        the same process (note that in this case care must be
+                        taken so that memory leakage does not happen in the
+                        action and that global state from one run does not
+                        interfere with a subsequent run).
+  --full-openapi-spec   By default, the public OpenAPI specification will
+                        include only endpoints to run individual actions and
+                        omit all other endpoints. With this flag, all
+                        endpoints available will be defined in the public
+                        OpenAPI specification.
+  --auto-reload         When specified changes to Action Packages will be
+                        automatically picked up by the Action Server.
+  --parent-pid PARENT_PID
+                        The parent pid for the action server (when the parent
+                        pid exits, the action server will automatically exit).
+  --https               Starts the action server using https. If no
+                        certificate is provided, a self signed certificate
+                        will be created and used.
+  --ssl-self-signed     When using `--https`, a self-signed certificate will
+                        be created and used.
+  --ssl-keyfile [PATH]  When using `--https` can be used to specify the key
+                        file containing the private key for the SSL.
+  --ssl-certfile [PATH]
+                        When using `--https` can be used to specify the
+                        certificate (which contains the public key for the
+                        SSL).
+  --oauth2-settings [PATH]
+                        A yaml file with the OAuth2 settings with a mapping
+                        from the provider name to the provider information
+                        (such as clientId and clientSecret).
+  -d PATH, --datadir PATH
+                        Directory to store the data for operating the actions
+                        server (by default a datadir will be generated based
+                        on the current directory).
+  --db-file DB_FILE     The name of the database file, relative to the datadir
+                        (default: server.db)
+  --kill-lock-holder    Kill the process holding the data directory lock file
+                        if it exists.
+  -v, --verbose         Be more talkative (default: False)
+  --whitelist WHITELIST
+                        Allows whitelisting the actions/packages to be used

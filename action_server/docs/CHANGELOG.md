@@ -2,7 +2,10 @@
 
 ## Unreleased
 
+## 2.8.0 - 2025-03-24
+
 - Only update assets if the version is a local version (released versions are not overridden).
+- Added `--kill-lock-holder` argument to the `action-server start/migrate/import` commands.
 
 ## 2.7.0 - 2025-03-23
 

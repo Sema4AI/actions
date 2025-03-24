@@ -1,0 +1,14 @@
+usage: action-server migrate [-h] [-d PATH] [--db-file DB_FILE]
+                             [--kill-lock-holder] [-v]
+
+options:
+  -h, --help            show this help message and exit
+  -d PATH, --datadir PATH
+                        Directory to store the data for operating the actions
+                        server (by default a datadir will be generated based
+                        on the current directory).
+  --db-file DB_FILE     The name of the database file, relative to the datadir
+                        (default: server.db)
+  --kill-lock-holder    Kill the process holding the data directory lock file
+                        if it exists.
+  -v, --verbose         Be more talkative (default: False)

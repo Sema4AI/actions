@@ -1008,3 +1008,33 @@ def do_it() -> str:
         found2 = client.post_get_str("api/actions/package2/do-it/run", {})
         assert found1 == '"Ok"'
         assert found2 == '"Ok"'
+
+
+@pytest.mark.integration_test
+def test_kill_lock_holder(
+    action_server_process: ActionServerProcess, tmpdir, action_server_datadir
+):
+    from sema4ai.common.wait_for import wait_for_condition
+
+    action_server_process.start(
+        actions_sync=True,
+        cwd=tmpdir,
+        db_file="server.db",
+    )
+
+    wait_for_condition(lambda: action_server_process.process.is_alive())
+
+    proc2 = ActionServerProcess(action_server_datadir)
+    proc2.start(additional_args=["--kill-lock-holder"])
+    try:
+        wait_for_condition(lambda: proc2.process.is_alive())
+        wait_for_condition(lambda: not action_server_process.process.is_alive())
+
+        proc3 = ActionServerProcess(action_server_datadir)
+        try:
+            with pytest.raises(TimeoutError):
+                proc3.start(timeout=5)
+        finally:
+            proc3.stop()  # Shouldn't really have started, but call to be safe.
+    finally:
+        proc2.stop()
