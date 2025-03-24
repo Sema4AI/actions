@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strings"
 	"time"
@@ -164,16 +165,31 @@ func isDirEmpty(path string) bool {
 	return len(entries) == 0
 }
 
-func zipHashMatches(zipHash, targetDirectory string) bool {
+type ZipHashMatches int
+
+const (
+	NoHashFile ZipHashMatches = iota
+	EmptyHashFile
+	HashDoesNotMatch
+	HashMatches
+)
+
+func zipHashMatches(zipHash, targetDirectory string) ZipHashMatches {
 	currentZipHash, err := os.ReadFile(filepath.Join(targetDirectory, "app_hash"))
 	if err != nil {
-		return false
+		return NoHashFile
+	}
+	if len(currentZipHash) == 0 {
+		return EmptyHashFile
 	}
 	matches := zipHash == strings.TrimSpace(string(currentZipHash))
 	if debugGoWrapper {
 		fmt.Fprintf(os.Stderr, "App hash matches: %t\n", matches)
 	}
-	return matches
+	if matches {
+		return HashMatches
+	}
+	return HashDoesNotMatch
 }
 
 const LOCK_TIMEOUT = 120 * time.Second
@@ -217,8 +233,10 @@ func makeAssetExpansion(targetDirectory string, zipHash string) error {
 	}
 
 	locked := fileLock.Locked()
+	defer unlock(fileLock)
 
-	if zipHashMatches(zipHash, targetDirectory) {
+	hashMatches := zipHashMatches(zipHash, targetDirectory)
+	if hashMatches == HashMatches {
 		if debugGoWrapper {
 			fmt.Fprintf(os.Stderr, "Zip hash matches, skipping asset expansion (pid: %d)\n", os.Getpid())
 		}
@@ -230,21 +248,40 @@ func makeAssetExpansion(targetDirectory string, zipHash string) error {
 		os.Exit(1)
 	}
 
+	// We don't want to override in all cases: we just want to override if
+	// the version is a local version (or if the app_hash was not found or is empty, which means that the assets weren't fully expanded the last time).
+	if hashMatches == HashDoesNotMatch {
+		version := strings.TrimSpace(string(ASSETS_VERSION))
+		// Check with regexp for the \b (word boundary) for local
+		localRegex := regexp.MustCompile(`\blocal\b`)
+		if localRegex.MatchString(version) {
+			if debugGoWrapper {
+				fmt.Fprintf(os.Stderr, "Version is a local version, overriding existing assets (pid: %d)\n", os.Getpid())
+			}
+		} else {
+			// Notify that the version is not a local version, so we don't override the assets.
+			// Still, go on to do the launch with the existing assets.
+			fmt.Fprintf(os.Stderr, `
+The app_hash in "%s" does not match the app_hash of this executable and the version 
+does not include "local" in the version (%s). Assets will not be overridden.
+Please remove the contents to force an update. Proceeding with the launch with existing assets.`,
+				version,
+				targetDirectory)
+			return nil
+		}
+	}
+
 	// Extract assets to the target path
 	err = expandAssets(targetDirectory)
 	if err != nil {
-		unlock(fileLock)
 		return fmt.Errorf("Error extracting the zip file with the assets: %s\n", err)
 	}
 
 	// To finalize, write the zip hash to the target directory
 	err = os.WriteFile(filepath.Join(targetDirectory, "app_hash"), []byte(zipHash), 0644)
 	if err != nil {
-		unlock(fileLock)
 		return fmt.Errorf("Error writing app_hash: %s\n", err)
 	}
-
-	unlock(fileLock)
 
 	return nil
 }
@@ -332,7 +369,7 @@ func extractAndRun(config RunConfig) {
 
 	// If the folder doesn't exist already, we create it and copy all files
 	_, err := os.Stat(targetDirectory)
-	if os.IsNotExist(err) || isDirEmpty(targetDirectory) || !zipHashMatches(zipHash, targetDirectory) {
+	if os.IsNotExist(err) || isDirEmpty(targetDirectory) || zipHashMatches(zipHash, targetDirectory) != HashMatches {
 		err = makeAssetExpansion(targetDirectory, zipHash)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error expanding assets to %s.\n%s", targetDirectory, err)
