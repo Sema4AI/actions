@@ -2,8 +2,11 @@
 
 ## Unreleased
 
+- Only update assets if the version is a local version (released versions are not overridden).
+
 ## 2.7.0 - 2025-03-23
 
+- Note: incomplete release (had errors in the build pipeline making the release to github actions).
 - `Action Server` now requires Python 3.12 or Python 3.13.
   - Updated some dependencies (`jsonschema-specifications`, `aihttp`, `fastapi-slim`, `sema4ai-actions`, `uvicorn`)
 - The `go-wrapper` executable now uses a lock before extracting the assets (to avoid issues when running multiple instances in parallel).

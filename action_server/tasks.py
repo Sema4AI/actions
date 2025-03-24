@@ -190,6 +190,7 @@ def build_executable(
     sign: bool = False,
     go_wrapper: bool = False,
     version: str = None,
+    go_wrapper_name: str | None = None,
 ) -> None:
     """Build the project executable via PyInstaller."""
     from sema4ai.build_common.root_dir import get_root_dir
@@ -210,6 +211,7 @@ def build_executable(
         sign=sign,
         go_wrapper=go_wrapper,
         version=version,
+        go_wrapper_name=go_wrapper_name,
     )
 
     # to check if signed:  spctl -a -vvv -t install dist/final/action-server

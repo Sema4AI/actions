@@ -102,18 +102,9 @@ jobs:
           name: action-server-${{ matrix.os }}
           path: ${{ matrix.asset_path }}
 
-      - name: Get version
-        if: ${{ matrix.os == 'windows-2019' }}
-        run: |
-          poetry version | awk '{print $2}' > version.txt
-
-          $value = Get-Content -Raw -Path version.txt
-          echo "version=$value"
-          "version=$value" >> $env:GITHUB_OUTPUT
-        shell: pwsh
-
-      - name: Get version
-        if: ${{ matrix.os != 'windows-2019' }}
+      - name: Set version
+        id: set_version
+        if: ${{ matrix.os == 'ubuntu-20.04' }}
         run: |
           poetry version | awk '{print $2}' > version.txt
           VERSION=$(cat version.txt)

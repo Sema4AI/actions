@@ -55,6 +55,7 @@ def build_and_sign_executable(
     sign: bool,
     go_wrapper: bool,
     version: str | None = None,
+    go_wrapper_name: str | None = None,
 ):
     """Default workflow to build and sign the executable.
 
@@ -69,6 +70,7 @@ def build_and_sign_executable(
         sign: Whether to sign the executable.
         go_wrapper: Whether to build the Go wrapper.
         version: Version of the executable (gotten from git tag/pr if not passed)
+        go_wrapper_name: Name of the Go wrapper executable (default is <name>)
     """
     import shutil
     import sys
@@ -79,6 +81,8 @@ def build_and_sign_executable(
     from .signing import setup_keychain, sign_macos_executable, sign_windows_executable
     from .version_from_github_actions import get_version_from_github_actions
     from .zip_assets import write_version_to_go_wrapper, zip_go_wrapper_assets
+
+    assert not name.endswith(".exe"), "name should not end with .exe. Found: {name}"
 
     if go_wrapper:
         go_wrapper_dir = root_dir / "go-wrapper"
@@ -130,6 +134,13 @@ def build_and_sign_executable(
 
     assert dist_path.exists(), f"dist directory: {dist_path} not created"
     executable_name = (name + ".exe") if sys.platform == "win32" else name
+    go_wrapper_name = go_wrapper_name or name
+    assert not go_wrapper_name.endswith(
+        ".exe"
+    ), f"Go wrapper name should not end with .exe. Found: {go_wrapper_name}"
+    go_wrapper_executable_name = go_wrapper_name + (
+        ".exe" if sys.platform == "win32" else ""
+    )
 
     if onefile:
         target_executable = dist_path / executable_name
@@ -171,7 +182,7 @@ def build_and_sign_executable(
 
             print(" ============== Building Go wrapper: ============== ")
             stdout, stderr = run_and_capture_output(
-                [go_executable, "build", "-o", executable_name],
+                [go_executable, "build", "-o", go_wrapper_executable_name],
                 cwd=root_dir / "go-wrapper",
                 shell=True if sys.platform == "win32" else False,
             )
@@ -179,13 +190,13 @@ def build_and_sign_executable(
             print(stderr)
             print(" ============== END Building Go wrapper: ============== ")
 
-            built_go_wrapper = root_dir / "go-wrapper" / executable_name
+            built_go_wrapper = root_dir / "go-wrapper" / go_wrapper_executable_name
             assert (
                 built_go_wrapper.exists()
             ), f"Go wrapper executable {built_go_wrapper} not built"
 
             print("Copying Go wrapper executable to dist directory...")
-            final_executable = dist_path / "final" / executable_name
+            final_executable = dist_path / "final" / go_wrapper_executable_name
             final_executable.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy(built_go_wrapper, final_executable)
 

@@ -21,7 +21,7 @@ def get_internal_version_location(version: str) -> Path:
     return Path(target_path) / version
 
 
-def manual_test_binary_build():
+def test_binary_build():
     import os
     import shutil
     import sys
@@ -41,8 +41,9 @@ def manual_test_binary_build():
     env["PYTHONIOENCODING"] = "utf-8"
 
     dist_dir = action_server_dir / "dist" / "final"
+    go_wrapper_name = f"action-server-test-{os.getpid()}"
     target_executable = dist_dir / (
-        "action-server" + ".exe" if sys.platform == "win32" else ""
+        go_wrapper_name + (".exe" if sys.platform == "win32" else "")
     )
 
     if target_executable.exists():
@@ -57,8 +58,8 @@ def manual_test_binary_build():
         if asset_path.exists():
             asset_path.unlink()
 
-    version = f"test_binary_build-{os.getpid()}"
-    subprocess.check_output(
+    version = f"test_binary_build-local-{os.getpid()}"
+    build_executable_output = subprocess.check_output(
         [
             sys.executable,
             "-m",
@@ -67,6 +68,8 @@ def manual_test_binary_build():
             "--go-wrapper",
             "--version",
             version,
+            "--go-wrapper-name",
+            go_wrapper_name,
         ],
         cwd=action_server_dir,
         env=env,
@@ -74,7 +77,7 @@ def manual_test_binary_build():
     )
 
     # Binary should be in the dist directory
-    assert target_executable.exists()
+    assert target_executable.exists(), f"Binary {target_executable} does not exist. Build output:\n{build_executable_output}"
 
     env["SEMA4AI_GO_WRAPPER_DEBUG"] = "1"
 
