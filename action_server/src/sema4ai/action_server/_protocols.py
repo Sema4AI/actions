@@ -194,6 +194,7 @@ class ArgumentsNamespaceMigrateImportOrStart(ArgumentsNamespace):
     command: Literal["migrate", "import", "start"]
     datadir: str
     db_file: str
+    kill_lock_holder: bool
 
 
 class ArgumentsNamespaceMigrate(ArgumentsNamespaceMigrateImportOrStart):

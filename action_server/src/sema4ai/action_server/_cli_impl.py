@@ -2,7 +2,6 @@ import argparse
 import logging
 import os.path
 import sys
-import time
 import typing
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -223,8 +222,18 @@ def _add_start_server_command(command_parser, defaults):
     )
 
     add_data_args(start_parser, defaults)
+    _add_kill_lock_holder_args(start_parser, defaults)
     add_verbose_args(start_parser, defaults)
     _add_whitelist_args(start_parser, defaults)
+
+
+def _add_kill_lock_holder_args(parser, defaults):
+    parser.add_argument(
+        "--kill-lock-holder",
+        action="store_true",
+        help="Kill the process holding the data directory lock file if it exists.",
+        default=False,
+    )
 
 
 def _add_migrate_command(command_subparser, defaults):
@@ -235,6 +244,7 @@ def _add_migrate_command(command_subparser, defaults):
         help="Makes a database migration (if needed) and exits",
     )
     add_data_args(migration_parser, defaults)
+    _add_kill_lock_holder_args(migration_parser, defaults)
     add_verbose_args(migration_parser, defaults)
 
 
@@ -254,6 +264,7 @@ def _add_import_command(command_subparser, defaults):
     )
     _add_skip_lint(import_parser, defaults)
     add_data_args(import_parser, defaults)
+    _add_kill_lock_holder_args(import_parser, defaults)
     add_verbose_args(import_parser, defaults)
     _add_whitelist_args(import_parser, defaults)
 
@@ -758,6 +769,7 @@ def _make_import_migrate_or_start(
     use_db: Optional["Database"] = None,
     before_start: Sequence[IBeforeStartCallback] = (),
 ) -> int:
+    from sema4ai.common.app_mutex import obtain_app_mutex
     from sema4ai.common.process import kill_subprocesses
 
     from sema4ai.action_server._preload_actions.preload_actions_autoexit import (
@@ -766,45 +778,19 @@ def _make_import_migrate_or_start(
     from sema4ai.action_server.migrations import MigrationStatus
 
     from ._models import Run, RunStatus, run_status_to_str
-    from ._robo_utils.system_mutex import SystemMutex
     from ._runs_state_cache import use_runs_state_ctx
 
-    timeout = 3
-    timeout_at = time.monotonic() + timeout
     settings: "Settings" = setup_info.settings
 
-    shown_first_message = False
-    while True:
-        mutex = SystemMutex("action_server.lock", base_dir=str(settings.datadir))
-        acquired = mutex.get_mutex_aquired()
-        if acquired:
-            if shown_first_message:
-                log.info("Exited. Proceeding with action server startup.")
-            break
+    mutex = obtain_app_mutex(
+        kill_lock_holder=base_args.kill_lock_holder,
+        data_dir=settings.datadir,
+        lock_basename="action_server.lock",
+        app_name="Action Server",
+    )
 
-        msg = mutex.mutex_creation_info or ""
-        i = msg.find("--- Stack ---")
-        if i > 0:
-            msg = msg[:i]
-        msg = msg.strip()
-
-        if not shown_first_message:
-            shown_first_message = True
-            log.info(
-                f"An action server is already started in this datadir ({settings.datadir}).\n"
-                f"\nInformation on mutex holder:\n"
-                f"{msg}",
-            )
-
-        log.info("Waiting for it to exit...")
-        time.sleep(0.3)
-
-        timed_out = time.monotonic() > timeout_at
-        if timed_out:
-            log.critical(
-                "\nAction server not started (timed out waiting for mutex to be released).",
-            )
-            return 1
+    if mutex is None:
+        return 1
 
     # Log to file in datadir, always in debug mode
     # (only after lock is in place as multiple loggers to the same

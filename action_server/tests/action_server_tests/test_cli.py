@@ -65,12 +65,22 @@ def fix_eol(text: str) -> str:
     return text.replace("\r\n", "\n").replace("\r", "\n").strip()
 
 
-def test_help(str_regression, datadir):
+@pytest.mark.integration_test
+@pytest.mark.parametrize(
+    "args",
+    [
+        ["-h"],
+        ["start", "-h"],
+        ["migrate", "-h"],
+        ["import", "-h"],
+    ],
+)
+def test_help(args, str_regression, datadir):
     import re
 
     from action_server_tests.fixtures import sema4ai_action_server_run
 
-    result = sema4ai_action_server_run(["-h"], returncode=0)
+    result = sema4ai_action_server_run(args, returncode=0)
     out = re.sub(r"\(\d+.\d+.\d+\)", "(<version>)", result.stdout)
     v2_expected = datadir / "test_help_v2.txt"
     found = v2_expected.read_text()
