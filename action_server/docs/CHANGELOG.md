@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 2.8.1 - 2025-03-25
+
+- Fixes in sema4ai_http to be able to download on Mac OS with a signed binary.
+
 ## 2.8.0 - 2025-03-24
 
 - Only update assets if the version is a local version (released versions are not overridden).

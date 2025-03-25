@@ -17,7 +17,7 @@ if typing.TYPE_CHECKING:
 
 _TYPE_BODY = typing.Union[bytes, typing.IO[typing.Any], typing.Iterable[bytes], str]
 
-__version__ = "1.0.2"
+__version__ = "1.0.3"
 
 
 class DownloadStatus(Enum):
@@ -36,10 +36,72 @@ def build_ssl_context(
     import os
     import ssl
 
-    import truststore
+    import certifi
 
-    # Ignoring typing because trustore has bad typing, it should be int|None, although it says only int.
-    ctx = truststore.SSLContext(protocol)  # type: ignore
+    if sys.platform != "darwin":
+        _DEFAULT_LOGGER.info("Using truststore for SSL context (not darwin)")
+        import truststore
+
+        # Ignoring typing because trustore has bad typing, it should be int|None, although it says only int.
+        ctx = truststore.SSLContext(protocol)  # type: ignore
+    else:
+        _DEFAULT_LOGGER.info("Using certifi for SSL context (darwin)")
+        # Fix issue in mac os in signed executables:
+        # Traceback (most recent call last):
+        # File "action_server/__main__.py", line 18, in <module>
+        # File "action_server/cli.py", line 62, in main
+        #     retcode = _main_retcode(args)
+        #             ^^^^^^^^^^^^^^^^^^^
+        # File "action_server/_cli_impl.py", line 678, in _main_retcode
+        #     with initialize_rcc(download_rcc(), None) as rcc:
+        #                         ^^^^^^^^^^^^^^
+        # File "action_server/_download_rcc.py", line 68, in download_rcc
+        #     return _download_with_resume(rcc_url, rcc_path)
+        #         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        # File "action_server/_download_rcc.py", line 77, in _download_with_resume
+        #     with _open_urllib(url) as response:
+        #         ^^^^^^^^^^^^^^^^^
+        # File "action_server/_download_rcc.py", line 134, in _open_urllib
+        #     return urllib.request.urlopen(
+        #         ^^^^^^^^^^^^^^^^^^^^^^^
+        # File "urllib/request.py", line 215, in urlopen
+        # File "urllib/request.py", line 515, in open
+        # File "urllib/request.py", line 532, in _open
+        # File "urllib/request.py", line 492, in _call_chain
+        # File "urllib/request.py", line 1392, in https_open
+        # File "urllib/request.py", line 1347, in do_open
+        # urllib.error.URLError: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1000)>
+        # Error executing action-server: exit status 1
+        ctx = ssl.SSLContext(protocol)
+        if protocol == ssl.PROTOCOL_TLS_CLIENT:
+            # Do things done in create_default_context.
+            ctx.verify_mode = ssl.CERT_REQUIRED
+            ctx.check_hostname = True
+            # no explicit cafile, capath or cadata but the verify mode is
+            # CERT_OPTIONAL or CERT_REQUIRED. Let's try to load default system
+            # root CA certificates for the given purpose. This may fail silently.
+            ctx.load_default_certs(ssl.Purpose.SERVER_AUTH)
+            if hasattr(ctx, "keylog_filename"):
+                keylogfile = os.environ.get("SSLKEYLOGFILE")
+                if keylogfile and not sys.flags.ignore_environment:
+                    ctx.keylog_filename = keylogfile
+
+            if sys.platform.lower() == "darwin":
+                try:
+                    certifi_where = certifi.where()
+                    _DEFAULT_LOGGER.info(
+                        "certifi.where() = %s. Exists: %s",
+                        certifi_where,
+                        os.path.exists(certifi_where),
+                    )
+                    ctx.load_verify_locations(
+                        cafile=certifi_where, capath=None, cadata=None
+                    )
+                except Exception:
+                    _DEFAULT_LOGGER.exception(
+                        "Failed to load CA certificates from certifi"
+                    )
+
     if enable_legacy_server_connect is None:
         # i.e.: False if RC_TLS_LEGACY_RENEGOTIATION_ALLOWED is not set
         env_value = os.getenv("SEMA4AI_TLS_LEGACY_RENEGOTIATION_ALLOWED", "").lower()
@@ -395,7 +457,9 @@ def download_with_resume(
         timeout=timeout,
     )
 
-    logger.info(f"Downloading '{url}' to '{target_path.absolute()}'")
+    logger.info(
+        f"Downloading '{url}' to '{target_path.absolute()}' - current sema4ai_http version: {__version__}"
+    )
     target_path.parent.mkdir(parents=True, exist_ok=True)
 
     with _PartialDownloader(

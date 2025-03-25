@@ -11,7 +11,7 @@ packages = [{ include = "sema4ai/common", from = "src" }]
 [tool.poetry.dependencies]
 python = "^3.11"
 psutil = ">=5.0,<7.0"
-sema4ai-http-helper = "^1.0.2"
+sema4ai-http-helper = { path = "../sema4ai-http-helper/", develop = true }
 pyyaml = "^6.0"
 msgspec = "^0.18"
 
