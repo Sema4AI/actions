@@ -769,13 +769,12 @@ def _make_import_migrate_or_start(
     use_db: Optional["Database"] = None,
     before_start: Sequence[IBeforeStartCallback] = (),
 ) -> int:
-    from sema4ai.common.app_mutex import obtain_app_mutex
-    from sema4ai.common.process import kill_subprocesses
-
     from sema4ai.action_server._preload_actions.preload_actions_autoexit import (
         exit_when_pid_exists,
     )
     from sema4ai.action_server.migrations import MigrationStatus
+    from sema4ai.common.app_mutex import obtain_app_mutex
+    from sema4ai.common.process import kill_subprocesses
 
     from ._models import Run, RunStatus, run_status_to_str
     from ._runs_state_cache import use_runs_state_ctx
