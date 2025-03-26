@@ -104,6 +104,9 @@ class Database:
     def db_path(self) -> Path:
         return self._db_path
 
+    def log_internal_info(self):
+        log.info("sqlite version: %s", sqlite3.sqlite_version)
+
     def _get_type_hints(self, cls) -> dict:
         try:
             return self._cls_to_type_hint[cls]
@@ -491,7 +494,7 @@ VALUES
 SELECT
     name
 FROM
-    sqlite_schema
+    sqlite_master
 WHERE
     type ='table' AND
     name NOT LIKE 'sqlite_%';

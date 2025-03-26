@@ -166,4 +166,6 @@ def db_migration_status(db_path: Union[Path, str]) -> MigrationStatus:
     # Ok, it already exists. Check the migration status.
     db = Database(db_path)
     with db.connect():
+        log.info("Checking migration status for database at: %s", db_path)
+        db.log_internal_info()
         return _db_migration_status(db)
