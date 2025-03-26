@@ -45,6 +45,13 @@ def get_python_version(pyproject):
         if key == "python":
             version = value.strip("^")
             assert "." in version
+
+            # Extract the first major minor from ">=3.11.0,<3.12"
+            if "," in version:
+                version = version.split(",")[0]
+
+            version = version.strip(">=")
+
             assert tuple(int(x) for x in version.split(".")) > (
                 3,
                 7,
@@ -345,6 +352,14 @@ class ActionServerTests(BaseTests):
                 "GITHUB_PR_NUMBER": "${{ github.event.pull_request.number }}",
             },
             "run": "poetry run inv build-executable --sign --go-wrapper",
+        },
+        {
+            "name": "Upload artifact",
+            "uses": "actions/upload-artifact@v4",
+            "with": {
+                "name": "action-server-${{ matrix.os }}",
+                "path": "action_server/dist/final/",
+            },
         },
         {
             "name": "Test (not integration)",
