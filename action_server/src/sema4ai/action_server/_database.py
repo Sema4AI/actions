@@ -620,16 +620,15 @@ ORDER BY index_name,il.seq,ii.seqno""",
             self._print_sql(sql, values)
         try:
             if not self.in_transaction():
-                raise DBError(
-                    "When running an sql that changes the DB, it's expected that "
-                    "a transaction is in place."
-                )
+                self.execute("BEGIN")
             with self._write_lock:
                 if values:
                     cursor.execute(sql, values)
                 else:
                     cursor.execute(sql)
+            self.execute("COMMIT")
         except Exception:
+            self.execute("ROLLBACK")
             self._raise_execute_error(
                 f"Error running sql: {sql!r} with values: {values!r}"
             )

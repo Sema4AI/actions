@@ -72,21 +72,28 @@ def _create_run(
         request_id=request_id,
     )
     with db.transaction():
-        with db.cursor() as cursor:
-            db.execute_update_returning(
-                cursor,
-                "UPDATE counter SET value=value+1 WHERE id=? RETURNING value",
-                [RUN_ID_COUNTER],
-            )
-            counter_record = cursor.fetchall()
-            if not counter_record:
-                raise RuntimeError(
-                    f"Error. No counter found for run_id. Counters in db: {db.all(Counter)}"
+        if not db.in_transaction():
+            db.execute("BEGIN")
+        try:
+            with db.cursor() as cursor:
+                db.execute_update_returning(
+                    cursor,
+                    "UPDATE counter SET value=value+1 WHERE id=? RETURNING value",
+                    [RUN_ID_COUNTER],
                 )
-            run_kwargs["numbered_id"] = counter_record[0][0]
+                counter_record = cursor.fetchall()
+                if not counter_record:
+                    raise RuntimeError(
+                        f"Error. No counter found for run_id. Counters in db: {db.all(Counter)}"
+                    )
+                run_kwargs["numbered_id"] = counter_record[0][0]
 
-        run = Run(**run_kwargs)
-        db.insert(run)
+            run = Run(**run_kwargs)
+            db.insert(run)
+            db.execute("COMMIT")
+        except Exception:
+            db.execute("ROLLBACK")
+            raise
 
     # Ok, transaction finished properly. Let's add it to our in-memory cache.
     global_runs_state = get_global_runs_state()
