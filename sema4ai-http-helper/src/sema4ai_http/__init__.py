@@ -20,6 +20,31 @@ _TYPE_BODY = typing.Union[bytes, typing.IO[typing.Any], typing.Iterable[bytes], 
 __version__ = "1.0.2"
 
 
+class ResponseWrapper:
+    def __init__(self, request):
+        self._request = request
+
+    def __getattr__(self, item):
+        return getattr(self._request, item)
+
+    @property
+    def status_code(self) -> int:
+        return self.status
+
+    @property
+    def text(self):
+        charset = "utf-8"
+        content_type = self.headers.get("content-type")
+        if "charset=" in content_type:
+            charset = content_type.split("charset=")[-1].strip()
+
+        return self.data.decode(charset, errors="replace")
+
+    def raise_for_status(self) -> None:
+        if self.status >= 400:
+            raise urllib3.exceptions.HTTPError(f"HTTP {self.status}: {self.reason}")
+
+
 class DownloadStatus(Enum):
     """Status"""
 
@@ -59,12 +84,13 @@ def build_ssl_context(
 
 
 @lru_cache
-def _get_default_pool():
+def _get_default_pool(ca_certs: str | None = None):
     import ssl
 
     return urllib3.PoolManager(
         ssl_context=build_ssl_context(ssl.PROTOCOL_TLS_CLIENT),
         cert_reqs="CERT_REQUIRED",
+        ca_certs=ca_certs,
     )
 
 
@@ -75,10 +101,19 @@ def get(
     fields: typing.Any | None = None,
     headers: typing.Mapping[str, str] | None = None,
     json: typing.Any | None = None,
+    ca_certs: str | None = None,
     **urlopen_kw: typing.Any,
-) -> urllib3.BaseHTTPResponse:
-    return _get_default_pool().request(
-        "get", url, body=body, fields=fields, headers=headers, json=json, **urlopen_kw
+) -> ResponseWrapper:
+    return ResponseWrapper(
+        _get_default_pool(ca_certs).request(
+            "get",
+            url,
+            body=body,
+            fields=fields,
+            headers=headers,
+            json=json,
+            **urlopen_kw,
+        )
     )
 
 
@@ -89,10 +124,19 @@ def post(
     fields: typing.Any | None = None,
     headers: typing.Mapping[str, str] | None = None,
     json: typing.Any | None = None,
+    ca_certs: str | None = None,
     **urlopen_kw: typing.Any,
-) -> urllib3.BaseHTTPResponse:
-    return _get_default_pool().request(
-        "post", url, body=body, fields=fields, headers=headers, json=json, **urlopen_kw
+) -> ResponseWrapper:
+    return ResponseWrapper(
+        _get_default_pool(ca_certs).request(
+            "post",
+            url,
+            body=body,
+            fields=fields,
+            headers=headers,
+            json=json,
+            **urlopen_kw,
+        )
     )
 
 
@@ -103,10 +147,19 @@ def put(
     fields: typing.Any | None = None,
     headers: typing.Mapping[str, str] | None = None,
     json: typing.Any | None = None,
+    ca_certs: str | None = None,
     **urlopen_kw: typing.Any,
-) -> urllib3.BaseHTTPResponse:
-    return _get_default_pool().request(
-        "put", url, body=body, fields=fields, headers=headers, json=json, **urlopen_kw
+) -> ResponseWrapper:
+    return ResponseWrapper(
+        _get_default_pool(ca_certs).request(
+            "put",
+            url,
+            body=body,
+            fields=fields,
+            headers=headers,
+            json=json,
+            **urlopen_kw,
+        )
     )
 
 
@@ -117,10 +170,19 @@ def patch(
     fields: typing.Any | None = None,
     headers: typing.Mapping[str, str] | None = None,
     json: typing.Any | None = None,
+    ca_certs: str | None = None,
     **urlopen_kw: typing.Any,
-) -> urllib3.BaseHTTPResponse:
-    return _get_default_pool().request(
-        "patch", url, body=body, fields=fields, headers=headers, json=json, **urlopen_kw
+) -> ResponseWrapper:
+    return ResponseWrapper(
+        _get_default_pool(ca_certs).request(
+            "patch",
+            url,
+            body=body,
+            fields=fields,
+            headers=headers,
+            json=json,
+            **urlopen_kw,
+        )
     )
 
 
@@ -131,16 +193,19 @@ def delete(
     fields: typing.Any | None = None,
     headers: typing.Mapping[str, str] | None = None,
     json: typing.Any | None = None,
+    ca_certs: str | None = None,
     **urlopen_kw: typing.Any,
-) -> urllib3.BaseHTTPResponse:
-    return _get_default_pool().request(
-        "delete",
-        url,
-        body=body,
-        fields=fields,
-        headers=headers,
-        json=json,
-        **urlopen_kw,
+) -> ResponseWrapper:
+    return ResponseWrapper(
+        _get_default_pool(ca_certs).request(
+            "delete",
+            url,
+            body=body,
+            fields=fields,
+            headers=headers,
+            json=json,
+            **urlopen_kw,
+        )
     )
 
 
