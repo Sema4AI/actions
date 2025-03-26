@@ -34,19 +34,19 @@ jobs:
       fail-fast: false
       matrix:
         name:
-        - ubuntu-py3.12.9-devmode
-        - windows-py3.12.9-devmode
-        - macos-py3.12.9-devmode
+        - ubuntu-py3.12-devmode
+        - windows-py3.12-devmode
+        - macos-py3.12-devmode
         include:
-        - name: ubuntu-py3.12.9-devmode
-          python: 3.12.9
+        - name: ubuntu-py3.12-devmode
+          python: '3.12'
           os: ubuntu-latest
-        - name: windows-py3.12.9-devmode
-          python: 3.12.9
+        - name: windows-py3.12-devmode
+          python: '3.12'
           os: windows-latest
-        - name: macos-py3.12.9-devmode
+        - name: macos-py3.12-devmode
           os: macos-latest
-          python: 3.12.9
+          python: '3.12'
     steps:
     - name: Checkout repository and submodules
       uses: actions/checkout@v3
@@ -106,6 +106,11 @@ jobs:
         GITHUB_REF_NAME: ${{ github.ref_name }}
         GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
       run: poetry run inv build-executable --sign --go-wrapper
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: action-server-${{ matrix.os }}
+        path: action_server/dist/final/
     - name: Test (not integration)
       env:
         GITHUB_ACTIONS_MATRIX_NAME: ${{ matrix.name }}

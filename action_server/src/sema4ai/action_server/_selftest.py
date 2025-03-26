@@ -413,10 +413,20 @@ def sema4ai_action_server_run(
             raise RuntimeError(
                 f"Unable to run because `None` items are in the command line: {cmdline}"
             )
-    if is_frozen():
-        # i.e.: The entry point is our own executable.
+
+    if "SEMA4AI_INTEGRATION_TEST_ACTION_SERVER_EXECUTABLE" in os.environ or is_frozen():
+        if "SEMA4AI_INTEGRATION_TEST_ACTION_SERVER_EXECUTABLE" in os.environ:
+            executable = os.environ["SEMA4AI_INTEGRATION_TEST_ACTION_SERVER_EXECUTABLE"]
+            assert os.path.isfile(
+                executable
+            ), f"Expected executable to exist: {executable}"
+            base_args = [executable]
+        else:
+            # i.e.: The entry point is our own executable.
+            base_args = [sys.executable]
+
         return run_command_line(
-            [sys.executable] + cmdline,
+            base_args + cmdline,
             returncode,
             cwd,
             additional_env,

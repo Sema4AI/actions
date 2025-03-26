@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+## 2.8.2 - 2025-03-26
+
+- Fixed issue downloading RCC on Mac OS on built executable.
+- Always use `sqlite_master` instead of `sqlite_schema` (fix issue in Linux where `sqlite_schema` was not available).
+
+## 2.8.1 - 2025-03-25
+
+- PoC: Fixes in sema4ai_http to be able to download on Mac OS with a signed binary (not merged with master, just binary published, no wheels).
+
 ## 2.8.0 - 2025-03-24
 
 - Only update assets if the version is a local version (released versions are not overridden).

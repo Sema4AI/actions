@@ -5,6 +5,7 @@ import pytest
 from action_server_tests.fixtures import ActionServerClient, ActionServerProcess
 
 
+@pytest.mark.integration_test
 def test_version() -> None:
     from action_server_tests.fixtures import sema4ai_action_server_run
 
@@ -14,6 +15,7 @@ def test_version() -> None:
     assert result.stdout.strip() == __version__
 
 
+@pytest.mark.integration_test
 def test_download_rcc(tmpdir) -> None:
     from action_server_tests.fixtures import sema4ai_action_server_run
 
@@ -31,6 +33,7 @@ def test_new(
     check_new_template(tmpdir, action_server_process, client)
 
 
+@pytest.mark.integration_test
 def test_new_list_templates(tmpdir) -> None:
     import json
 
@@ -88,6 +91,7 @@ def test_help(args, str_regression, datadir):
         str_regression.check(out)
 
 
+@pytest.mark.integration_test
 def test_migrate(database_v0):
     from action_server_tests.fixtures import sema4ai_action_server_run
 
@@ -145,6 +149,7 @@ def test_datadir_user_specified(tmpdir):
         assert Path(settings.datadir) == use_dir
 
 
+@pytest.mark.integration_test
 @pytest.mark.parametrize(
     "op", ["dry_run.backup", "dry_run.no_backup", "update.backup", "update.no_backup"]
 )
@@ -226,6 +231,7 @@ dependencies:
     str_regression.check(result.stdout)
 
 
+@pytest.mark.integration_test
 def test_oauth2_sema4ai_config(tmpdir) -> None:
     from sema4ai.action_server._selftest import sema4ai_action_server_run
 
