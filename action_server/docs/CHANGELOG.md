@@ -2,7 +2,10 @@
 
 ## Unreleased
 
+## 2.8.2 - 2025-03-26
+
 - Fixed issue downloading RCC on Mac OS on built executable.
+- Always use `sqlite_master` instead of `sqlite_schema` (fix issue in Linux where `sqlite_schema` was not available).
 
 ## 2.8.1 - 2025-03-25
 
