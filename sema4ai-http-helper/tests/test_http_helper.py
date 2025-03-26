@@ -1,8 +1,12 @@
 def test_http_helper_basic():
     import sema4ai_http
 
-    contents = sema4ai_http.get("https://google.com")
-    assert contents.status == 200
+    response = sema4ai_http.get("https://google.com")
+    assert response.status == 200
+    assert response.status_code == 200
+
+    assert response.raise_for_status() is None
+    assert response.text is not None
 
 
 def test_http_helper_download_with_resume(tmpdir):
