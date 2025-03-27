@@ -21,9 +21,9 @@ jobs:
       fail-fast: false
       matrix:
         # Important: Changing os requires updating the related references in this yml.
-        os: [ubuntu-latest]
+        os: [ubuntu-20.04]
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-20.04
             asset_path: action_server/dist/final/action-server
 
     outputs:
@@ -36,6 +36,12 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.12"
+
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+          python-version: ${{ matrix.python-version }}
 
       - name: Print Python sqlite3 version
         run: |
@@ -66,6 +72,17 @@ jobs:
           python -c "import _sqlite3; print(_sqlite3.__file__)"
           cd src
           python -m "sema4ai.action_server.__main__"
+
+      - name: Print with uv
+        shell: bash -el {0}
+        run: |
+          uv run python -c "import sys; print(sys.executable)"
+          uv run python -c "import sqlite3; print(sqlite3.sqlite_version)"
+          uv run python -c "import sqlite3; print(sqlite3.__file__)"
+          uv run python -c "import _sqlite3; print(_sqlite3.sqlite_version)"
+          uv run python -c "import _sqlite3; print(_sqlite3.__file__)"
+          cd src
+          uv run python -m "sema4ai.action_server.__main__"
 
       # - name: Setup node
       #   uses: actions/setup-node@v3
