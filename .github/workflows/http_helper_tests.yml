@@ -48,19 +48,15 @@ jobs:
         enable-cache: true
     - name: Install Python 3.12
       run: uv python install 3.12
-    - name: Install poetry
-      run: uv tool install poetry@2.1.1
     - name: Install devutils requirements
       run: uv run --no-project --break-system-packages --python ${{ matrix.python
         }} -m pip install -r ../devutils/requirements.txt
     - name: Install project (not dev)
       if: contains(matrix.name, '-devmode') == false
-      run: uv run --no-project --break-system-packages --python ${{ matrix.python
-        }} inv install
+      run: uv run --no-project --python ${{ matrix.python }} inv install
     - name: Install project (dev)
       if: contains(matrix.name, '-devmode')
-      run: uv run --no-project --break-system-packages --python ${{ matrix.python
-        }} inv devinstall
+      run: uv run --no-project --python ${{ matrix.python }} inv devinstall
     - name: Test
       env:
         GITHUB_ACTIONS_MATRIX_NAME: ${{ matrix.name }}
@@ -69,29 +65,25 @@ jobs:
         ACTION_SERVER_TEST_ACCESS_CREDENTIALS: ${{ secrets.ACTION_SERVER_TEST_ACCESS_CREDENTIALS
           }}
         ACTION_SERVER_TEST_HOSTNAME: ${{ secrets.ACTION_SERVER_TEST_HOSTNAME }}
-      run: uv run --no-project --break-system-packages --python ${{ matrix.python
-        }} inv test
+      run: uv run --no-project --python ${{ matrix.python }} inv test
     - name: '`inv lint`, potentially fixed with `inv pretty`'
       if: always()
       run: '
 
-        uv run --no-project --break-system-packages --python ${{ matrix.python }}
-        inv lint
+        uv run --no-project --python ${{ matrix.python }} inv lint
 
         '
     - name: '`inv typecheck`'
       if: always()
       run: '
 
-        uv run --no-project --break-system-packages --python ${{ matrix.python }}
-        inv typecheck
+        uv run --no-project --python ${{ matrix.python }} inv typecheck
 
         '
     - name: '`inv docs` with checking on files changed'
       if: always()
       run: '
 
-        uv run --no-project --break-system-packages --python ${{ matrix.python }}
-        inv docs --check
+        uv run --no-project --python ${{ matrix.python }} inv docs --check
 
         '

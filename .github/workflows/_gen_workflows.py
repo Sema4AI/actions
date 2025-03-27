@@ -78,7 +78,7 @@ class BaseTests:
             "ACTION_SERVER_TEST_ACCESS_CREDENTIALS": "${{ secrets.ACTION_SERVER_TEST_ACCESS_CREDENTIALS }}",
             "ACTION_SERVER_TEST_HOSTNAME": "${{ secrets.ACTION_SERVER_TEST_HOSTNAME }}",
         },
-        "run": "uv run --no-project --break-system-packages --python ${{ matrix.python }} inv test",
+        "run": "uv run --no-project --python ${{ matrix.python }} inv test",
     }
 
     @property
@@ -175,12 +175,12 @@ class BaseTests:
         devinstall = {
             "name": "Install project (dev)",
             "if": "contains(matrix.name, '-devmode')",
-            "run": "uv run --no-project --break-system-packages --python ${{ matrix.python }} inv devinstall",
+            "run": "uv run --no-project --python ${{ matrix.python }} inv devinstall",
         }
         install = {
             "name": "Install project (not dev)",
             "if": "contains(matrix.name, '-devmode') == false",
-            "run": "uv run --no-project --break-system-packages --python ${{ matrix.python }} inv install",
+            "run": "uv run --no-project --python ${{ matrix.python }} inv install",
         }
         setup_node = {
             "name": "Setup node",
@@ -201,7 +201,7 @@ class BaseTests:
 
         build_frontend = {
             "name": "Build frontend",
-            "run": "uv run --no-project --break-system-packages --python ${{ matrix.python }} inv build-frontend",
+            "run": "uv run --no-project --python ${{ matrix.python }} inv build-frontend",
             "env": {
                 "CI": True,
                 "NODE_AUTH_TOKEN": "${{ secrets.GH_PAT_READ_PACKAGES }}",
@@ -210,7 +210,7 @@ class BaseTests:
 
         build_oauth2_config = {
             "name": "Build OAuth2 config",
-            "run": "uv run --no-project --break-system-packages --python ${{ matrix.python }} inv build-oauth2-config",
+            "run": "uv run --no-project --python ${{ matrix.python }} inv build-oauth2-config",
             "env": {"GH_TOKEN": "${{ secrets.GH_PAT_GHA_TO_ANOTHER_REPO }}"},
         }
 
@@ -240,11 +240,6 @@ class BaseTests:
             },
         ]
 
-        install_poetry = {
-            "name": "Install poetry",
-            "run": """uv tool install poetry@2.1.1""",
-        }
-
         install_devutils = {
             "name": "Install devutils requirements",
             "run": "uv run --no-project --break-system-packages --python ${{ matrix.python }} -m pip install -r ../devutils/requirements.txt",
@@ -254,7 +249,7 @@ class BaseTests:
             "name": "`inv lint`, potentially fixed with `inv pretty`",
             "if": "always()",
             "run": """
-uv run --no-project --break-system-packages --python ${{ matrix.python }} inv lint
+uv run --no-project --python ${{ matrix.python }} inv lint
 """,
         }
 
@@ -262,7 +257,7 @@ uv run --no-project --break-system-packages --python ${{ matrix.python }} inv li
             "name": "`inv typecheck`",
             "if": "always()",
             "run": """
-uv run --no-project --break-system-packages --python ${{ matrix.python }} inv typecheck
+uv run --no-project --python ${{ matrix.python }} inv typecheck
 """,
         }
 
@@ -270,7 +265,7 @@ uv run --no-project --break-system-packages --python ${{ matrix.python }} inv ty
             "name": "`inv docs` with checking on files changed",
             "if": "always()",
             "run": """
-uv run --no-project --break-system-packages --python ${{ matrix.python }} inv docs --check
+uv run --no-project --python ${{ matrix.python }} inv docs --check
 """,
         }
 
@@ -278,11 +273,11 @@ uv run --no-project --break-system-packages --python ${{ matrix.python }} inv do
             "name": "`inv docs --validate`",
             "if": "always()",
             "run": """
-uv run --no-project --break-system-packages --python ${{ matrix.python }} inv docs --validate
+uv run --no-project --python ${{ matrix.python }} inv docs --validate
 """,
         }
 
-        steps = [checkout_repo] + setup_python + [install_poetry, install_devutils]
+        steps = [checkout_repo] + setup_python + [install_devutils]
 
         steps.extend([install, devinstall])
 
@@ -359,7 +354,7 @@ class ActionServerTests(BaseTests):
                 "GITHUB_REF_NAME": "${{ github.ref_name }}",
                 "GITHUB_PR_NUMBER": "${{ github.event.pull_request.number }}",
             },
-            "run": "uv run --no-project --break-system-packages --python ${{ matrix.python }} poetry run inv build-executable --sign --go-wrapper",
+            "run": "uv run --no-project --python ${{ matrix.python }} poetry run inv build-executable --sign --go-wrapper",
         },
         {
             "name": "Upload artifact",
@@ -378,7 +373,7 @@ class ActionServerTests(BaseTests):
                 "ACTION_SERVER_TEST_ACCESS_CREDENTIALS": "${{ secrets.ACTION_SERVER_TEST_ACCESS_CREDENTIALS }}",
                 "ACTION_SERVER_TEST_HOSTNAME": "${{ secrets.ACTION_SERVER_TEST_HOSTNAME }}",
             },
-            "run": "uv run --no-project --break-system-packages --python ${{ matrix.python }} poetry run inv test-not-integration",
+            "run": "uv run --no-project --python ${{ matrix.python }} poetry run inv test-not-integration",
         },
         {
             "name": "Test (integration)",
@@ -389,7 +384,7 @@ class ActionServerTests(BaseTests):
                 "ACTION_SERVER_TEST_ACCESS_CREDENTIALS": "${{ secrets.ACTION_SERVER_TEST_ACCESS_CREDENTIALS }}",
                 "ACTION_SERVER_TEST_HOSTNAME": "${{ secrets.ACTION_SERVER_TEST_HOSTNAME }}",
             },
-            "run": "uv run --no-project --break-system-packages --python ${{ matrix.python }} poetry run inv test-binary --jobs 0",
+            "run": "uv run --no-project --python ${{ matrix.python }} poetry run inv test-binary --jobs 0",
         },
     ]
 
