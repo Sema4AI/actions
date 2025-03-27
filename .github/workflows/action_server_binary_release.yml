@@ -21,9 +21,9 @@ jobs:
       fail-fast: false
       matrix:
         # Important: Changing os requires updating the related references in this yml.
-        os: [ubuntu-20.04]
+        os: [ubuntu-latest]
         include:
-          - os: ubuntu-20.04
+          - os: ubuntu-latest
             asset_path: action_server/dist/final/action-server
 
     outputs:
