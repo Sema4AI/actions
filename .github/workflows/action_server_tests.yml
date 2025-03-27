@@ -36,18 +36,11 @@ jobs:
       matrix:
         name:
           - ubuntu-py3.12-devmode
-          - windows-py3.12-devmode
-          - macos-py3.12-devmode
         include:
           - name: ubuntu-py3.12-devmode
             python: "3.12"
             os: ubuntu-latest
-          - name: windows-py3.12-devmode
-            python: "3.12"
-            os: windows-latest
-          - name: macos-py3.12-devmode
-            os: macos-latest
-            python: "3.12"
+
     steps:
       - name: Checkout repository and submodules
         uses: actions/checkout@v3

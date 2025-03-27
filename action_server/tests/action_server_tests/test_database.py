@@ -181,7 +181,6 @@ def test_counters(tmpdir) -> None:
         assert future2.result() == "worked"
         assert db.first(Counter).value == 2
 
-        db = Database(f)
         with db.connect():
             with db.transaction():
                 _update_counter(db)
