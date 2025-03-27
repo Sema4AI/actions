@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Use uv to setup python environment (to get around issue where the python version was built with an old version of sqlite in ubuntu 20.04).
+
 ## 2.8.2 - 2025-03-26
 
 - Fixed issue downloading RCC on Mac OS on built executable.
