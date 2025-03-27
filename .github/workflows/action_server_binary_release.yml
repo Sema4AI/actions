@@ -40,6 +40,7 @@ jobs:
       - name: Print Python sqlite3 version
         run: |
           # $CONDA is an environment variable pointing to the root of the miniconda directory
+          $CONDA/bin/conda init
           $CONDA/bin/conda create -n test-env python=3.12 -c conda-forge
           $CONDA/bin/conda activate test-env
           python -c "import sys; print(sys.executable)"
