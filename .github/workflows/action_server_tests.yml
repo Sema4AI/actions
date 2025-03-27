@@ -57,17 +57,15 @@ jobs:
     - name: Install Python 3.12
       run: uv python install 3.12
     - name: Install poetry
-      run: 'uv run --frozen python -c "import sys;print(sys.executable)"
-
-        uv run --frozen -m pip install poetry'
+      run: uv tool install poetry@2.1.1
     - name: Install devutils requirements
-      run: uv run --frozen -m pip install -r ../devutils/requirements.txt
+      run: uv run --frozen --no-project --no-sync -m pip install -r ../devutils/requirements.txt
     - name: Install project (not dev)
       if: contains(matrix.name, '-devmode') == false
-      run: uv run --frozen inv install
+      run: uv run --frozen --no-project --no-sync inv install
     - name: Install project (dev)
       if: contains(matrix.name, '-devmode')
-      run: uv run --frozen inv devinstall
+      run: uv run --frozen --no-project --no-sync inv devinstall
     - name: Setup go
       uses: actions/setup-go@v5
       with:
@@ -79,12 +77,12 @@ jobs:
         registry-url: https://npm.pkg.github.com
         scope: '@robocorp'
     - name: Build frontend
-      run: uv run --frozen inv build-frontend
+      run: uv run --frozen --no-project --no-sync inv build-frontend
       env:
         CI: true
         NODE_AUTH_TOKEN: ${{ secrets.GH_PAT_READ_PACKAGES }}
     - name: Build OAuth2 config
-      run: uv run --frozen inv build-oauth2-config
+      run: uv run --frozen --no-project --no-sync inv build-oauth2-config
       env:
         GH_TOKEN: ${{ secrets.GH_PAT_GHA_TO_ANOTHER_REPO }}
     - name: Build binary
@@ -108,7 +106,8 @@ jobs:
         GITHUB_EVENT_NAME: ${{ github.event_name }}
         GITHUB_REF_NAME: ${{ github.ref_name }}
         GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
-      run: uv run --frozen poetry run inv build-executable --sign --go-wrapper
+      run: uv run --frozen --no-project --no-sync poetry run inv build-executable
+        --sign --go-wrapper
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
@@ -122,7 +121,7 @@ jobs:
         ACTION_SERVER_TEST_ACCESS_CREDENTIALS: ${{ secrets.ACTION_SERVER_TEST_ACCESS_CREDENTIALS
           }}
         ACTION_SERVER_TEST_HOSTNAME: ${{ secrets.ACTION_SERVER_TEST_HOSTNAME }}
-      run: uv run --frozen poetry run inv test-not-integration
+      run: uv run --frozen --no-project --no-sync poetry run inv test-not-integration
     - name: Test (integration)
       env:
         GITHUB_ACTIONS_MATRIX_NAME: ${{ matrix.name }}
@@ -131,25 +130,26 @@ jobs:
         ACTION_SERVER_TEST_ACCESS_CREDENTIALS: ${{ secrets.ACTION_SERVER_TEST_ACCESS_CREDENTIALS
           }}
         ACTION_SERVER_TEST_HOSTNAME: ${{ secrets.ACTION_SERVER_TEST_HOSTNAME }}
-      run: uv run --frozen poetry run inv test-binary --jobs 0
+      run: uv run --frozen --no-project --no-sync poetry run inv test-binary --jobs
+        0
     - name: '`inv lint`, potentially fixed with `inv pretty`'
       if: always()
       run: '
 
-        uv run --frozen inv lint
+        uv run --frozen --no-project --no-sync inv lint
 
         '
     - name: '`inv typecheck`'
       if: always()
       run: '
 
-        uv run --frozen inv typecheck
+        uv run --frozen --no-project --no-sync inv typecheck
 
         '
     - name: '`inv docs` with checking on files changed'
       if: always()
       run: '
 
-        uv run --frozen inv docs --check
+        uv run --frozen --no-project --no-sync inv docs --check
 
         '
