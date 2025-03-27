@@ -46,15 +46,18 @@ jobs:
           python -c "import _sqlite3; print(_sqlite3.__file__)"
           python -m "sema4ai.action_server.__main__"
 
-      - name: Print with conda
-        uses: conda-incubator/setup-miniconda@v3
+      - uses: conda-incubator/setup-miniconda@v3
         with:
           activate-environment: test-env
           auto-update-conda: true
           python-version: ${{ matrix.python-version }}
           channels: conda-forge
           show-channel-urls: true
+
+      - name: Print with conda
+        shell: bash -el {0}
         run: |
+          conda activate test-env
           python -c "import sys; print(sys.executable)"
           python -c "import sqlite3; print(sqlite3.sqlite_version)"
           python -c "import sqlite3; print(sqlite3.__file__)"
