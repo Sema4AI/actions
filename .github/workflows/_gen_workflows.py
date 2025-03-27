@@ -223,14 +223,26 @@ class BaseTests:
             "uses": "actions/checkout@v3",
         }
 
-        setup_python = {
-            "name": "Set up Python ${{ matrix.python }}",
-            "uses": "actions/setup-python@v4",
-            "with": {
-                "python-version": "${{ matrix.python }}",
-                "cache": "poetry",
+        setup_python = [
+            # {
+            # "name": "Set up Python ${{ matrix.python }}",
+            # "uses": "actions/setup-python@v4",
+            # "with": {
+            #     "python-version": "${{ matrix.python }}",
+            #     "cache": "poetry",
+            # },
+            {
+                "name": "Install the latest version of uv",
+                "uses": "astral-sh/setup-uv@v5",
+                "with": {
+                    "enable-cache": True,
+                },
             },
-        }
+            {
+                "name": "Install Python 3.12",
+                "run": "uv python install 3.12",
+            },
+        ]
 
         install_devutils = {
             "name": "Install devutils requirements",
@@ -269,12 +281,7 @@ inv docs --validate
 """,
         }
 
-        steps = [
-            checkout_repo,
-            install_poetry,
-            setup_python,
-            install_devutils,
-        ]
+        steps = [checkout_repo, install_poetry] + setup_python + [install_devutils]
 
         steps.extend([install, devinstall])
 
