@@ -254,7 +254,7 @@ class BaseTests:
             "name": "`inv lint`, potentially fixed with `inv pretty`",
             "if": "always()",
             "run": """
-uv run --no-project --python ${{ matrix.python }} --python ${{ matrix.python }} inv lint
+uv run --no-project --python ${{ matrix.python }} inv lint
 """,
         }
 

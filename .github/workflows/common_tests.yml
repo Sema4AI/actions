@@ -73,8 +73,7 @@ jobs:
       if: always()
       run: '
 
-        uv run --no-project --python ${{ matrix.python }} --python ${{ matrix.python
-        }} inv lint
+        uv run --no-project --python ${{ matrix.python }} inv lint
 
         '
     - name: '`inv typecheck`'
