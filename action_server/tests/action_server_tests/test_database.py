@@ -103,6 +103,8 @@ def test_database_schema_evolution(str_regression) -> None:
 
 
 def test_counters(tmpdir) -> None:
+    import sqlite3
+
     from sema4ai.action_server._database import DBError
 
     @dataclass
@@ -178,6 +180,13 @@ def test_counters(tmpdir) -> None:
 
         assert future2.result() == "worked"
         assert db.first(Counter).value == 2
+
+        db = Database(f)
+        with db.connect():
+            with db.transaction():
+                _update_counter(db)
+        assert db.first(Counter).value == 3
+        raise RuntimeError(f"Found sqlite version: {sqlite3.sqlite_version}")
 
 
 def test_migrate(database_v0: Path, tmpdir) -> None:
