@@ -49,18 +49,23 @@ def main(args: Optional[list[str]] = None, *, exit=True) -> int:  # noqa
     cursor.execute("INSERT INTO counter (id, value) VALUES (?, ?)", (counter_id, 0))
     conn.commit()
 
-    # Execute the update with returning clause
-    cursor.execute(
-        "UPDATE counter SET value=value+1 WHERE id=? RETURNING value", [counter_id]
-    )
-    new_value = cursor.fetchone()[0]
-    print(f"Updated counter value: {new_value}")
-    # Execute the update with returning clause
-    cursor.execute(
-        "UPDATE counter SET value=value+1 WHERE id=? RETURNING value", [counter_id]
-    )
-    new_value = cursor.fetchone()[0]
-    print(f"Updated counter value: {new_value}")
+    try:
+        # Execute the update with returning clause
+        cursor.execute(
+            "UPDATE counter SET value=value+1 WHERE id=? RETURNING value", [counter_id]
+        )
+        new_value = cursor.fetchone()[0]
+        print(f"Updated counter value: {new_value}")
+        # Execute the update with returning clause
+        cursor.execute(
+            "UPDATE counter SET value=value+1 WHERE id=? RETURNING value", [counter_id]
+        )
+        new_value = cursor.fetchone()[0]
+        print(f"Updated counter value: {new_value}")
+    except Exception:
+        import traceback
+
+        traceback.print_exc()
 
     conn.close()
 
