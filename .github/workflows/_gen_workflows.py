@@ -94,16 +94,16 @@ class BaseTests:
                 {
                     "name": f"ubuntu-py{pyversion}-devmode",
                     "python": pyversion,
-                    "os": "ubuntu-latest",
+                    "os": "ubuntu-20.04",
                 },
                 {
                     "name": f"windows-py{pyversion}-devmode",
                     "python": pyversion,
-                    "os": "windows-latest",
+                    "os": "windows-2019",
                 },
                 {
                     "name": f"macos-py{pyversion}-devmode",
-                    "os": "macos-latest",
+                    "os": "macos-15",
                     "python": pyversion,
                 },
             ],

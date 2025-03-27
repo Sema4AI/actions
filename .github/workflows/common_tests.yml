@@ -34,12 +34,12 @@ jobs:
         include:
         - name: ubuntu-py3.11-devmode
           python: '3.11'
-          os: ubuntu-latest
+          os: ubuntu-20.04
         - name: windows-py3.11-devmode
           python: '3.11'
-          os: windows-latest
+          os: windows-2019
         - name: macos-py3.11-devmode
-          os: macos-latest
+          os: macos-15
           python: '3.11'
     steps:
     - name: Checkout repository and submodules
