@@ -20,49 +20,18 @@ log = logging.getLogger(__name__)
 
 
 def main(args: Optional[list[str]] = None, *, exit=True) -> int:  # noqa
-    import os
     import sys
 
-    from ._cli_impl import _main_retcode
+    print(sys.executable)
+    import sqlite3
 
-    if args is None:
-        args = sys.argv[1:]
+    print("sqlite3.sqlite_version", sqlite3.sqlite_version)
+    print("sqlite3.__file__", sqlite3.__file__)
+    import _sqlite3
 
-    if not args:
-        # Note this is not to be relied by clients. Added for the build.
-        if os.environ.get(
-            "RC_ACTION_SERVER_FORCE_DOWNLOAD_RCC", ""
-        ).strip().lower() in (
-            "1",
-            "true",
-        ):
-            log.info(
-                "As RC_ACTION_SERVER_FORCE_DOWNLOAD_RCC is set and no arguments were "
-                "passed, rcc will be downloaded."
-            )
-
-            from sema4ai.action_server._download_rcc import download_rcc
-
-            download_rcc(force=True)
-
-        if os.environ.get("RC_ACTION_SERVER_DO_SELFTEST", "").strip().lower() in (
-            "1",
-            "true",
-        ):
-            # Note this is not to be relied by clients. Added for the build.
-            from . import _selftest
-
-            log.info(
-                "As RC_ACTION_SERVER_DO_SELFTEST is set and no arguments were passed, "
-                "a selftest will be run."
-            )
-
-            sys.exit(_selftest.do_selftest())
-
-    retcode = _main_retcode(args)
-    if exit:
-        sys.exit(retcode)
-    return retcode
+    print("_sqlite3.sqlite_version", _sqlite3.sqlite_version)
+    print("_sqlite3.__file__", _sqlite3.__file__)
+    return 0
 
 
 if __name__ == "__main__":
