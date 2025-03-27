@@ -25,7 +25,6 @@ jobs:
         include:
           - os: ubuntu-20.04
             asset_path: action_server/dist/final/action-server
-            shell: bash -el {0}
 
     outputs:
       version: ${{ steps.set_version.outputs.version }}
@@ -57,7 +56,7 @@ jobs:
           show-channel-urls: true
 
       - name: Print with conda
-        shell: ${{ matrix.shell }}
+        shell: bash -el {0}
         run: |
           conda activate test-env
           python -c "import sys; print(sys.executable)"
