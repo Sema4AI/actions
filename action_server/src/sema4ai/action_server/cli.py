@@ -31,6 +31,39 @@ def main(args: Optional[list[str]] = None, *, exit=True) -> int:  # noqa
 
     print("_sqlite3.sqlite_version", _sqlite3.sqlite_version)
     print("_sqlite3.__file__", _sqlite3.__file__)
+
+    # Create database and counter table
+    conn = sqlite3.connect(":memory:")
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        CREATE TABLE counter (
+            id TEXT PRIMARY KEY,
+            value INTEGER NOT NULL
+        )
+    """
+    )
+
+    # Insert initial counter value
+    counter_id = "my_counter"
+    cursor.execute("INSERT INTO counter (id, value) VALUES (?, ?)", (counter_id, 0))
+    conn.commit()
+
+    # Execute the update with returning clause
+    cursor.execute(
+        "UPDATE counter SET value=value+1 WHERE id=? RETURNING value", [counter_id]
+    )
+    new_value = cursor.fetchone()[0]
+    print(f"Updated counter value: {new_value}")
+    # Execute the update with returning clause
+    cursor.execute(
+        "UPDATE counter SET value=value+1 WHERE id=? RETURNING value", [counter_id]
+    )
+    new_value = cursor.fetchone()[0]
+    print(f"Updated counter value: {new_value}")
+
+    conn.close()
+
     return 0
 
 
