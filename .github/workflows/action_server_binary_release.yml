@@ -37,17 +37,19 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Print Python sqlite3 version
-        run: |
-          # $CONDA is an environment variable pointing to the root of the miniconda directory
-          $CONDA/bin/conda init
-          $CONDA/bin/conda create -n test-env python=3.12 -c conda-forge
-          $CONDA/bin/conda activate test-env
-          python -c "import sys; print(sys.executable)"
-          python -c "import sqlite3; print(sqlite3.sqlite_version)"
-          python -c "import sqlite3; print(sqlite3.__file__)"
-          python -c "import _sqlite3; print(_sqlite3.sqlite_version)"
-          python -c "import _sqlite3; print(_sqlite3.__file__)"
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          activate-environment: test-env
+          auto-update-conda: true
+          python-version: ${{ matrix.python-version }}
+          channels: conda-forge
+          show-channel-urls: true
+          run: |
+            python -c "import sys; print(sys.executable)"
+            python -c "import sqlite3; print(sqlite3.sqlite_version)"
+            python -c "import sqlite3; print(sqlite3.__file__)"
+            python -c "import _sqlite3; print(_sqlite3.sqlite_version)"
+            python -c "import _sqlite3; print(_sqlite3.__file__)"
 
       # - name: Setup node
       #   uses: actions/setup-node@v3
