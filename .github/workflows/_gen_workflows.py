@@ -214,10 +214,6 @@ class BaseTests:
             "env": {"GH_TOKEN": "${{ secrets.GH_PAT_GHA_TO_ANOTHER_REPO }}"},
         }
 
-        install_poetry = {
-            "name": "Install poetry",
-            "run": "pipx install poetry",
-        }
         checkout_repo = {
             "name": "Checkout repository and submodules",
             "uses": "actions/checkout@v3",
@@ -243,6 +239,11 @@ class BaseTests:
                 "run": "uv python install 3.12",
             },
         ]
+
+        install_poetry = {
+            "name": "Install poetry",
+            "run": """python -c "import sys;print(sys.executable)"\npython -m pip install poetry""",
+        }
 
         install_devutils = {
             "name": "Install devutils requirements",
@@ -281,7 +282,7 @@ inv docs --validate
 """,
         }
 
-        steps = [checkout_repo, install_poetry] + setup_python + [install_devutils]
+        steps = [checkout_repo] + setup_python + [install_poetry, install_devutils]
 
         steps.extend([install, devinstall])
 
