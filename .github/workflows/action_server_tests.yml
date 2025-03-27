@@ -57,8 +57,8 @@ jobs:
     - name: Install Python 3.12
       run: uv python install 3.12
     - name: Install devutils requirements
-      run: uv run --no-project --break-system-packages --python ${{ matrix.python
-        }} -m pip install -r ../devutils/requirements.txt
+      run: uv run --no-project --python ${{ matrix.python }} -m pip install --break-system-packages
+        -r ../devutils/requirements.txt
     - name: Install project (not dev)
       if: contains(matrix.name, '-devmode') == false
       run: uv run --no-project --python ${{ matrix.python }} inv install

@@ -242,7 +242,7 @@ class BaseTests:
 
         install_devutils = {
             "name": "Install devutils requirements",
-            "run": "uv run --no-project --break-system-packages --python ${{ matrix.python }} -m pip install -r ../devutils/requirements.txt",
+            "run": "uv run --no-project --python ${{ matrix.python }} -m pip install --break-system-packages -r ../devutils/requirements.txt",
         }
 
         run_lint = {
