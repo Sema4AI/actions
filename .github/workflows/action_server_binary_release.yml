@@ -37,60 +37,68 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Setup node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 20.x
-          registry-url: "https://npm.pkg.github.com"
-          scope: "@robocorp"
-
-      - name: Install build requirements
+      - name: Print Python sqlite3 version
         run: |
-          python -m pip install poetry
-          python -m pip install invoke
-          python -m invoke build-frontend
-          python -m invoke build-oauth2-config
-        env:
-          CI: true
-          NODE_AUTH_TOKEN: ${{ secrets.GH_PAT_READ_PACKAGES }}
-          GH_TOKEN: ${{ secrets.GH_PAT_GHA_TO_ANOTHER_REPO }}
+          python -c "import sys; print(sys.executable)"
+          python -c "import sqlite3; print(sqlite3.sqlite_version)"
+          python -c "import sqlite3; print(sqlite3.__file__)"
+          python -c "import _sqlite3; print(_sqlite3.sqlite_version)"
+          python -c "import _sqlite3; print(_sqlite3.__file__)"
 
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: "1.23"
+      # - name: Setup node
+      #   uses: actions/setup-node@v3
+      #   with:
+      #     node-version: 20.x
+      #     registry-url: "https://npm.pkg.github.com"
+      #     scope: "@robocorp"
 
-      - name: Build binary
-        run: |
-          poetry install
-          poetry run inv build-executable --sign --go-wrapper --version=0.0.1-local
-        env:
-          RC_ACTION_SERVER_FORCE_DOWNLOAD_RCC: true
-          RC_ACTION_SERVER_DO_SELFTEST: true
+      # - name: Install build requirements
+      #   run: |
+      #     python -m pip install poetry
+      #     python -m pip install invoke
+      #     python -m invoke build-frontend
+      #     python -m invoke build-oauth2-config
+      #   env:
+      #     CI: true
+      #     NODE_AUTH_TOKEN: ${{ secrets.GH_PAT_READ_PACKAGES }}
+      #     GH_TOKEN: ${{ secrets.GH_PAT_GHA_TO_ANOTHER_REPO }}
 
-          MACOS_SIGNING_CERT: ${{ secrets.MACOS_SIGNING_CERT_SEMA4AI }}
-          MACOS_SIGNING_CERT_PASSWORD: ${{ secrets.MACOS_SIGNING_CERT_PASSWORD_SEMA4AI }}
-          MACOS_SIGNING_CERT_NAME: ${{ secrets.MACOS_SIGNING_CERT_NAME_SEMA4AI }}
+      # - name: Set up Go
+      #   uses: actions/setup-go@v5
+      #   with:
+      #     go-version: "1.23"
 
-          APPLEID: ${{ secrets.MACOS_APP_ID_FOR_NOTARIZATION_SEMA4AI }}
-          APPLETEAMID: ${{ secrets.MACOS_TEAM_ID_FOR_NOTARIZATION_SEMA4AI }}
-          APPLEIDPASS: ${{ secrets.MACOS_APP_ID_PASSWORD_FOR_NOTARIZATION_SEMA4AI }}
+      # - name: Build binary
+      #   run: |
+      #     poetry install
+      #     poetry run inv build-executable --sign --go-wrapper --version=0.0.1-local
+      #   env:
+      #     RC_ACTION_SERVER_FORCE_DOWNLOAD_RCC: true
+      #     RC_ACTION_SERVER_DO_SELFTEST: true
 
-          VAULT_URL: ${{ secrets.WIN_SIGN_AZURE_KEY_VAULT_URL_SEMA4AI }}
-          CLIENT_ID: ${{ secrets.WIN_SIGN_AZURE_KEY_VAULT_CLIENT_ID_SEMA4AI }}
-          TENANT_ID: ${{ secrets.WIN_SIGN_AZURE_KEY_VAULT_TENANT_ID_SEMA4AI }}
-          CLIENT_SECRET: ${{ secrets.WIN_SIGN_AZURE_KEY_VAULT_CLIENT_SECRET_SEMA4AI }}
-          CERTIFICATE_NAME: ${{ secrets.WIN_SIGN_AZURE_KEY_VAULT_CERTIFICATE_NAME_SEMA4AI }}
+      #     MACOS_SIGNING_CERT: ${{ secrets.MACOS_SIGNING_CERT_SEMA4AI }}
+      #     MACOS_SIGNING_CERT_PASSWORD: ${{ secrets.MACOS_SIGNING_CERT_PASSWORD_SEMA4AI }}
+      #     MACOS_SIGNING_CERT_NAME: ${{ secrets.MACOS_SIGNING_CERT_NAME_SEMA4AI }}
 
-          GITHUB_EVENT_NAME: ${{ github.event_name }}
-          GITHUB_REF_NAME: ${{ github.ref_name }}
-          GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
+      #     APPLEID: ${{ secrets.MACOS_APP_ID_FOR_NOTARIZATION_SEMA4AI }}
+      #     APPLETEAMID: ${{ secrets.MACOS_TEAM_ID_FOR_NOTARIZATION_SEMA4AI }}
+      #     APPLEIDPASS: ${{ secrets.MACOS_APP_ID_PASSWORD_FOR_NOTARIZATION_SEMA4AI }}
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: action-server-${{ matrix.os }}
-          path: ${{ matrix.asset_path }}
+      #     VAULT_URL: ${{ secrets.WIN_SIGN_AZURE_KEY_VAULT_URL_SEMA4AI }}
+      #     CLIENT_ID: ${{ secrets.WIN_SIGN_AZURE_KEY_VAULT_CLIENT_ID_SEMA4AI }}
+      #     TENANT_ID: ${{ secrets.WIN_SIGN_AZURE_KEY_VAULT_TENANT_ID_SEMA4AI }}
+      #     CLIENT_SECRET: ${{ secrets.WIN_SIGN_AZURE_KEY_VAULT_CLIENT_SECRET_SEMA4AI }}
+      #     CERTIFICATE_NAME: ${{ secrets.WIN_SIGN_AZURE_KEY_VAULT_CERTIFICATE_NAME_SEMA4AI }}
 
-      - name: Run executable
-        run: |
-          ./dist/final/action-server
+      #     GITHUB_EVENT_NAME: ${{ github.event_name }}
+      #     GITHUB_REF_NAME: ${{ github.ref_name }}
+      #     GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
+
+      # - uses: actions/upload-artifact@v4
+      #   with:
+      #     name: action-server-${{ matrix.os }}
+      #     path: ${{ matrix.asset_path }}
+
+      # - name: Run executable
+      #   run: |
+      #     ./dist/final/action-server
