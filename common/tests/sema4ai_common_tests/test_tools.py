@@ -40,7 +40,7 @@ def test_agent_cli_tool(tmpdir):
 
     suffix = ".exe" if sys.platform == "win32" else ""
 
-    target = tmpdir / f"action_server{suffix}"
+    target = tmpdir / f"agent-cli{suffix}"
 
     # See: https://github.com/Sema4AI/agents-spec/blob/master/cli/common/version.go for versions
     tool = AgentCliTool(target, "v0.2.2")
@@ -60,7 +60,7 @@ def test_rcc_tool(tmpdir):
 
     suffix = ".exe" if sys.platform == "win32" else ""
 
-    target = tmpdir / f"action_server{suffix}"
+    target = tmpdir / f"rcc{suffix}"
 
     # See: https://github.com/Sema4AI/rcc/blob/master/docs/changelog.md for versions
     tool = RccTool(target, "v19.0.2")
@@ -88,7 +88,7 @@ def test_data_server_tool(tmpdir):
 
     suffix = ".exe" if sys.platform == "win32" else ""
 
-    target = tmpdir / f"data_server_cli{suffix}"
+    target = tmpdir / f"data-server-cli{suffix}"
 
     tool = DataServerTool(target, "v1.0.2")
     assert not tool.verify()
