@@ -1,4 +1,5 @@
 import logging
+import os
 import sys
 import typing
 from dataclasses import dataclass
@@ -17,7 +18,7 @@ if typing.TYPE_CHECKING:
 
 _TYPE_BODY = typing.Union[bytes, typing.IO[typing.Any], typing.Iterable[bytes], str]
 
-__version__ = "1.0.2"
+__version__ = "1.0.3"
 
 
 class DownloadStatus(Enum):
@@ -29,25 +30,63 @@ class DownloadStatus(Enum):
     HTTP_ERROR = auto()
 
 
+_default_enable_legacy_renegotiation = False
+# i.e.: False if RC_TLS_LEGACY_RENEGOTIATION_ALLOWED is not set
+env_value = os.getenv("SEMA4AI_TLS_LEGACY_RENEGOTIATION_ALLOWED", "").lower()
+if not env_value:
+    # Backward compatibility with Robocorp TLS env var
+    env_value = os.getenv("RC_TLS_LEGACY_RENEGOTIATION_ALLOWED", "").lower()
+_default_enable_legacy_renegotiation = env_value in ("1", "true")
+
+# May be "truststore" or "certifi"
+_force_ssl_mode = os.getenv("SEMA4AI_FORCE_SSL_MODE", "truststore").lower()
+if _force_ssl_mode not in ("truststore", "certifi"):
+    _DEFAULT_LOGGER.critical(
+        "SEMA4AI_FORCE_SSL_MODE must be 'truststore' or 'certifi'. Found: %s (falling back to 'truststore')",
+        _force_ssl_mode,
+    )
+    _force_ssl_mode = "truststore"
+
+
 def build_ssl_context(
     protocol: int | None = None, *, enable_legacy_server_connect: bool | None = None
 ) -> "ssl.SSLContext":
     """Returns a Truststore SSL context with OP_LEGACY_SERVER_CONNECT flag enabled"""
-    import os
     import ssl
 
-    import truststore
+    _DEFAULT_LOGGER.info("Using truststore for SSL context")
+    if _force_ssl_mode == "truststore":
+        import truststore
 
-    # Ignoring typing because trustore has bad typing, it should be int|None, although it says only int.
-    ctx = truststore.SSLContext(protocol)  # type: ignore
+        # Ignoring typing because trustore has bad typing, it should be int|None, although it says only int.
+        ctx = truststore.SSLContext(protocol)  # type: ignore
+    else:
+        assert _force_ssl_mode == "certifi"
+        _DEFAULT_LOGGER.info("Using certifi for SSL context")
+
+        if protocol == ssl.PROTOCOL_TLS_CLIENT:
+            ctx = ssl.create_default_context(purpose=ssl.Purpose.SERVER_AUTH)
+            try:
+                import certifi
+
+                certifi_where = certifi.where()
+                _DEFAULT_LOGGER.info(
+                    "certifi.where() = %s. Exists: %s",
+                    certifi_where,
+                    os.path.exists(certifi_where),
+                )
+                ctx.load_verify_locations(
+                    cafile=certifi_where, capath=None, cadata=None
+                )
+            except Exception:
+                _DEFAULT_LOGGER.exception("Failed to load CA certificates from certifi")
+        elif protocol == ssl.PROTOCOL_TLS_SERVER:
+            ctx = ssl.create_default_context(purpose=ssl.Purpose.CLIENT_AUTH)
+        else:
+            raise ValueError(f"Unsupported protocol: {protocol}")
+
     if enable_legacy_server_connect is None:
-        # i.e.: False if RC_TLS_LEGACY_RENEGOTIATION_ALLOWED is not set
-        env_value = os.getenv("SEMA4AI_TLS_LEGACY_RENEGOTIATION_ALLOWED", "").lower()
-        if not env_value:
-            # Backward compatibility with Robocorp TLS env var
-            env_value = os.getenv("RC_TLS_LEGACY_RENEGOTIATION_ALLOWED", "").lower()
-
-        enable_legacy_server_connect = env_value in ("1", "true")
+        enable_legacy_server_connect = _default_enable_legacy_renegotiation
 
     if enable_legacy_server_connect:
         if sys.version_info < (3, 12):
@@ -395,7 +434,9 @@ def download_with_resume(
         timeout=timeout,
     )
 
-    logger.info(f"Downloading '{url}' to '{target_path.absolute()}'")
+    logger.info(
+        f"Downloading '{url}' to '{target_path.absolute()}' - current sema4ai_http version: {__version__}"
+    )
     target_path.parent.mkdir(parents=True, exist_ok=True)
 
     with _PartialDownloader(
