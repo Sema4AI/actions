@@ -99,8 +99,8 @@ jobs:
     - name: Upload to PyPI
       run: '
 
-        uv run --no-project --python ${{ matrix.python }} poetry config pypi-token.pypi  ${
-        secrets.PYPI_TOKEN_SEMA4AI_ACTION_SERVER }
+        uv run --no-project --python ${{ matrix.python }} poetry config pypi-token.pypi  ${{
+        secrets.PYPI_TOKEN_SEMA4AI_ACTION_SERVER }}
 
         uv run --no-project --python ${{ matrix.python }} poetry publish
 

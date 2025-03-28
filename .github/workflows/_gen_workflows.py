@@ -638,7 +638,7 @@ rm src/sema4ai/bin/rcc* -f
         return {
             "name": "Upload to PyPI",
             "run": f"""
-{run_in_env}poetry config pypi-token.pypi  ${{ secrets.PYPI_TOKEN_SEMA4AI_ACTION_SERVER }}
+{run_in_env}poetry config pypi-token.pypi  ${{{{ secrets.PYPI_TOKEN_SEMA4AI_ACTION_SERVER }}}}
 {run_in_env}poetry publish
 """,
             "env": {
@@ -1096,10 +1096,10 @@ class ActionServerManylinuxRelease(BaseWorkflow):
     def build_steps(self) -> list[dict]:
         steps = [self.checkout_repo()]
         steps.extend(self.setup_python())
-        steps.append(self.check_tag_version())
         steps.append(
             self.install_devutils(additional_packages=["cibuildwheel==2.23.1", "twine"])
         )
+        steps.append(self.check_tag_version())
         steps.append(self.setup_node())
         steps.append(self.build_frontend())
         steps.append(self.build_oauth2_config())

@@ -48,15 +48,15 @@ jobs:
         enable-cache: true
     - name: Install Python 3.12
       run: uv python install 3.12
-    - name: Check tag version
-      run: uv run --no-project --python ${{ matrix.python }} poetry run inv check-tag-version
-      if: ${{ !endsWith(github.ref_name, '-beta') }}
     - name: Install devutils requirements
       run: 'uv run --no-project --python ${{ matrix.python }}  python -m pip install
         --break-system-packages -r ../devutils/requirements.txt
 
         uv run --no-project --python ${{ matrix.python }}  python -m pip install --break-system-packages
         cibuildwheel==2.23.1 twine'
+    - name: Check tag version
+      run: uv run --no-project --python ${{ matrix.python }} poetry run inv check-tag-version
+      if: ${{ !endsWith(github.ref_name, '-beta') }}
     - name: Setup node
       uses: actions/setup-node@v3
       with:
