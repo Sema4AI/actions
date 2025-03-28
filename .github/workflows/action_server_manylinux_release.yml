@@ -54,6 +54,16 @@ jobs:
 
         uv run --no-project --python ${{ matrix.python }}  python -m pip install --break-system-packages
         cibuildwheel==2.23.1 twine'
+    - name: Install project (not dev)
+      if: contains(matrix.name, '-devmode') == false
+      run: uv run --no-project --python ${{ matrix.python }} inv install
+      env:
+        ACTION_SERVER_SKIP_DOWNLOAD_IN_BUILD: 'true'
+    - name: Install project (dev)
+      if: contains(matrix.name, '-devmode')
+      run: uv run --no-project --python ${{ matrix.python }} inv devinstall
+      env:
+        ACTION_SERVER_SKIP_DOWNLOAD_IN_BUILD: 'true'
     - name: Check tag version
       run: uv run --no-project --python ${{ matrix.python }} poetry run inv check-tag-version
       if: ${{ !endsWith(github.ref_name, '-beta') }}

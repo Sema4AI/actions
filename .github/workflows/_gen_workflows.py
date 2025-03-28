@@ -1099,6 +1099,7 @@ class ActionServerManylinuxRelease(BaseWorkflow):
         steps.append(
             self.install_devutils(additional_packages=["cibuildwheel==2.23.1", "twine"])
         )
+        steps.extend(self.install(env={"ACTION_SERVER_SKIP_DOWNLOAD_IN_BUILD": "true"}))
         steps.append(self.check_tag_version())
         steps.append(self.setup_node())
         steps.append(self.build_frontend())
