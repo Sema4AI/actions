@@ -3,6 +3,7 @@
 #     True,
 #     reason="Skipping all tests here for now (we don't want to run them all the time)",
 # )
+import pytest
 
 
 def test_action_server_tool(tmpdir):
@@ -33,6 +34,23 @@ def test_action_server_tool(tmpdir):
     assert executable.is_file()
 
 
+@pytest.fixture(autouse=True)
+def setup_logging():
+    import logging
+
+    logger = logging.getLogger("sema4ai.common.tools")
+    logger.setLevel(logging.DEBUG)
+    handler = logging.StreamHandler()
+    handler.setLevel(logging.DEBUG)
+    formatter = logging.Formatter(
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    )
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    yield
+    logger.removeHandler(handler)
+
+
 def test_agent_cli_tool(tmpdir):
     import sys
 
@@ -43,12 +61,12 @@ def test_agent_cli_tool(tmpdir):
     target = tmpdir / f"agent-cli{suffix}"
 
     # See: https://github.com/Sema4AI/agents-spec/blob/master/cli/common/version.go for versions
-    tool = AgentCliTool(target, "v0.2.2")
+    tool = AgentCliTool(target, "v1.0.2")
     assert not tool.verify()
     tool.download()
     assert tool.verify()
 
-    executable = AgentCliTool.get_default_executable(version="v0.2.2", download=True)
+    executable = AgentCliTool.get_default_executable(version="v1.0.2", download=True)
     assert executable.exists()
     assert executable.is_file()
 

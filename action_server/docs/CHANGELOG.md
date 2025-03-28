@@ -2,7 +2,10 @@
 
 ## Unreleased
 
+## 2.8.3 - 2025-03-28
+
 - Use uv to setup python environment (to get around issue where the python version was built with an old version of sqlite in ubuntu 20.04).
+- Using `ubuntu-22.04` as the default ubuntu version in the CI workflows.
 
 ## 2.8.2 - 2025-03-26
 
