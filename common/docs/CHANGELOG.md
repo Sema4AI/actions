@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 0.0.10 - 2025-03-29
+
+- Make msgspec dependency less strict.
+
 ## 0.0.9 - 2025-03-13
 
 - Fix critical issue in autoexit.
