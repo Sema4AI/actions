@@ -265,13 +265,7 @@ class ActionServerClient:
         """
         Provides the default kwargs that should be used for a requests call.
         """
-        from sema4ai.action_server._settings import get_user_sema4_path
-
         kwargs: dict = dict(timeout=self._get_default_timeout())
-        if self._use_https:
-            kwargs["ca_certs"] = str(
-                get_user_sema4_path() / "action-server-public-certfile.pem"
-            )
 
         return kwargs
 
@@ -290,7 +284,7 @@ class ActionServerClient:
 
         result = requests.get(
             self.build_full_url(url),
-            fields=(params or {}),
+            fields=params,
             headers=headers,
             **self.requests_kwargs(),
         )

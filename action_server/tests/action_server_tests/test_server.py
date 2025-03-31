@@ -5,6 +5,7 @@ import time
 from pathlib import Path
 
 import pytest
+
 from action_server_tests.fixtures import ActionServerClient, ActionServerProcess
 
 
@@ -76,11 +77,12 @@ def test_run_id_in_response_header(
     action_server_process: ActionServerProcess,
     client: ActionServerClient,
 ) -> None:
+    from robocorp.log._log_formatting import pretty_format_logs_from_log_html_contents
+
     from action_server_tests.fixtures import (
         BUILD_ENV_IN_TESTS_TIMEOUT,
         get_in_resources,
     )
-    from robocorp.log._log_formatting import pretty_format_logs_from_log_html_contents
 
     calculator = get_in_resources("no_conda", "calculator")
     action_server_process.start(
@@ -110,11 +112,7 @@ def test_run_id_in_response_header(
 
     artifacts_response = client.get_json(
         f"api/runs/{run_id}/artifacts/text-content",
-        params={
-            "artifact_names": [
-                "log.html",
-            ]
-        },
+        params={"artifact_names": "log.html"},
     )
     log_html_contents = artifacts_response["log.html"]
     log_pretty_printed = pretty_format_logs_from_log_html_contents(log_html_contents)
@@ -182,7 +180,6 @@ def test_import_action_server_strategies(
     strategy: str,
 ) -> None:
     from action_server_tests.fixtures import get_in_resources, sema4ai_action_server_run
-
     from sema4ai.action_server._models import Action, ActionPackage, load_db
 
     if strategy == "package.yaml":
@@ -239,7 +236,6 @@ def test_import_default_value(
     action_server_datadir: Path,
 ) -> None:
     from action_server_tests.fixtures import sema4ai_action_server_run
-
     from sema4ai.action_server._database import Database
     from sema4ai.action_server._models import Action, load_db
 
@@ -332,7 +328,6 @@ def test_import_no_conda(
     client: ActionServerClient,
 ) -> None:
     from action_server_tests.fixtures import fix_openapi_json, sema4ai_action_server_run
-
     from sema4ai.action_server._database import Database
     from sema4ai.action_server._models import Action, load_db
 
@@ -378,7 +373,7 @@ from sema4ai.actions import action
 @action
 def calculator_sum(v1: str, v2: str) -> str:
     return v1 + v2
-    
+
 @action
 def another_action(a1: str, a2: str) -> str:
     return a1 + a2
@@ -452,9 +447,9 @@ def test_full_run(
     base_case,
     client: ActionServerClient,
 ) -> None:
-    from action_server_tests.fixtures import fix_openapi_json
     from robocorp.log._log_formatting import pretty_format_logs_from_log_html_contents
 
+    from action_server_tests.fixtures import fix_openapi_json
     from sema4ai.action_server._database import Database, str_to_datetime
     from sema4ai.action_server._models import Run, RunStatus, load_db
 
@@ -508,12 +503,10 @@ def test_full_run(
             # Multiple text files
             found = client.get_json(
                 f"api/runs/{run.id}/artifacts/text-content",
-                params={
-                    "artifact_names": [
-                        "__action_server_output.txt",
-                        "output.robolog",
-                    ]
-                },
+                params = [
+                    ("artifact_names", "__action_server_output.txt"),
+                    ("artifact_names", "output.robolog"),
+                ]
             )
             assert len(found) == 2
             assert (
@@ -533,9 +526,8 @@ def test_full_run(
             found = client.get_str(
                 f"api/runs/{run.id}/artifacts/binary-content",
                 params={
-                    "artifact_name": [
-                        "__action_server_output.txt",
-                    ]
+                    "artifact_name": "__action_server_output.txt"
+
                 },
             )
 
@@ -545,9 +537,7 @@ def test_full_run(
             log_html_contents = client.get_str(
                 f"api/runs/{run.id}/artifacts/binary-content",
                 params={
-                    "artifact_name": [
-                        "log.html",
-                    ]
+                    "artifact_name": "log.html"
                 },
             )
             contents = pretty_format_logs_from_log_html_contents(log_html_contents)
@@ -562,11 +552,12 @@ def test_full_run_with_env_build(
     client: ActionServerClient,
     tmpdir,
 ) -> None:
+    from robocorp.log._log_formatting import pretty_format_logs_from_log_html_contents
+
     from action_server_tests.fixtures import (
         BUILD_ENV_IN_TESTS_TIMEOUT,
         get_in_resources,
     )
-    from robocorp.log._log_formatting import pretty_format_logs_from_log_html_contents
 
     project = get_in_resources("hello_uv")
     action_server_process.start(
@@ -591,9 +582,7 @@ def test_full_run_with_env_build(
     log_html_contents = client.get_str(
         f"api/runs/{run_id}/artifacts/binary-content",
         params={
-            "artifact_name": [
-                "log.html",
-            ]
+            "artifact_name": "log.html"
         },
     )
     contents = pretty_format_logs_from_log_html_contents(log_html_contents)
@@ -605,7 +594,6 @@ def test_full_run_with_env_build(
 def test_routes(action_server_process: ActionServerProcess, data_regression):
     from action_server_tests.fixtures import fix_openapi_json
     from action_server_tests.sample_data import ACTION, ACTION_PACKAGE, RUN, RUN2
-
     from sema4ai.action_server._database import Database
     from sema4ai.action_server._models import create_db
 
@@ -713,8 +701,8 @@ def test_subprocesses_killed(
     from concurrent.futures import TimeoutError
 
     import requests
-    from action_server_tests.fixtures import get_in_resources
 
+    from action_server_tests.fixtures import get_in_resources
     from sema4ai.action_server._robo_utils.run_in_thread import run_in_thread
 
     no_conda_dir = get_in_resources("no_conda")
@@ -781,7 +769,6 @@ def test_import_task_options(
     client: ActionServerClient,
 ) -> None:
     from action_server_tests.fixtures import sema4ai_action_server_run
-
     from sema4ai.action_server._database import Database
     from sema4ai.action_server._models import Action, load_db
 
