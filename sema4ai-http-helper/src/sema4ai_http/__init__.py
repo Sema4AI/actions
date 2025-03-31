@@ -27,12 +27,12 @@ class SSLContextFactory:
 
     def _build_ssl_context(
         self,
-        protocol: int = ssl.PROTOCOL_TLS_CLIENT,
+        protocol: int | None,
         enable_legacy_server_connect: bool | None = None,
     ) -> ssl.SSLContext:
         import truststore
 
-        ssl_context = truststore.SSLContext(protocol)
+        ssl_context = truststore.SSLContext(protocol or ssl.PROTOCOL_TLS_CLIENT)
 
         self._configure_ssl_verification(ssl_context)
 
@@ -54,7 +54,7 @@ class SSLContextFactory:
 
 
 class NetworkConfig:
-    def __init__(self) -> urllib3.PoolManager | urllib3.ProxyManager:
+    def __init__(self) -> None:
         self.connection_pool = self._build_connection_pool()
 
     @staticmethod
@@ -106,7 +106,7 @@ class NetworkConfig:
 
 
 @lru_cache
-def get_network_config() -> NetworkConfig:
+def get_network_config() -> urllib3.PoolManager | urllib3.ProxyManager:
     return NetworkConfig().connection_pool
 
 
@@ -119,8 +119,12 @@ def build_ssl_context(
 
 
 class ResponseWrapper:
-    def __init__(self, response: urllib3.BaseHTTPResponse):
+    def __init__(self, response: urllib3.BaseHTTPResponse) -> None:
         self.response = response
+
+    @property
+    def status(self) -> int:
+        return self.response.status
 
     @property
     def status_code(self) -> int:
@@ -141,7 +145,7 @@ class ResponseWrapper:
     def read(self, amt=None, decode_content=None, cache_content=False) -> bytes:
         return self.response.read(amt, decode_content, cache_content)
 
-    def json(self) -> any:
+    def json(self) -> dict:
         return self.response.json()
 
     def release_conn(self) -> None:
