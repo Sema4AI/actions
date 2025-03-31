@@ -42,7 +42,7 @@ def _ensure_latest_templates() -> None:
     # Ensures the existence of the latest templates package.
     # It downloads the latest templates metadata file, and compares the hash with the metadata held locally (if exists).
     # If there is no match (or metadata is not available locally), it will download the templates package.
-    import sema4ai_http as session
+    import sema4ai_http
 
     action_templates_dir_path = _get_action_templates_dir_path()
 
@@ -50,7 +50,7 @@ def _ensure_latest_templates() -> None:
 
     local_metadata = _get_local_templates_metadata()
 
-    response = session.get(TEMPLATES_METADATA_URL)
+    response = sema4ai_http.get(TEMPLATES_METADATA_URL)
     response.raise_for_status()
 
     new_metadata_content = response.text
@@ -69,9 +69,9 @@ def _ensure_latest_templates() -> None:
 
 
 def _download_and_unzip_templates(action_templates_dir: Path) -> None:
-    import sema4ai_http as session
+    import sema4ai_http
 
-    templates_response = session.get(TEMPLATES_PACKAGE_URL)
+    templates_response = sema4ai_http.get(TEMPLATES_PACKAGE_URL)
 
     with zipfile.ZipFile(io.BytesIO(templates_response.content)) as zip_ref:
         zip_ref.extractall(action_templates_dir)

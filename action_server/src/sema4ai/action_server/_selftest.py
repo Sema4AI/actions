@@ -276,13 +276,13 @@ class ActionServerClient:
         headers: Optional[dict] = None,
         cookies: Optional[dict] = None,
     ) -> str:
-        import sema4ai_http as requests
+        import sema4ai_http
 
         headers = headers or {}
         if cookies:
             headers["Cookie"] = "; ".join(f"{k}={v}" for k, v in cookies.items())
 
-        result = requests.get(
+        result = sema4ai_http.get(
             self.build_full_url(url),
             fields=params,
             headers=headers,
@@ -332,13 +332,13 @@ class ActionServerClient:
         cookies: Optional[dict] = None,
         params: Optional[dict] = None,
     ):
-        import sema4ai_http as requests
+        import sema4ai_http
 
         headers = headers or {}
         if cookies:
             headers["Cookie"] = "; ".join(f"{k}={v}" for k, v in cookies.items())
 
-        result = requests.post(
+        result = sema4ai_http.post(
             self.build_full_url(url),
             headers=headers,
             json=data,
@@ -356,13 +356,13 @@ class ActionServerClient:
         cookies: Optional[dict] = None,
         params: Optional[dict] = None,
     ):
-        import sema4ai_http as requests
+        import sema4ai_http
 
         headers = headers or {}
         if cookies:
             headers["Cookie"] = "; ".join(f"{k}={v}" for k, v in cookies.items())
 
-        result = requests.get(
+        result = sema4ai_http.get(
             self.build_full_url(url),
             headers=headers,
             json=data,
@@ -373,9 +373,9 @@ class ActionServerClient:
         return result
 
     def post_error(self, url, status_code, data=None, headers=None):
-        import sema4ai_http as requests
+        import sema4ai_http
 
-        result = requests.post(
+        result = sema4ai_http.post(
             self.build_full_url(url),
             json=data or {},
             headers=headers or {},
@@ -392,9 +392,9 @@ class ActionServerClient:
         return result
 
     def get_error(self, url, status_code):
-        import sema4ai_http as requests
+        import sema4ai_http
 
-        result = requests.get(
+        result = sema4ai_http.get(
             self.build_full_url(url),
             **self.requests_kwargs(),
         )
