@@ -1,4 +1,6 @@
 import logging
+import os
+import ssl
 import sys
 import typing
 from dataclasses import dataclass
@@ -14,10 +16,191 @@ _DEFAULT_LOGGER = logging.getLogger(__name__)
 if typing.TYPE_CHECKING:
     import ssl
 
-
 _TYPE_BODY = typing.Union[bytes, typing.IO[typing.Any], typing.Iterable[bytes], str]
 
-__version__ = "1.0.2"
+__version__ = "2.0.0"
+
+
+class _SSLContextFactory:
+    def __init__(self, config: dict | None = None) -> None:
+        self.config = config or {}
+
+    def _build_ssl_context(
+        self,
+        protocol: int | None,
+        enable_legacy_server_connect: bool | None = None,
+    ) -> ssl.SSLContext:
+        import truststore
+
+        protocol = ssl.PROTOCOL_TLS_CLIENT if protocol is None else protocol
+        ssl_context = truststore.SSLContext(protocol)
+
+        self._configure_ssl_verification(ssl_context)
+
+        if enable_legacy_server_connect:
+            self._configure_tls_renegociation(ssl_context)
+
+        return ssl_context
+
+    def _configure_ssl_verification(self, ssl_context: ssl.SSLContext) -> None:
+        disable_ssl = self.config.get("disable-ssl", False)
+        ssl_context.verify_mode = ssl.CERT_NONE if disable_ssl else ssl.CERT_REQUIRED
+
+    def _configure_tls_renegociation(self, ssl_context: ssl.SSLContext) -> None:
+        if sys.version_info < (3, 12):
+            _SSL_LEGACY_SERVER_CONNECT = 0x4
+        else:
+            _SSL_LEGACY_SERVER_CONNECT = ssl.OP_LEGACY_SERVER_CONNECT
+        ssl_context.options |= _SSL_LEGACY_SERVER_CONNECT
+
+
+class _NetworkConfig:
+    def __init__(self) -> None:
+        self.connection_pool = self._build_connection_pool()
+
+    @staticmethod
+    def _get_network_settings_path() -> Path:
+        if sys.platform == "win32":
+            localappdata = os.environ.get("LOCALAPPDATA")
+            if not localappdata:
+                raise RuntimeError("Error. LOCALAPPDATA not defined in environment!")
+            sema4_home = Path(localappdata) / "sema4ai"
+        else:
+            # Linux/Mac
+            sema4_home = Path("~/.sema4ai").expanduser()
+
+        return sema4_home / "network-settings.yaml"
+
+    def _get_current_config_profile(self) -> dict:
+        config_file = self._get_network_settings_path()
+
+        if not config_file.exists():
+            return {}
+
+        import yaml
+
+        try:
+            config_content = config_file.read_text()
+        except Exception as e:
+            _DEFAULT_LOGGER.error(
+                f"Failed to read configuration file {config_file}: {e}"
+            )
+            return {}
+
+        try:
+            config = yaml.safe_load(config_content)
+        except yaml.YAMLError as e:
+            _DEFAULT_LOGGER.error(f"Failed to parse YAML from {config_file}: {e}")
+            return {}
+
+        if not isinstance(config, dict):
+            _DEFAULT_LOGGER.error(
+                f"Invalid configuration format in {config_file}, expected a dictionary."
+            )
+            return {}
+
+        current_profile = config.get("current-profile", "")
+        profiles = config.get("profiles", [])
+
+        for profile in profiles:
+            if not isinstance(profile, dict):
+                _DEFAULT_LOGGER.warning(
+                    "Ignoring invalid profile entry, expected a dictionary."
+                )
+                continue
+
+            if profile.get("name") == current_profile:
+                return profile
+
+        _DEFAULT_LOGGER.error(f"No matching profile found for '{current_profile}'.")
+        return {}
+
+    # TODO: add support for no-proxy setting
+    def _build_connection_pool(self) -> urllib3.PoolManager | urllib3.ProxyManager:
+        profile_config = self._get_current_config_profile()
+
+        ssl_context_factory = _SSLContextFactory(profile_config)
+        ssl_context = ssl_context_factory._build_ssl_context(ssl.PROTOCOL_TLS_CLIENT)
+
+        if "proxy-settings" in profile_config:
+            proxy_settings = profile_config["proxy-settings"]
+            self.connection_pool = urllib3.ProxyManager(
+                proxy_url=proxy_settings.get("https-proxy")
+                or proxy_settings.get("http-proxy"),
+                ssl_context=ssl_context,
+            )
+        else:
+            self.connection_pool = urllib3.PoolManager(ssl_context=ssl_context)
+
+        return self.connection_pool
+
+
+@lru_cache
+def _get_connection_manager() -> urllib3.PoolManager | urllib3.ProxyManager:
+    return _NetworkConfig().connection_pool
+
+
+def build_ssl_context(
+    protocol: int | None = None, *, enable_legacy_server_connect: bool | None = None
+) -> "ssl.SSLContext":
+    return _SSLContextFactory({})._build_ssl_context(
+        protocol, enable_legacy_server_connect
+    )
+
+
+class ResponseWrapper:
+    """
+    A wrapper around urllib3's BaseHTTPResponse to provide a more user-friendly API.
+    All attributes of the BaseHTTPResponse are available via the response property or
+    from the reponse itself.
+    """
+
+    def __init__(self, response: urllib3.BaseHTTPResponse) -> None:
+        self.response = response
+
+    @property
+    def status(self) -> int:
+        return self.response.status
+
+    @property
+    def status_code(self) -> int:
+        return self.response.status
+
+    @property
+    def text(self) -> str:
+        charset = "utf-8"
+        content_type = self.response.headers.get("content-type", "")
+        if "charset=" in content_type:
+            charset = content_type.split("charset=")[-1].strip()
+        return self.response.data.decode(charset, errors="replace")
+
+    @property
+    def data(self) -> bytes:
+        return self.response.data
+
+    def read(self, amt=None, decode_content=None, cache_content=False) -> bytes:
+        return self.response.read(amt, decode_content, cache_content)
+
+    def json(self) -> dict:
+        return self.response.json()
+
+    def release_conn(self) -> None:
+        self.response.release_conn()
+
+    def getheaders(self) -> urllib3.response.HTTPHeaderDict:
+        return self.response.getheaders()
+
+    def close(self) -> None:
+        self.response.close()
+
+    def raise_for_status(self) -> None:
+        if self.response.status >= 400:
+            raise urllib3.exceptions.HTTPError(
+                f"HTTP {self.response.status}: {self.response.reason}"
+            )
+
+    def ok(self) -> bool:
+        return 200 <= self.response.status < 400
 
 
 class DownloadStatus(Enum):
@@ -29,45 +212,6 @@ class DownloadStatus(Enum):
     HTTP_ERROR = auto()
 
 
-def build_ssl_context(
-    protocol: int | None = None, *, enable_legacy_server_connect: bool | None = None
-) -> "ssl.SSLContext":
-    """Returns a Truststore SSL context with OP_LEGACY_SERVER_CONNECT flag enabled"""
-    import os
-    import ssl
-
-    import truststore
-
-    # Ignoring typing because trustore has bad typing, it should be int|None, although it says only int.
-    ctx = truststore.SSLContext(protocol)  # type: ignore
-    if enable_legacy_server_connect is None:
-        # i.e.: False if RC_TLS_LEGACY_RENEGOTIATION_ALLOWED is not set
-        env_value = os.getenv("SEMA4AI_TLS_LEGACY_RENEGOTIATION_ALLOWED", "").lower()
-        if not env_value:
-            # Backward compatibility with Robocorp TLS env var
-            env_value = os.getenv("RC_TLS_LEGACY_RENEGOTIATION_ALLOWED", "").lower()
-
-        enable_legacy_server_connect = env_value in ("1", "true")
-
-    if enable_legacy_server_connect:
-        if sys.version_info < (3, 12):
-            _SSL_LEGACY_SERVER_CONNECT = 0x4
-        else:
-            _SSL_LEGACY_SERVER_CONNECT = ssl.OP_LEGACY_SERVER_CONNECT
-        ctx.options |= _SSL_LEGACY_SERVER_CONNECT
-    return ctx
-
-
-@lru_cache
-def _get_default_pool():
-    import ssl
-
-    return urllib3.PoolManager(
-        ssl_context=build_ssl_context(ssl.PROTOCOL_TLS_CLIENT),
-        cert_reqs="CERT_REQUIRED",
-    )
-
-
 def get(
     url,
     /,
@@ -76,9 +220,23 @@ def get(
     headers: typing.Mapping[str, str] | None = None,
     json: typing.Any | None = None,
     **urlopen_kw: typing.Any,
-) -> urllib3.BaseHTTPResponse:
-    return _get_default_pool().request(
-        "get", url, body=body, fields=fields, headers=headers, json=json, **urlopen_kw
+) -> ResponseWrapper:
+    """
+    Perform a GET request using urllib3.
+
+    It utilizes PoolManager or ProxyManager depending on the network settings
+    defined in `$HOME/.sema4ai/network-settings.yaml`.
+    """
+    return ResponseWrapper(
+        _get_connection_manager().request(
+            "get",
+            url,
+            body=body,
+            fields=fields,
+            headers=headers,
+            json=json,
+            **urlopen_kw,
+        )
     )
 
 
@@ -90,9 +248,23 @@ def post(
     headers: typing.Mapping[str, str] | None = None,
     json: typing.Any | None = None,
     **urlopen_kw: typing.Any,
-) -> urllib3.BaseHTTPResponse:
-    return _get_default_pool().request(
-        "post", url, body=body, fields=fields, headers=headers, json=json, **urlopen_kw
+) -> ResponseWrapper:
+    """
+    Perform a POST request using urllib3.
+
+    It utilizes PoolManager or ProxyManager depending on the network settings
+    defined in `$HOME/.sema4ai/network-settings.yaml`.
+    """
+    return ResponseWrapper(
+        _get_connection_manager().request(
+            "post",
+            url,
+            body=body,
+            fields=fields,
+            headers=headers,
+            json=json,
+            **urlopen_kw,
+        )
     )
 
 
@@ -104,9 +276,23 @@ def put(
     headers: typing.Mapping[str, str] | None = None,
     json: typing.Any | None = None,
     **urlopen_kw: typing.Any,
-) -> urllib3.BaseHTTPResponse:
-    return _get_default_pool().request(
-        "put", url, body=body, fields=fields, headers=headers, json=json, **urlopen_kw
+) -> ResponseWrapper:
+    """
+    Perform a PUT request using urllib3.
+
+    It utilizes PoolManager or ProxyManager depending on the network settings
+    defined in `$HOME/.sema4ai/network-settings.yaml`.
+    """
+    return ResponseWrapper(
+        _get_connection_manager().request(
+            "put",
+            url,
+            body=body,
+            fields=fields,
+            headers=headers,
+            json=json,
+            **urlopen_kw,
+        )
     )
 
 
@@ -118,9 +304,23 @@ def patch(
     headers: typing.Mapping[str, str] | None = None,
     json: typing.Any | None = None,
     **urlopen_kw: typing.Any,
-) -> urllib3.BaseHTTPResponse:
-    return _get_default_pool().request(
-        "patch", url, body=body, fields=fields, headers=headers, json=json, **urlopen_kw
+) -> ResponseWrapper:
+    """
+    Perform a PATCH request using urllib3.
+
+    It utilizes PoolManager or ProxyManager depending on the network settings
+    defined in `$HOME/.sema4ai/network-settings.yaml`.
+    """
+    return ResponseWrapper(
+        _get_connection_manager().request(
+            "patch",
+            url,
+            body=body,
+            fields=fields,
+            headers=headers,
+            json=json,
+            **urlopen_kw,
+        )
     )
 
 
@@ -132,15 +332,23 @@ def delete(
     headers: typing.Mapping[str, str] | None = None,
     json: typing.Any | None = None,
     **urlopen_kw: typing.Any,
-) -> urllib3.BaseHTTPResponse:
-    return _get_default_pool().request(
-        "delete",
-        url,
-        body=body,
-        fields=fields,
-        headers=headers,
-        json=json,
-        **urlopen_kw,
+) -> ResponseWrapper:
+    """
+    Perform a DELETE request using urllib3.
+
+    It utilizes PoolManager or ProxyManager depending on the network settings
+    defined in `$HOME/.sema4ai/network-settings.yaml`.
+    """
+    return ResponseWrapper(
+        _get_connection_manager().request(
+            "delete",
+            url,
+            body=body,
+            fields=fields,
+            headers=headers,
+            json=json,
+            **urlopen_kw,
+        )
     )
 
 
@@ -385,7 +593,7 @@ def download_with_resume(
         target_path = target_path / filename
 
     if pool_manager is None:
-        pool_manager = _get_default_pool()
+        pool_manager = _get_connection_manager()
 
     request_info = _RequestInfo(
         url=url,
