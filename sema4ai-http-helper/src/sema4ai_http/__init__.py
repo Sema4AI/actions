@@ -591,7 +591,7 @@ def download_with_resume(
         target_path = target_path / filename
 
     if pool_manager is None:
-        pool_manager = connection_manager
+        pool_manager = _get_connection_manager()
 
     request_info = _RequestInfo(
         url=url,
