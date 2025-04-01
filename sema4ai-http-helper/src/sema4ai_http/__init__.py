@@ -82,17 +82,19 @@ class _NetworkConfig:
         try:
             config_content = config_file.read_text()
         except Exception as e:
-            logging.error(f"Failed to read configuration file {config_file}: {e}")
+            _DEFAULT_LOGGER.error(
+                f"Failed to read configuration file {config_file}: {e}"
+            )
             return {}
 
         try:
             config = yaml.safe_load(config_content)
         except yaml.YAMLError as e:
-            logging.error(f"Failed to parse YAML from {config_file}: {e}")
+            _DEFAULT_LOGGER.error(f"Failed to parse YAML from {config_file}: {e}")
             return {}
 
         if not isinstance(config, dict):
-            logging.error(
+            _DEFAULT_LOGGER.error(
                 f"Invalid configuration format in {config_file}, expected a dictionary."
             )
             return {}
@@ -102,7 +104,7 @@ class _NetworkConfig:
 
         for profile in profiles:
             if not isinstance(profile, dict):
-                logging.warning(
+                _DEFAULT_LOGGER.warning(
                     "Ignoring invalid profile entry, expected a dictionary."
                 )
                 continue
@@ -110,7 +112,7 @@ class _NetworkConfig:
             if profile.get("name") == current_profile:
                 return profile
 
-        logging.error(f"No matching profile found for '{current_profile}'.")
+        _DEFAULT_LOGGER.error(f"No matching profile found for '{current_profile}'.")
         return {}
 
     # TODO: add support for no-proxy setting
