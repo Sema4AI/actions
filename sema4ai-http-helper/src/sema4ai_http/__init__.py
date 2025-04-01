@@ -21,7 +21,7 @@ _TYPE_BODY = typing.Union[bytes, typing.IO[typing.Any], typing.Iterable[bytes], 
 __version__ = "2.0.0"
 
 
-class SSLContextFactory:
+class _SSLContextFactory:
     def __init__(self, config: dict | None = None) -> None:
         self.config = config or {}
 
@@ -32,7 +32,8 @@ class SSLContextFactory:
     ) -> ssl.SSLContext:
         import truststore
 
-        ssl_context = truststore.SSLContext(protocol or ssl.PROTOCOL_TLS_CLIENT)
+        protocol = ssl.PROTOCOL_TLS_CLIENT if protocol is None else protocol
+        ssl_context = truststore.SSLContext(protocol)
 
         self._configure_ssl_verification(ssl_context)
 
@@ -53,7 +54,7 @@ class SSLContextFactory:
         ssl_context.options |= _SSL_LEGACY_SERVER_CONNECT
 
 
-class NetworkConfig:
+class _NetworkConfig:
     def __init__(self) -> None:
         self.connection_pool = self._build_connection_pool()
 
@@ -73,23 +74,50 @@ class NetworkConfig:
     def _get_current_config_profile(self) -> dict:
         config_file = self._get_network_settings_path()
 
-        if config_file.exists():
-            import yaml
+        if not config_file.exists():
+            return {}
 
-            config = yaml.safe_load(config_file.read_text())
-            current_profile = config.get("current-profile", "")
-            return next(
-                (p for p in config.get("profiles", []) if p["name"] == current_profile),
-                {},
+        import yaml
+
+        try:
+            config_content = config_file.read_text()
+        except Exception as e:
+            logging.error(f"Failed to read configuration file {config_file}: {e}")
+            return {}
+
+        try:
+            config = yaml.safe_load(config_content)
+        except yaml.YAMLError as e:
+            logging.error(f"Failed to parse YAML from {config_file}: {e}")
+            return {}
+
+        if not isinstance(config, dict):
+            logging.error(
+                f"Invalid configuration format in {config_file}, expected a dictionary."
             )
+            return {}
 
+        current_profile = config.get("current-profile", "")
+        profiles = config.get("profiles", [])
+
+        for profile in profiles:
+            if not isinstance(profile, dict):
+                logging.warning(
+                    "Ignoring invalid profile entry, expected a dictionary."
+                )
+                continue
+
+            if profile.get("name") == current_profile:
+                return profile
+
+        logging.error(f"No matching profile found for '{current_profile}'.")
         return {}
 
     # TODO: add support for no-proxy setting
     def _build_connection_pool(self) -> urllib3.PoolManager | urllib3.ProxyManager:
         profile_config = self._get_current_config_profile()
 
-        ssl_context_factory = SSLContextFactory(profile_config)
+        ssl_context_factory = _SSLContextFactory(profile_config)
         ssl_context = ssl_context_factory._build_ssl_context(ssl.PROTOCOL_TLS_CLIENT)
 
         if "proxy-settings" in profile_config:
@@ -106,19 +134,25 @@ class NetworkConfig:
 
 
 @lru_cache
-def get_network_config() -> urllib3.PoolManager | urllib3.ProxyManager:
-    return NetworkConfig().connection_pool
+def _get_connection_manager() -> urllib3.PoolManager | urllib3.ProxyManager:
+    return _NetworkConfig().connection_pool
 
 
 def build_ssl_context(
     protocol: int | None = None, *, enable_legacy_server_connect: bool | None = None
 ) -> "ssl.SSLContext":
-    return SSLContextFactory({})._build_ssl_context(
+    return _SSLContextFactory({})._build_ssl_context(
         protocol, enable_legacy_server_connect
     )
 
 
 class ResponseWrapper:
+    """
+    A wrapper around urllib3's BaseHTTPResponse to provide a more user-friendly API.
+    All attributes of the BaseHTTPResponse are available via the response property or
+    from the reponse itself.
+    """
+
     def __init__(self, response: urllib3.BaseHTTPResponse) -> None:
         self.response = response
 
@@ -176,9 +210,6 @@ class DownloadStatus(Enum):
     HTTP_ERROR = auto()
 
 
-connection_manager = NetworkConfig().connection_pool
-
-
 def get(
     url,
     /,
@@ -188,8 +219,14 @@ def get(
     json: typing.Any | None = None,
     **urlopen_kw: typing.Any,
 ) -> ResponseWrapper:
+    """
+    Perform a GET request using urllib3.
+
+    It utilizes PoolManager or ProxyManager depending on the network settings
+    defined in `$HOME/.sema4ai/network-settings.yaml`.
+    """
     return ResponseWrapper(
-        connection_manager.request(
+        _get_connection_manager().request(
             "get",
             url,
             body=body,
@@ -210,8 +247,14 @@ def post(
     json: typing.Any | None = None,
     **urlopen_kw: typing.Any,
 ) -> ResponseWrapper:
+    """
+    Perform a POST request using urllib3.
+
+    It utilizes PoolManager or ProxyManager depending on the network settings
+    defined in `$HOME/.sema4ai/network-settings.yaml`.
+    """
     return ResponseWrapper(
-        connection_manager.request(
+        _get_connection_manager().request(
             "post",
             url,
             body=body,
@@ -232,8 +275,14 @@ def put(
     json: typing.Any | None = None,
     **urlopen_kw: typing.Any,
 ) -> ResponseWrapper:
+    """
+    Perform a PUT request using urllib3.
+
+    It utilizes PoolManager or ProxyManager depending on the network settings
+    defined in `$HOME/.sema4ai/network-settings.yaml`.
+    """
     return ResponseWrapper(
-        connection_manager.request(
+        _get_connection_manager().request(
             "put",
             url,
             body=body,
@@ -254,8 +303,14 @@ def patch(
     json: typing.Any | None = None,
     **urlopen_kw: typing.Any,
 ) -> ResponseWrapper:
+    """
+    Perform a PATCH request using urllib3.
+
+    It utilizes PoolManager or ProxyManager depending on the network settings
+    defined in `$HOME/.sema4ai/network-settings.yaml`.
+    """
     return ResponseWrapper(
-        connection_manager.request(
+        _get_connection_manager().request(
             "patch",
             url,
             body=body,
@@ -276,8 +331,14 @@ def delete(
     json: typing.Any | None = None,
     **urlopen_kw: typing.Any,
 ) -> ResponseWrapper:
+    """
+    Perform a DELETE request using urllib3.
+
+    It utilizes PoolManager or ProxyManager depending on the network settings
+    defined in `$HOME/.sema4ai/network-settings.yaml`.
+    """
     return ResponseWrapper(
-        connection_manager.request(
+        _get_connection_manager().request(
             "delete",
             url,
             body=body,
