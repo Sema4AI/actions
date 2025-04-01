@@ -40,17 +40,17 @@ jobs:
       fail-fast: false
       matrix:
         name:
-          - ubuntu-py3.11
-          - windows-py3.11
-          - macos-py3.11
+          - ubuntu-py3.11-devmode
+          - windows-py3.11-devmode
+          - macos-py3.11-devmode
         include:
-          - name: ubuntu-py3.11
+          - name: ubuntu-py3.11-devmode
             python: "3.11"
             os: ubuntu-22.04
-          - name: windows-py3.11
+          - name: windows-py3.11-devmode
             python: "3.11"
             os: windows-2019
-          - name: macos-py3.11
+          - name: macos-py3.11-devmode
             os: macos-15
             python: "3.11"
     steps:
