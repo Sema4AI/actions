@@ -199,6 +199,9 @@ class ResponseWrapper:
                 f"HTTP {self.response.status}: {self.response.reason}"
             )
 
+    def ok(self) -> bool:
+        return 200 <= self.response.status < 400
+
 
 class DownloadStatus(Enum):
     """Status"""
