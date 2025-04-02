@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sema4ai-common"
-version = "0.0.9"
+version = "0.1.0"
 description = "Sema4AI Common"
 authors = ["Sema4.ai Engineering <engineering@sema4.ai>"]
 readme = "README.md"
@@ -11,9 +11,9 @@ packages = [{ include = "sema4ai/common", from = "src" }]
 [tool.poetry.dependencies]
 python = "^3.11"
 psutil = ">=5.0,<7.0"
-sema4ai-http-helper = "^1.0.2"
+sema4ai-http-helper = "^2.0.0"
 pyyaml = "^6.0"
-msgspec = "^0.18"
+msgspec = ">=0.18"
 
 [tool.poetry.group.dev.dependencies]
 sema4ai-devutils = { path = "../devutils/", develop = true }
