@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sema4ai-actions"
-version = "1.3.7"
+version = "1.3.8"
 description = "Sema4AI Actions"
 authors = ["Sema4.ai Engineering <engineering@sema4.ai>"]
 readme = "README.md"
@@ -16,7 +16,7 @@ robocorp-truststore= ">=0.8.0"
 psutil = ">=5.0,<7.0"
 docstring_parser_fork = "^0.0.5"
 pydantic = "^2.0" # Required for the `Response[T]`
-sema4ai-http-helper = "^2.0.0"
+sema4ai-http-helper = "^2.0.1"
 
 [tool.poetry.group.dev.dependencies]
 sema4ai-devutils = { path = "../devutils/", develop = true }
