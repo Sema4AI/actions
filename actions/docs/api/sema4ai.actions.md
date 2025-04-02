@@ -16,7 +16,7 @@ def my_action():
     ...
 ```
 
-And then go to a parent folder containing the action and serve them by  running `action-server start`.
+And then go to a parent folder containing the action and serve them by running `action-server start`.
 
 Note that it's also possible to programmatically run actions (without the Action Server) with:
 
