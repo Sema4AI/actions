@@ -272,7 +272,7 @@ class ActionServerClient:
     def get_str(
         self,
         url,
-        params: Optional[dict] = None,
+        params: Optional[dict | list[tuple]] = None,
         headers: Optional[dict] = None,
         cookies: Optional[dict] = None,
     ) -> str:
@@ -302,7 +302,7 @@ class ActionServerClient:
     def get_json(
         self,
         url,
-        params: Optional[dict] = None,
+        params: Optional[dict | list[tuple]] = None,
         headers: Optional[dict] = None,
         cookies: Optional[dict] = None,
     ):

@@ -180,7 +180,7 @@ def create_package(
     except ConnectionError as e:
         raise ActionServerValidationError(f"Failed to call Controm Room API: {e}")
 
-    if r.ok:
+    if r.ok()():
         log.debug("Action package entity created successfully")
     else:
         raise ActionServerValidationError(f"{r.status_code} - {r.text}")
@@ -232,7 +232,7 @@ def get_upload_url(
     except ConnectionError as e:
         raise ActionServerValidationError(f"Failed to call Controm Room API: {e}")
 
-    if r.ok:
+    if r.ok():
         log.debug("Upload URL received successfully")
     else:
         raise ActionServerValidationError(f"{r.status_code} - {r.text}")
@@ -255,7 +255,7 @@ def upload_file(url: str, pkg_path: Path) -> None:
     with open(pkg_path, "rb") as f:
         r = sema4ai_http.put(url, fields=f)
 
-        if r.ok:
+        if r.ok():
             log.debug("File uploaded successfully")
         else:
             raise ActionServerValidationError(
@@ -300,7 +300,7 @@ def request_package_status(
     except ConnectionError as e:
         raise ActionServerValidationError(f"Failed to call Controm Room API: {e}")
 
-    if r.ok:
+    if r.ok():
         log.debug("Action package publish status successfully received")
     else:
         raise ActionServerValidationError(f"{r.status_code} - {r.text}")
@@ -345,7 +345,7 @@ def request_organizations(url: str, access_credentials: str) -> OrganizationsRes
     except ConnectionError as e:
         raise ActionServerValidationError(f"Failed to call Controm Room API: {e}")
 
-    if r.ok:
+    if r.ok():
         log.debug("Organizations list successfully received")
     else:
         raise ActionServerValidationError(f"{r.status_code} - {r.text}")
@@ -400,7 +400,7 @@ def mark_upload_completed(
     except ConnectionError as e:
         raise ActionServerValidationError(f"Failed to call Controm Room API: {e}")
 
-    if r.ok:
+    if r.ok():
         log.debug("Package push marked as completed")
     else:
         raise ActionServerValidationError(f"{r.status_code} - {r.text}")
@@ -446,7 +446,7 @@ def request_package_changelog_update(
     except ConnectionError as e:
         raise ActionServerValidationError(f"Failed to call Controm Room API: {e}")
 
-    if r.ok:
+    if r.ok():
         log.debug("Package changelog updated successfully")
     else:
         raise ActionServerValidationError(f"{r.status_code} - {r.text}")

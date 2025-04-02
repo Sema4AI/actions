@@ -73,7 +73,7 @@ def _download_and_unzip_templates(action_templates_dir: Path) -> None:
 
     templates_response = sema4ai_http.get(TEMPLATES_PACKAGE_URL)
 
-    with zipfile.ZipFile(io.BytesIO(templates_response.content)) as zip_ref:
+    with zipfile.ZipFile(io.BytesIO(templates_response.data)) as zip_ref:
         zip_ref.extractall(action_templates_dir)
 
 
