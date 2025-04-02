@@ -10,7 +10,6 @@ from string import Template
 from typing import List, Literal, Optional, Tuple
 from urllib.parse import ParseResult, urlparse, urlsplit, urlunsplit
 
-import requests
 from pydantic import BaseModel, ConfigDict, ValidationError
 from urllib3.exceptions import ConnectionError
 
