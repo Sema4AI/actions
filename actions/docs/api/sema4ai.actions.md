@@ -34,7 +34,6 @@ Run only actions with a given name:
 
 # Variables
 
-- **Row**
 - **RowValue**
 
 # Functions
@@ -461,6 +460,14 @@ Returns the set of fields that have been explicitly set on this model instance.
 
 **Returns:**
 A set of strings representing the fields that have been set, i.e. that were not filled from defaults.
+
+______________________________________________________________________
+
+# Class `list`
+
+Built-in mutable sequence.
+
+If no argument is given, the constructor creates a new empty list. The argument must be an iterable if specified.
 
 ______________________________________________________________________
 
