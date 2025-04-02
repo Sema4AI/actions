@@ -12,7 +12,7 @@ def my_action():
     ...
 ```
 
-And then go to a parent folder containing the action and serve them by 
+And then go to a parent folder containing the action and serve them by
 running `action-server start`.
 
 Note that it's also possible to programmatically run actions (without the Action
@@ -42,20 +42,18 @@ from ._response import ActionError, Response
 from ._secret import OAuth2Secret, Secret
 from ._table import Row, RowValue, Table
 
-__version__ = "1.3.6"
+__version__ = "1.3.7"
 version_info = [int(x) for x in __version__.split(".")]
 
 
 @overload
-def action(func: Callable) -> Callable:
-    ...
+def action(func: Callable) -> Callable: ...
 
 
 @overload
 def action(
     *, is_consequential: Optional[bool] = None, display_name: Optional[str] = None
-) -> Callable:
-    ...
+) -> Callable: ...
 
 
 def action(*args, **kwargs):

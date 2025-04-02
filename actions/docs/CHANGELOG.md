@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 1.3.7 - 2025-04-02
+
+- Update to latest `sema4ai-http-helper` version.
+
 ## 1.3.6 - 2025-03-12
 
 - Pass filename in multipart form data when uploading file.
