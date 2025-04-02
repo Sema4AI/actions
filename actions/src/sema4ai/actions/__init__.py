@@ -47,13 +47,15 @@ version_info = [int(x) for x in __version__.split(".")]
 
 
 @overload
-def action(func: Callable) -> Callable: ...
+def action(func: Callable) -> Callable:
+    ...
 
 
 @overload
 def action(
     *, is_consequential: Optional[bool] = None, display_name: Optional[str] = None
-) -> Callable: ...
+) -> Callable:
+    ...
 
 
 def action(*args, **kwargs):
