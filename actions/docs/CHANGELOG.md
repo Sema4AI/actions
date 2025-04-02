@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 1.3.8 - 2025-04-02
+
+- Update `sema4ai-http-helper` to 2.0.1 version.
+
 ## 1.3.7 - 2025-04-02
 
 - Update to latest `sema4ai-http-helper` version.
