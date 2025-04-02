@@ -13,7 +13,7 @@ python = "^3.11"
 psutil = ">=5.0,<7.0"
 sema4ai-http-helper = "^2.0.0"
 pyyaml = "^6.0"
-msgspec = "^0.18"
+msgspec = ">=0.18"
 
 [tool.poetry.group.dev.dependencies]
 sema4ai-devutils = { path = "../devutils/", develop = true }
