@@ -18,7 +18,7 @@ if typing.TYPE_CHECKING:
 
 _TYPE_BODY = typing.Union[bytes, typing.IO[typing.Any], typing.Iterable[bytes], str]
 
-__version__ = "2.0.0"
+__version__ = "2.0.1"
 
 
 class _SSLContextFactory:
@@ -158,6 +158,9 @@ class ResponseWrapper:
     def __init__(self, response: urllib3.BaseHTTPResponse) -> None:
         self.response = response
 
+    def __getattr__(self, item):
+        return getattr(self.response, item)
+
     @property
     def status(self) -> int:
         return self.response.status
@@ -173,25 +176,6 @@ class ResponseWrapper:
         if "charset=" in content_type:
             charset = content_type.split("charset=")[-1].strip()
         return self.response.data.decode(charset, errors="replace")
-
-    @property
-    def data(self) -> bytes:
-        return self.response.data
-
-    def read(self, amt=None, decode_content=None, cache_content=False) -> bytes:
-        return self.response.read(amt, decode_content, cache_content)
-
-    def json(self) -> dict:
-        return self.response.json()
-
-    def release_conn(self) -> None:
-        self.response.release_conn()
-
-    def getheaders(self) -> urllib3.response.HTTPHeaderDict:
-        return self.response.getheaders()
-
-    def close(self) -> None:
-        self.response.close()
 
     def raise_for_status(self) -> None:
         if self.response.status >= 400:
