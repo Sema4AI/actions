@@ -10,12 +10,7 @@ def test_serve_https(action_server_process: ActionServerProcess):
     from action_server_tests.fixtures import get_in_resources
 
     pack = get_in_resources("no_conda", "greeter")
-    import os
 
-    os.environ["SSL_CERT_FILE"] = str(
-        get_user_sema4_path() / "action-server-public-certfile.pem"
-    )
-    os.environ["PYTHONTRUSTSTORE"] = "ssl"
     action_server_process.start(
         cwd=pack,
         actions_sync=True,
