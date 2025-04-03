@@ -110,11 +110,7 @@ def test_run_id_in_response_header(
 
     artifacts_response = client.get_json(
         f"api/runs/{run_id}/artifacts/text-content",
-        params={
-            "artifact_names": [
-                "log.html",
-            ]
-        },
+        params={"artifact_names": "log.html"},
     )
     log_html_contents = artifacts_response["log.html"]
     log_pretty_printed = pretty_format_logs_from_log_html_contents(log_html_contents)
@@ -378,7 +374,7 @@ from sema4ai.actions import action
 @action
 def calculator_sum(v1: str, v2: str) -> str:
     return v1 + v2
-    
+
 @action
 def another_action(a1: str, a2: str) -> str:
     return a1 + a2
@@ -508,12 +504,10 @@ def test_full_run(
             # Multiple text files
             found = client.get_json(
                 f"api/runs/{run.id}/artifacts/text-content",
-                params={
-                    "artifact_names": [
-                        "__action_server_output.txt",
-                        "output.robolog",
-                    ]
-                },
+                params=[
+                    ("artifact_names", "__action_server_output.txt"),
+                    ("artifact_names", "output.robolog"),
+                ],
             )
             assert len(found) == 2
             assert (
@@ -532,11 +526,7 @@ def test_full_run(
             # Just a single binary artifact
             found = client.get_str(
                 f"api/runs/{run.id}/artifacts/binary-content",
-                params={
-                    "artifact_name": [
-                        "__action_server_output.txt",
-                    ]
-                },
+                params={"artifact_name": "__action_server_output.txt"},
             )
 
             assert "Collecting action greet from: greeter_action.py" in found
@@ -544,11 +534,7 @@ def test_full_run(
             # Check that the contents of the log.html have what we expect.
             log_html_contents = client.get_str(
                 f"api/runs/{run.id}/artifacts/binary-content",
-                params={
-                    "artifact_name": [
-                        "log.html",
-                    ]
-                },
+                params={"artifact_name": "log.html"},
             )
             contents = pretty_format_logs_from_log_html_contents(log_html_contents)
             assert "EA: str: name: 'Foo'" in contents
@@ -590,11 +576,7 @@ def test_full_run_with_env_build(
     # Check that the contents of the log.html have what we expect.
     log_html_contents = client.get_str(
         f"api/runs/{run_id}/artifacts/binary-content",
-        params={
-            "artifact_name": [
-                "log.html",
-            ]
-        },
+        params={"artifact_name": "log.html"},
     )
     contents = pretty_format_logs_from_log_html_contents(log_html_contents)
     assert "EA: str: name: 'Foo'" in contents

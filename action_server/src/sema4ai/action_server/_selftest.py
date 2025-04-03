@@ -1,5 +1,5 @@
 """
-This module contains utilities for testing and to do a 'selftest' of the 
+This module contains utilities for testing and to do a 'selftest' of the
 executable even in release mode.
 """
 
@@ -265,30 +265,27 @@ class ActionServerClient:
         """
         Provides the default kwargs that should be used for a requests call.
         """
-        from sema4ai.action_server._settings import get_user_sema4_path
-
         kwargs: dict = dict(timeout=self._get_default_timeout())
-        if self._use_https:
-            kwargs["verify"] = str(
-                get_user_sema4_path() / "action-server-public-certfile.pem"
-            )
 
         return kwargs
 
     def get_str(
         self,
         url,
-        params: Optional[dict] = None,
+        params: Optional[dict | list[tuple]] = None,
         headers: Optional[dict] = None,
         cookies: Optional[dict] = None,
     ) -> str:
-        import requests
+        import sema4ai_http
 
-        result = requests.get(
+        headers = headers or {}
+        if cookies:
+            headers["Cookie"] = "; ".join(f"{k}={v}" for k, v in cookies.items())
+
+        result = sema4ai_http.get(
             self.build_full_url(url),
-            params=(params or {}),
+            fields=params,
             headers=headers,
-            cookies=cookies,
             **self.requests_kwargs(),
         )
         result.raise_for_status()
@@ -305,7 +302,7 @@ class ActionServerClient:
     def get_json(
         self,
         url,
-        params: Optional[dict] = None,
+        params: Optional[dict | list[tuple]] = None,
         headers: Optional[dict] = None,
         cookies: Optional[dict] = None,
     ):
@@ -335,14 +332,17 @@ class ActionServerClient:
         cookies: Optional[dict] = None,
         params: Optional[dict] = None,
     ):
-        import requests
+        import sema4ai_http
 
-        result = requests.post(
+        headers = headers or {}
+        if cookies:
+            headers["Cookie"] = "; ".join(f"{k}={v}" for k, v in cookies.items())
+
+        result = sema4ai_http.post(
             self.build_full_url(url),
             headers=headers,
             json=data,
-            cookies=cookies,
-            params=params,
+            fields=params,
             **self.requests_kwargs(),
         )
         result.raise_for_status()
@@ -356,23 +356,26 @@ class ActionServerClient:
         cookies: Optional[dict] = None,
         params: Optional[dict] = None,
     ):
-        import requests
+        import sema4ai_http
 
-        result = requests.get(
+        headers = headers or {}
+        if cookies:
+            headers["Cookie"] = "; ".join(f"{k}={v}" for k, v in cookies.items())
+
+        result = sema4ai_http.get(
             self.build_full_url(url),
             headers=headers,
             json=data,
-            cookies=cookies,
-            params=params,
+            fields=params,
             **self.requests_kwargs(),
         )
         result.raise_for_status()
         return result
 
     def post_error(self, url, status_code, data=None, headers=None):
-        import requests
+        import sema4ai_http
 
-        result = requests.post(
+        result = sema4ai_http.post(
             self.build_full_url(url),
             json=data or {},
             headers=headers or {},
@@ -389,9 +392,9 @@ class ActionServerClient:
         return result
 
     def get_error(self, url, status_code):
-        import requests
+        import sema4ai_http
 
-        result = requests.get(
+        result = sema4ai_http.get(
             self.build_full_url(url),
             **self.requests_kwargs(),
         )

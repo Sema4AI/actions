@@ -672,12 +672,9 @@ def _main_retcode(
         return 0
 
     from sema4ai.action_server._rcc import initialize_rcc
-    from sema4ai.action_server._session import initialize_session
 
     try:
         with initialize_rcc(download_rcc(), None) as rcc:
-            initialize_session(rcc)
-
             if command == "package":
                 from sema4ai.action_server.package._package_build_cli import (
                     handle_package_command,

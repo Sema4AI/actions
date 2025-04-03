@@ -8,7 +8,7 @@ import sema4ai.action_server._new_project
 
 
 @mock.patch(
-    "sema4ai.action_server._session.session.get",
+    "sema4ai_http.get",
     side_effect=requests.exceptions.HTTPError,
 )
 @mock.patch(
@@ -44,7 +44,7 @@ def test_create_new_project_download_metadata_fail(
 
 
 @mock.patch(
-    "sema4ai.action_server._session.session.get",
+    "sema4ai_http.get",
     side_effect=requests.exceptions.HTTPError,
 )
 @mock.patch(
