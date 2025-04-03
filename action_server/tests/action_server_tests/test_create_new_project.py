@@ -3,6 +3,7 @@ import shutil
 from unittest import mock
 
 import requests
+
 import sema4ai.action_server._new_project
 
 
@@ -65,9 +66,9 @@ def test_create_new_project_download_metadata_fail_with_cached_templates(
     _,
     tmpdir,
 ) -> None:
-    from sema4ai.action_server._new_project import handle_new_project
-
     from action_server_tests.fixtures import get_in_resources
+
+    from sema4ai.action_server._new_project import handle_new_project
 
     templates_path = tmpdir / "action-templates"
     project_path = tmpdir / "my_project"

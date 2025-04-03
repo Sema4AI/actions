@@ -1,8 +1,8 @@
 import json
 
 import pytest
-
 from sema4ai.action_server._selftest import ActionServerClient, ActionServerProcess
+from sema4ai.action_server._settings import get_user_sema4_path
 
 
 @pytest.mark.integration_test
@@ -10,6 +10,11 @@ def test_serve_https(action_server_process: ActionServerProcess):
     from action_server_tests.fixtures import get_in_resources
 
     pack = get_in_resources("no_conda", "greeter")
+    import os
+
+    os.environ["SSL_CERT_FILE"] = str(
+        get_user_sema4_path() / "action-server-public-certfile.pem"
+    )
     action_server_process.start(
         cwd=pack,
         actions_sync=True,

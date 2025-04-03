@@ -11,8 +11,9 @@ from typing import List, Literal, Optional, Tuple
 from urllib.parse import ParseResult, urlparse, urlsplit, urlunsplit
 
 from pydantic import BaseModel, ConfigDict, ValidationError
-from sema4ai.action_server._errors_action_server import ActionServerValidationError
 from urllib3.exceptions import ConnectionError
+
+from sema4ai.action_server._errors_action_server import ActionServerValidationError
 
 log = getLogger(__name__)
 
