@@ -11,9 +11,8 @@ from typing import List, Literal, Optional, Tuple
 from urllib.parse import ParseResult, urlparse, urlsplit, urlunsplit
 
 from pydantic import BaseModel, ConfigDict, ValidationError
-from urllib3.exceptions import ConnectionError
-
 from sema4ai.action_server._errors_action_server import ActionServerValidationError
+from urllib3.exceptions import ConnectionError
 
 log = getLogger(__name__)
 
@@ -180,7 +179,7 @@ def create_package(
     except ConnectionError as e:
         raise ActionServerValidationError(f"Failed to call Controm Room API: {e}")
 
-    if r.ok()():
+    if r.ok():
         log.debug("Action package entity created successfully")
     else:
         raise ActionServerValidationError(f"{r.status_code} - {r.text}")

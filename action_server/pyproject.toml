@@ -19,7 +19,7 @@ action-server = "sema4ai.action_server.cli:main"
 
 
 [tool.poetry.dependencies]
-aiohttp = "^3.11.14"
+aiohttp = "^3.11.16"
 fastapi-slim = "^0.115.11"
 jsonschema = "^4.23.0"
 # This one needs a `_fix_jsonschema_specifications` hack
@@ -31,7 +31,7 @@ pydantic = "^2.9.2"
 pyyaml = "^6"
 python = ">=3.12,<3.14"
 requests = "^2"
-sema4ai-actions = "^1.3.7"
+sema4ai-actions = "^1.3.8"
 termcolor = "^2.4.0"
 uvicorn = "^0.34.0"
 websockets = "^13.1"

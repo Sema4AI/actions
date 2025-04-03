@@ -3,12 +3,11 @@ import shutil
 from unittest import mock
 
 import requests
-
 import sema4ai.action_server._new_project
 
 
 @mock.patch(
-    "sema4ai.action_server._session.session.get",
+    "sema4ai_http.get",
     side_effect=requests.exceptions.HTTPError,
 )
 @mock.patch(
@@ -44,7 +43,7 @@ def test_create_new_project_download_metadata_fail(
 
 
 @mock.patch(
-    "sema4ai.action_server._session.session.get",
+    "sema4ai_http.get",
     side_effect=requests.exceptions.HTTPError,
 )
 @mock.patch(
@@ -66,9 +65,9 @@ def test_create_new_project_download_metadata_fail_with_cached_templates(
     _,
     tmpdir,
 ) -> None:
-    from action_server_tests.fixtures import get_in_resources
-
     from sema4ai.action_server._new_project import handle_new_project
+
+    from action_server_tests.fixtures import get_in_resources
 
     templates_path = tmpdir / "action-templates"
     project_path = tmpdir / "my_project"

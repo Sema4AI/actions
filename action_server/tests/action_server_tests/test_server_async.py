@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import pytest
-
 from sema4ai.action_server._selftest import ActionServerClient, ActionServerProcess
 
 
@@ -13,7 +12,6 @@ def test_server_async_api_requests_while_waiting_for_action_to_complete(
     Test that the server can handle requests while waiting for an action to complete.
     """
     from devutils.fixtures import wait_for_non_error_condition
-
     from sema4ai.action_server.vendored_deps.url_callback_server import (
         start_server_in_thread,
     )
@@ -101,11 +99,11 @@ def test_server_async_api(
 
     -- at any point the server could poll for the request or cancel the action given the run id.
     """
-    from action_server_tests.fixtures import get_in_resources
-
     from sema4ai.action_server.vendored_deps.url_callback_server import (
         start_server_in_thread,
     )
+
+    from action_server_tests.fixtures import get_in_resources
 
     fut_uri, fut_address = start_server_in_thread(port=0)
 
