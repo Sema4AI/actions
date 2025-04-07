@@ -1,5 +1,3 @@
-import json
-
 import pytest
 import requests
 from sema4ai.action_server._selftest import ActionServerClient, ActionServerProcess
@@ -23,13 +21,13 @@ def test_serve_https(action_server_process: ActionServerProcess):
     client = ActionServerClient(action_server_process, use_https=True)
     requests.get(
         client.build_full_url("openapi.json"),
-        verify=get_user_sema4_path() / "action-server-public-certfile.pem",
+        verify=str(get_user_sema4_path() / "action-server-public-certfile.pem"),
     ).json()  # check that it loads the json
 
     found = requests.post(
         client.build_full_url("api/actions/greeter/greet/run"),
         json={"name": "Foo"},
         headers={"Authorization": "Bearer Foo"},
-        verify=get_user_sema4_path() / "action-server-public-certfile.pem",
+        verify=str(get_user_sema4_path() / "action-server-public-certfile.pem"),
     ).text
     assert found == '"Hello Mr. Foo."', f"{found} != '\"Hello Mr. Foo.\"'"
