@@ -28,3 +28,4 @@ packaging:
     - ./.DS_store/**
     - ./**/*.pyc
     - ./**/*.zip
+    - ./**/.env
