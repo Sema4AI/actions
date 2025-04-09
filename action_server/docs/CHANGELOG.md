@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-## 2.8.4 - 2025-04-09
+## 2.9.0 - 2025-04-09
 
 - Replaced `requests` with `sema4ai-http-helper` for HTTP operations
 - Updated all dependencies to their latest versions
