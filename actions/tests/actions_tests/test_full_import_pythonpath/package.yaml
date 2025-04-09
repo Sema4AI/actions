@@ -5,15 +5,14 @@ description: Action package description
 
 dependencies:
   conda-forge:
-  - python=3.11
-  - uv=0.1.38
+    - python=3.11
+    - uv=0.6.11
   pypi:
-  - sema4ai-actions=0.9.0
-  - pydantic=2.7.1
-
+    - sema4ai-actions=1.3.8
+    - pydantic=2.7.1
 
 packaging:
   exclude:
-    - "*.pyc"  # Excludes .pyc files anywhere
-    - "./devdata/**"  # Excludes the `devdata` directory in the current dir
-    - "**/secret/**"  # Excludes any `secret` folder anywhere
+    - "*.pyc" # Excludes .pyc files anywhere
+    - "./devdata/**" # Excludes the `devdata` directory in the current dir
+    - "**/secret/**" # Excludes any `secret` folder anywhere

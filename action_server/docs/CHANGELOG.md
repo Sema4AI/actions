@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 2.9.0 - 2025-04-09
+
+- Replaced `requests` with `sema4ai-http-helper` for HTTP operations
+- Updated all dependencies to their latest versions
+
 ## 2.8.3 - 2025-03-28
 
 - Use uv to setup python environment (to get around issue where the python version was built with an old version of sqlite in ubuntu 20.04).

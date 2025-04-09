@@ -7,7 +7,7 @@
 [![GitHub issues](https://img.shields.io/github/issues/sema4ai/actions?color=%232080C0)](https://github.com/sema4ai/actions/issues)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-> **NOTE:**  
+> **NOTE:**
 > This project started as Robocorp Action Server, and is currently being migrated under Sema4.ai organization. You will still likely find links to Robocorp resources. It's all the same company!
 
 # Build Semantic Actions that connect AI Agents with the real-world - all in 🐍 Python.
@@ -68,7 +68,7 @@ sudo mv action-server /usr/local/bin/
 <details>
 <summary><b>Robocorp Code extension for VS Code</b></summary>
 
-> **NOTE:**  
+> **NOTE:**
 > Robocorp VS Code extension is in the process to be renamed to Sema4.ai extension.
 
 After installing [Robocorp Code extension from the VS Code Markeplace](https://marketplace.visualstudio.com/items?itemName=robocorp.robocorp-code), open the Command Palette (`Command-Shift-P` or `Ctrl-Shift-P`) and select `Robocorp: Create Action Package`. This will bootstrap a new project. You can then run/debug indvidual Actions from the Extension's sidebar, or start the Action Server.
@@ -113,10 +113,10 @@ documentation: https://github.com/...
 
 dependencies:
   conda-forge:
-    - python=3.10.12
-    - uv=0.1.37
+    - python=3.11.11
+    - uv=0.6.11
   pypi:
-    - sema4ai-actions=0.3.1
+    - sema4ai-actions=1.3.8
     - pytz=2024.1
 ```
 
@@ -179,14 +179,14 @@ Uvicorn running on http://localhost:8080 (Press CTRL+C to quit)
 
 Adding the Action Server-hosted AI Action to your custom GPT is super simple: basically just navigate to “Actions” section of the GPT configuration, add the link to import the actions, and **Add Authentication** with **Authentication method** set to _“API key”_ and **Auth Type** to _“Bearer”_.
 
-> **TIP:**  
+> **TIP:**
 > Use the `@action(is_consequential=False)` flag to avoid the user needing to accept the action execution separately each time on your GPT.
 
 <div id="langchain"></div>
 
 ## Add Action Server as a Toolkit to [🦜️🔗 LangChain](https://github.com/robocorp/langchain)
 
-> **NOTE:**  
+> **NOTE:**
 > This section is still under Robocorp, but pending rename to Sema4.ai soon.
 
 Sema4.ai Action Server has everything needed to connect it to your Langchain AI app project. The easiest way is to start with the template provided in the Langchain project. Here’s how to do it:
