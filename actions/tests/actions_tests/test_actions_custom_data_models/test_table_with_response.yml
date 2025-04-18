@@ -5,9 +5,19 @@ result:
     columns:
     - a
     - b
+    - c
+    - d
     rows:
     - - '1'
       - '2'
+      - - 1
+        - 2
+        - 3
+      - key: value
     - - '3'
       - '4'
+      - - 4
+        - 5
+        - 6
+      - key: another_value
 status: PASS

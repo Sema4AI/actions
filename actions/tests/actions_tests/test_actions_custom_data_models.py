@@ -26,7 +26,14 @@ def test_table_result(datadir, data_regression, tmpdir):
 
     from sema4ai.actions import Table
 
-    table = Table(columns=["a", "b"], rows=[[1, "2"], [3, "4"]])
+    # Updated table to include list and dict datatypes in columns
+    table = Table(
+        columns=["a", "b", "c", "d"],
+        rows=[
+            [1, "2", [1, 2, 3], {"key": "value"}],
+            [3, "4", [4, 5, 6], {"key": "another_value"}],
+        ],
+    )
     use_input = table.model_dump()
 
     output_file = tmpdir.join("output.json")
@@ -49,6 +56,7 @@ def test_table_result(datadir, data_regression, tmpdir):
     assert output_file.exists()
     with open(output_file, "r") as f:
         data = json.load(f)
+
     data_regression.check(data)
 
 
@@ -73,6 +81,7 @@ def test_table_with_response(datadir, data_regression, tmpdir):
     assert output_file.exists()
     with open(output_file, "r") as f:
         data = json.load(f)
+
     data_regression.check(data)
 
 

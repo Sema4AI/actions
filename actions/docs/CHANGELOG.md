@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 1.3.9 - 2025-04-18
+
+- Added support for list and dict datatypes for table columns
+
 ## 1.3.8 - 2025-04-02
 
 - Update `sema4ai-http-helper` to 2.0.1 version.
