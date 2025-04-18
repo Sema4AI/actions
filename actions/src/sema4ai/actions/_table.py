@@ -2,7 +2,7 @@ from typing import Iterator
 
 import pydantic
 
-RowValue = str | int | float | bool | None
+RowValue = str | int | float | bool | list | dict | None
 Row = list[RowValue]
 
 
