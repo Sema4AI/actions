@@ -25,11 +25,6 @@
             "id": "data-access-native",
             "name": "Data Access/Native Query",
             "desc": "Give agents access to a data source using native (named) queries."
-        },
-        {
-            "id": "data-access-predict",
-            "name": "Data Access/Predict",
-            "desc": "Train predictive models and expose predict actions to agents."
         }
     ]
 }
