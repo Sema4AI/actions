@@ -2,14 +2,15 @@ import os
 import sys
 
 import pytest
+
 from action_server_tests.fixtures import ActionServerClient, ActionServerProcess
 
 
 @pytest.mark.integration_test
 def test_version() -> None:
-    from action_server_tests.fixtures import sema4ai_action_server_run
-
     from sema4ai.action_server import __version__
+
+    from action_server_tests.fixtures import sema4ai_action_server_run
 
     result = sema4ai_action_server_run(["version"], returncode=0)
     assert result.stdout.strip() == __version__
@@ -59,7 +60,6 @@ def test_new_list_templates(tmpdir) -> None:
         "basic",
         "minimal",
         "data-access-query",
-        "data-access-predict",
         "data-access-native",
     }
 
@@ -93,9 +93,9 @@ def test_help(args, str_regression, datadir):
 
 @pytest.mark.integration_test
 def test_migrate(database_v0):
-    from action_server_tests.fixtures import sema4ai_action_server_run
-
     from sema4ai.action_server.migrations import MigrationStatus, db_migration_status
+
+    from action_server_tests.fixtures import sema4ai_action_server_run
 
     db_path = database_v0
     assert db_migration_status(db_path) == MigrationStatus.NEEDS_MIGRATION
