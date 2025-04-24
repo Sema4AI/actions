@@ -63,6 +63,9 @@ action_table_in_out:
                 - type: integer
                 - type: number
                 - type: boolean
+                - items: {}
+                  type: array
+                - type: object
                 - type: 'null'
               type: array
             title: Rows
@@ -96,6 +99,9 @@ action_table_in_out:
             - type: integer
             - type: number
             - type: boolean
+            - items: {}
+              type: array
+            - type: object
             - type: 'null'
           type: array
         title: Rows
@@ -140,6 +146,9 @@ action_table_response:
                   - type: integer
                   - type: number
                   - type: boolean
+                  - items: {}
+                    type: array
+                  - type: object
                   - type: 'null'
                 type: array
               title: Rows
@@ -179,6 +188,9 @@ action_with_table_result:
             - type: integer
             - type: number
             - type: boolean
+            - items: {}
+              type: array
+            - type: object
             - type: 'null'
           type: array
         title: Rows
