@@ -59,7 +59,6 @@ def test_new_list_templates(tmpdir) -> None:
         "basic",
         "minimal",
         "data-access-query",
-        "data-access-predict",
         "data-access-native",
     }
 

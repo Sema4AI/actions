@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 1.3.9 - 2025-04-24
+
+- Allow future 3.x versions of `robocorp-log`
+
 ## 1.3.8 - 2025-04-02
 
 - Update `sema4ai-http-helper` to 2.0.1 version.
