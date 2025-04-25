@@ -11,10 +11,14 @@ from typing import NamedTuple
 
 import urllib3
 
+from sema4ai_http.types import EmptyDictType, NetworkConfigType
+
 _DEFAULT_LOGGER = logging.getLogger(__name__)
 
 if typing.TYPE_CHECKING:
     import ssl
+
+    from sema4ai_http.types import ProfileType
 
 _TYPE_BODY = typing.Union[bytes, typing.IO[typing.Any], typing.Iterable[bytes], str]
 
@@ -59,11 +63,11 @@ class _NetworkConfig:
         self.connection_pool = self._build_connection_pool()
 
     @cached_property
-    def profile_config(self) -> dict:
+    def profile_config(self) -> ProfileType | EmptyDictType:
         config_file = self._get_network_settings_path()
 
         if not config_file.exists():
-            return {}
+            return EmptyDictType()
 
         import yaml
 
@@ -73,22 +77,22 @@ class _NetworkConfig:
             _DEFAULT_LOGGER.error(
                 f"Failed to read configuration file {config_file}: {e}"
             )
-            return {}
+            return EmptyDictType()
 
         try:
-            config = yaml.safe_load(config_content)
+            config = typing.cast(NetworkConfigType, yaml.safe_load(config_content))
         except yaml.YAMLError as e:
             _DEFAULT_LOGGER.error(f"Failed to parse YAML from {config_file}: {e}")
-            return {}
+            return EmptyDictType()
 
         if not isinstance(config, dict):
             _DEFAULT_LOGGER.error(
                 f"Invalid configuration format in {config_file}, expected a dictionary."
             )
-            return {}
+            return EmptyDictType()
 
         current_profile = config.get("current-profile", "")
-        profiles = config.get("profiles", [])
+        profiles = config.get("profiles", [])  # type: list[ProfileType]
 
         for profile in profiles:
             if not isinstance(profile, dict):
@@ -101,7 +105,7 @@ class _NetworkConfig:
                 return profile
 
         _DEFAULT_LOGGER.error(f"No matching profile found for '{current_profile}'.")
-        return {}
+        return EmptyDictType()
 
     @staticmethod
     def _get_network_settings_path() -> Path:
@@ -159,7 +163,7 @@ class ProxyConfig:
 
     @classmethod
     def from_network_config(cls, network_config: _NetworkConfig) -> "ProxyConfig":
-        def _parse_proxy_value(value: str) -> list[str]:
+        def _parse_proxy_value(value: str | None) -> list[str]:
             return [v.strip() for v in value.split(",")] if value else []
 
         if proxy_settings := network_config.profile_config.get("proxy-settings"):
@@ -187,7 +191,7 @@ class NetworkProfile:
         )
 
 
-def get_network_profile() -> NetworkProfile | None:
+def get_network_profile() -> NetworkProfile:
     return NetworkProfile.from_network_config(_NetworkConfig())
 
 
