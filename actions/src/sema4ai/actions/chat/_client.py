@@ -31,7 +31,7 @@ class _Client:
                 """The SEMA4AI_FILE_MANAGEMENT_URL environment variable is not set.
 It must be set either to the service URL (https://localhost:56781/server)
 or to a local file system path (file:///path/to/directory) where
-files will be stored."""
+files will be stored to or accessed from."""
             )
 
         parsed_url = urllib.parse.urlparse(self._url)

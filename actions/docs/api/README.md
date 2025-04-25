@@ -38,6 +38,7 @@
 - [`chat.attach_file_content`](./sema4ai.actions.chat.md#function-attach_file_content): Set the content of a file to be used in the current chat.
 - [`chat.attach_json`](./sema4ai.actions.chat.md#function-attach_json): Attach a file with JSON content to the current chat.
 - [`chat.attach_text`](./sema4ai.actions.chat.md#function-attach_text): Attach a file with text content to the current chat.
+- [`chat.get_file`](./sema4ai.actions.chat.md#function-get_file): Get the content of a file in the current action chat, saves it to a temporary file
 - [`chat.get_file_content`](./sema4ai.actions.chat.md#function-get_file_content): Get the content of a file in the current action chat.
 - [`chat.get_json`](./sema4ai.actions.chat.md#function-get_json): Get the JSON content of a file in the current action chat.
 - [`chat.get_text`](./sema4ai.actions.chat.md#function-get_text): Get the text content of a file in the current action chat.
