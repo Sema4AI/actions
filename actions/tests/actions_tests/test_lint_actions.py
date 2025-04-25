@@ -82,7 +82,7 @@ def test_lint_action_argument_untyped(data_regression):
 def my_action(param1) -> str:
     '''
     Some Action.
-    
+
     Args:
         param1: Some value.
     '''

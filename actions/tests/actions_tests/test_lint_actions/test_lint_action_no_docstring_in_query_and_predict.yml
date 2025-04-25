@@ -30,6 +30,16 @@
       line: 3
   severity: 1
   source: sema4ai.actions
+- message: The @predict decorator is deprecated. Use @query or @action instead.
+  range:
+    end:
+      character: 13
+      line: 7
+    start:
+      character: 4
+      line: 7
+  severity: 2
+  source: sema4ai.actions
 - message: '@predict without return annotation defined (`str` considered as the return
     type).'
   range:
