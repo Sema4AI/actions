@@ -2,17 +2,26 @@
 
 The `sema4ai.actions.chat` module provides functionality to attach and retrieve files during chat interactions.
 
-### Default File Storage Location
+### Why These APIs Are Needed
 
-By default, files are stored in a local directory at:
-```
-file://<path-to-action>/devdata/chat-files
-```
+These APIs are essential because when running in the cloud (Workroom), actions don't have access to the local filesystem. They provide a consistent way to handle files across both local and cloud environments, ensuring files are properly isolated between different chat threads.
 
-This location can be overridden by setting the `SEMA4AI_FILE_MANAGEMENT_URL` environment variable to a different URL.
-This is useful for:
-- Development: Use a local directory
-- Production: Use a cloud storage service
+### File Storage Location
+
+The storage location for files depends on the environment and how the action is being run:
+
+1. **In VSCode with Sema4.ai Extension**:
+   When running actions in VSCode with the Sema4.ai Extension, files are stored in a local directory at:
+   ```
+   file://<path-to-action-package>/devdata/chat-files
+   ```
+   This is the default behavior specifically for the VSCode development environment.
+
+2. **In Production (Workroom)**:
+   When running in production through Workroom, files are automatically stored in cloud storage.
+
+3. **Custom Configuration**:
+   For other development environments or custom setups, you can override the storage location by setting the `SEMA4AI_FILE_MANAGEMENT_URL` environment variable.
 
 ### Available Functions
 
