@@ -382,7 +382,13 @@ def iter_lint_errors(
             for decorator in node.decorator_list:
                 kind = _get_kind(decorator)
                 if kind:
-                    # We found an @action/query/action. Do the needed checks.
+                    if kind == "predict":
+                        yield _make_error(
+                            node,
+                            "The @predict decorator is deprecated. Use @query or @action instead.",
+                            severity=DiagnosticSeverity.Warning,
+                            coldelta=4,
+                        )
 
                     # Check for docstring
                     docstring: str = ast_module.get_docstring(node) or ""

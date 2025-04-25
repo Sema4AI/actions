@@ -2,9 +2,13 @@
 
 ## Unreleased
 
+## 1.3.10 - 2025-04-25
+
+- Added a warning message when using the `@predict` decorator to inform users that it is deprecated.
+
 ## 1.3.9 - 2025-04-24
 
-- Allow future 3.x versions of `robocorp-log`
+- Allow future 3.x versions of `robocorp-log`.
 
 ## 1.3.8 - 2025-04-02
 
