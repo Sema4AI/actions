@@ -1,7 +1,5 @@
 from typing import List, Literal, TypedDict
 
-from typing_extensions import NotRequired
-
 ProxyAuthenticationType = TypedDict(
     "ProxyAuthenticationType",
     {
@@ -23,6 +21,7 @@ ProxySettingsType = TypedDict(
         "https-proxy": str,
         "http-proxy": str,
     },
+    total=False,
 )
 
 
@@ -32,8 +31,9 @@ ProfileType = TypedDict(
         "name": str,
         "description": str,
         "disable-ssl": bool,
-        "proxy-settings": NotRequired[ProxySettingsType],
+        "proxy-settings": ProxySettingsType,
     },
+    total=False,
 )
 
 
@@ -44,7 +44,5 @@ NetworkConfigType = TypedDict(
         "current-profile": str,
         "profiles": List[ProfileType],
     },
+    total=False,
 )
-
-class EmptyDictType(TypedDict):
-    pass

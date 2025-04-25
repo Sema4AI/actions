@@ -7,11 +7,11 @@ from dataclasses import dataclass
 from enum import Enum, auto
 from functools import cached_property, lru_cache
 from pathlib import Path
-from typing import NamedTuple, Union
+from typing import NamedTuple
 
 import urllib3
 
-from sema4ai_http.types import EmptyDictType, NetworkConfigType
+from sema4ai_http.types import NetworkConfigType
 
 _DEFAULT_LOGGER = logging.getLogger(__name__)
 
@@ -63,11 +63,11 @@ class _NetworkConfig:
         self.connection_pool = self._build_connection_pool()
 
     @cached_property
-    def profile_config(self) -> "Union[ProfileType, EmptyDictType]":
+    def profile_config(self) -> ProfileType:
         config_file = self._get_network_settings_path()
 
         if not config_file.exists():
-            return EmptyDictType()
+            return {}
 
         import yaml
 
@@ -77,19 +77,19 @@ class _NetworkConfig:
             _DEFAULT_LOGGER.error(
                 f"Failed to read configuration file {config_file}: {e}"
             )
-            return EmptyDictType()
+            return {}
 
         try:
             config = typing.cast(NetworkConfigType, yaml.safe_load(config_content))
         except yaml.YAMLError as e:
             _DEFAULT_LOGGER.error(f"Failed to parse YAML from {config_file}: {e}")
-            return EmptyDictType()
+            return {}
 
         if not isinstance(config, dict):
             _DEFAULT_LOGGER.error(
                 f"Invalid configuration format in {config_file}, expected a dictionary."
             )
-            return EmptyDictType()
+            return {}
 
         current_profile = config.get("current-profile", "")
         profiles = config.get("profiles", [])  # type: list[ProfileType]
@@ -105,7 +105,7 @@ class _NetworkConfig:
                 return profile
 
         _DEFAULT_LOGGER.error(f"No matching profile found for '{current_profile}'.")
-        return EmptyDictType()
+        return {}
 
     @staticmethod
     def _get_network_settings_path() -> Path:
