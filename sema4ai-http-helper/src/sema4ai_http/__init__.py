@@ -11,14 +11,13 @@ from typing import NamedTuple
 
 import urllib3
 
-from sema4ai_http.types import NetworkConfigType
+from sema4ai_http.types import NetworkConfigType, ProfileType
 
 _DEFAULT_LOGGER = logging.getLogger(__name__)
 
 if typing.TYPE_CHECKING:
     import ssl
 
-    from sema4ai_http.types import ProfileType
 
 _TYPE_BODY = typing.Union[bytes, typing.IO[typing.Any], typing.Iterable[bytes], str]
 
@@ -26,7 +25,7 @@ __version__ = "2.0.1"
 
 
 class _SSLContextFactory:
-    def __init__(self, config: dict | None = None) -> None:
+    def __init__(self, config: ProfileType | None = None) -> None:
         self.config = config or {}
 
     def build_ssl_context(
@@ -128,15 +127,22 @@ class _NetworkConfig:
     # TODO: add support for no-proxy setting
     def _build_connection_pool(self) -> urllib3.PoolManager | urllib3.ProxyManager:
         ssl_context = self.get_ssl_context()
+        connection_pool = None
 
         if "proxy-settings" in self.profile_config:
             proxy_settings = self.profile_config["proxy-settings"]
-            self.connection_pool = urllib3.ProxyManager(
-                proxy_url=proxy_settings.get("https-proxy")
-                or proxy_settings.get("http-proxy"),
-                ssl_context=ssl_context,
+
+            proxy_url = proxy_settings.get("https-proxy") or proxy_settings.get(
+                "http-proxy"
             )
-        else:
+
+            if proxy_url:
+                self.connection_pool = urllib3.ProxyManager(
+                    proxy_url=proxy_url,
+                    ssl_context=ssl_context,
+                )
+
+        if connection_pool is None:
             self.connection_pool = urllib3.PoolManager(ssl_context=ssl_context)
 
         return self.connection_pool
@@ -150,7 +156,7 @@ def _get_connection_manager() -> urllib3.PoolManager | urllib3.ProxyManager:
 def build_ssl_context(
     protocol: int | None = None, *, enable_legacy_server_connect: bool | None = None
 ) -> "ssl.SSLContext":
-    return _SSLContextFactory({}).build_ssl_context(
+    return _SSLContextFactory().build_ssl_context(
         protocol, enable_legacy_server_connect
     )
 
@@ -167,9 +173,9 @@ class ProxyConfig:
             return [v.strip() for v in value.split(",")] if value else []
 
         if proxy_settings := network_config.profile_config.get("proxy-settings"):
-            http_proxy = _parse_proxy_value(proxy_settings.get("http-proxy"))
-            https_proxy = _parse_proxy_value(proxy_settings.get("https-proxy"))
-            no_proxy = _parse_proxy_value(proxy_settings.get("no_proxy"))
+            http_proxy = _parse_proxy_value(proxy_settings.get("http-proxy"))  # type: ignore
+            https_proxy = _parse_proxy_value(proxy_settings.get("https-proxy"))  # type: ignore
+            no_proxy = _parse_proxy_value(proxy_settings.get("no_proxy"))  # type: ignore
         else:
             http_proxy = []
             https_proxy = []
