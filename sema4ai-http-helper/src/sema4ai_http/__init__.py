@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from enum import Enum, auto
 from functools import cached_property, lru_cache
 from pathlib import Path
-from typing import NamedTuple
+from typing import NamedTuple, Union
 
 import urllib3
 
@@ -63,7 +63,7 @@ class _NetworkConfig:
         self.connection_pool = self._build_connection_pool()
 
     @cached_property
-    def profile_config(self) -> ProfileType | EmptyDictType:
+    def profile_config(self) -> "Union[ProfileType, EmptyDictType]":
         config_file = self._get_network_settings_path()
 
         if not config_file.exists():
