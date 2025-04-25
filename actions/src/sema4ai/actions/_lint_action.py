@@ -431,13 +431,15 @@ class LintResultTypedDict(TypedDict):
 @overload
 def format_lint_results(
     lint_result: LintResultTypedDict,
-) -> Optional[FormattedLintResult]: ...
+) -> Optional[FormattedLintResult]:
+    ...
 
 
 @overload
 def format_lint_results(
     lint_result: dict,
-) -> Optional[FormattedLintResult]: ...
+) -> Optional[FormattedLintResult]:
+    ...
 
 
 def format_lint_results(
