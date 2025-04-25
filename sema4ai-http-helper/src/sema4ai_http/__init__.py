@@ -63,7 +63,7 @@ class _NetworkConfig:
         self.connection_pool = self._build_connection_pool()
 
     @cached_property
-    def profile_config(self) -> ProfileType:
+    def profile_config(self) -> "ProfileType":
         config_file = self._get_network_settings_path()
 
         if not config_file.exists():
