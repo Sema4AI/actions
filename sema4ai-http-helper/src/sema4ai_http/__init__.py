@@ -5,27 +5,30 @@ import sys
 import typing
 from dataclasses import dataclass
 from enum import Enum, auto
-from functools import lru_cache
+from functools import cached_property, lru_cache
 from pathlib import Path
 from typing import NamedTuple
 
 import urllib3
+
+from sema4ai_http.types import NetworkConfigType, ProfileType
 
 _DEFAULT_LOGGER = logging.getLogger(__name__)
 
 if typing.TYPE_CHECKING:
     import ssl
 
+
 _TYPE_BODY = typing.Union[bytes, typing.IO[typing.Any], typing.Iterable[bytes], str]
 
-__version__ = "2.0.1"
+__version__ = "2.1.0"
 
 
 class _SSLContextFactory:
-    def __init__(self, config: dict | None = None) -> None:
+    def __init__(self, config: ProfileType | None = None) -> None:
         self.config = config or {}
 
-    def _build_ssl_context(
+    def build_ssl_context(
         self,
         protocol: int | None,
         enable_legacy_server_connect: bool | None = None,
@@ -58,20 +61,8 @@ class _NetworkConfig:
     def __init__(self) -> None:
         self.connection_pool = self._build_connection_pool()
 
-    @staticmethod
-    def _get_network_settings_path() -> Path:
-        if sys.platform == "win32":
-            localappdata = os.environ.get("LOCALAPPDATA")
-            if not localappdata:
-                raise RuntimeError("Error. LOCALAPPDATA not defined in environment!")
-            sema4_home = Path(localappdata) / "sema4ai"
-        else:
-            # Linux/Mac
-            sema4_home = Path("~/.sema4ai").expanduser()
-
-        return sema4_home / "network-settings.yaml"
-
-    def _get_current_config_profile(self) -> dict:
+    @cached_property
+    def profile_config(self) -> "ProfileType":
         config_file = self._get_network_settings_path()
 
         if not config_file.exists():
@@ -88,7 +79,7 @@ class _NetworkConfig:
             return {}
 
         try:
-            config = yaml.safe_load(config_content)
+            config = typing.cast(NetworkConfigType, yaml.safe_load(config_content))
         except yaml.YAMLError as e:
             _DEFAULT_LOGGER.error(f"Failed to parse YAML from {config_file}: {e}")
             return {}
@@ -100,7 +91,7 @@ class _NetworkConfig:
             return {}
 
         current_profile = config.get("current-profile", "")
-        profiles = config.get("profiles", [])
+        profiles = config.get("profiles", [])  # type: list[ProfileType]
 
         for profile in profiles:
             if not isinstance(profile, dict):
@@ -115,21 +106,43 @@ class _NetworkConfig:
         _DEFAULT_LOGGER.error(f"No matching profile found for '{current_profile}'.")
         return {}
 
+    @staticmethod
+    def _get_network_settings_path() -> Path:
+        if sys.platform == "win32":
+            localappdata = os.environ.get("LOCALAPPDATA")
+            if not localappdata:
+                raise RuntimeError("Error. LOCALAPPDATA not defined in environment!")
+            sema4_home = Path(localappdata) / "sema4ai"
+        else:
+            # Linux/Mac
+            sema4_home = Path("~/.sema4ai").expanduser()
+
+        return sema4_home / "network-settings.yaml"
+
+    def get_ssl_context(self) -> ssl.SSLContext:
+        return _SSLContextFactory(self.profile_config).build_ssl_context(
+            ssl.PROTOCOL_TLS_CLIENT
+        )
+
     # TODO: add support for no-proxy setting
     def _build_connection_pool(self) -> urllib3.PoolManager | urllib3.ProxyManager:
-        profile_config = self._get_current_config_profile()
+        ssl_context = self.get_ssl_context()
+        connection_pool = None
 
-        ssl_context_factory = _SSLContextFactory(profile_config)
-        ssl_context = ssl_context_factory._build_ssl_context(ssl.PROTOCOL_TLS_CLIENT)
+        if "proxy-settings" in self.profile_config:
+            proxy_settings = self.profile_config["proxy-settings"]
 
-        if "proxy-settings" in profile_config:
-            proxy_settings = profile_config["proxy-settings"]
-            self.connection_pool = urllib3.ProxyManager(
-                proxy_url=proxy_settings.get("https-proxy")
-                or proxy_settings.get("http-proxy"),
-                ssl_context=ssl_context,
+            proxy_url = proxy_settings.get("https-proxy") or proxy_settings.get(
+                "http-proxy"
             )
-        else:
+
+            if proxy_url:
+                self.connection_pool = urllib3.ProxyManager(
+                    proxy_url=proxy_url,
+                    ssl_context=ssl_context,
+                )
+
+        if connection_pool is None:
             self.connection_pool = urllib3.PoolManager(ssl_context=ssl_context)
 
         return self.connection_pool
@@ -143,9 +156,49 @@ def _get_connection_manager() -> urllib3.PoolManager | urllib3.ProxyManager:
 def build_ssl_context(
     protocol: int | None = None, *, enable_legacy_server_connect: bool | None = None
 ) -> "ssl.SSLContext":
-    return _SSLContextFactory({})._build_ssl_context(
+    return _SSLContextFactory().build_ssl_context(
         protocol, enable_legacy_server_connect
     )
+
+
+@dataclass(slots=True)
+class ProxyConfig:
+    http: list[str]
+    https: list[str]
+    no_proxy: list[str]
+
+    @classmethod
+    def from_network_config(cls, network_config: _NetworkConfig) -> "ProxyConfig":
+        def _parse_proxy_value(value: str | None) -> list[str]:
+            return [v.strip() for v in value.split(",")] if value else []
+
+        if proxy_settings := network_config.profile_config.get("proxy-settings"):
+            http_proxy = _parse_proxy_value(proxy_settings.get("http-proxy"))  # type: ignore
+            https_proxy = _parse_proxy_value(proxy_settings.get("https-proxy"))  # type: ignore
+            no_proxy = _parse_proxy_value(proxy_settings.get("no_proxy"))  # type: ignore
+        else:
+            http_proxy = []
+            https_proxy = []
+            no_proxy = []
+
+        return cls(http=http_proxy, https=https_proxy, no_proxy=no_proxy)
+
+
+@dataclass(slots=True)
+class NetworkProfile:
+    ssl_context: ssl.SSLContext | None
+    proxy_config: ProxyConfig
+
+    @classmethod
+    def from_network_config(cls, network_config: _NetworkConfig) -> "NetworkProfile":
+        return cls(
+            ssl_context=network_config.get_ssl_context(),
+            proxy_config=ProxyConfig.from_network_config(network_config),
+        )
+
+
+def get_network_profile() -> NetworkProfile:
+    return NetworkProfile.from_network_config(_NetworkConfig())
 
 
 class ResponseWrapper:

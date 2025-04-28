@@ -567,7 +567,7 @@ def build_common_tasks(
         """Update the changelog file with the new version and changes"""
 
         if not file.exists():  # usually happening with the meta one
-            print("No CHANGELOG file found, skipping update.")
+            print(f"No CHANGELOG file found, skipping update.\nExpected path: {file}")
             return
 
         with open(file, "r+") as stream:

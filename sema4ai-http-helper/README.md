@@ -23,12 +23,15 @@ We use [truststore](https://pypi.org/project/truststore/) -library to access the
 The key features of the library are:
 
 - SSL context creation that uses OS certificate store and provided optional SSL legacy renegotiation support.
-    - To use the SSL context with other libraries, please refer to the [user guide from truststore](https://truststore.readthedocs.io/en/latest/#user-guide)
+    - To use the SSL context with other libraries, please refer to the [user guide from truststore](https://truststore.readthedocs.io/en/latest/#user-guide)
+- Network profile retrieval for accessing SSL context and proxy configuration.
 - HTTPS request methods (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`) using `urllib3`.
 - Resumable file downloads with retry logic and error handling.
 - Support for making downloaded files executable.
 
-## Usage Example
+## Usage Examples
+
+### File Download Example
 
 ```python
 from pathlib import Path
@@ -104,7 +107,24 @@ A helper function to check if a partial download file exists for a given target 
 
 **Returns:** A boolean indicating if a partial file exists.
 
+#### 5. Get Network Profile
+
+`get_network_profile() -> NetworkProfile`\*\*
+
+Retrieves the current network profile configuration including SSL context and proxy settings from the system.
+
+**Returns:** A `NetworkProfile` object containing the SSL context and proxy configuration.
+
 ### Classes:
+
+#### Network Profile class
+
+`NetworkProfile`
+
+A dataclass that contains network configuration information:
+
+- `ssl_context`: The SSL context configured for the current environment.
+- `proxy_config`: The proxy configuration (HTTP, HTTPS, and no_proxy settings).
 
 #### File download result class
 
@@ -114,6 +134,35 @@ A `NamedTuple` that stores the results of a download operation. It contains:
 
 - `status`: The final status of the download (from the `DownloadStatus` enum).
 - `path`: The path to the downloaded file.
+
+## Using with 3'rd Party Libraries
+
+### httpx
+
+You can use the `get_network_profile()` method to set up proxy connections with httpx:
+
+```python
+from sema4ai_http import get_network_profile
+from itertools import chain
+import httpx
+
+# Get the network profile which contains SSL context and proxy configuration
+network_config = get_network_profile()
+
+# Set up mounts for proxy configuration
+mounts: dict[str, httpx.HTTPTransport | None] = {}
+
+for http_proxy in chain(
+    network_config.proxy_config.http, network_config.proxy_config.https
+):
+    mounts[http_proxy] = httpx.HTTPTransport(network_config.ssl_context)
+
+for no_proxy in network_config.proxy_config.no_proxy:
+    mounts[no_proxy] = None
+
+# Create httpx client with the configured mounts and SSL context
+client = httpx.Client(mounts=mounts, verify=network_config.ssl_context)
+```
 
 ### Dependencies
 
