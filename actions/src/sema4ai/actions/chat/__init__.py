@@ -262,6 +262,7 @@ def get_file(name: str) -> Path:
 
     Arguments:
         name: Name of the file to retrieve.
+
     Returns:
         Raw content of the file
 
@@ -367,4 +368,5 @@ __all__ = [
     "get_json",
     "attach_text",
     "get_text",
+    "get_file",
 ]

@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 1.3.11 - 2025-04-25
+
+- Expose `sema4ai.actions.chat.get_file` to the public interface.
+- Generate appropriate docs for `get_file` and guids for `chat` module.
+
 ## 1.3.10 - 2025-04-25
 
 - Added a warning message when using the `@predict` decorator to inform users that it is deprecated.
