@@ -21,7 +21,7 @@ if typing.TYPE_CHECKING:
 
 _TYPE_BODY = typing.Union[bytes, typing.IO[typing.Any], typing.Iterable[bytes], str]
 
-__version__ = "2.0.1"
+__version__ = "2.1.0"
 
 
 class _SSLContextFactory:

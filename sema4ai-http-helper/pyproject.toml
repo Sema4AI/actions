@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sema4ai-http-helper"
-version = "2.0.1"
+version = "2.1.0"
 description = "HTTP library that enables the use of OS certificate stores when working behind MITM firewalls"
 authors = [
 	"Kari H. <kari@sema4.ai>",
