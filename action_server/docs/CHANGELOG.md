@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 2.9.1 - 2025-05-02
+
+- Update `rcc` to `20.1.1`
+
 ## 2.9.0 - 2025-04-09
 
 - Replaced `requests` with `sema4ai-http-helper` for HTTP operations
