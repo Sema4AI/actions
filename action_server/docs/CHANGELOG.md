@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2.10.0 - 2025-05-05
+
 - No longer logging the full action input/output in the `log.debug` logs in the Action Server.
 - Added command: `action-server datadir clear-actions` to clear (disable) the actions from the datadir.
 - Updated Action Server frontend dependencies versions (to fix CVEs).
