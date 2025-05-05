@@ -429,7 +429,7 @@ func main() {
 		ExecutableName:    "action-server",
 		DownloadLatestURL: downloadLatestUrl,
 		VersionLatestURL:  VERSION_LATEST_URL,
-		DoUpdateCheck:     true,
+		DoUpdateCheck:     false,
 		ShowBrewMessage:   "brew update && brew install sema4ai/tools/action-server",
 	}
 

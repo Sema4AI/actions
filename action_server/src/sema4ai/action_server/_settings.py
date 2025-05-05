@@ -12,7 +12,7 @@ from termcolor import colored
 from sema4ai.action_server._protocols import ArgumentsNamespaceDevEnvTask
 from sema4ai.action_server.vendored_deps.termcolors import bold_red
 
-from ._protocols import ArgumentsNamespaceMigrateImportOrStart
+from ._protocols import ArgumentsNamespaceRequiringDatadir
 
 log = logging.getLogger(__name__)
 
@@ -160,7 +160,7 @@ class Settings:
 
     @classmethod
     def _create(
-        cls, args: ArgumentsNamespaceMigrateImportOrStart | ArgumentsNamespaceDevEnvTask
+        cls, args: ArgumentsNamespaceRequiringDatadir | ArgumentsNamespaceDevEnvTask
     ) -> "Settings":
         from sema4ai.action_server._errors_action_server import (
             ActionServerValidationError,
@@ -301,7 +301,7 @@ _global_settings: Optional[Settings] = None
 
 @contextmanager
 def setup_settings(
-    args: ArgumentsNamespaceMigrateImportOrStart | ArgumentsNamespaceDevEnvTask,
+    args: ArgumentsNamespaceRequiringDatadir | ArgumentsNamespaceDevEnvTask,
 ) -> Iterator[Settings]:
     global _global_settings
     settings = Settings._create(args)

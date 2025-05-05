@@ -1,5 +1,5 @@
 import { FC, MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
   Box,
   Button,
@@ -49,9 +49,10 @@ const RunRow: FC<TableRowProps<RunTableEntry>> = ({ rowData: run }) => {
   const onClickRun = useCallback(
     (event: MouseEvent) => {
       setShowRun(run);
+      navigate(`/runs/${run.id}`);
       event.stopPropagation();
     },
-    [run, setShowRun],
+    [run, setShowRun, navigate],
   );
 
   const onClickAction = useCallback(
@@ -134,6 +135,7 @@ const columns: Column[] = [
 
 export const ActionRuns: FC = () => {
   const navigate = useNavigate();
+  const { runId } = useParams<{ runId: string }>();
   const [searchParams] = useSearchParams();
   const [sort, onSort] = useState<[string, SortDirection] | null>(['start_time', 'desc']);
   const [search, setSearch] = useState<string>(searchParams.get('search') || '');
@@ -209,6 +211,23 @@ export const ActionRuns: FC = () => {
   const onNavigateActions = useCallback(() => {
     navigate('/actions');
   }, []);
+
+  // Effect to handle direct URL access with runId
+  useEffect(() => {
+    if (runId && loadedRuns.data && loadedActions.data) {
+      const actions = loadedActions.data?.flatMap((item) => item.actions) || [];
+      const runData = loadedRuns.data.find((run) => run.id === runId);
+
+      if (runData) {
+        const runWithAction = {
+          ...runData,
+          action: actions.find((action) => action.id === runData.action_id),
+        } as RunTableEntry;
+
+        setShowRun(runWithAction);
+      }
+    }
+  }, [runId, loadedRuns.data, loadedActions.data]);
 
   if (loadedRuns.isPending) {
     return <ViewLoader />;

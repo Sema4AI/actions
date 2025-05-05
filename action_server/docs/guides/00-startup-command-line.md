@@ -18,7 +18,7 @@ action-server start
 
 In this case, the action server will search recursively for all the Actions
 marked as `@action` in files named as `*action*.py` and then it'll start
-serving such actions. Any `@action` which 
+serving such actions. Any `@action` which
 is no longer found from a previous run will be disabled.
 
 All the settings and data related to this run will be stored a folder
@@ -29,7 +29,7 @@ computed based on the current directory location.
 It's possible to customize the directory by using the `--datadir` flag.
 
 Example:
- 
+
 ```
 action-server start --datadir=<path to datadir>
 ```
@@ -37,13 +37,27 @@ action-server start --datadir=<path to datadir>
 ## Serving actions from multiple directories
 
 In this case, instead of just using `action-server start`, one needs to
-import the actions saving the settings to a given datadir and then 
-start the server pointing to that datadir asking the `action-server` 
+import the actions saving the settings to a given datadir and then
+start the server pointing to that datadir asking the `action-server`
 not to synchronize the actions again when starting.
 
 Example:
- 
+
 ```
+action-server import --dir=<path to action-package 1> --datadir=<path to datadir>
+action-server import --dir=<path to action-package 2> --datadir=<path to datadir>
+action-server start --actions-sync=false --datadir=<path to datadir>
+```
+
+Important: in this mode, each new import will add new actions to the database.
+If at some point some action needs to be removed, it's possible to use the
+`action-server datadir clear-actions` command to remove all actions from the database
+and then re-import the actions again.
+
+Example:
+
+```
+action-server datadir clear-actions --datadir=<path to datadir>
 action-server import --dir=<path to action-package 1> --datadir=<path to datadir>
 action-server import --dir=<path to action-package 2> --datadir=<path to datadir>
 action-server start --actions-sync=false --datadir=<path to datadir>

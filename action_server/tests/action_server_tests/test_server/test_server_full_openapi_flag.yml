@@ -117,7 +117,8 @@ components:
           type: string
         metadata:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Metadata
         scopes:
@@ -507,6 +508,7 @@ paths:
           content:
             application/json:
               schema:
+                additionalProperties: true
                 title: Response Show Run Fields Api Runs  Run Id  Fields Get
                 type: object
           description: Successful Response
@@ -581,6 +583,7 @@ paths:
           content:
             application/json:
               schema:
+                additionalProperties: true
                 title: Response Serve Config Config Get
                 type: object
           description: Successful Response

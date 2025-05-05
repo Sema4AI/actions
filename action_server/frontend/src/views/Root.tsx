@@ -242,6 +242,10 @@ export const ActionServerRoot = () => {
           element: <ActionRuns />,
         },
         {
+          path: 'runs/:runId',
+          element: <ActionRuns />,
+        },
+        {
           path: '*',
           element: <ErrorPage />,
         },
