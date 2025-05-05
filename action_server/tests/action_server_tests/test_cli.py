@@ -84,10 +84,14 @@ def test_help(args, str_regression, datadir):
 
     result = sema4ai_action_server_run(args, returncode=0)
     out = re.sub(r"\(\d+.\d+.\d+\)", "(<version>)", result.stdout)
-    v2_expected = datadir / "test_help_v2.txt"
-    found = v2_expected.read_text()
-    if fix_eol(found) != fix_eol(out):
-        str_regression.check(out)
+    out = fix_eol(out)
+    v2_expected = datadir / f"test_help_{args[0]}_v2.txt"
+    if v2_expected.exists():
+        found = v2_expected.read_text()
+        if fix_eol(found) == out:
+            return
+
+    str_regression.check(out, basename=f"test_help_{args[0]}")
 
 
 @pytest.mark.integration_test

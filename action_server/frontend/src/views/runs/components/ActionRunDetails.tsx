@@ -1,5 +1,6 @@
 import { Drawer, Header, Link } from '@sema4ai/components';
 import { FC, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { logError } from '~/lib/helpers';
 import {
   ActionRunConsole,
@@ -16,10 +17,12 @@ import { useActionRunsContext } from './context';
 
 export const ActionRunDetails: FC = () => {
   const { showRun: run, setShowRun } = useActionRunsContext();
+  const navigate = useNavigate();
 
   const onClose = useCallback(() => {
     setShowRun(undefined);
-  }, []);
+    navigate('/runs');
+  }, [navigate]);
 
   const inputs = useMemo(() => {
     try {

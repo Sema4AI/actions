@@ -96,6 +96,8 @@ def _create_run(
 
 
 def _update_run(run: "Run", initial_time: float, run_finished: bool, **changes):
+    from sema4ai.action_server._settings import get_settings
+
     from ._models import get_db
     from ._runs_state_cache import get_global_runs_state
 
@@ -103,10 +105,19 @@ def _update_run(run: "Run", initial_time: float, run_finished: bool, **changes):
         changes["run_time"] = time.monotonic() - initial_time
 
     db = get_db()
+    changes_repr = []
     for k, v in changes.items():
         setattr(run, k, v)
+        if k == "result":
+            changes_repr.append(f"{k!r}: <redacted>")
+        else:
+            changes_repr.append(f"{k!r}: {v!r}")
     fields_changed = tuple(changes.keys())
-    log.info(f"Updating run {run.id} with changes: {json.dumps(changes, indent=2)}")
+    changes_str = ", ".join(changes_repr)
+
+    url = f"{get_settings().base_url}/runs/{run.id}"
+
+    log.info(f"Updating run {run.id} with changes: {changes_str} (see: {url})")
     with db.transaction():
         db.update(run, *fields_changed)
 

@@ -18,9 +18,10 @@ from ._errors_action_server import ActionServerValidationError
 from ._protocols import (
     ArgumentsNamespace,
     ArgumentsNamespaceBaseImportOrStart,
+    ArgumentsNamespaceDatadir,
     ArgumentsNamespaceDownloadRcc,
     ArgumentsNamespaceImport,
-    ArgumentsNamespaceMigrateImportOrStart,
+    ArgumentsNamespaceRequiringDatadir,
     ArgumentsNamespaceStart,
 )
 
@@ -387,6 +388,26 @@ def _add_oauth2_command(command_subparser, defaults):
     add_json_output_args(user_config_path_parser)
 
 
+def _add_datadir_command(command_subparser, defaults):
+    from sema4ai.action_server._cli_helpers import add_data_args, add_verbose_args
+
+    datadir_parser = command_subparser.add_parser(
+        "datadir",
+        help="Commands related to the datadir handling",
+    )
+
+    datadir_subparser = datadir_parser.add_subparsers(dest="datadir_command")
+
+    clear_actions_parser = datadir_subparser.add_parser(
+        "clear-actions",
+        help="Clears all actions that were previously imported",
+    )
+
+    add_data_args(clear_actions_parser, defaults)
+    _add_kill_lock_holder_args(clear_actions_parser, defaults)
+    add_verbose_args(clear_actions_parser, defaults)
+
+
 def _create_parser():
     from sema4ai.action_server.package._package_build_cli import add_package_command
 
@@ -467,6 +488,7 @@ def _create_parser():
     _add_cloud_command(command_subparser, defaults)
     _add_oauth2_command(command_subparser, defaults)
     _add_devenv_command(command_subparser, defaults)
+    _add_datadir_command(command_subparser, defaults)
 
     return base_parser
 
@@ -708,6 +730,7 @@ def _main_retcode(
                 "start",
                 "new",
                 "cloud",
+                "datadir",
             ):
                 log.critical(f"Unexpected command: {command}.")
                 return 1
@@ -723,11 +746,11 @@ def _main_retcode(
                 return handle_new_command(base_args)
 
             migrate_import_or_start_args = typing.cast(
-                ArgumentsNamespaceMigrateImportOrStart, base_args
+                ArgumentsNamespaceRequiringDatadir, base_args
             )
 
             with _basic_setup(migrate_import_or_start_args, rcc) as setup_info:
-                return _make_import_migrate_or_start(
+                return _command_requiring_datadir(
                     migrate_import_or_start_args,
                     command,
                     setup_info,
@@ -748,7 +771,7 @@ class _SetupInfo:
 
 @contextmanager
 def _basic_setup(
-    base_args: ArgumentsNamespaceMigrateImportOrStart,
+    base_args: ArgumentsNamespaceRequiringDatadir,
     rcc: "Rcc",
 ):
     from ._settings import setup_settings
@@ -759,9 +782,12 @@ def _basic_setup(
         yield _SetupInfo(rcc=rcc, settings=settings)
 
 
-def _make_import_migrate_or_start(
-    base_args: ArgumentsNamespaceMigrateImportOrStart,
-    command: Literal["import"] | Literal["migrate"] | Literal["start"],
+def _command_requiring_datadir(
+    base_args: ArgumentsNamespaceRequiringDatadir,
+    command: Literal["import"]
+    | Literal["migrate"]
+    | Literal["start"]
+    | Literal["datadir"],
     setup_info: _SetupInfo,
     use_db: Optional["Database"] = None,
     before_start: Sequence[IBeforeStartCallback] = (),
@@ -854,6 +880,13 @@ information from this datadir.
                     typing.cast(ArgumentsNamespaceImport, base_args),
                     settings,
                     disable_not_imported=False,
+                )
+
+            elif command == "datadir":
+                from sema4ai.action_server._datadir_commands import datadir_command
+
+                return datadir_command(
+                    typing.cast(ArgumentsNamespaceDatadir, base_args),
                 )
 
             elif command == "start":

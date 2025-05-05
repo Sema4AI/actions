@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- No longer logging the full action input/output in the `log.debug` logs in the Action Server.
+- Added command: `action-server datadir clear-actions` to clear (disable) the actions from the datadir.
+- Updated Action Server frontend dependencies versions (to fix CVEs).
+- Support opening the url `/runs/<run_id>` to open the run directly in the Action Server UI.
+- No longer doing an update check when the `Action Server` is launched.
+
 ## 2.9.1 - 2025-05-02
 
 - Update `rcc` to `20.1.1`

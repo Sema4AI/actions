@@ -116,6 +116,7 @@ class ArgumentsNamespace(Protocol):
         "cloud",
         "oauth2",
         "devenv",
+        "datadir",
     ]
     verbose: bool
 
@@ -190,18 +191,18 @@ class ArgumentsNamespacePackageMetadata(ArgumentsNamespace):
     input_dir: str
 
 
-class ArgumentsNamespaceMigrateImportOrStart(ArgumentsNamespace):
-    command: Literal["migrate", "import", "start"]
+class ArgumentsNamespaceRequiringDatadir(ArgumentsNamespace):
+    command: Literal["migrate", "import", "start", "datadir"]
     datadir: str
     db_file: str
     kill_lock_holder: bool
 
 
-class ArgumentsNamespaceMigrate(ArgumentsNamespaceMigrateImportOrStart):
+class ArgumentsNamespaceMigrate(ArgumentsNamespaceRequiringDatadir):
     command: Literal["migrate"]
 
 
-class ArgumentsNamespaceBaseImportOrStart(ArgumentsNamespaceMigrateImportOrStart):
+class ArgumentsNamespaceBaseImportOrStart(ArgumentsNamespaceRequiringDatadir):
     command: Literal["import", "start"]
     dir: Sequence[str]
     skip_lint: bool
@@ -309,6 +310,11 @@ class ArgumentsNamespaceOAuth2UserConfigPath(ArgumentsNamespace):
     command: Literal["oauth2"]
     oauth2_command: Literal["user-config-path"]
     json: bool
+
+
+class ArgumentsNamespaceDatadir(ArgumentsNamespaceRequiringDatadir):
+    command: Literal["datadir"]
+    datadir_command: Literal["clear-actions"]
 
 
 JSONValue = Union[

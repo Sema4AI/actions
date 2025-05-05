@@ -1,9 +1,11 @@
-usage: action-server [-h] {start,import,download-rcc,new,version,migrate,package,env,cloud,oauth2,devenv} ...
+usage: action-server [-h]
+                     {start,import,download-rcc,new,version,migrate,package,env,cloud,oauth2,devenv,datadir}
+                     ...
 
 Sema4.ai Action Server (<version>)
 
 positional arguments:
-  {start,import,download-rcc,new,version,migrate,package,env,cloud,oauth2,devenv}
+  {start,import,download-rcc,new,version,migrate,package,env,cloud,oauth2,devenv,datadir}
     start               Starts the Sema4.ai Action Server (importing the actions in the current directory by default).
     import              Imports an Action Package and exits
     download-rcc        Downloads RCC (by default to the location required by the Sema4.ai Action Server)
@@ -15,6 +17,7 @@ positional arguments:
     cloud               Utilities to perform Control Room operations
     oauth2              Utilities to manage the OAuth2 configuration
     devenv              Commands related to development tasks
+    datadir             Commands related to the datadir handling
 
 options:
   -h, --help            show this help message and exit

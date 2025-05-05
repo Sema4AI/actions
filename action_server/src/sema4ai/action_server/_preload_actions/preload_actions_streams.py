@@ -210,7 +210,25 @@ class JsonRpcStreamWriter(object):
                 return False
             try:
                 if isinstance(message, dict):
-                    log.debug("Writing: %s", message)
+                    show_keys = [
+                        "command",
+                        "action_name",
+                        "action_file",
+                        "reuse_process",
+                    ]
+                    show = []
+                    for key in show_keys:
+                        v = message.get(key)
+                        if v is not None:
+                            show.append(f"{key!r}: {v!r}")
+                    if show:
+                        log.debug(
+                            "Writing message: %s. All keys: %r",
+                            ", ".join(show),
+                            tuple(message),
+                        )
+                    else:
+                        log.debug("Writing message. dict keys: %r", tuple(message))
                 else:
                     log.debug("Writing (non dict message): %s", message)
 
