@@ -34,6 +34,7 @@ import {
   defaultActionServerState,
 } from '../lib/actionServerContext';
 import { CheckVersionDialog } from './actions/components/CheckVersionDialog';
+import { RobotCatalogView } from './robots';
 
 const Main = styled.main<{ isCollapsed: boolean }>`
   background: ${({ theme }) => theme.colors.background.primary.color};
@@ -191,6 +192,14 @@ const Root = () => {
                 >
                   Runs
                 </SideNavigation.Link>
+                <SideNavigation.Link
+                  aria-current={location.pathname.startsWith('/robots')}
+                  href="/robots"
+                  onClick={onNavigate('/robots')}
+                  icon={<IconUnorderedList />}
+                >
+                  Robots
+                </SideNavigation.Link>
                 {loadedServerConfig.data?.expose_url && (
                   <SideNavigation.Link
                     href={loadedServerConfig.data?.expose_url}
@@ -242,8 +251,8 @@ export const ActionServerRoot = () => {
           element: <ActionRuns />,
         },
         {
-          path: 'runs/:runId',
-          element: <ActionRuns />,
+          path: 'robots',
+          element: <RobotCatalogView />,
         },
         {
           path: '*',

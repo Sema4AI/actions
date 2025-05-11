@@ -1,5 +1,7 @@
 from pathlib import Path
 from typing import Optional
+from sema4ai.action_server import _api_action_package, _api_actions, _api_runs
+from sema4ai.action_server import _api_robots
 
 
 def package_metadata(
@@ -40,3 +42,9 @@ def package_metadata(
     raise RuntimeError(
         f"It was not possible to collect the package metadata.\nStdout:\n{result.stdout}\nStderr:\n{result.stderr}"
     )
+
+
+app.include_router(_api_action_package.router)
+app.include_router(_api_actions.router)
+app.include_router(_api_runs.router)
+app.include_router(_api_robots.router)

@@ -14,6 +14,8 @@ import {
   Table,
   TableRowProps,
   Tooltip,
+  Badge,
+  Select,
 } from '@sema4ai/components';
 import {
   IconArrowUpRight,
@@ -23,22 +25,17 @@ import {
   IconSearch,
 } from '@sema4ai/icons';
 
-import { RunStatus, RunTableEntry } from '~/lib/types';
+import { Run, RunStatus, RunTableEntry, Action, ActionPackage, AsyncLoaded } from '~/lib/types';
 import { useActionServerContext } from '~/lib/actionServerContext';
 import { Duration, Timestamp, StatusBadge, ViewLoader, ViewError } from '~/components';
-import { baseUrl } from '~/lib/requestData';
+import { baseUrl, fetchRuns } from '~/lib/requestData';
 
-import { ActionRunsContext, useActionRunsContext } from './components/context';
-import { ActionRunDetails } from './components/ActionRunDetails';
+import { RunsContext, useRunsContext } from './components/context';
+import { RunDetails } from './components/RunDetails';
 
 const RunRow: FC<TableRowProps<RunTableEntry>> = ({ rowData: run }) => {
   const { setShowRun, showRun } = useActionRunsContext();
   const navigate = useNavigate();
-
-  // Issue: if we have a run and click it, we'll set the showRun to the run,
-  // but afterwards, if the run is changed (so, we have a new run instance
-  // representing the same run), we have to use an effect to update the clicked
-  // run.
 
   useEffect(() => {
     if (run && showRun && run.id === showRun.id) {
@@ -57,7 +54,9 @@ const RunRow: FC<TableRowProps<RunTableEntry>> = ({ rowData: run }) => {
 
   const onClickAction = useCallback(
     (event: MouseEvent) => {
-      navigate(`/actions/${run.action_id}`);
+      if (run.run_type === 'action') {
+        navigate(`/actions/${run.action_id}`);
+      }
       event.stopPropagation();
     },
     [run, navigate],
@@ -67,9 +66,23 @@ const RunRow: FC<TableRowProps<RunTableEntry>> = ({ rowData: run }) => {
     <Table.Row onClick={onClickRun}>
       <Table.Cell>#{run.numbered_id}</Table.Cell>
       <Table.Cell>
-        <Button onClick={onClickAction} variant="ghost" size="small" iconAfter={IconExpandSmall}>
-          {run.action?.name}
-        </Button>
+        {run.run_type === 'robot' ? (
+          <Box>
+            <div>{run.robot_task_name}</div>
+            <Box fontSize="$small" color="neutral-400">
+              {run.robot_package_path}
+            </Box>
+          </Box>
+        ) : (
+          <Button onClick={onClickAction} variant="ghost" size="small" iconAfter={IconExpandSmall}>
+            {run.action_name}
+          </Button>
+        )}
+      </Table.Cell>
+      <Table.Cell>
+        <Badge variant={run.run_type === 'robot' ? 'secondary' : 'primary'}>
+          {run.run_type === 'robot' ? 'Robot' : 'Action'}
+        </Badge>
       </Table.Cell>
       <Table.Cell>
         <StatusBadge status={run.status} />
@@ -99,13 +112,19 @@ const RunRow: FC<TableRowProps<RunTableEntry>> = ({ rowData: run }) => {
 const columns: Column[] = [
   {
     title: 'Run',
-    id: 'id',
+    id: 'numbered_id',
     width: 50,
     sortable: true,
   },
   {
-    title: 'Action',
-    id: 'action',
+    title: 'Name',
+    id: 'name',
+    sortable: true,
+  },
+  {
+    title: 'Type',
+    id: 'run_type',
+    width: 100,
     sortable: true,
   },
   {
@@ -139,9 +158,14 @@ export const ActionRuns: FC = () => {
   const [searchParams] = useSearchParams();
   const [sort, onSort] = useState<[string, SortDirection] | null>(['start_time', 'desc']);
   const [search, setSearch] = useState<string>(searchParams.get('search') || '');
-  const { loadedRuns, loadedActions } = useActionServerContext();
+  const { loadedActions } = useActionServerContext();
+  const [loadedRuns, setLoadedRuns] = useState<AsyncLoaded<Run[]>>({ isPending: true });
   const [showRun, setShowRun] = useState<RunTableEntry | undefined>(undefined);
-  const [selectedStates, setSelectedStates] = useState({ Status: [] as string[] });
+  const [selectedStates, setSelectedStates] = useState({ 
+    Status: [] as string[], 
+    Type: [] as string[] 
+  });
+  const [runTypeFilter, setRunTypeFilter] = useState<string>('all');
 
   const contextMemoized = useMemo(
     () => ({
@@ -151,8 +175,16 @@ export const ActionRuns: FC = () => {
     [showRun, setShowRun, loadedRuns],
   );
 
-  const stateOptions = useMemo(
+  const filterOptions = useMemo(
     () => ({
+      Type: {
+        label: 'Type',
+        permanent: true,
+        options: [
+          { label: 'Action', value: 'action', itemType: 'checkbox' },
+          { label: 'Robot', value: 'robot', itemType: 'checkbox' },
+        ],
+      },
       Status: {
         label: 'Status',
         permanent: true,
@@ -168,28 +200,29 @@ export const ActionRuns: FC = () => {
     [],
   );
 
-  const runs = useMemo(() => {
-    const actions = loadedActions.data?.flatMap((item) => item.actions) || [];
+  const filterRuns = useMemo(() => {
+    const actions = loadedActions.data?.flatMap((item: ActionPackage) => item.actions) || [];
 
     const filteredRuns =
       loadedRuns.data
-        ?.map(
-          (run) =>
-            ({
-              ...run,
-              action: actions.find((action) => action.id === run.action_id),
-            }) satisfies RunTableEntry,
-        )
-        .filter(
-          (row) =>
-            (selectedStates.Status.length === 0 ||
-              selectedStates.Status.includes(row.status.toString())) &&
-            row.action?.name.toLowerCase().includes(search.toLocaleLowerCase()),
-        ) || [];
+        ?.map((run: Run) => ({
+          ...run,
+          action: actions.find((action: Action) => action.id === run.action_id),
+        }))
+        .filter((row: RunTableEntry) => (
+          // Type filter
+          (selectedStates.Type.length === 0 || selectedStates.Type.includes(row.run_type)) &&
+          // Status filter
+          (selectedStates.Status.length === 0 || selectedStates.Status.includes(row.status.toString())) &&
+          // Search filter
+          (row.run_type === 'robot'
+            ? row.robot_task_name?.toLowerCase().includes(search.toLowerCase())
+            : row.action_name?.toLowerCase().includes(search.toLowerCase()))
+        )) || [];
 
     const [id, direction] = sort ?? [];
 
-    filteredRuns.sort((a, b) => {
+    filteredRuns.sort((a: RunTableEntry, b: RunTableEntry) => {
       const aItem = a[id as keyof typeof a];
       const bItem = b[id as keyof typeof b];
 
@@ -207,6 +240,21 @@ export const ActionRuns: FC = () => {
 
     return filteredRuns;
   }, [loadedRuns.data, loadedActions.data, sort, selectedStates, search]);
+
+  const runTypeOptions = [
+    { label: 'All Runs', value: 'all' },
+    { label: 'Actions Only', value: 'action' },
+    { label: 'Robots Only', value: 'robot' },
+  ];
+
+  useEffect(() => {
+    setLoadedRuns({ isPending: true });
+    fetchRuns(runTypeFilter).then((data) => {
+      setLoadedRuns({ isPending: false, data });
+    }).catch((err) => {
+      setLoadedRuns({ isPending: false, errorMessage: err.message });
+    });
+  }, [runTypeFilter]);
 
   const onNavigateActions = useCallback(() => {
     navigate('/actions');
@@ -283,24 +331,31 @@ export const ActionRuns: FC = () => {
   return (
     <ActionRunsContext.Provider value={contextMemoized}>
       <Header>
-        <Header.Title title="Action Runs" />
+        <Header.Title title="Runs History" />
       </Header>
+      <Box display="flex" alignItems="center" gap="$16" mb="$16">
+        <Input
+          iconLeft={IconSearch}
+          placeholder="Search..."
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          aria-label="Search"
+        />
+        <Select
+          aria-label="Run Type Filter"
+          value={runTypeFilter}
+          options={runTypeOptions}
+          onChange={(val) => setRunTypeFilter(val as string)}
+          style={{ width: 180 }}
+        />
+      </Box>
       <Filter
-        contentBefore={
-          <Input
-            iconLeft={IconSearch}
-            placeholder="Search..."
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            aria-label="Search"
-          />
-        }
-        options={stateOptions}
+        options={filterOptions}
         values={selectedStates}
         onChange={setSelectedStates}
       />
-      <Table sort={sort} onSort={onSort} columns={columns} data={runs} row={RunRow} rowCount={20} />
-      <ActionRunDetails />
+      <Table sort={sort} onSort={onSort} columns={columns} data={filterRuns} row={RunRow} rowCount={20} />
+      <RunDetails />
     </ActionRunsContext.Provider>
   );
 };
