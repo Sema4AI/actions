@@ -90,11 +90,7 @@ def _sign_macos_executable(root_dir: Path, target_executable: Path) -> None:
     Sign the macOS executable.
     """
 
-    from .entitlements import make_entitlements_file
     from .process_call import run, run_and_capture_output
-
-    entitlements_path = make_entitlements_file(root_dir)
-    print(f"Generated entitlements file: {entitlements_path.absolute()}")
 
     # Sign the binary with the certificate
     print("Signing binary...")
