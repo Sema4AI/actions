@@ -18,10 +18,10 @@ dependencies:
 
 dev-dependencies:
   conda-forge:
-    - pytest=8.3.4
+    - pytest=8.3.5
     - types-requests=2.32.0.20250301
-    - ruff=0.9.9
-    - mypy=1.15.0
+    - ruff=0.11.12
+    - mypy=1.16.0
 
 dev-tasks:
   test: pytest tests
