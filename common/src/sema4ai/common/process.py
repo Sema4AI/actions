@@ -440,6 +440,41 @@ def kill_process_and_subprocesses(pid):
         )
         if retcode not in (0, 128, 255):
             raise CalledProcessError(retcode, args)
+
+    elif sys.platform == "darwin":
+        import psutil
+
+        try:
+            proc = psutil.Process(int(pid))
+            proc_children = proc.children(recursive=True)
+            all_processes = [proc] + proc_children
+
+            # Terminate (soft-kill) all processes
+            for p in all_processes:
+                try:
+                    p.terminate()
+                except psutil.NoSuchProcess:
+                    continue
+                except Exception as e:
+                    log.debug(f"Error terminating child process {p.pid}: {e}")
+
+            # Wait a bit for all processes to terminate
+            _gone, alive = psutil.wait_procs(all_processes, timeout=0.1)
+
+            # Force kill any remaining children after the timeout elapses
+            for p in alive:
+                try:
+                    p.kill()
+                except psutil.NoSuchProcess:
+                    continue
+                except Exception as e:
+                    log.debug(f"Error killing child process {p.pid}: {e}")
+
+        except psutil.NoSuchProcess:
+            log.debug(f"Process {pid} not found")
+        except Exception as e:
+            log.debug(f"Error killing process and subprocesses of {pid}: {e}")
+
     else:
         _kill_process_and_subprocess_linux(pid)
 
