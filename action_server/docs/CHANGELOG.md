@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- The Action Server now supports the MCP protocol.
+  - Registered actions are now available as tools.
+  - Both `/mcp` and `/sse` endpoints are available.
+
 ## 2.10.0 - 2025-05-05
 
 - No longer logging the full action input/output in the `log.debug` logs in the Action Server.
