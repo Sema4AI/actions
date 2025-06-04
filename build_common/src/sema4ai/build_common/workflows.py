@@ -78,9 +78,15 @@ def build_and_sign_executable(
     from sema4ai.build_common.process_call import run_and_capture_output
 
     from .build_executable import build_executable_with_pyinstaller
+    from .entitlements import make_entitlements_file
     from .signing import setup_keychain, sign_macos_executable, sign_windows_executable
     from .version_from_github_actions import get_version_from_github_actions
     from .zip_assets import write_version_to_go_wrapper, zip_go_wrapper_assets
+
+    if sys.platform == "darwin" and sign:
+        # Generate entitlements file for macOS (pyinstaller also does its own signing for additional variables which may require it).
+        entitlements_path = make_entitlements_file(root_dir)
+        print(f"Generated entitlements file: {entitlements_path.absolute()}")
 
     assert not name.endswith(".exe"), "name should not end with .exe. Found: {name}"
 

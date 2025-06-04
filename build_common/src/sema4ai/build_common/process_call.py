@@ -24,13 +24,20 @@ def run_and_capture_output(
         "Calling (capturing output): ",
         subprocess.list2cmdline(cmd) if sys.platform == "win32" else shlex.join(cmd),
     )
-    result = subprocess.run(
-        cmd,
-        cwd=cwd,
-        shell=shell,
-        capture_output=True,
-        text=True,
-        check=True,
-        env=env,
-    )
+    try:
+        result = subprocess.run(
+            cmd,
+            cwd=cwd,
+            shell=shell,
+            capture_output=True,
+            text=True,
+            check=True,
+            env=env,
+        )
+    except subprocess.CalledProcessError as e:
+        raise Exception(
+            f"Command {cmd} failed with exit code {e.returncode}.\n"
+            f"stdout: {e.stdout}\n"
+            f"stderr: {e.stderr}\n"
+        ) from e
     return result.stdout, result.stderr
