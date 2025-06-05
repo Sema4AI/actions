@@ -1,6 +1,6 @@
 import { FC, ReactNode } from 'react';
 import { Box, Typography } from '@sema4ai/components';
-import { styled } from '@sema4ai/theme';
+import { styled } from '~/vendor/sema4ai-theme';
 import { IconType } from '@sema4ai/icons';
 
 type Props = {
