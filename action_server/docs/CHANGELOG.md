@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2.11.0 - 2025-06-05
+
 - The Action Server now supports the MCP protocol.
   - Registered actions are now available as tools.
     - The tool name is `<action-package-name>/<action-name>`.
