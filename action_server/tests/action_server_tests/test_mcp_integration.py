@@ -369,7 +369,7 @@ def test_mcp_tool_cancellation_with_actions(
             )
 
             # Wait for the tool call to complete (should be cancelled)
-            result = await tool_call
+            _result = await tool_call
             # TODO: Check that the result is cancelled
             # TODO: This isn't working (the support for cancellation is not there in the python SDK)
 

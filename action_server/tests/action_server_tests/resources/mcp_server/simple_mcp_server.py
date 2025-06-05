@@ -5,7 +5,6 @@ def run_mcp_server(port: int):
     import logging
 
     from mcp.server.fastmcp import FastMCP
-    from mcp.types import CancelledNotification
 
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
