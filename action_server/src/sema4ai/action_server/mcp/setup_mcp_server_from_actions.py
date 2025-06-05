@@ -46,6 +46,8 @@ class McpServerSetupHelper:
         async def call_tool(
             name: str, arguments: dict[str, Any]
         ) -> list[TextContent | ImageContent | EmbeddedResource]:
+            import json
+
             try:
                 from sema4ai.action_server._actions_run import IInternalFuncAPI
 
@@ -57,7 +59,10 @@ class McpServerSetupHelper:
                     headers={},
                     cookies={},
                 )
-                return [TextContent(type="text", text=result)]
+                if isinstance(result, str):
+                    return [TextContent(type="text", text=result)]
+                else:
+                    return [TextContent(type="text", text=json.dumps(result, indent=2))]
             except Exception as e:
                 log.exception("Error calling tool %s", name)
                 raise e
@@ -86,3 +91,7 @@ class McpServerSetupHelper:
         self._action_name_to_action_info[use_name] = ActionInfo(
             func=func, action=action, display_name=display_name, doc_desc=doc_desc
         )
+
+    def unregister_actions(self):
+        self._tools = []
+        self._action_name_to_action_info = {}

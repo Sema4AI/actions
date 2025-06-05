@@ -2,7 +2,7 @@ import os
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterator
+from typing import Any, Iterator
 
 import pytest
 
@@ -378,3 +378,15 @@ CREATE UNIQUE INDEX counter_id_index ON counter(id);
             )
 
     return db_path
+
+
+def run_async_in_new_thread(async_func: Any) -> Any:
+    import asyncio
+
+    from sema4ai.common.run_in_thread import run_in_thread
+
+    def func_in_thread():
+        return asyncio.run(async_func())
+
+    fut = run_in_thread(func_in_thread)
+    return fut.result()
