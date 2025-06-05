@@ -15,6 +15,23 @@ from sema4ai.action_server._selftest import (
 BUILD_ENV_IN_TESTS_TIMEOUT = 600
 
 
+@pytest.fixture(autouse=True)
+def setup_logging():
+    import logging
+
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
+    handler = logging.StreamHandler()
+    handler.setLevel(logging.DEBUG)
+    formatter = logging.Formatter(
+        "TEST PROCESS: %(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    )
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    yield
+    logger.removeHandler(handler)
+
+
 def _fix_file_info(info_json):
     import os.path
 
@@ -135,6 +152,9 @@ def get_in_resources(*parts) -> Path:
     curr = CURDIR / "resources"
     for part in parts:
         curr = curr / part
+
+    if not curr.exists():
+        raise FileNotFoundError(f"Resource directory not found: {curr}")
     return curr
 
 

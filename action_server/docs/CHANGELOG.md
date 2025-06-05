@@ -4,7 +4,11 @@
 
 - The Action Server now supports the MCP protocol.
   - Registered actions are now available as tools.
+    - The tool name is `<action-package-name>/<action-name>`.
   - Both `/mcp` and `/sse` endpoints are available.
+    - So, if the Action Server is started at `http://localhost:8000`, the MCP endpoints are available at `http://localhost:8000/mcp` and `http://localhost:8000/sse`.
+  - Note: when the `--reload` flag is used, the MCP tools are also properly reloaded.
+  - Note: support for tool cancellation with MCP is not there yet.
 
 ## 2.10.0 - 2025-05-05
 
