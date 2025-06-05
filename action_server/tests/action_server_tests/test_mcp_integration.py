@@ -1,21 +1,10 @@
 from typing import Any, Literal
 
 import pytest
+from action_server_tests.fixtures import run_async_in_new_thread
 from mcp import ClientSession
 
 from sema4ai.action_server._selftest import ActionServerProcess
-
-
-def run_async_in_new_thread(async_func: Any) -> Any:
-    import asyncio
-
-    from sema4ai.common.run_in_thread import run_in_thread
-
-    def func_in_thread():
-        return asyncio.run(async_func())
-
-    fut = run_in_thread(func_in_thread)
-    return fut.result()
 
 
 async def check_mcp_server(

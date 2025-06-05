@@ -336,3 +336,5 @@ class _ActionRoutes:
             if route.path_format in self.registered_route_names:
                 log.debug("Unregistering route: %s", route.path_format)
                 del app.router.routes[i]
+
+        self.mcp_server_setup_helper.unregister_actions()
