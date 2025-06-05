@@ -1,7 +1,7 @@
 import { FC, useCallback } from 'react';
 import { Box, Typography, usePopover } from '@sema4ai/components';
 import { IconGlobe, IconLink, IconWifiNoConnection } from '@sema4ai/icons';
-import { styled } from '@sema4ai/theme';
+import { styled } from '~/vendor/sema4ai-theme';
 
 import { useActionServerContext } from '~/lib/actionServerContext';
 import { ActionServerLogo } from './Logo';
