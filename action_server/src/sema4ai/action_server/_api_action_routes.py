@@ -11,7 +11,7 @@ from sema4ai.action_server._app import _CustomFastAPI
 log = logging.getLogger(__name__)
 
 
-def _name_as_summary(name: str) -> str:
+def _make_name_user_friendly(name: str) -> str:
     return name.replace("_", " ").title()
 
 
@@ -132,10 +132,12 @@ class _ActionRoutes:
                 )
             )
 
-        self._setup_mcp(app, middleware)
-        self._setup_sse(app, middleware)
+        self._setup_mcp_streamable_route(app, middleware)
+        self._setup_mcp_sse_route(app, middleware)
 
-    def _setup_mcp(self, app: _CustomFastAPI, middleware: list[Middleware]):
+    def _setup_mcp_streamable_route(
+        self, app: _CustomFastAPI, middleware: list[Middleware]
+    ):
         from contextlib import asynccontextmanager
 
         from mcp.server.streamable_http_manager import StreamableHTTPSessionManager
@@ -182,7 +184,7 @@ class _ActionRoutes:
 
         app.mount("/mcp", self.streamable_http_server)
 
-    def _setup_sse(self, app: _CustomFastAPI, middleware: list[Middleware]):
+    def _setup_mcp_sse_route(self, app: _CustomFastAPI, middleware: list[Middleware]):
         from mcp.server.sse import SseServerTransport
         from starlette.applications import Starlette
         from starlette.routing import Mount, Route
@@ -231,6 +233,11 @@ class _ActionRoutes:
     def register_actions(self) -> None:
         import json
 
+        from sema4ai.action_server._settings import (
+            OPENAPI_SPEC_IS_CONSEQUENTIAL,
+            OPENAPI_SPEC_OPERATION_KIND,
+        )
+
         from . import _actions_run
         from ._app import get_app
         from ._models import Action, ActionPackage, get_db
@@ -276,7 +283,7 @@ class _ActionRoutes:
                         action.name,
                     )
                     continue
-            display_name = _name_as_summary(action.name)
+            display_name = _make_name_user_friendly(action.name)
             options = action.options
             action_kind = "action"
             if options:
@@ -297,8 +304,8 @@ class _ActionRoutes:
             )
 
             if action.is_consequential is not None:
-                openapi_extra["x-openai-isConsequential"] = action.is_consequential
-            openapi_extra["x-operation-kind"] = action_kind
+                openapi_extra[OPENAPI_SPEC_IS_CONSEQUENTIAL] = action.is_consequential
+            openapi_extra[OPENAPI_SPEC_OPERATION_KIND] = action_kind
 
             route_name = build_url_api_run(action_package.name, action.name)
             assert (

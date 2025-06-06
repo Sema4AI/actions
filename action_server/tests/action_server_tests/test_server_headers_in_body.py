@@ -22,6 +22,8 @@ def test_server_headers_in_body(
 
     from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
+    from sema4ai.action_server._settings import HEADER_ACTION_INVOCATION_CONTEXT
+
     key = AESGCM.generate_key(256)
 
     from sema4ai.action_server._encryption import make_encrypted_data_envelope
@@ -45,7 +47,7 @@ def test_server_headers_in_body(
 
     if scenario == "context-in-body":
         args = [{"body": {"arg": "10"}, "x-action-context": ctx_info}]
-        kwargs: dict = dict(headers={"x-action-invocation-context": json.dumps({})})
+        kwargs: dict = dict(headers={HEADER_ACTION_INVOCATION_CONTEXT: json.dumps({})})
     elif scenario == "regular":
         args = [{"arg": "10"}]
         kwargs = dict(headers={"x-action-context": ctx_info})

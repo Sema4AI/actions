@@ -5,6 +5,7 @@ import pytest
 from robocorp.log._log_formatting import pretty_format_logs_from_log_html_contents
 
 from sema4ai.action_server._selftest import ActionServerClient, ActionServerProcess
+from sema4ai.action_server._settings import HEADER_ACTION_SERVER_RUN_ID
 
 
 @pytest.mark.integration_test
@@ -51,7 +52,7 @@ def handle_secret(username: str, password: str) -> str:
     assert json.loads(response.text) == f"User {username} authenticated successfully"
 
     # Get the run ID from the response headers
-    run_id = response.headers["x-action-server-run-id"]
+    run_id = response.headers[HEADER_ACTION_SERVER_RUN_ID]
 
     # Retrieve and check the log content
     log_html_contents = client.get_str(
