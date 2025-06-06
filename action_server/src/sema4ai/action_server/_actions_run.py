@@ -9,6 +9,15 @@ from fastapi import HTTPException, Request, Response
 from fastapi.exceptions import RequestValidationError
 from starlette.concurrency import run_in_threadpool
 
+from ._settings import (
+    HEADER_ACTION_ASYNC_COMPLETION,
+    HEADER_ACTION_INVOCATION_CONTEXT,
+    HEADER_ACTION_SERVER_RUN_ID,
+    HEADER_ACTIONS_ASYNC_CALLBACK,
+    HEADER_ACTIONS_ASYNC_TIMEOUT,
+    HEADER_ACTIONS_REQUEST_ID,
+)
+
 if typing.TYPE_CHECKING:
     from ._models import Action, ActionPackage, Run
 
@@ -184,10 +193,10 @@ class ResponseHandler:
         self.response = response
 
     def set_run_id(self, run_id: str):
-        self.response.headers["X-Action-Server-Run-Id"] = run_id
+        self.response.headers[HEADER_ACTION_SERVER_RUN_ID] = run_id
 
     def set_async_completion(self):
-        self.response.headers["x-action-async-completion"] = "1"
+        self.response.headers[HEADER_ACTION_ASYNC_COMPLETION] = "1"
 
 
 class IInternalFuncAPI(Protocol):
@@ -244,13 +253,15 @@ class _ActionsRunner:
         self.headers = headers
         self.cookies = cookies
 
-        timeout = headers.get("x-actions-async-timeout", None)
+        timeout = headers.get(HEADER_ACTIONS_ASYNC_TIMEOUT, None)
         if timeout is not None:
             timeout = float(timeout)
 
-        self.request_id: str = headers.get("x-actions-request-id", "")
+        self.request_id: str = headers.get(HEADER_ACTIONS_REQUEST_ID, "")
         self.timeout: Optional[float] = timeout
-        self.callback_url: Optional[str] = headers.get("x-actions-async-callback", None)
+        self.callback_url: Optional[str] = headers.get(
+            HEADER_ACTIONS_ASYNC_CALLBACK, None
+        )
         self._future: Optional[Future] = None
         self._run_id = gen_uuid("run")
         self._returning_async_result = False
@@ -346,11 +357,11 @@ class _ActionsRunner:
                     import sema4ai_http
 
                     headers: dict[str, str] = {
-                        "x-action-server-run-id": self._run_id,
+                        HEADER_ACTION_SERVER_RUN_ID: self._run_id,
                     }
 
                     if self.request_id:
-                        headers["x-actions-request-id"] = self.request_id
+                        headers[HEADER_ACTIONS_REQUEST_ID] = self.request_id
 
                     for _i in range(3):  # Try up to 3 times before giving up.
                         post_result = sema4ai_http.post(
@@ -636,8 +647,20 @@ def generate_func_from_action(
         return await func_internal(response_handler, inputs, headers, cookies)
 
     async def func_internal(
-        response_handler: IResponseHandler, inputs, headers, cookies
-    ):
+        response_handler: IResponseHandler, inputs: Any, headers: dict, cookies: dict
+    ) -> Any:
+        """
+        This is an internal function that actually runs an action (in the threadpool) based on the user's inputs.
+
+        Args:
+            response_handler: The response handler to use (where we can set the run id and whether an async completion was done).
+            inputs: The inputs to the action (gotten from the request based on the agent input).
+            headers: The headers to the action (gotten from the request).
+            cookies: The cookies to the action (gotten from the request).
+
+        Returns:
+            The result of the action.
+        """
         # i.e.: if the `x-action-invocation-context` header is present, we
         # expect it to contain a data envelope (`base64(encrypted_data(JSON.stringify(content)))` or
         # `base64(JSON.stringify(content))`) with the invocation context.
@@ -649,7 +672,7 @@ def generate_func_from_action(
         # This is done because headers have a size restriction and we don't want to
         # hit it (so, we enable passing things that are conceptually headers, such as
         # `x-action-context` and `x-data-context`, in the body of the request)
-        invocation_context = headers.get("x-action-invocation-context")
+        invocation_context = headers.get(HEADER_ACTION_INVOCATION_CONTEXT)
         if invocation_context:  # Anything there means we expect the body to contain the additional contexts.
             if isinstance(inputs, dict):
                 if "body" not in inputs:
