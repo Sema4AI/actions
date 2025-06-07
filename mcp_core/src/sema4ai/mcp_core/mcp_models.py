@@ -1,4 +1,4 @@
-from typing import Any, TypeVar
+from typing import Any, TypeVar, Union, get_type_hints, Literal
 from dataclasses import dataclass, field
 from enum import Enum
 
@@ -60,7 +60,7 @@ class BlobResourceContents(BaseModel):
 @dataclass
 class CallToolRequest(BaseModel):
     """Used by the client to invoke a tool provided by the server."""
-    method: str = field(default=...)
+    method: Literal['tools/call'] = field(default=...)
     params: dict[str, Any] = field(default=...)
 
 
@@ -90,7 +90,7 @@ The request SHOULD still be in-flight, but due to communication latency, it is a
 This notification indicates that the result will be unused, so any associated processing SHOULD cease.
 
 A client MUST NOT attempt to cancel its `initialize` request."""
-    method: str = field(default=...)
+    method: Literal['notifications/cancelled'] = field(default=...)
     params: dict[str, Any] = field(default=...)
 
 
@@ -105,7 +105,7 @@ class ClientCapabilities(BaseModel):
 @dataclass
 class CompleteRequest(BaseModel):
     """A request from the client to the server, to ask for completion options."""
-    method: str = field(default=...)
+    method: Literal['completion/complete'] = field(default=...)
     params: dict[str, Any] = field(default=...)
 
 
@@ -119,7 +119,7 @@ class CompleteResult(BaseModel):
 @dataclass
 class CreateMessageRequest(BaseModel):
     """A request from the server to sample an LLM via the client. The client has full discretion over which model to select. The client should also inform the user before beginning sampling, to allow them to inspect the request (human in the loop) and decide whether to approve it."""
-    method: str = field(default=...)
+    method: Literal['sampling/createMessage'] = field(default=...)
     params: dict[str, Any] = field(default=...)
 
 
@@ -147,7 +147,7 @@ of the LLM and/or the user."""
 @dataclass
 class GetPromptRequest(BaseModel):
     """Used by the client to get a prompt provided by the server."""
-    method: str = field(default=...)
+    method: Literal['prompts/get'] = field(default=...)
     params: dict[str, Any] = field(default=...)
 
 
@@ -178,7 +178,7 @@ class Implementation(BaseModel):
 @dataclass
 class InitializeRequest(BaseModel):
     """This request is sent from the client to the server when it first connects, asking it to begin initialization."""
-    method: str = field(default=...)
+    method: Literal['initialize'] = field(default=...)
     params: dict[str, Any] = field(default=...)
 
 
@@ -195,7 +195,7 @@ class InitializeResult(BaseModel):
 @dataclass
 class InitializedNotification(BaseModel):
     """This notification is sent from the client to the server after initialization has finished."""
-    method: str = field(default=...)
+    method: Literal['notifications/initialized'] = field(default=...)
     params: dict[str, Any] = field(default=None)
 
 
@@ -235,7 +235,7 @@ class JSONRPCResponse(BaseModel):
 @dataclass
 class ListPromptsRequest(BaseModel):
     """Sent from the client to request a list of prompts and prompt templates the server has."""
-    method: str = field(default=...)
+    method: Literal['prompts/list'] = field(default=...)
     params: dict[str, Any] = field(default=None)
 
 
@@ -250,7 +250,7 @@ class ListPromptsResult(BaseModel):
 @dataclass
 class ListResourceTemplatesRequest(BaseModel):
     """Sent from the client to request a list of resource templates the server has."""
-    method: str = field(default=...)
+    method: Literal['resources/templates/list'] = field(default=...)
     params: dict[str, Any] = field(default=None)
 
 
@@ -265,7 +265,7 @@ class ListResourceTemplatesResult(BaseModel):
 @dataclass
 class ListResourcesRequest(BaseModel):
     """Sent from the client to request a list of resources the server has."""
-    method: str = field(default=...)
+    method: Literal['resources/list'] = field(default=...)
     params: dict[str, Any] = field(default=None)
 
 
@@ -286,7 +286,7 @@ on.
 
 This request is typically used when the server needs to understand the file system
 structure or access specific locations that the client has permission to read from."""
-    method: str = field(default=...)
+    method: Literal['roots/list'] = field(default=...)
     params: dict[str, Any] = field(default=None)
 
 
@@ -302,7 +302,7 @@ or file that the server can operate on."""
 @dataclass
 class ListToolsRequest(BaseModel):
     """Sent from the client to request a list of tools the server has."""
-    method: str = field(default=...)
+    method: Literal['tools/list'] = field(default=...)
     params: dict[str, Any] = field(default=None)
 
 
@@ -317,7 +317,7 @@ class ListToolsResult(BaseModel):
 @dataclass
 class LoggingMessageNotification(BaseModel):
     """Notification of a log message passed from server to client. If no logging/setLevel request has been sent from the client, the server MAY decide which messages to send automatically."""
-    method: str = field(default=...)
+    method: Literal['notifications/message'] = field(default=...)
     params: dict[str, Any] = field(default=...)
 
 
@@ -373,14 +373,14 @@ class PaginatedResult(BaseModel):
 @dataclass
 class PingRequest(BaseModel):
     """A ping, issued by either the server or the client, to check that the other party is still alive. The receiver must promptly respond, or else may be disconnected."""
-    method: str = field(default=...)
+    method: Literal['ping'] = field(default=...)
     params: dict[str, Any] = field(default=None)
 
 
 @dataclass
 class ProgressNotification(BaseModel):
     """An out-of-band notification used to inform the receiver of a progress update for a long-running request."""
-    method: str = field(default=...)
+    method: Literal['notifications/progress'] = field(default=...)
     params: dict[str, Any] = field(default=...)
 
 
@@ -403,7 +403,7 @@ class PromptArgument(BaseModel):
 @dataclass
 class PromptListChangedNotification(BaseModel):
     """An optional notification from the server to the client, informing it that the list of prompts it offers has changed. This may be issued by servers without any previous subscription from the client."""
-    method: str = field(default=...)
+    method: Literal['notifications/prompts/list_changed'] = field(default=...)
     params: dict[str, Any] = field(default=None)
 
 
@@ -427,7 +427,7 @@ class PromptReference(BaseModel):
 @dataclass
 class ReadResourceRequest(BaseModel):
     """Sent from the client to the server, to read a specific resource URI."""
-    method: str = field(default=...)
+    method: Literal['resources/read'] = field(default=...)
     params: dict[str, Any] = field(default=...)
 
 
@@ -466,7 +466,7 @@ class ResourceContents(BaseModel):
 @dataclass
 class ResourceListChangedNotification(BaseModel):
     """An optional notification from the server to the client, informing it that the list of resources it can read from has changed. This may be issued by servers without any previous subscription from the client."""
-    method: str = field(default=...)
+    method: Literal['notifications/resources/list_changed'] = field(default=...)
     params: dict[str, Any] = field(default=None)
 
 
@@ -490,7 +490,7 @@ class ResourceTemplate(BaseModel):
 @dataclass
 class ResourceUpdatedNotification(BaseModel):
     """A notification from the server to the client, informing it that a resource has changed and may need to be read again. This should only be sent if the client previously sent a resources/subscribe request."""
-    method: str = field(default=...)
+    method: Literal['notifications/resources/updated'] = field(default=...)
     params: dict[str, Any] = field(default=...)
 
 
@@ -512,7 +512,7 @@ class RootsListChangedNotification(BaseModel):
     """A notification from the client to the server, informing it that the list of roots has changed.
 This notification should be sent whenever the client adds, removes, or modifies any root.
 The server should then request an updated list of roots using the ListRootsRequest."""
-    method: str = field(default=...)
+    method: Literal['notifications/roots/list_changed'] = field(default=...)
     params: dict[str, Any] = field(default=None)
 
 
@@ -537,14 +537,14 @@ class ServerCapabilities(BaseModel):
 @dataclass
 class SetLevelRequest(BaseModel):
     """A request from the client to the server, to enable or adjust logging."""
-    method: str = field(default=...)
+    method: Literal['logging/setLevel'] = field(default=...)
     params: dict[str, Any] = field(default=...)
 
 
 @dataclass
 class SubscribeRequest(BaseModel):
     """Sent from the client to request resources/updated notifications from the server whenever a particular resource changes."""
-    method: str = field(default=...)
+    method: Literal['resources/subscribe'] = field(default=...)
     params: dict[str, Any] = field(default=...)
 
 
@@ -593,12 +593,12 @@ received from untrusted servers."""
 @dataclass
 class ToolListChangedNotification(BaseModel):
     """An optional notification from the server to the client, informing it that the list of tools it offers has changed. This may be issued by servers without any previous subscription from the client."""
-    method: str = field(default=...)
+    method: Literal['notifications/tools/list_changed'] = field(default=...)
     params: dict[str, Any] = field(default=None)
 
 
 @dataclass
 class UnsubscribeRequest(BaseModel):
     """Sent from the client to request cancellation of resources/updated notifications from the server. This should follow a previous resources/subscribe request."""
-    method: str = field(default=...)
+    method: Literal['resources/unsubscribe'] = field(default=...)
     params: dict[str, Any] = field(default=...)

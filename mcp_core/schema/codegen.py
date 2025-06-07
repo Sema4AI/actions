@@ -13,11 +13,17 @@ class MessageType(Enum):
     RESPONSE = "response"
 
 
-def create_python_type(schema_type: str, schema: dict[str, Any]) -> str:
+def create_python_type(
+    schema_type: str, schema: dict[str, Any], field_name: str = ""
+) -> str:
     """Convert JSON schema type to Python type annotation."""
     if schema_type == "string":
         if "enum" in schema:
             return f"Literal[{', '.join(repr(x) for x in schema['enum'])}]"
+        # Special case for method fields
+        if field_name == "method":
+            if schema.get("const"):
+                return f"Literal[{repr(schema['const'])}]"
         return "str"
     elif schema_type == "integer":
         return "int"
@@ -47,7 +53,9 @@ def generate_class(
     # Generate class fields
     fields = []
     for prop_name, prop_schema in properties.items():
-        prop_type = create_python_type(prop_schema.get("type", "string"), prop_schema)
+        prop_type = create_python_type(
+            prop_schema.get("type", "string"), prop_schema, prop_name
+        )
         default = "None" if prop_name not in required else "..."
         fields.append(f"    {prop_name}: {prop_type} = field(default={default})")
 
@@ -73,7 +81,7 @@ def generate_all_classes(schema_data: dict[str, Any]) -> str:
     definitions = schema_data.get("definitions", {})
 
     # Generate imports
-    imports = """from typing import Any, TypeVar
+    imports = """from typing import Any, TypeVar, Union, get_type_hints, Literal
 from dataclasses import dataclass, field
 from enum import Enum
 
