@@ -8,6 +8,7 @@ from sema4ai.mcp_core.mcp_models import (
     MessageType,
     ProgressNotification,
     ServerCapabilities,
+    create_mcp_model,
 )
 
 
@@ -115,3 +116,49 @@ def test_base_model():
     assert hasattr(request, "from_dict")
     assert hasattr(request, "to_dict")
     assert hasattr(request, "get_message_type")
+
+
+def test_create_mcp_model():
+    """Test the create_mcp_model factory function."""
+    # Test creating an InitializeRequest
+    init_data = {
+        "method": "initialize",
+        "params": {
+            "clientInfo": {"name": "test-client", "version": "1.0.0"},
+            "clientId": "test-client-id",
+        },
+    }
+    init_model = create_mcp_model(init_data)
+    assert isinstance(init_model, InitializeRequest)
+    assert init_model.method == "initialize"
+    assert init_model.params["clientInfo"]["name"] == "test-client"
+    assert init_model.get_message_type() == MessageType.REQUEST
+
+    # Test creating a ProgressNotification
+    progress_data = {
+        "method": "notifications/progress",
+        "params": {
+            "token": "test-token",
+            "value": {
+                "kind": "begin",
+                "message": "Starting operation",
+                "percentage": 0,
+            },
+        },
+    }
+    progress_model = create_mcp_model(progress_data)
+    assert isinstance(progress_model, ProgressNotification)
+    assert progress_model.method == "notifications/progress"
+    assert progress_model.params["token"] == "test-token"
+    assert progress_model.get_message_type() == MessageType.NOTIFICATION
+
+    # Test error cases
+    with pytest.raises(
+        ValueError, match="Input dictionary must contain a 'method' field"
+    ):
+        create_mcp_model({})
+
+    with pytest.raises(
+        ValueError, match="No MCP model class found for method: invalid_method"
+    ):
+        create_mcp_model({"method": "invalid_method"})
