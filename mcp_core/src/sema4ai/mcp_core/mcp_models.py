@@ -77,7 +77,7 @@ However, any errors in _finding_ the tool, an error indicating that the
 server does not support tool calls, or any other exceptional conditions,
 should be reported as an MCP error response."""
     _meta: dict[str, Any] = field(default=None)
-    content: list[str] = field(default=...)
+    content: list["TextContent | ImageContent | AudioContent | EmbeddedResource"] = field(default=...)
     isError: bool = field(default=None)
 
 
@@ -127,7 +127,7 @@ class CreateMessageRequest(BaseModel):
 class CreateMessageResult(BaseModel):
     """The client's response to a sampling/create_message request from the server. The client should inform the user before returning the sampled message, to allow them to inspect the response (human in the loop) and decide whether to allow the server to see it."""
     _meta: dict[str, Any] = field(default=None)
-    content: str = field(default=...)
+    content: "TextContent | ImageContent | AudioContent" = field(default=...)
     model: str = field(default=...)
     role: str = field(default=...)
     stopReason: str = field(default=None)
@@ -140,7 +140,7 @@ class EmbeddedResource(BaseModel):
 It is up to the client how best to render embedded resources for the benefit
 of the LLM and/or the user."""
     annotations: str = field(default=None)
-    resource: str = field(default=...)
+    resource: "TextResourceContents | BlobResourceContents" = field(default=...)
     type: str = field(default=...)
 
 
@@ -413,7 +413,7 @@ class PromptMessage(BaseModel):
 
 This is similar to `SamplingMessage`, but also supports the embedding of
 resources from the MCP server."""
-    content: str = field(default=...)
+    content: "TextContent | ImageContent | AudioContent | EmbeddedResource" = field(default=...)
     role: str = field(default=...)
 
 
@@ -435,7 +435,7 @@ class ReadResourceRequest(BaseModel):
 class ReadResourceResult(BaseModel):
     """The server's response to a resources/read request from the client."""
     _meta: dict[str, Any] = field(default=None)
-    contents: list[str] = field(default=...)
+    contents: list["TextResourceContents | BlobResourceContents"] = field(default=...)
 
 
 @dataclass
@@ -519,7 +519,7 @@ The server should then request an updated list of roots using the ListRootsReque
 @dataclass
 class SamplingMessage(BaseModel):
     """Describes a message issued to or received from an LLM API."""
-    content: str = field(default=...)
+    content: "TextContent | ImageContent | AudioContent" = field(default=...)
     role: str = field(default=...)
 
 

@@ -2,7 +2,7 @@ import json
 import os
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, ClassVar, Literal, Type, TypeVar
+from typing import Any, ClassVar, Literal, Type, TypeVar, Union
 
 T = TypeVar("T")
 
@@ -17,6 +17,22 @@ def create_python_type(
     schema_type: str, schema: dict[str, Any], field_name: str = ""
 ) -> str:
     """Convert JSON schema type to Python type annotation."""
+    # Handle anyOf types first
+    if "anyOf" in schema:
+        types = []
+        for sub_schema in schema["anyOf"]:
+            if "$ref" in sub_schema:
+                # Extract the type name from the ref (e.g., "#/definitions/TextContent" -> "TextContent")
+                ref_type = sub_schema["$ref"].split("/")[-1]
+                types.append(ref_type)
+            else:
+                # Handle inline type definitions
+                sub_type = create_python_type(
+                    sub_schema.get("type", "string"), sub_schema
+                )
+                types.append(sub_type)
+        return f'"{(" | ".join(types))}"'
+
     if schema_type == "string":
         if "enum" in schema:
             return f"Literal[{', '.join(repr(x) for x in schema['enum'])}]"
