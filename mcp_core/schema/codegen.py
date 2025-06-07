@@ -2,8 +2,7 @@ import json
 import os
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Literal, TypeVar
-
+from typing import Any, ClassVar, Literal, Type, TypeVar
 
 T = TypeVar("T")
 
@@ -124,6 +123,8 @@ class BaseModel:
 
     # Generate classes
     classes = []
+    method_to_class: dict[str, str] = {}
+
     for name, schema in definitions.items():
         # Skip empty classes
         if not schema.get("properties"):
@@ -132,8 +133,50 @@ class BaseModel:
         class_def = generate_class(name, schema)
         classes.append(class_def)
 
+        # Check if this class has a method field with a const value
+        properties = schema.get("properties", {})
+        if "method" in properties and "const" in properties["method"]:
+            method_value = properties["method"]["const"]
+            method_to_class[method_value] = name
+
+    # Generate class map
+    class_map = "_class_map = {\n"
+    for method, class_name in method_to_class.items():
+        class_map += f"    {repr(method)}: {class_name},\n"
+    class_map += "}\n\n"
+
+    # Generate factory function
+    factory_function = """def create_mcp_model(data: dict[str, Any]) -> BaseModel:
+    \"\"\"Create an MCP model instance from a dictionary based on its method field.
+    
+    Args:
+        data: Dictionary containing the model data
+        
+    Returns:
+        An instance of the appropriate MCP model class
+        
+    Raises:
+        ValueError: If the method field is missing or no matching class is found
+    \"\"\"
+    if "method" not in data:
+        raise ValueError("Input dictionary must contain a 'method' field")
+        
+    method = data["method"]
+    if method not in _class_map:
+        raise ValueError(f"No MCP model class found for method: {method}")
+        
+    return _class_map[method].from_dict(data)
+"""
+
     # Combine everything
-    return imports + base_class + "\n\n".join(classes)
+    return (
+        imports
+        + base_class
+        + "\n\n".join(classes)
+        + "\n\n"
+        + class_map
+        + factory_function
+    )
 
 
 def main():

@@ -602,3 +602,52 @@ class UnsubscribeRequest(BaseModel):
     """Sent from the client to request cancellation of resources/updated notifications from the server. This should follow a previous resources/subscribe request."""
     method: Literal['resources/unsubscribe'] = field(default=...)
     params: dict[str, Any] = field(default=...)
+
+
+_class_map = {
+    'tools/call': CallToolRequest,
+    'notifications/cancelled': CancelledNotification,
+    'completion/complete': CompleteRequest,
+    'sampling/createMessage': CreateMessageRequest,
+    'prompts/get': GetPromptRequest,
+    'initialize': InitializeRequest,
+    'notifications/initialized': InitializedNotification,
+    'prompts/list': ListPromptsRequest,
+    'resources/templates/list': ListResourceTemplatesRequest,
+    'resources/list': ListResourcesRequest,
+    'roots/list': ListRootsRequest,
+    'tools/list': ListToolsRequest,
+    'notifications/message': LoggingMessageNotification,
+    'ping': PingRequest,
+    'notifications/progress': ProgressNotification,
+    'notifications/prompts/list_changed': PromptListChangedNotification,
+    'resources/read': ReadResourceRequest,
+    'notifications/resources/list_changed': ResourceListChangedNotification,
+    'notifications/resources/updated': ResourceUpdatedNotification,
+    'notifications/roots/list_changed': RootsListChangedNotification,
+    'logging/setLevel': SetLevelRequest,
+    'resources/subscribe': SubscribeRequest,
+    'notifications/tools/list_changed': ToolListChangedNotification,
+    'resources/unsubscribe': UnsubscribeRequest,
+}
+
+def create_mcp_model(data: dict[str, Any]) -> BaseModel:
+    """Create an MCP model instance from a dictionary based on its method field.
+    
+    Args:
+        data: Dictionary containing the model data
+        
+    Returns:
+        An instance of the appropriate MCP model class
+        
+    Raises:
+        ValueError: If the method field is missing or no matching class is found
+    """
+    if "method" not in data:
+        raise ValueError("Input dictionary must contain a 'method' field")
+        
+    method = data["method"]
+    if method not in _class_map:
+        raise ValueError(f"No MCP model class found for method: {method}")
+        
+    return _class_map[method].from_dict(data)
