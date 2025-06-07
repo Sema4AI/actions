@@ -19,8 +19,7 @@ def run_server(host: str = "127.0.0.1", port: int = 8000):
     )
 
     # Create the transport instance
-    transport = McpTransport()
-    app = transport.app
+    transport = McpTransport(app)
 
     uvicorn.run(app, host=host, port=port)
 

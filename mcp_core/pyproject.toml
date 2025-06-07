@@ -9,14 +9,16 @@ license = "Apache-2.0"
 packages = [{ include = "sema4ai/mcp_core", from = "src" }]
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.11"
 fastapi-slim = "^0.115.11"
 httpx = "^0.28.1"
 uvicorn = "^0.34.0"
 sse-starlette = "^2.3.6"
+sema4ai-common = "^0.1.1"
 
 [tool.poetry.group.dev.dependencies]
 sema4ai-devutils = { path = "../devutils/", develop = true }
+pytest-asyncio = "^1.0.0"
 
 [tool.mypy]
 mypy_path = "src:tests"

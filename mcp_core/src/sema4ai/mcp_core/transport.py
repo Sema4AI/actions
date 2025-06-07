@@ -4,8 +4,7 @@ import uuid
 from typing import Dict, List, Optional, Union
 
 from fastapi import FastAPI, Header, HTTPException, Request, Response
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from sse_starlette.sse import EventSourceResponse
 
