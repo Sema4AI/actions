@@ -30,17 +30,6 @@ class McpTransport:
             #     An array batching one or more requests and/or notifications
             #     An array batching one or more responses
 
-            # Handle initialization request
-            if isinstance(body, dict) and body.get("method") == "initialize":
-                response = JSONResponse(
-                    content={"jsonrpc": "2.0", "id": body.get("id"), "result": {}},
-                )
-                return response
-
-            # Handle notifications and responses
-            if isinstance(body, dict) and body.get("id") is None:
-                return Response(status_code=202)
-
             # For requests, initiate SSE stream
             return EventSourceResponse(
                 self.handle_sse_stream(body),
