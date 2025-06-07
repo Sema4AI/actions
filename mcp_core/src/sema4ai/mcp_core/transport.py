@@ -5,18 +5,7 @@ from typing import Dict, List, Optional, Union
 
 from fastapi import FastAPI, Header, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
 from sse_starlette.sse import EventSourceResponse
-
-
-# JSON-RPC message types
-class JsonRpcMessage(BaseModel):
-    jsonrpc: str = "2.0"
-    id: Optional[Union[str, int]] = None
-    method: Optional[str] = None
-    params: Optional[Union[Dict, List]] = None
-    result: Optional[Union[Dict, List, str, int, float, bool, None]] = None
-    error: Optional[Dict] = None
 
 
 class McpTransport:
