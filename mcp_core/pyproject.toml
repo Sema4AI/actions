@@ -1,12 +1,12 @@
 [tool.poetry]
-name = "sema4ai-mcp"
+name = "sema4ai-mcp-core"
 version = "0.0.1"
 description = "Sema4AI Model Context Protocol (MCP)"
 authors = ["Sema4.ai Engineering <engineering@sema4.ai>"]
 readme = "README.md"
 repository = "https://github.com/Sema4AI/actions/"
 license = "Apache-2.0"
-packages = [{ include = "sema4ai/mcp", from = "src" }]
+packages = [{ include = "sema4ai/mcp_core", from = "src" }]
 
 [tool.poetry.dependencies]
 python = "^3.10"
