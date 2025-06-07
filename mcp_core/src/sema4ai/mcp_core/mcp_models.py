@@ -1,4 +1,4 @@
-from typing import Any, TypeVar, Union, get_type_hints, Literal
+from typing import Any, TypeVar, Literal
 from dataclasses import dataclass, field
 from enum import Enum
 

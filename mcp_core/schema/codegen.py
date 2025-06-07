@@ -2,7 +2,8 @@ import json
 import os
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Literal, TypeVar, Union, get_type_hints
+from typing import Any, Literal, TypeVar
+
 
 T = TypeVar("T")
 
@@ -81,7 +82,7 @@ def generate_all_classes(schema_data: dict[str, Any]) -> str:
     definitions = schema_data.get("definitions", {})
 
     # Generate imports
-    imports = """from typing import Any, TypeVar, Union, get_type_hints, Literal
+    imports = """from typing import Any, TypeVar, Literal
 from dataclasses import dataclass, field
 from enum import Enum
 
