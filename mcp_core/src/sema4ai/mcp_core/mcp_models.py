@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Type, TypeVar, Union, get_type_hints, Literal
+from typing import Any, TypeVar
 from dataclasses import dataclass, field
 from enum import Enum
 
@@ -14,11 +14,11 @@ class BaseModel:
     """Base class for all MCP models."""
     
     @classmethod
-    def from_dict(cls: Type[T], data: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], data: dict[str, Any]) -> T:
         """Create an instance from a dictionary."""
         return cls(**data)
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert the instance to a dictionary."""
         return {k: v for k, v in self.__dict__.items() if v is not None}
     
@@ -36,7 +36,7 @@ class BaseModel:
 @dataclass
 class Annotations(BaseModel):
     """Optional annotations for the client. The client can use annotations to inform how objects are used or displayed"""
-    audience: List[str] = field(default=None)
+    audience: list[str] = field(default=None)
     priority: float = field(default=None)
 
 
@@ -61,7 +61,7 @@ class BlobResourceContents(BaseModel):
 class CallToolRequest(BaseModel):
     """Used by the client to invoke a tool provided by the server."""
     method: str = field(default=...)
-    params: Dict[str, Any] = field(default=...)
+    params: dict[str, Any] = field(default=...)
 
 
 @dataclass
@@ -76,8 +76,8 @@ and self-correct.
 However, any errors in _finding_ the tool, an error indicating that the
 server does not support tool calls, or any other exceptional conditions,
 should be reported as an MCP error response."""
-    _meta: Dict[str, Any] = field(default=None)
-    content: List[str] = field(default=...)
+    _meta: dict[str, Any] = field(default=None)
+    content: list[str] = field(default=...)
     isError: bool = field(default=None)
 
 
@@ -91,42 +91,42 @@ This notification indicates that the result will be unused, so any associated pr
 
 A client MUST NOT attempt to cancel its `initialize` request."""
     method: str = field(default=...)
-    params: Dict[str, Any] = field(default=...)
+    params: dict[str, Any] = field(default=...)
 
 
 @dataclass
 class ClientCapabilities(BaseModel):
     """Capabilities a client may support. Known capabilities are defined here, in this schema, but this is not a closed set: any client can define its own, additional capabilities."""
-    experimental: Dict[str, Any] = field(default=None)
-    roots: Dict[str, Any] = field(default=None)
-    sampling: Dict[str, Any] = field(default=None)
+    experimental: dict[str, Any] = field(default=None)
+    roots: dict[str, Any] = field(default=None)
+    sampling: dict[str, Any] = field(default=None)
 
 
 @dataclass
 class CompleteRequest(BaseModel):
     """A request from the client to the server, to ask for completion options."""
     method: str = field(default=...)
-    params: Dict[str, Any] = field(default=...)
+    params: dict[str, Any] = field(default=...)
 
 
 @dataclass
 class CompleteResult(BaseModel):
     """The server's response to a completion/complete request"""
-    _meta: Dict[str, Any] = field(default=None)
-    completion: Dict[str, Any] = field(default=...)
+    _meta: dict[str, Any] = field(default=None)
+    completion: dict[str, Any] = field(default=...)
 
 
 @dataclass
 class CreateMessageRequest(BaseModel):
     """A request from the server to sample an LLM via the client. The client has full discretion over which model to select. The client should also inform the user before beginning sampling, to allow them to inspect the request (human in the loop) and decide whether to approve it."""
     method: str = field(default=...)
-    params: Dict[str, Any] = field(default=...)
+    params: dict[str, Any] = field(default=...)
 
 
 @dataclass
 class CreateMessageResult(BaseModel):
     """The client's response to a sampling/create_message request from the server. The client should inform the user before returning the sampled message, to allow them to inspect the response (human in the loop) and decide whether to allow the server to see it."""
-    _meta: Dict[str, Any] = field(default=None)
+    _meta: dict[str, Any] = field(default=None)
     content: str = field(default=...)
     model: str = field(default=...)
     role: str = field(default=...)
@@ -148,15 +148,15 @@ of the LLM and/or the user."""
 class GetPromptRequest(BaseModel):
     """Used by the client to get a prompt provided by the server."""
     method: str = field(default=...)
-    params: Dict[str, Any] = field(default=...)
+    params: dict[str, Any] = field(default=...)
 
 
 @dataclass
 class GetPromptResult(BaseModel):
     """The server's response to a prompts/get request from the client."""
-    _meta: Dict[str, Any] = field(default=None)
+    _meta: dict[str, Any] = field(default=None)
     description: str = field(default=None)
-    messages: List[str] = field(default=...)
+    messages: list[str] = field(default=...)
 
 
 @dataclass
@@ -179,13 +179,13 @@ class Implementation(BaseModel):
 class InitializeRequest(BaseModel):
     """This request is sent from the client to the server when it first connects, asking it to begin initialization."""
     method: str = field(default=...)
-    params: Dict[str, Any] = field(default=...)
+    params: dict[str, Any] = field(default=...)
 
 
 @dataclass
 class InitializeResult(BaseModel):
     """After receiving an initialize request from the client, the server sends this response."""
-    _meta: Dict[str, Any] = field(default=None)
+    _meta: dict[str, Any] = field(default=None)
     capabilities: str = field(default=...)
     instructions: str = field(default=None)
     protocolVersion: str = field(default=...)
@@ -196,13 +196,13 @@ class InitializeResult(BaseModel):
 class InitializedNotification(BaseModel):
     """This notification is sent from the client to the server after initialization has finished."""
     method: str = field(default=...)
-    params: Dict[str, Any] = field(default=None)
+    params: dict[str, Any] = field(default=None)
 
 
 @dataclass
 class JSONRPCError(BaseModel):
     """A response to a request that indicates an error occurred."""
-    error: Dict[str, Any] = field(default=...)
+    error: dict[str, Any] = field(default=...)
     id: str = field(default=...)
     jsonrpc: str = field(default=...)
 
@@ -212,7 +212,7 @@ class JSONRPCNotification(BaseModel):
     """A notification which does not expect a response."""
     jsonrpc: str = field(default=...)
     method: str = field(default=...)
-    params: Dict[str, Any] = field(default=None)
+    params: dict[str, Any] = field(default=None)
 
 
 @dataclass
@@ -221,7 +221,7 @@ class JSONRPCRequest(BaseModel):
     id: str = field(default=...)
     jsonrpc: str = field(default=...)
     method: str = field(default=...)
-    params: Dict[str, Any] = field(default=None)
+    params: dict[str, Any] = field(default=None)
 
 
 @dataclass
@@ -236,45 +236,45 @@ class JSONRPCResponse(BaseModel):
 class ListPromptsRequest(BaseModel):
     """Sent from the client to request a list of prompts and prompt templates the server has."""
     method: str = field(default=...)
-    params: Dict[str, Any] = field(default=None)
+    params: dict[str, Any] = field(default=None)
 
 
 @dataclass
 class ListPromptsResult(BaseModel):
     """The server's response to a prompts/list request from the client."""
-    _meta: Dict[str, Any] = field(default=None)
+    _meta: dict[str, Any] = field(default=None)
     nextCursor: str = field(default=None)
-    prompts: List[str] = field(default=...)
+    prompts: list[str] = field(default=...)
 
 
 @dataclass
 class ListResourceTemplatesRequest(BaseModel):
     """Sent from the client to request a list of resource templates the server has."""
     method: str = field(default=...)
-    params: Dict[str, Any] = field(default=None)
+    params: dict[str, Any] = field(default=None)
 
 
 @dataclass
 class ListResourceTemplatesResult(BaseModel):
     """The server's response to a resources/templates/list request from the client."""
-    _meta: Dict[str, Any] = field(default=None)
+    _meta: dict[str, Any] = field(default=None)
     nextCursor: str = field(default=None)
-    resourceTemplates: List[str] = field(default=...)
+    resourceTemplates: list[str] = field(default=...)
 
 
 @dataclass
 class ListResourcesRequest(BaseModel):
     """Sent from the client to request a list of resources the server has."""
     method: str = field(default=...)
-    params: Dict[str, Any] = field(default=None)
+    params: dict[str, Any] = field(default=None)
 
 
 @dataclass
 class ListResourcesResult(BaseModel):
     """The server's response to a resources/list request from the client."""
-    _meta: Dict[str, Any] = field(default=None)
+    _meta: dict[str, Any] = field(default=None)
     nextCursor: str = field(default=None)
-    resources: List[str] = field(default=...)
+    resources: list[str] = field(default=...)
 
 
 @dataclass
@@ -287,7 +287,7 @@ on.
 This request is typically used when the server needs to understand the file system
 structure or access specific locations that the client has permission to read from."""
     method: str = field(default=...)
-    params: Dict[str, Any] = field(default=None)
+    params: dict[str, Any] = field(default=None)
 
 
 @dataclass
@@ -295,30 +295,30 @@ class ListRootsResult(BaseModel):
     """The client's response to a roots/list request from the server.
 This result contains an array of Root objects, each representing a root directory
 or file that the server can operate on."""
-    _meta: Dict[str, Any] = field(default=None)
-    roots: List[str] = field(default=...)
+    _meta: dict[str, Any] = field(default=None)
+    roots: list[str] = field(default=...)
 
 
 @dataclass
 class ListToolsRequest(BaseModel):
     """Sent from the client to request a list of tools the server has."""
     method: str = field(default=...)
-    params: Dict[str, Any] = field(default=None)
+    params: dict[str, Any] = field(default=None)
 
 
 @dataclass
 class ListToolsResult(BaseModel):
     """The server's response to a tools/list request from the client."""
-    _meta: Dict[str, Any] = field(default=None)
+    _meta: dict[str, Any] = field(default=None)
     nextCursor: str = field(default=None)
-    tools: List[str] = field(default=...)
+    tools: list[str] = field(default=...)
 
 
 @dataclass
 class LoggingMessageNotification(BaseModel):
     """Notification of a log message passed from server to client. If no logging/setLevel request has been sent from the client, the server MAY decide which messages to send automatically."""
     method: str = field(default=...)
-    params: Dict[str, Any] = field(default=...)
+    params: dict[str, Any] = field(default=...)
 
 
 @dataclass
@@ -344,7 +344,7 @@ These preferences are always advisory. The client MAY ignore them. It is also
 up to the client to decide how to interpret these preferences and how to
 balance them against other considerations."""
     costPriority: float = field(default=None)
-    hints: List[str] = field(default=None)
+    hints: list[str] = field(default=None)
     intelligencePriority: float = field(default=None)
     speedPriority: float = field(default=None)
 
@@ -353,20 +353,20 @@ balance them against other considerations."""
 class Notification(BaseModel):
 
     method: str = field(default=...)
-    params: Dict[str, Any] = field(default=None)
+    params: dict[str, Any] = field(default=None)
 
 
 @dataclass
 class PaginatedRequest(BaseModel):
 
     method: str = field(default=...)
-    params: Dict[str, Any] = field(default=None)
+    params: dict[str, Any] = field(default=None)
 
 
 @dataclass
 class PaginatedResult(BaseModel):
 
-    _meta: Dict[str, Any] = field(default=None)
+    _meta: dict[str, Any] = field(default=None)
     nextCursor: str = field(default=None)
 
 
@@ -374,20 +374,20 @@ class PaginatedResult(BaseModel):
 class PingRequest(BaseModel):
     """A ping, issued by either the server or the client, to check that the other party is still alive. The receiver must promptly respond, or else may be disconnected."""
     method: str = field(default=...)
-    params: Dict[str, Any] = field(default=None)
+    params: dict[str, Any] = field(default=None)
 
 
 @dataclass
 class ProgressNotification(BaseModel):
     """An out-of-band notification used to inform the receiver of a progress update for a long-running request."""
     method: str = field(default=...)
-    params: Dict[str, Any] = field(default=...)
+    params: dict[str, Any] = field(default=...)
 
 
 @dataclass
 class Prompt(BaseModel):
     """A prompt or prompt template that the server offers."""
-    arguments: List[str] = field(default=None)
+    arguments: list[str] = field(default=None)
     description: str = field(default=None)
     name: str = field(default=...)
 
@@ -404,7 +404,7 @@ class PromptArgument(BaseModel):
 class PromptListChangedNotification(BaseModel):
     """An optional notification from the server to the client, informing it that the list of prompts it offers has changed. This may be issued by servers without any previous subscription from the client."""
     method: str = field(default=...)
-    params: Dict[str, Any] = field(default=None)
+    params: dict[str, Any] = field(default=None)
 
 
 @dataclass
@@ -428,21 +428,21 @@ class PromptReference(BaseModel):
 class ReadResourceRequest(BaseModel):
     """Sent from the client to the server, to read a specific resource URI."""
     method: str = field(default=...)
-    params: Dict[str, Any] = field(default=...)
+    params: dict[str, Any] = field(default=...)
 
 
 @dataclass
 class ReadResourceResult(BaseModel):
     """The server's response to a resources/read request from the client."""
-    _meta: Dict[str, Any] = field(default=None)
-    contents: List[str] = field(default=...)
+    _meta: dict[str, Any] = field(default=None)
+    contents: list[str] = field(default=...)
 
 
 @dataclass
 class Request(BaseModel):
 
     method: str = field(default=...)
-    params: Dict[str, Any] = field(default=None)
+    params: dict[str, Any] = field(default=None)
 
 
 @dataclass
@@ -467,7 +467,7 @@ class ResourceContents(BaseModel):
 class ResourceListChangedNotification(BaseModel):
     """An optional notification from the server to the client, informing it that the list of resources it can read from has changed. This may be issued by servers without any previous subscription from the client."""
     method: str = field(default=...)
-    params: Dict[str, Any] = field(default=None)
+    params: dict[str, Any] = field(default=None)
 
 
 @dataclass
@@ -491,13 +491,13 @@ class ResourceTemplate(BaseModel):
 class ResourceUpdatedNotification(BaseModel):
     """A notification from the server to the client, informing it that a resource has changed and may need to be read again. This should only be sent if the client previously sent a resources/subscribe request."""
     method: str = field(default=...)
-    params: Dict[str, Any] = field(default=...)
+    params: dict[str, Any] = field(default=...)
 
 
 @dataclass
 class Result(BaseModel):
 
-    _meta: Dict[str, Any] = field(default=None)
+    _meta: dict[str, Any] = field(default=None)
 
 
 @dataclass
@@ -513,7 +513,7 @@ class RootsListChangedNotification(BaseModel):
 This notification should be sent whenever the client adds, removes, or modifies any root.
 The server should then request an updated list of roots using the ListRootsRequest."""
     method: str = field(default=...)
-    params: Dict[str, Any] = field(default=None)
+    params: dict[str, Any] = field(default=None)
 
 
 @dataclass
@@ -526,26 +526,26 @@ class SamplingMessage(BaseModel):
 @dataclass
 class ServerCapabilities(BaseModel):
     """Capabilities that a server may support. Known capabilities are defined here, in this schema, but this is not a closed set: any server can define its own, additional capabilities."""
-    completions: Dict[str, Any] = field(default=None)
-    experimental: Dict[str, Any] = field(default=None)
-    logging: Dict[str, Any] = field(default=None)
-    prompts: Dict[str, Any] = field(default=None)
-    resources: Dict[str, Any] = field(default=None)
-    tools: Dict[str, Any] = field(default=None)
+    completions: dict[str, Any] = field(default=None)
+    experimental: dict[str, Any] = field(default=None)
+    logging: dict[str, Any] = field(default=None)
+    prompts: dict[str, Any] = field(default=None)
+    resources: dict[str, Any] = field(default=None)
+    tools: dict[str, Any] = field(default=None)
 
 
 @dataclass
 class SetLevelRequest(BaseModel):
     """A request from the client to the server, to enable or adjust logging."""
     method: str = field(default=...)
-    params: Dict[str, Any] = field(default=...)
+    params: dict[str, Any] = field(default=...)
 
 
 @dataclass
 class SubscribeRequest(BaseModel):
     """Sent from the client to request resources/updated notifications from the server whenever a particular resource changes."""
     method: str = field(default=...)
-    params: Dict[str, Any] = field(default=...)
+    params: dict[str, Any] = field(default=...)
 
 
 @dataclass
@@ -569,7 +569,7 @@ class Tool(BaseModel):
     """Definition for a tool the client can call."""
     annotations: str = field(default=None)
     description: str = field(default=None)
-    inputSchema: Dict[str, Any] = field(default=...)
+    inputSchema: dict[str, Any] = field(default=...)
     name: str = field(default=...)
 
 
@@ -594,11 +594,11 @@ received from untrusted servers."""
 class ToolListChangedNotification(BaseModel):
     """An optional notification from the server to the client, informing it that the list of tools it offers has changed. This may be issued by servers without any previous subscription from the client."""
     method: str = field(default=...)
-    params: Dict[str, Any] = field(default=None)
+    params: dict[str, Any] = field(default=None)
 
 
 @dataclass
 class UnsubscribeRequest(BaseModel):
     """Sent from the client to request cancellation of resources/updated notifications from the server. This should follow a previous resources/subscribe request."""
     method: str = field(default=...)
-    params: Dict[str, Any] = field(default=...)
+    params: dict[str, Any] = field(default=...)

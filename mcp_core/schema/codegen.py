@@ -2,17 +2,7 @@ import json
 import os
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import (
-    Any,
-    Dict,
-    List,
-    Literal,
-    Optional,
-    Type,
-    TypeVar,
-    Union,
-    get_type_hints,
-)
+from typing import Any, Literal, TypeVar, Union, get_type_hints
 
 T = TypeVar("T")
 
@@ -23,7 +13,7 @@ class MessageType(Enum):
     RESPONSE = "response"
 
 
-def create_python_type(schema_type: str, schema: Dict[str, Any]) -> str:
+def create_python_type(schema_type: str, schema: dict[str, Any]) -> str:
     """Convert JSON schema type to Python type annotation."""
     if schema_type == "string":
         if "enum" in schema:
@@ -41,14 +31,14 @@ def create_python_type(schema_type: str, schema: Dict[str, Any]) -> str:
             item_type = create_python_type(items.get("type", "string"), items)
         else:
             item_type = "Any"
-        return f"List[{item_type}]"
+        return f"list[{item_type}]"
     elif schema_type == "object":
-        return "Dict[str, Any]"
+        return "dict[str, Any]"
     return "Any"
 
 
 def generate_class(
-    name: str, schema: Dict[str, Any], base_class: str = "BaseModel"
+    name: str, schema: dict[str, Any], base_class: str = "BaseModel"
 ) -> str:
     """Generate a Python class from a JSON schema definition."""
     properties = schema.get("properties", {})
@@ -78,12 +68,12 @@ class {name}({base_class}):
     return class_def
 
 
-def generate_all_classes(schema_data: Dict[str, Any]) -> str:
+def generate_all_classes(schema_data: dict[str, Any]) -> str:
     """Generate all Python classes from the schema."""
     definitions = schema_data.get("definitions", {})
 
     # Generate imports
-    imports = """from typing import Any, Dict, List, Optional, Type, TypeVar, Union, get_type_hints, Literal
+    imports = """from typing import Any, TypeVar
 from dataclasses import dataclass, field
 from enum import Enum
 
@@ -102,11 +92,11 @@ class BaseModel:
     \"\"\"Base class for all MCP models.\"\"\"
     
     @classmethod
-    def from_dict(cls: Type[T], data: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], data: dict[str, Any]) -> T:
         \"\"\"Create an instance from a dictionary.\"\"\"
         return cls(**data)
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         \"\"\"Convert the instance to a dictionary.\"\"\"
         return {k: v for k, v in self.__dict__.items() if v is not None}
     
