@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Any, Callable, Optional, overload
 
-__version__ = "0.1.0"
+__version__ = "0.0.1"
 version_info = [int(x) for x in __version__.split(".")]
 
 
@@ -11,38 +11,41 @@ def tool(func: Callable) -> Callable:
 
 
 @overload
-def tool(
-    *, is_consequential: Optional[bool] = None, display_name: Optional[str] = None
-) -> Callable:
+def tool(*, display_name: Optional[str] = None) -> Callable:
     ...
 
 
 def tool(*args, **kwargs):
     """
-    Decorator for tools which can be executed by `sema4ai.actions`.
+    Decorator for tools which can be used by AI agents to perform actions.
 
-    i.e.:
+    Example:
+        ```python
+        from sema4ai.mcp import tool
 
-    If a file such as actions.py has the contents below:
+        @tool
+        def assign_ticket(ticket_id: str, user_id: str) -> bool:
+            \"\"\"
+            Assign a ticket to a user.
 
-    ```python
-    from sema4ai.mcp import tool
+            Args:
+                ticket_id: The ID of the ticket to assign.
+                user_id: The ID of the user to assign the ticket to.
 
-    @tool
-    def execute_tool(param1: str, param2: int) -> dict:
-        ...
-    ```
+            Returns:
+                True if the ticket was assigned successfully, False otherwise.
+            \"\"\"
+            ...
+            return True
+        ```
 
     Note that a tool needs sema4ai actions to be executed.
     The command line to execute it is:
 
-    python -m sema4ai.actions run actions.py -a execute_tool
+    python -m sema4ai.actions run actions.py -a assign_ticket
 
     Args:
         func: A function which is a tool to `sema4ai.mcp`.
-        is_consequential: Whether the action is consequential or not.
-            This will add `x-openai-isConsequential: true` to the action
-            metadata and shown in OpenApi spec.
         display_name: A name to be displayed for this action.
             If given will be used as the openapi.json summary for this action.
     """
@@ -58,38 +61,39 @@ def resource(func: Callable) -> Callable:
 
 
 @overload
-def resource(
-    *, is_consequential: Optional[bool] = None, display_name: Optional[str] = None
-) -> Callable:
+def resource(*, display_name: Optional[str] = None) -> Callable:
     ...
 
 
 def resource(*args, **kwargs):
     """
-    Decorator for resources which can be executed by `sema4ai.actions`.
+    Decorator for resources which provide data to the LLM.
 
-    i.e.:
+    Example:
+        ```python
+        from sema4ai.mcp import resource
 
-    If a file such as actions.py has the contents below:
+        @resource("tickets://{ticket_id}")
+        def get_ticket(ticket_id: str) -> dict[str, str]:
+            \"\"\"
+            Get ticket information from the database.
 
-    ```python
-    from sema4ai.mcp import resource
+            Args:
+                ticket_id: The ID of the ticket to get information for.
 
-    @resource
-    def manage_resource(param1: str, param2: int) -> dict:
-        ...
-    ```
+            Returns:
+                A dictionary containing the ticket information.
+            \"\"\"
+            return {"id": ticket_id, "summary": "This is a test ticket"}
+        ```
 
     Note that a resource needs sema4ai actions to be executed.
     The command line to execute it is:
 
-    python -m sema4ai.actions run actions.py -a manage_resource
+    python -m sema4ai.actions run actions.py -a get_ticket
 
     Args:
         func: A function which is a resource to `sema4ai.mcp`.
-        is_consequential: Whether the action is consequential or not.
-            This will add `x-openai-isConsequential: true` to the action
-            metadata and shown in OpenApi spec.
         display_name: A name to be displayed for this action.
             If given will be used as the openapi.json summary for this action.
     """
@@ -105,38 +109,33 @@ def prompt(func: Callable) -> Callable:
 
 
 @overload
-def prompt(
-    *, is_consequential: Optional[bool] = None, display_name: Optional[str] = None
-) -> Callable:
+def prompt(*, display_name: Optional[str] = None) -> Callable:
     ...
 
 
 def prompt(*args, **kwargs):
     """
-    Decorator for prompts which can be executed by `sema4ai.actions`.
+    Decorator for functions that generate prompts for the LLM.
 
-    i.e.:
+    Example:
+        ```python
+        from sema4ai.mcp import prompt
 
-    If a file such as actions.py has the contents below:
-
-    ```python
-    from sema4ai.mcp import prompt
-
-    @prompt
-    def generate_prompt(param1: str, param2: int) -> str:
-        ...
-    ```
+        @prompt
+        def make_a_summary(text: str) -> str:
+            \"\"\"
+            Provide a prompt to the LLM.
+            \"\"\"
+            return "Please make a summary of the following text: {text}"
+        ```
 
     Note that a prompt needs sema4ai actions to be executed.
     The command line to execute it is:
 
-    python -m sema4ai.actions run actions.py -a generate_prompt
+    python -m sema4ai.actions run actions.py -a make_a_summary
 
     Args:
         func: A function which is a prompt to `sema4ai.mcp`.
-        is_consequential: Whether the action is consequential or not.
-            This will add `x-openai-isConsequential: true` to the action
-            metadata and shown in OpenApi spec.
         display_name: A name to be displayed for this action.
             If given will be used as the openapi.json summary for this action.
     """
