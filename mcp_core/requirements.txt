@@ -1,0 +1,1 @@
+sse-starlette>=1.0.0 
