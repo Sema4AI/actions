@@ -306,7 +306,6 @@ def test_mcp_integration_with_actions_and_api_key(
 
 
 @pytest.mark.integration_test
-@pytest.mark.skip(reason="The support for cancellation is not there in the python SDK")
 def test_mcp_tool_cancellation_with_actions(
     action_server_process: ActionServerProcess,
 ) -> None:
@@ -324,6 +323,8 @@ def test_mcp_tool_cancellation_with_actions(
     )
 
     async def check_cancellation() -> str:
+        import time
+
         from mcp.types import (
             CancelledNotification,
             CancelledNotificationParams,
@@ -358,6 +359,46 @@ def test_mcp_tool_cancellation_with_actions(
                 [tool_call, sleep_call], return_when=asyncio.FIRST_COMPLETED
             )
 
+            print("--------------------------------")
+            print("--------------------------------")
+            print("--------------------------------")
+            print("Cancelling the tool call")
+            print("--------------------------------")
+            print("--------------------------------")
+            print("--------------------------------")
+            # Cancel the tool call
+            await asyncio.create_task(
+                session.send_notification(
+                    ClientNotification(
+                        CancelledNotification(
+                            method="notifications/cancelled",
+                            params=CancelledNotificationParams(requestId=request_id),
+                        )
+                    )
+                )
+            )
+
+            time.sleep(1)
+
+            print("--------------------------------")
+            print("--------------------------------")
+            print("--------------------------------")
+            print("Tool call 2")
+            print("--------------------------------")
+            print("--------------------------------")
+            print("--------------------------------")
+            # Another tool call
+            coro = session.call_tool(long_running_tool.name, {"duration": 1})
+            _result = await asyncio.create_task(coro)
+            print(_result)
+
+            print("--------------------------------")
+            print("--------------------------------")
+            print("--------------------------------")
+            print("Cancelling the tool call")
+            print("--------------------------------")
+            print("--------------------------------")
+            print("--------------------------------")
             # Cancel the tool call
             await session.send_notification(
                 ClientNotification(
@@ -367,6 +408,8 @@ def test_mcp_tool_cancellation_with_actions(
                     )
                 )
             )
+
+            time.sleep(3)
 
             # Wait for the tool call to complete (should be cancelled)
             _result = await tool_call
