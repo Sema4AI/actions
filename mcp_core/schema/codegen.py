@@ -578,13 +578,17 @@ def code_format(code: str) -> str:
     """Format code using ruff via stdin/stdout."""
     import subprocess
 
-    result = subprocess.run(
-        ["ruff", "format", "-"],
-        input=code.encode("utf-8"),
-        stdout=subprocess.PIPE,
-        check=True,
-    )
-    return result.stdout.decode("utf-8")
+    try:
+        result = subprocess.run(
+            ["ruff", "format", "-"],
+            input=code.encode("utf-8"),
+            stdout=subprocess.PIPE,
+            check=True,
+        )
+        return result.stdout.decode("utf-8")
+    except Exception as e:
+        print(f"Error formatting code using ruff: {e}")
+        return code
 
 
 def main():
