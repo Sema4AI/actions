@@ -181,11 +181,13 @@ def wrap_docstring(text: str, indent: int = 4) -> str:
     if len(lines) == 1:
         return f'    """{lines[0]}"""'
     else:
-        return (
-            f'    """{lines[0]}\n'
-            + "\n".join(f"    {line}" for line in lines[1:])
-            + '"""'
-        )
+        # Create a new indenter for the final docstring formatting
+        final_indenter = TextIndenter(indent_size=4)
+        final_indenter.add_line('    """')
+        for line in lines:
+            final_indenter.add_line(f"    {line}")
+        final_indenter.add_line('    """')
+        return final_indenter.get_text()
 
 
 def generate_class(
@@ -619,24 +621,37 @@ T = TypeVar('T')
     indenter.add_line("")
 
     # Generate factory function
-    indenter.add_block(
-        """def create_mcp_model(data: dict[str, Any]) -> BaseModel:
-    \"\"\"Create an MCP model instance from a dictionary based on its method field.
-    \n    Args:
-        data: Dictionary containing the model data
-        \n    Returns:
-        An instance of the appropriate MCP model class
-        \n    Raises:
-        ValueError: If the method field is missing or no matching class is found
-    \"\"\"
-    if "method" not in data:
-        raise ValueError("Input dictionary must contain a 'method' field")
-    method = data["method"]
-    if method not in _class_map:
-        raise ValueError(f"No MCP model class found for method: {method}")
-    return _class_map[method].from_dict(data)
-"""
+    factory_indenter = TextIndenter()
+    factory_indenter.add_line(
+        "def create_mcp_model(data: dict[str, Any]) -> BaseModel:"
     )
+    factory_indenter.add_line(
+        '    """Create an MCP model instance from a dictionary based on its method field.'
+    )
+    factory_indenter.add_line("")
+    factory_indenter.add_line("    Args:")
+    factory_indenter.add_line("        data: Dictionary containing the model data")
+    factory_indenter.add_line("")
+    factory_indenter.add_line("    Returns:")
+    factory_indenter.add_line("        An instance of the appropriate MCP model class")
+    factory_indenter.add_line("")
+    factory_indenter.add_line("    Raises:")
+    factory_indenter.add_line(
+        "        ValueError: If the method field is missing or no matching class is found"
+    )
+    factory_indenter.add_line('    """')
+    factory_indenter.add_line('    if "method" not in data:')
+    factory_indenter.add_line(
+        "        raise ValueError(\"Input dictionary must contain a 'method' field\")"
+    )
+    factory_indenter.add_line('    method = data["method"]')
+    factory_indenter.add_line("    if method not in _class_map:")
+    factory_indenter.add_line(
+        f'        raise ValueError(f"No MCP model class found for method: {{method}}")'
+    )
+    factory_indenter.add_line("    return _class_map[method].from_dict(data)")
+
+    indenter.add_block(factory_indenter.get_text())
 
     return indenter.get_text()
 
@@ -708,59 +723,66 @@ def generate_union_type_disambiguation(cls: type, union_type: type) -> str:
                 # If no required fields in schema, use all fields
                 required_fields[t] = list(t.__annotations__.keys())
 
+    # Create indenter for the disambiguation code
+    indenter = TextIndenter()
+
     # Generate the disambiguation code
-    code = []
-    code.append("    @classmethod")
-    code.append("    def from_dict(cls: Type[T], data: dict[str, Any]) -> T:")
-    code.append('        """Create an instance from a dictionary."""')
-    code.append("        if not isinstance(data, dict):")
-    code.append(
+    indenter.add_line("    @classmethod")
+    indenter.add_line("    def from_dict(cls: Type[T], data: dict[str, Any]) -> T:")
+    indenter.add_line('        """Create an instance from a dictionary."""')
+    indenter.add_line("        if not isinstance(data, dict):")
+    indenter.add_line(
         '            raise ValueError(f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}")'
     )
-    code.append("        kwargs = {}")
-    code.append("")
-    code.append("        # Create a mapping of required fields for each type")
-    code.append("        required_props_map = {")
+    indenter.add_line("        kwargs = {}")
+    indenter.add_line("")
+    indenter.add_line("        # Create a mapping of required fields for each type")
+    indenter.add_line("        required_props_map = {")
+    indenter.indent()
     for t, fields in required_fields.items():
-        code.append(f"            {t.__name__}: {fields},")
-    code.append("        }")
-    code.append("")
-    code.append("        # Check which type's required fields are present")
-    code.append("        matches = []")
-    code.append("        for type_name, required_fields in required_props_map.items():")
-    code.append("            if any(field in data for field in required_fields):")
-    code.append("                matches.append(type_name)")
-    code.append("")
-    code.append("        if len(matches) == 1:")
-    code.append("            # Use globals()[type_name] to get the class by name")
-    code.append("            return globals()[matches[0]].from_dict(data)")
-    code.append("        elif len(matches) > 1:")
-    code.append(
+        indenter.add_line(f"{t.__name__}: {fields},")
+    indenter.dedent()
+    indenter.add_line("        }")
+    indenter.add_line("")
+    indenter.add_line("        # Check which type's required fields are present")
+    indenter.add_line("        matches = []")
+    indenter.add_line(
+        "        for type_name, required_fields in required_props_map.items():"
+    )
+    indenter.add_line("            if any(field in data for field in required_fields):")
+    indenter.add_line("                matches.append(type_name)")
+    indenter.add_line("")
+    indenter.add_line("        if len(matches) == 1:")
+    indenter.add_line("            # Use globals()[type_name] to get the class by name")
+    indenter.add_line("            return globals()[matches[0]].from_dict(data)")
+    indenter.add_line("        elif len(matches) > 1:")
+    indenter.add_line(
         "            match_details = [f'{name} (requires any of {required_props_map[name]})' for name in matches]"
     )
-    code.append(
+    indenter.add_line(
         "            raise ValueError(f\"Ambiguous match for union type. Multiple types match: {'; '.join(match_details)}\")"
     )
-    code.append("        else:")
-    code.append("            available_fields = list(data.keys())")
-    code.append(
+    indenter.add_line("        else:")
+    indenter.add_line("            available_fields = list(data.keys())")
+    indenter.add_line(
         "            type_details = [f'{name} (requires any of {required_props_map[name]})' for name in required_props_map]"
     )
-    code.append(
+    indenter.add_line(
         "            raise ValueError(f\"No match for union type. Available fields: {available_fields}. Expected one of: {'; '.join(type_details)}\")"
     )
-    code.append("")
-    code.append("        return cls(**kwargs)")
+    indenter.add_line("")
+    indenter.add_line("        return cls(**kwargs)")
 
-    return "\n".join(code)
+    return indenter.get_text()
 
 
 def generate_class(cls: type) -> str:
     """Generate Python code for a Pydantic model class."""
-    code = []
-    code.append(f"class {cls.__name__}(BaseModel):")
-    code.append('    """Generated from JSON Schema."""')
-    code.append("")
+    indenter = TextIndenter()
+
+    indenter.add_line(f"class {cls.__name__}(BaseModel):")
+    indenter.add_line('    """Generated from JSON Schema."""')
+    indenter.add_line("")
 
     # Add fields
     for name, field in cls.model_fields.items():
@@ -768,15 +790,15 @@ def generate_class(cls: type) -> str:
         field_info = field.json_schema_extra or {}
         description = field_info.get("description", "")
         if description:
-            code.append(f"    # {description}")
-        code.append(f"    {name}: {field_type}")
-        code.append("")
+            indenter.add_line(f"    # {description}")
+        indenter.add_line(f"    {name}: {field_type}")
+        indenter.add_line("")
 
     # Add union type disambiguation if needed
     for name, field in cls.model_fields.items():
         field_type = field.annotation
         if hasattr(field_type, "__origin__") and field_type.__origin__ is Union:
-            code.append(generate_union_type_disambiguation(cls, field_type))
-            code.append("")
+            indenter.add_block(generate_union_type_disambiguation(cls, field_type))
+            indenter.add_line("")
 
-    return "\n".join(code)
+    return indenter.get_text()
