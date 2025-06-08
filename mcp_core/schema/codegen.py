@@ -299,16 +299,15 @@ def generate_class(
             item_type = field_type[5:-1]  # Extract type from list[type]
             indenter.add_line("converted_items = []", extra_indent=2)
             indenter.add_line("for item in value:", extra_indent=2)
-            indenter.add_line("if isinstance(item, dict):", extra_indent=3)
             # Check if the item type is a union
             if "|" in item_type:
                 types = [t.strip() for t in item_type.split("|")]
                 indenter.add_line(
-                    "# Try to disambiguate using const fields", extra_indent=4
+                    "# Try to disambiguate using const fields", extra_indent=3
                 )
-                indenter.add_line("type_value = item.get('type')", extra_indent=4)
-                indenter.add_line("type_to_class = {}", extra_indent=4)
-                indenter.add_line("required_props_map = {}", extra_indent=4)
+                indenter.add_line("type_value = item.get('type')", extra_indent=3)
+                indenter.add_line("type_to_class = {}", extra_indent=3)
+                indenter.add_line("required_props_map = {}", extra_indent=3)
                 for t in types:
                     if t != "None":
                         type_schema = definitions.get(t, {})
@@ -320,58 +319,58 @@ def generate_class(
                                 const_value = prop_schema_["const"]
                                 indenter.add_line(
                                     f"type_to_class[{repr(const_value)}] = {t}",
-                                    extra_indent=4,
+                                    extra_indent=3,
                                 )
                                 found_const = True
                         if not found_const and required_:
                             indenter.add_line(
                                 f"required_props_map[{t}] = {required_}",
-                                extra_indent=4,
+                                extra_indent=3,
                             )
                 indenter.add_line(
                     "if type_value is not None and type_value in type_to_class:",
-                    extra_indent=4,
+                    extra_indent=3,
                 )
                 indenter.add_line(
                     "converted_items.append(type_to_class[type_value].from_dict(item))",
+                    extra_indent=4,
+                )
+                indenter.add_line("else:", extra_indent=3)
+                indenter.add_line(
+                    "# Try to disambiguate by required properties", extra_indent=4
+                )
+                indenter.add_line("matches = []", extra_indent=4)
+                indenter.add_line(
+                    "for type_name, reqs in required_props_map.items():",
+                    extra_indent=4,
+                )
+                indenter.add_line("if all(r in item for r in reqs):", extra_indent=5)
+                indenter.add_line("matches.append(type_name)", extra_indent=6)
+                indenter.add_line("if len(matches) == 1:", extra_indent=4)
+                indenter.add_line(
+                    "converted_items.append(matches[0].from_dict(item))",
+                    extra_indent=5,
+                )
+                indenter.add_line("elif len(matches) > 1:", extra_indent=4)
+                indenter.add_line(
+                    "match_details = [f'{name} (requires any of {required_props_map[name]})' for name in matches]",
+                    extra_indent=5,
+                )
+                indenter.add_line(
+                    "raise ValueError(f\"Ambiguous match for union type. Multiple types match: {'; '.join(match_details)}\")",
                     extra_indent=5,
                 )
                 indenter.add_line("else:", extra_indent=4)
                 indenter.add_line(
-                    "# Try to disambiguate by required properties", extra_indent=5
-                )
-                indenter.add_line("matches = []", extra_indent=5)
-                indenter.add_line(
-                    "for type_name, reqs in required_props_map.items():",
-                    extra_indent=5,
-                )
-                indenter.add_line("if all(r in item for r in reqs):", extra_indent=6)
-                indenter.add_line("matches.append(type_name)", extra_indent=7)
-                indenter.add_line("if len(matches) == 1:", extra_indent=5)
-                indenter.add_line(
-                    "converted_items.append(matches[0].from_dict(item))",
-                    extra_indent=6,
-                )
-                indenter.add_line("elif len(matches) > 1:", extra_indent=5)
-                indenter.add_line(
-                    "match_details = [f'{name} (requires any of {required_props_map[name]})' for name in matches]",
-                    extra_indent=6,
-                )
-                indenter.add_line(
-                    "raise ValueError(f\"Ambiguous match for union type. Multiple types match: {'; '.join(match_details)}\")",
-                    extra_indent=6,
-                )
-                indenter.add_line("else:", extra_indent=5)
-                indenter.add_line(
-                    "available_fields = list(item.keys())", extra_indent=6
+                    "available_fields = list(item.keys())", extra_indent=5
                 )
                 indenter.add_line(
                     "type_details = [f'{name} (requires any of {required_props_map[name]})' for name in required_props_map]",
-                    extra_indent=6,
+                    extra_indent=5,
                 )
                 indenter.add_line(
                     "raise ValueError(f\"No match for union type. Available fields: {available_fields}. Expected one of: {'; '.join(type_details)}\")",
-                    extra_indent=6,
+                    extra_indent=5,
                 )
             else:
                 if (
@@ -387,14 +386,12 @@ def generate_class(
                     ]
                     or "Literal[" in item_type
                 ):
-                    indenter.add_line("converted_items.append(item)", extra_indent=4)
+                    indenter.add_line("converted_items.append(item)", extra_indent=3)
                 else:
                     indenter.add_line(
                         f"converted_items.append({item_type}.from_dict(item))",
-                        extra_indent=4,
+                        extra_indent=3,
                     )
-            indenter.add_line("else:", extra_indent=3)
-            indenter.add_line("converted_items.append(item)", extra_indent=4)
             indenter.add_line("value = converted_items", extra_indent=2)
         elif field_type in ["str", "int", "float", "bool"]:
             pass

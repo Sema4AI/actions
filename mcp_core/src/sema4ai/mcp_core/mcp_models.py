@@ -33,10 +33,7 @@ class Annotations(BaseModel):
                 )
             converted_items = []
             for item in value:
-                if isinstance(item, dict):
-                    converted_items.append(item)
-                else:
-                    converted_items.append(item)
+                converted_items.append(item)
             value = converted_items
         kwargs["audience"] = value
 
@@ -207,46 +204,41 @@ class CallToolResult(BaseModel):
                 )
             converted_items = []
             for item in value:
-                if isinstance(item, dict):
-                    # Try to disambiguate using const fields
-                    type_value = item.get("type")
-                    type_to_class = {}
-                    required_props_map = {}
-                    type_to_class["text"] = TextContent
-                    type_to_class["image"] = ImageContent
-                    type_to_class["audio"] = AudioContent
-                    type_to_class["resource"] = EmbeddedResource
-                    if type_value is not None and type_value in type_to_class:
-                        converted_items.append(
-                            type_to_class[type_value].from_dict(item)
+                # Try to disambiguate using const fields
+                type_value = item.get("type")
+                type_to_class = {}
+                required_props_map = {}
+                type_to_class["text"] = TextContent
+                type_to_class["image"] = ImageContent
+                type_to_class["audio"] = AudioContent
+                type_to_class["resource"] = EmbeddedResource
+                if type_value is not None and type_value in type_to_class:
+                    converted_items.append(type_to_class[type_value].from_dict(item))
+                else:
+                    # Try to disambiguate by required properties
+                    matches = []
+                    for type_name, reqs in required_props_map.items():
+                        if all(r in item for r in reqs):
+                            matches.append(type_name)
+                    if len(matches) == 1:
+                        converted_items.append(matches[0].from_dict(item))
+                    elif len(matches) > 1:
+                        match_details = [
+                            f"{name} (requires any of {required_props_map[name]})"
+                            for name in matches
+                        ]
+                        raise ValueError(
+                            f"Ambiguous match for union type. Multiple types match: {'; '.join(match_details)}"
                         )
                     else:
-                        # Try to disambiguate by required properties
-                        matches = []
-                        for type_name, reqs in required_props_map.items():
-                            if all(r in item for r in reqs):
-                                matches.append(type_name)
-                        if len(matches) == 1:
-                            converted_items.append(matches[0].from_dict(item))
-                        elif len(matches) > 1:
-                            match_details = [
-                                f"{name} (requires any of {required_props_map[name]})"
-                                for name in matches
-                            ]
-                            raise ValueError(
-                                f"Ambiguous match for union type. Multiple types match: {'; '.join(match_details)}"
-                            )
-                        else:
-                            available_fields = list(item.keys())
-                            type_details = [
-                                f"{name} (requires any of {required_props_map[name]})"
-                                for name in required_props_map
-                            ]
-                            raise ValueError(
-                                f"No match for union type. Available fields: {available_fields}. Expected one of: {'; '.join(type_details)}"
-                            )
-                else:
-                    converted_items.append(item)
+                        available_fields = list(item.keys())
+                        type_details = [
+                            f"{name} (requires any of {required_props_map[name]})"
+                            for name in required_props_map
+                        ]
+                        raise ValueError(
+                            f"No match for union type. Available fields: {available_fields}. Expected one of: {'; '.join(type_details)}"
+                        )
             value = converted_items
         kwargs["content"] = value
 
@@ -555,10 +547,7 @@ class CompleteResultCompletionParams(BaseModel):
                 raise ValueError(f"Expected a list for field values, got {type(value)}")
             converted_items = []
             for item in value:
-                if isinstance(item, dict):
-                    converted_items.append(item)
-                else:
-                    converted_items.append(item)
+                converted_items.append(item)
             value = converted_items
         kwargs["values"] = value
 
@@ -638,10 +627,7 @@ class CreateMessageRequestParamsParams(BaseModel):
                 )
             converted_items = []
             for item in value:
-                if isinstance(item, dict):
-                    converted_items.append(SamplingMessage.from_dict(item))
-                else:
-                    converted_items.append(item)
+                converted_items.append(SamplingMessage.from_dict(item))
             value = converted_items
         kwargs["messages"] = value
 
@@ -664,10 +650,7 @@ class CreateMessageRequestParamsParams(BaseModel):
                 )
             converted_items = []
             for item in value:
-                if isinstance(item, dict):
-                    converted_items.append(item)
-                else:
-                    converted_items.append(item)
+                converted_items.append(item)
             value = converted_items
         kwargs["stopSequences"] = value
 
@@ -926,10 +909,7 @@ class GetPromptResult(BaseModel):
                 )
             converted_items = []
             for item in value:
-                if isinstance(item, dict):
-                    converted_items.append(PromptMessage.from_dict(item))
-                else:
-                    converted_items.append(item)
+                converted_items.append(PromptMessage.from_dict(item))
             value = converted_items
         kwargs["messages"] = value
 
@@ -1488,10 +1468,7 @@ class ListPromptsResult(BaseModel):
                 )
             converted_items = []
             for item in value:
-                if isinstance(item, dict):
-                    converted_items.append(Prompt.from_dict(item))
-                else:
-                    converted_items.append(item)
+                converted_items.append(Prompt.from_dict(item))
             value = converted_items
         kwargs["prompts"] = value
 
@@ -1581,10 +1558,7 @@ class ListResourceTemplatesResult(BaseModel):
                 )
             converted_items = []
             for item in value:
-                if isinstance(item, dict):
-                    converted_items.append(ResourceTemplate.from_dict(item))
-                else:
-                    converted_items.append(item)
+                converted_items.append(ResourceTemplate.from_dict(item))
             value = converted_items
         kwargs["resourceTemplates"] = value
 
@@ -1674,10 +1648,7 @@ class ListResourcesResult(BaseModel):
                 )
             converted_items = []
             for item in value:
-                if isinstance(item, dict):
-                    converted_items.append(Resource.from_dict(item))
-                else:
-                    converted_items.append(item)
+                converted_items.append(Resource.from_dict(item))
             value = converted_items
         kwargs["resources"] = value
 
@@ -1793,10 +1764,7 @@ class ListRootsResult(BaseModel):
                 raise ValueError(f"Expected a list for field roots, got {type(value)}")
             converted_items = []
             for item in value:
-                if isinstance(item, dict):
-                    converted_items.append(Root.from_dict(item))
-                else:
-                    converted_items.append(item)
+                converted_items.append(Root.from_dict(item))
             value = converted_items
         kwargs["roots"] = value
 
@@ -1884,10 +1852,7 @@ class ListToolsResult(BaseModel):
                 raise ValueError(f"Expected a list for field tools, got {type(value)}")
             converted_items = []
             for item in value:
-                if isinstance(item, dict):
-                    converted_items.append(Tool.from_dict(item))
-                else:
-                    converted_items.append(item)
+                converted_items.append(Tool.from_dict(item))
             value = converted_items
         kwargs["tools"] = value
 
@@ -2029,10 +1994,7 @@ class ModelPreferences(BaseModel):
                 raise ValueError(f"Expected a list for field hints, got {type(value)}")
             converted_items = []
             for item in value:
-                if isinstance(item, dict):
-                    converted_items.append(ModelHint.from_dict(item))
-                else:
-                    converted_items.append(item)
+                converted_items.append(ModelHint.from_dict(item))
             value = converted_items
         kwargs["hints"] = value
 
@@ -2337,10 +2299,7 @@ class Prompt(BaseModel):
                 )
             converted_items = []
             for item in value:
-                if isinstance(item, dict):
-                    converted_items.append(PromptArgument.from_dict(item))
-                else:
-                    converted_items.append(item)
+                converted_items.append(PromptArgument.from_dict(item))
             value = converted_items
         kwargs["arguments"] = value
 
@@ -2613,44 +2572,39 @@ class ReadResourceResult(BaseModel):
                 )
             converted_items = []
             for item in value:
-                if isinstance(item, dict):
-                    # Try to disambiguate using const fields
-                    type_value = item.get("type")
-                    type_to_class = {}
-                    required_props_map = {}
-                    required_props_map[TextResourceContents] = ["text", "uri"]
-                    required_props_map[BlobResourceContents] = ["blob", "uri"]
-                    if type_value is not None and type_value in type_to_class:
-                        converted_items.append(
-                            type_to_class[type_value].from_dict(item)
+                # Try to disambiguate using const fields
+                type_value = item.get("type")
+                type_to_class = {}
+                required_props_map = {}
+                required_props_map[TextResourceContents] = ["text", "uri"]
+                required_props_map[BlobResourceContents] = ["blob", "uri"]
+                if type_value is not None and type_value in type_to_class:
+                    converted_items.append(type_to_class[type_value].from_dict(item))
+                else:
+                    # Try to disambiguate by required properties
+                    matches = []
+                    for type_name, reqs in required_props_map.items():
+                        if all(r in item for r in reqs):
+                            matches.append(type_name)
+                    if len(matches) == 1:
+                        converted_items.append(matches[0].from_dict(item))
+                    elif len(matches) > 1:
+                        match_details = [
+                            f"{name} (requires any of {required_props_map[name]})"
+                            for name in matches
+                        ]
+                        raise ValueError(
+                            f"Ambiguous match for union type. Multiple types match: {'; '.join(match_details)}"
                         )
                     else:
-                        # Try to disambiguate by required properties
-                        matches = []
-                        for type_name, reqs in required_props_map.items():
-                            if all(r in item for r in reqs):
-                                matches.append(type_name)
-                        if len(matches) == 1:
-                            converted_items.append(matches[0].from_dict(item))
-                        elif len(matches) > 1:
-                            match_details = [
-                                f"{name} (requires any of {required_props_map[name]})"
-                                for name in matches
-                            ]
-                            raise ValueError(
-                                f"Ambiguous match for union type. Multiple types match: {'; '.join(match_details)}"
-                            )
-                        else:
-                            available_fields = list(item.keys())
-                            type_details = [
-                                f"{name} (requires any of {required_props_map[name]})"
-                                for name in required_props_map
-                            ]
-                            raise ValueError(
-                                f"No match for union type. Available fields: {available_fields}. Expected one of: {'; '.join(type_details)}"
-                            )
-                else:
-                    converted_items.append(item)
+                        available_fields = list(item.keys())
+                        type_details = [
+                            f"{name} (requires any of {required_props_map[name]})"
+                            for name in required_props_map
+                        ]
+                        raise ValueError(
+                            f"No match for union type. Available fields: {available_fields}. Expected one of: {'; '.join(type_details)}"
+                        )
             value = converted_items
         kwargs["contents"] = value
 
@@ -3517,10 +3471,7 @@ class ToolInputschemaParams(BaseModel):
                 )
             converted_items = []
             for item in value:
-                if isinstance(item, dict):
-                    converted_items.append(item)
-                else:
-                    converted_items.append(item)
+                converted_items.append(item)
             value = converted_items
         kwargs["required"] = value
 
