@@ -1,42 +1,46 @@
-from typing import Any, TypeVar, Literal, Type
 from dataclasses import dataclass, field
 from enum import Enum
+from typing import Any, Literal, Type, TypeVar
 
-T = TypeVar('T')
+T = TypeVar("T")
+
 
 class MessageType(Enum):
     REQUEST = "request"
     NOTIFICATION = "notification"
     RESPONSE = "response"
 
+
 @dataclass
 class BaseModel:
     """Base class for all MCP models."""
-    
+
     @classmethod
     def from_dict(cls: type[T], data: dict[str, Any]) -> T:
         """Create an instance from a dictionary."""
         return cls(**data)
-    
+
     def to_dict(self) -> dict[str, Any]:
         """Convert the instance to a dictionary."""
         return {k: v for k, v in self.__dict__.items() if v is not None}
-    
+
     @classmethod
     def get_message_type(cls) -> MessageType:
         """Get the type of message this class represents."""
-        if cls.__name__.endswith('Request'):
+        if cls.__name__.endswith("Request"):
             return MessageType.REQUEST
-        elif cls.__name__.endswith('Notification'):
+        elif cls.__name__.endswith("Notification"):
             return MessageType.NOTIFICATION
-        elif cls.__name__.endswith('Result') or cls.__name__.endswith('Response'):
+        elif cls.__name__.endswith("Result") or cls.__name__.endswith("Response"):
             return MessageType.RESPONSE
         return MessageType.REQUEST  # Default to request if unknown
+
 
 @dataclass
 class Annotations(BaseModel):
     """Optional annotations for the client. The client can use annotations to inform how
     objects are used or displayed"""
+
     audience: "None | list[Role]" = field(default=None)
     priority: "None | float" = field(default=None)
 
@@ -44,6 +48,7 @@ class Annotations(BaseModel):
 @dataclass
 class AudioContent(BaseModel):
     """Audio provided to or from an LLM."""
+
     data: "str"
     mimeType: "str"
     type: "str"
@@ -52,7 +57,6 @@ class AudioContent(BaseModel):
 
 @dataclass
 class BlobResourceContents(BaseModel):
-
     blob: "str"
     uri: "str"
     mimeType: "None | str" = field(default=None)
@@ -61,13 +65,13 @@ class BlobResourceContents(BaseModel):
 @dataclass
 class CallToolRequest(BaseModel):
     """Used by the client to invoke a tool provided by the server."""
+
     method: "Literal['tools/call']"
     params: "CallToolRequestParamsParams"
 
 
 @dataclass
 class CallToolRequestParamsParams(BaseModel):
-
     name: "str"
     arguments: "None | dict[str, Any]" = field(default=None)
 
@@ -80,6 +84,7 @@ class CallToolResult(BaseModel):
     that an error occurred and self-correct. However, any errors in _finding_ the
     tool, an error indicating that the server does not support tool calls, or any
     other exceptional conditions, should be reported as an MCP error response."""
+
     content: "list[TextContent | ImageContent | AudioContent | EmbeddedResource]"
     _meta: "None | dict[str, Any]" = field(default=None)
     isError: "None | bool" = field(default=None)
@@ -93,13 +98,13 @@ class CancelledNotification(BaseModel):
     after the request has already finished. This notification indicates that the
     result will be unused, so any associated processing SHOULD cease. A client MUST
     NOT attempt to cancel its `initialize` request."""
+
     method: "Literal['notifications/cancelled']"
     params: "CancelledNotificationParamsParams"
 
 
 @dataclass
 class CancelledNotificationParamsParams(BaseModel):
-
     requestId: "RequestId"
     reason: "None | str" = field(default=None)
 
@@ -109,6 +114,7 @@ class ClientCapabilities(BaseModel):
     """Capabilities a client may support. Known capabilities are defined here, in this
     schema, but this is not a closed set: any client can define its own, additional
     capabilities."""
+
     experimental: "None | dict[str, Any]" = field(default=None)
     roots: "None | ClientCapabilitiesRootsParams" = field(default=None)
     sampling: "None | dict[str, Any]" = field(default=None)
@@ -117,19 +123,20 @@ class ClientCapabilities(BaseModel):
 @dataclass
 class ClientCapabilitiesRootsParams(BaseModel):
     """Present if the client supports listing roots."""
+
     listChanged: "None | bool" = field(default=None)
 
 
 @dataclass
 class CompleteRequest(BaseModel):
     """A request from the client to the server, to ask for completion options."""
+
     method: "Literal['completion/complete']"
     params: "CompleteRequestParamsParams"
 
 
 @dataclass
 class CompleteRequestParamsParams(BaseModel):
-
     argument: "CompleteRequestParamsParamsArgumentParams"
     ref: "PromptReference | ResourceReference"
 
@@ -137,6 +144,7 @@ class CompleteRequestParamsParams(BaseModel):
 @dataclass
 class CompleteRequestParamsParamsArgumentParams(BaseModel):
     """The argument's information"""
+
     name: "str"
     value: "str"
 
@@ -144,13 +152,13 @@ class CompleteRequestParamsParamsArgumentParams(BaseModel):
 @dataclass
 class CompleteResult(BaseModel):
     """The server's response to a completion/complete request"""
+
     completion: "CompleteResultCompletionParams"
     _meta: "None | dict[str, Any]" = field(default=None)
 
 
 @dataclass
 class CompleteResultCompletionParams(BaseModel):
-
     values: "list[str]"
     hasMore: "None | bool" = field(default=None)
     total: "None | int" = field(default=None)
@@ -162,16 +170,18 @@ class CreateMessageRequest(BaseModel):
     discretion over which model to select. The client should also inform the user
     before beginning sampling, to allow them to inspect the request (human in the
     loop) and decide whether to approve it."""
+
     method: "Literal['sampling/createMessage']"
     params: "CreateMessageRequestParamsParams"
 
 
 @dataclass
 class CreateMessageRequestParamsParams(BaseModel):
-
     maxTokens: "int"
     messages: "list[SamplingMessage]"
-    includeContext: "None | Literal['allServers', 'none', 'thisServer']" = field(default=None)
+    includeContext: "None | Literal['allServers', 'none', 'thisServer']" = field(
+        default=None
+    )
     metadata: "None | dict[str, Any]" = field(default=None)
     modelPreferences: "None | ModelPreferences" = field(default=None)
     stopSequences: "None | list[str]" = field(default=None)
@@ -185,6 +195,7 @@ class CreateMessageResult(BaseModel):
     client should inform the user before returning the sampled message, to allow them
     to inspect the response (human in the loop) and decide whether to allow the server
     to see it."""
+
     content: "TextContent | ImageContent | AudioContent"
     model: "str"
     role: "Role"
@@ -197,6 +208,7 @@ class EmbeddedResource(BaseModel):
     """The contents of a resource, embedded into a prompt or tool call result. It is up
     to the client how best to render embedded resources for the benefit of the LLM
     and/or the user."""
+
     resource: "TextResourceContents | BlobResourceContents"
     type: "str"
     annotations: "None | Annotations" = field(default=None)
@@ -205,13 +217,13 @@ class EmbeddedResource(BaseModel):
 @dataclass
 class GetPromptRequest(BaseModel):
     """Used by the client to get a prompt provided by the server."""
+
     method: "Literal['prompts/get']"
     params: "GetPromptRequestParamsParams"
 
 
 @dataclass
 class GetPromptRequestParamsParams(BaseModel):
-
     name: "str"
     arguments: "None | dict[str, Any]" = field(default=None)
 
@@ -219,6 +231,7 @@ class GetPromptRequestParamsParams(BaseModel):
 @dataclass
 class GetPromptResult(BaseModel):
     """The server's response to a prompts/get request from the client."""
+
     messages: "list[PromptMessage]"
     _meta: "None | dict[str, Any]" = field(default=None)
     description: "None | str" = field(default=None)
@@ -227,6 +240,7 @@ class GetPromptResult(BaseModel):
 @dataclass
 class ImageContent(BaseModel):
     """An image provided to or from an LLM."""
+
     data: "str"
     mimeType: "str"
     type: "str"
@@ -236,6 +250,7 @@ class ImageContent(BaseModel):
 @dataclass
 class Implementation(BaseModel):
     """Describes the name and version of an MCP implementation."""
+
     name: "str"
     version: "str"
 
@@ -244,13 +259,13 @@ class Implementation(BaseModel):
 class InitializeRequest(BaseModel):
     """This request is sent from the client to the server when it first connects, asking
     it to begin initialization."""
+
     method: "Literal['initialize']"
     params: "InitializeRequestParamsParams"
 
 
 @dataclass
 class InitializeRequestParamsParams(BaseModel):
-
     capabilities: "ClientCapabilities"
     clientInfo: "Implementation"
     protocolVersion: "str"
@@ -260,6 +275,7 @@ class InitializeRequestParamsParams(BaseModel):
 class InitializeResult(BaseModel):
     """After receiving an initialize request from the client, the server sends this
     response."""
+
     capabilities: "ServerCapabilities"
     protocolVersion: "str"
     serverInfo: "Implementation"
@@ -271,19 +287,20 @@ class InitializeResult(BaseModel):
 class InitializedNotification(BaseModel):
     """This notification is sent from the client to the server after initialization has
     finished."""
+
     method: "Literal['notifications/initialized']"
     params: "None | InitializedNotificationParamsParams" = field(default=None)
 
 
 @dataclass
 class InitializedNotificationParamsParams(BaseModel):
-
     _meta: "None | dict[str, Any]" = field(default=None)
 
 
 @dataclass
 class JSONRPCError(BaseModel):
     """A response to a request that indicates an error occurred."""
+
     error: "JSONRPCErrorErrorParams"
     id: "RequestId"
     jsonrpc: "str"
@@ -291,7 +308,6 @@ class JSONRPCError(BaseModel):
 
 @dataclass
 class JSONRPCErrorErrorParams(BaseModel):
-
     code: "int"
     message: "str"
     data: "None | str" = field(default=None)
@@ -300,6 +316,7 @@ class JSONRPCErrorErrorParams(BaseModel):
 @dataclass
 class JSONRPCNotification(BaseModel):
     """A notification which does not expect a response."""
+
     jsonrpc: "str"
     method: "str"
     params: "None | JSONRPCNotificationParamsParams" = field(default=None)
@@ -307,13 +324,13 @@ class JSONRPCNotification(BaseModel):
 
 @dataclass
 class JSONRPCNotificationParamsParams(BaseModel):
-
     _meta: "None | dict[str, Any]" = field(default=None)
 
 
 @dataclass
 class JSONRPCRequest(BaseModel):
     """A request that expects a response."""
+
     id: "RequestId"
     jsonrpc: "str"
     method: "str"
@@ -322,19 +339,18 @@ class JSONRPCRequest(BaseModel):
 
 @dataclass
 class JSONRPCRequestParamsParams(BaseModel):
-
     _meta: "None | JSONRPCRequestParamsParams_metaParams" = field(default=None)
 
 
 @dataclass
 class JSONRPCRequestParamsParams_metaParams(BaseModel):
-
     progressToken: "None | ProgressToken" = field(default=None)
 
 
 @dataclass
 class JSONRPCResponse(BaseModel):
     """A successful (non-error) response to a request."""
+
     id: "RequestId"
     jsonrpc: "str"
     result: "Result"
@@ -344,19 +360,20 @@ class JSONRPCResponse(BaseModel):
 class ListPromptsRequest(BaseModel):
     """Sent from the client to request a list of prompts and prompt templates the server
     has."""
+
     method: "Literal['prompts/list']"
     params: "None | ListPromptsRequestParamsParams" = field(default=None)
 
 
 @dataclass
 class ListPromptsRequestParamsParams(BaseModel):
-
     cursor: "None | str" = field(default=None)
 
 
 @dataclass
 class ListPromptsResult(BaseModel):
     """The server's response to a prompts/list request from the client."""
+
     prompts: "list[Prompt]"
     _meta: "None | dict[str, Any]" = field(default=None)
     nextCursor: "None | str" = field(default=None)
@@ -365,19 +382,20 @@ class ListPromptsResult(BaseModel):
 @dataclass
 class ListResourceTemplatesRequest(BaseModel):
     """Sent from the client to request a list of resource templates the server has."""
+
     method: "Literal['resources/templates/list']"
     params: "None | ListResourceTemplatesRequestParamsParams" = field(default=None)
 
 
 @dataclass
 class ListResourceTemplatesRequestParamsParams(BaseModel):
-
     cursor: "None | str" = field(default=None)
 
 
 @dataclass
 class ListResourceTemplatesResult(BaseModel):
     """The server's response to a resources/templates/list request from the client."""
+
     resourceTemplates: "list[ResourceTemplate]"
     _meta: "None | dict[str, Any]" = field(default=None)
     nextCursor: "None | str" = field(default=None)
@@ -386,19 +404,20 @@ class ListResourceTemplatesResult(BaseModel):
 @dataclass
 class ListResourcesRequest(BaseModel):
     """Sent from the client to request a list of resources the server has."""
+
     method: "Literal['resources/list']"
     params: "None | ListResourcesRequestParamsParams" = field(default=None)
 
 
 @dataclass
 class ListResourcesRequestParamsParams(BaseModel):
-
     cursor: "None | str" = field(default=None)
 
 
 @dataclass
 class ListResourcesResult(BaseModel):
     """The server's response to a resources/list request from the client."""
+
     resources: "list[Resource]"
     _meta: "None | dict[str, Any]" = field(default=None)
     nextCursor: "None | str" = field(default=None)
@@ -412,19 +431,18 @@ class ListRootsRequest(BaseModel):
     operate on. This request is typically used when the server needs to understand the
     file system structure or access specific locations that the client has permission
     to read from."""
+
     method: "Literal['roots/list']"
     params: "None | ListRootsRequestParamsParams" = field(default=None)
 
 
 @dataclass
 class ListRootsRequestParamsParams(BaseModel):
-
     _meta: "None | ListRootsRequestParamsParams_metaParams" = field(default=None)
 
 
 @dataclass
 class ListRootsRequestParamsParams_metaParams(BaseModel):
-
     progressToken: "None | ProgressToken" = field(default=None)
 
 
@@ -433,6 +451,7 @@ class ListRootsResult(BaseModel):
     """The client's response to a roots/list request from the server. This result
     contains an array of Root objects, each representing a root directory or file that
     the server can operate on."""
+
     roots: "list[Root]"
     _meta: "None | dict[str, Any]" = field(default=None)
 
@@ -440,22 +459,29 @@ class ListRootsResult(BaseModel):
 @dataclass
 class ListToolsRequest(BaseModel):
     """Sent from the client to request a list of tools the server has."""
+
     method: "Literal['tools/list']"
     params: "None | ListToolsRequestParamsParams" = field(default=None)
 
 
 @dataclass
 class ListToolsRequestParamsParams(BaseModel):
-
     cursor: "None | str" = field(default=None)
 
 
 @dataclass
 class ListToolsResult(BaseModel):
     """The server's response to a tools/list request from the client."""
+
     tools: "list[Tool]"
     _meta: "None | dict[str, Any]" = field(default=None)
     nextCursor: "None | str" = field(default=None)
+
+
+# Type alias for logginglevel
+LoggingLevel = Literal[
+    "alert", "critical", "debug", "emergency", "error", "info", "notice", "warning"
+]
 
 
 @dataclass
@@ -463,13 +489,13 @@ class LoggingMessageNotification(BaseModel):
     """Notification of a log message passed from server to client. If no
     logging/setLevel request has been sent from the client, the server MAY decide
     which messages to send automatically."""
+
     method: "Literal['notifications/message']"
     params: "LoggingMessageNotificationParamsParams"
 
 
 @dataclass
 class LoggingMessageNotificationParamsParams(BaseModel):
-
     data: "str"
     level: "LoggingLevel"
     logger: "None | str" = field(default=None)
@@ -479,6 +505,7 @@ class LoggingMessageNotificationParamsParams(BaseModel):
 class ModelHint(BaseModel):
     """Hints to use for model selection. Keys not declared here are currently left
     unspecified by the spec and are up to the client to interpret."""
+
     name: "None | str" = field(default=None)
 
 
@@ -493,6 +520,7 @@ class ModelPreferences(BaseModel):
     preferences are always advisory. The client MAY ignore them. It is also up to the
     client to decide how to interpret these preferences and how to balance them
     against other considerations."""
+
     costPriority: "None | float" = field(default=None)
     hints: "None | list[ModelHint]" = field(default=None)
     intelligencePriority: "None | float" = field(default=None)
@@ -501,33 +529,28 @@ class ModelPreferences(BaseModel):
 
 @dataclass
 class Notification(BaseModel):
-
     method: "str"
     params: "None | NotificationParamsParams" = field(default=None)
 
 
 @dataclass
 class NotificationParamsParams(BaseModel):
-
     _meta: "None | dict[str, Any]" = field(default=None)
 
 
 @dataclass
 class PaginatedRequest(BaseModel):
-
     method: "str"
     params: "None | PaginatedRequestParamsParams" = field(default=None)
 
 
 @dataclass
 class PaginatedRequestParamsParams(BaseModel):
-
     cursor: "None | str" = field(default=None)
 
 
 @dataclass
 class PaginatedResult(BaseModel):
-
     _meta: "None | dict[str, Any]" = field(default=None)
     nextCursor: "None | str" = field(default=None)
 
@@ -536,19 +559,18 @@ class PaginatedResult(BaseModel):
 class PingRequest(BaseModel):
     """A ping, issued by either the server or the client, to check that the other party
     is still alive. The receiver must promptly respond, or else may be disconnected."""
+
     method: "Literal['ping']"
     params: "None | PingRequestParamsParams" = field(default=None)
 
 
 @dataclass
 class PingRequestParamsParams(BaseModel):
-
     _meta: "None | PingRequestParamsParams_metaParams" = field(default=None)
 
 
 @dataclass
 class PingRequestParamsParams_metaParams(BaseModel):
-
     progressToken: "None | ProgressToken" = field(default=None)
 
 
@@ -556,13 +578,13 @@ class PingRequestParamsParams_metaParams(BaseModel):
 class ProgressNotification(BaseModel):
     """An out-of-band notification used to inform the receiver of a progress update for
     a long-running request."""
+
     method: "Literal['notifications/progress']"
     params: "ProgressNotificationParamsParams"
 
 
 @dataclass
 class ProgressNotificationParamsParams(BaseModel):
-
     progress: "float"
     progressToken: "ProgressToken"
     message: "None | str" = field(default=None)
@@ -576,6 +598,7 @@ ProgressToken = str | int
 @dataclass
 class Prompt(BaseModel):
     """A prompt or prompt template that the server offers."""
+
     name: "str"
     arguments: "None | list[PromptArgument]" = field(default=None)
     description: "None | str" = field(default=None)
@@ -584,6 +607,7 @@ class Prompt(BaseModel):
 @dataclass
 class PromptArgument(BaseModel):
     """Describes an argument that a prompt can accept."""
+
     name: "str"
     description: "None | str" = field(default=None)
     required: "None | bool" = field(default=None)
@@ -594,13 +618,13 @@ class PromptListChangedNotification(BaseModel):
     """An optional notification from the server to the client, informing it that the
     list of prompts it offers has changed. This may be issued by servers without any
     previous subscription from the client."""
+
     method: "Literal['notifications/prompts/list_changed']"
     params: "None | PromptListChangedNotificationParamsParams" = field(default=None)
 
 
 @dataclass
 class PromptListChangedNotificationParamsParams(BaseModel):
-
     _meta: "None | dict[str, Any]" = field(default=None)
 
 
@@ -609,6 +633,7 @@ class PromptMessage(BaseModel):
     """Describes a message returned as part of a prompt. This is similar to
     `SamplingMessage`, but also supports the embedding of resources from the MCP
     server."""
+
     content: "TextContent | ImageContent | AudioContent | EmbeddedResource"
     role: "Role"
 
@@ -616,6 +641,7 @@ class PromptMessage(BaseModel):
 @dataclass
 class PromptReference(BaseModel):
     """Identifies a prompt."""
+
     name: "str"
     type: "str"
 
@@ -623,39 +649,37 @@ class PromptReference(BaseModel):
 @dataclass
 class ReadResourceRequest(BaseModel):
     """Sent from the client to the server, to read a specific resource URI."""
+
     method: "Literal['resources/read']"
     params: "ReadResourceRequestParamsParams"
 
 
 @dataclass
 class ReadResourceRequestParamsParams(BaseModel):
-
     uri: "str"
 
 
 @dataclass
 class ReadResourceResult(BaseModel):
     """The server's response to a resources/read request from the client."""
+
     contents: "list[TextResourceContents | BlobResourceContents]"
     _meta: "None | dict[str, Any]" = field(default=None)
 
 
 @dataclass
 class Request(BaseModel):
-
     method: "str"
     params: "None | RequestParamsParams" = field(default=None)
 
 
 @dataclass
 class RequestParamsParams(BaseModel):
-
     _meta: "None | RequestParamsParams_metaParams" = field(default=None)
 
 
 @dataclass
 class RequestParamsParams_metaParams(BaseModel):
-
     progressToken: "None | ProgressToken" = field(default=None)
 
 
@@ -666,6 +690,7 @@ RequestId = str | int
 @dataclass
 class Resource(BaseModel):
     """A known resource that the server is capable of reading."""
+
     name: "str"
     uri: "str"
     annotations: "None | Annotations" = field(default=None)
@@ -677,6 +702,7 @@ class Resource(BaseModel):
 @dataclass
 class ResourceContents(BaseModel):
     """The contents of a specific resource or sub-resource."""
+
     uri: "str"
     mimeType: "None | str" = field(default=None)
 
@@ -686,19 +712,20 @@ class ResourceListChangedNotification(BaseModel):
     """An optional notification from the server to the client, informing it that the
     list of resources it can read from has changed. This may be issued by servers
     without any previous subscription from the client."""
+
     method: "Literal['notifications/resources/list_changed']"
     params: "None | ResourceListChangedNotificationParamsParams" = field(default=None)
 
 
 @dataclass
 class ResourceListChangedNotificationParamsParams(BaseModel):
-
     _meta: "None | dict[str, Any]" = field(default=None)
 
 
 @dataclass
 class ResourceReference(BaseModel):
     """A reference to a resource or resource template definition."""
+
     type: "str"
     uri: "str"
 
@@ -706,6 +733,7 @@ class ResourceReference(BaseModel):
 @dataclass
 class ResourceTemplate(BaseModel):
     """A template description for resources available on the server."""
+
     name: "str"
     uriTemplate: "str"
     annotations: "None | Annotations" = field(default=None)
@@ -718,31 +746,29 @@ class ResourceUpdatedNotification(BaseModel):
     """A notification from the server to the client, informing it that a resource has
     changed and may need to be read again. This should only be sent if the client
     previously sent a resources/subscribe request."""
+
     method: "Literal['notifications/resources/updated']"
     params: "ResourceUpdatedNotificationParamsParams"
 
 
 @dataclass
 class ResourceUpdatedNotificationParamsParams(BaseModel):
-
     uri: "str"
 
 
 @dataclass
 class Result(BaseModel):
-
     _meta: "None | dict[str, Any]" = field(default=None)
 
 
-class Role(Enum):
-    """The sender or recipient of messages and data in a conversation."""
-    ASSISTANT = 'assistant'
-    USER = 'user'
+# Type alias for role
+Role = Literal["assistant", "user"]
 
 
 @dataclass
 class Root(BaseModel):
     """Represents a root directory or file that the server can operate on."""
+
     uri: "str"
     name: "None | str" = field(default=None)
 
@@ -753,19 +779,20 @@ class RootsListChangedNotification(BaseModel):
     has changed. This notification should be sent whenever the client adds, removes,
     or modifies any root. The server should then request an updated list of roots
     using the ListRootsRequest."""
+
     method: "Literal['notifications/roots/list_changed']"
     params: "None | RootsListChangedNotificationParamsParams" = field(default=None)
 
 
 @dataclass
 class RootsListChangedNotificationParamsParams(BaseModel):
-
     _meta: "None | dict[str, Any]" = field(default=None)
 
 
 @dataclass
 class SamplingMessage(BaseModel):
     """Describes a message issued to or received from an LLM API."""
+
     content: "TextContent | ImageContent | AudioContent"
     role: "Role"
 
@@ -775,6 +802,7 @@ class ServerCapabilities(BaseModel):
     """Capabilities that a server may support. Known capabilities are defined here, in
     this schema, but this is not a closed set: any server can define its own,
     additional capabilities."""
+
     completions: "None | dict[str, Any]" = field(default=None)
     experimental: "None | dict[str, Any]" = field(default=None)
     logging: "None | dict[str, Any]" = field(default=None)
@@ -786,12 +814,14 @@ class ServerCapabilities(BaseModel):
 @dataclass
 class ServerCapabilitiesPromptsParams(BaseModel):
     """Present if the server offers any prompt templates."""
+
     listChanged: "None | bool" = field(default=None)
 
 
 @dataclass
 class ServerCapabilitiesResourcesParams(BaseModel):
     """Present if the server offers any resources to read."""
+
     listChanged: "None | bool" = field(default=None)
     subscribe: "None | bool" = field(default=None)
 
@@ -799,19 +829,20 @@ class ServerCapabilitiesResourcesParams(BaseModel):
 @dataclass
 class ServerCapabilitiesToolsParams(BaseModel):
     """Present if the server offers any tools to call."""
+
     listChanged: "None | bool" = field(default=None)
 
 
 @dataclass
 class SetLevelRequest(BaseModel):
     """A request from the client to the server, to enable or adjust logging."""
+
     method: "Literal['logging/setLevel']"
     params: "SetLevelRequestParamsParams"
 
 
 @dataclass
 class SetLevelRequestParamsParams(BaseModel):
-
     level: "LoggingLevel"
 
 
@@ -819,19 +850,20 @@ class SetLevelRequestParamsParams(BaseModel):
 class SubscribeRequest(BaseModel):
     """Sent from the client to request resources/updated notifications from the server
     whenever a particular resource changes."""
+
     method: "Literal['resources/subscribe']"
     params: "SubscribeRequestParamsParams"
 
 
 @dataclass
 class SubscribeRequestParamsParams(BaseModel):
-
     uri: "str"
 
 
 @dataclass
 class TextContent(BaseModel):
     """Text provided to or from an LLM."""
+
     text: "str"
     type: "str"
     annotations: "None | Annotations" = field(default=None)
@@ -839,7 +871,6 @@ class TextContent(BaseModel):
 
 @dataclass
 class TextResourceContents(BaseModel):
-
     text: "str"
     uri: "str"
     mimeType: "None | str" = field(default=None)
@@ -848,6 +879,7 @@ class TextResourceContents(BaseModel):
 @dataclass
 class Tool(BaseModel):
     """Definition for a tool the client can call."""
+
     inputSchema: "ToolInputschemaParams"
     name: "str"
     annotations: "None | ToolAnnotations" = field(default=None)
@@ -857,6 +889,7 @@ class Tool(BaseModel):
 @dataclass
 class ToolInputschemaParams(BaseModel):
     """A JSON Schema object defining the expected parameters for the tool."""
+
     type: "str"
     properties: "None | dict[str, Any]" = field(default=None)
     required: "None | list[str]" = field(default=None)
@@ -869,6 +902,7 @@ class ToolAnnotations(BaseModel):
     description of tool behavior (including descriptive properties like `title`).
     Clients should never make tool use decisions based on ToolAnnotations received
     from untrusted servers."""
+
     destructiveHint: "None | bool" = field(default=None)
     idempotentHint: "None | bool" = field(default=None)
     openWorldHint: "None | bool" = field(default=None)
@@ -881,13 +915,13 @@ class ToolListChangedNotification(BaseModel):
     """An optional notification from the server to the client, informing it that the
     list of tools it offers has changed. This may be issued by servers without any
     previous subscription from the client."""
+
     method: "Literal['notifications/tools/list_changed']"
     params: "None | ToolListChangedNotificationParamsParams" = field(default=None)
 
 
 @dataclass
 class ToolListChangedNotificationParamsParams(BaseModel):
-
     _meta: "None | dict[str, Any]" = field(default=None)
 
 
@@ -895,60 +929,61 @@ class ToolListChangedNotificationParamsParams(BaseModel):
 class UnsubscribeRequest(BaseModel):
     """Sent from the client to request cancellation of resources/updated notifications
     from the server. This should follow a previous resources/subscribe request."""
+
     method: "Literal['resources/unsubscribe']"
     params: "UnsubscribeRequestParamsParams"
 
 
 @dataclass
 class UnsubscribeRequestParamsParams(BaseModel):
-
     uri: "str"
 
 
 _class_map: dict[str, Type[BaseModel]] = {
-    'tools/call': CallToolRequest,
-    'notifications/cancelled': CancelledNotification,
-    'completion/complete': CompleteRequest,
-    'sampling/createMessage': CreateMessageRequest,
-    'prompts/get': GetPromptRequest,
-    'initialize': InitializeRequest,
-    'notifications/initialized': InitializedNotification,
-    'prompts/list': ListPromptsRequest,
-    'resources/templates/list': ListResourceTemplatesRequest,
-    'resources/list': ListResourcesRequest,
-    'roots/list': ListRootsRequest,
-    'tools/list': ListToolsRequest,
-    'notifications/message': LoggingMessageNotification,
-    'ping': PingRequest,
-    'notifications/progress': ProgressNotification,
-    'notifications/prompts/list_changed': PromptListChangedNotification,
-    'resources/read': ReadResourceRequest,
-    'notifications/resources/list_changed': ResourceListChangedNotification,
-    'notifications/resources/updated': ResourceUpdatedNotification,
-    'notifications/roots/list_changed': RootsListChangedNotification,
-    'logging/setLevel': SetLevelRequest,
-    'resources/subscribe': SubscribeRequest,
-    'notifications/tools/list_changed': ToolListChangedNotification,
-    'resources/unsubscribe': UnsubscribeRequest,
+    "tools/call": CallToolRequest,
+    "notifications/cancelled": CancelledNotification,
+    "completion/complete": CompleteRequest,
+    "sampling/createMessage": CreateMessageRequest,
+    "prompts/get": GetPromptRequest,
+    "initialize": InitializeRequest,
+    "notifications/initialized": InitializedNotification,
+    "prompts/list": ListPromptsRequest,
+    "resources/templates/list": ListResourceTemplatesRequest,
+    "resources/list": ListResourcesRequest,
+    "roots/list": ListRootsRequest,
+    "tools/list": ListToolsRequest,
+    "notifications/message": LoggingMessageNotification,
+    "ping": PingRequest,
+    "notifications/progress": ProgressNotification,
+    "notifications/prompts/list_changed": PromptListChangedNotification,
+    "resources/read": ReadResourceRequest,
+    "notifications/resources/list_changed": ResourceListChangedNotification,
+    "notifications/resources/updated": ResourceUpdatedNotification,
+    "notifications/roots/list_changed": RootsListChangedNotification,
+    "logging/setLevel": SetLevelRequest,
+    "resources/subscribe": SubscribeRequest,
+    "notifications/tools/list_changed": ToolListChangedNotification,
+    "resources/unsubscribe": UnsubscribeRequest,
 }
+
 
 def create_mcp_model(data: dict[str, Any]) -> BaseModel:
     """Create an MCP model instance from a dictionary based on its method field.
-    
+
     Args:
         data: Dictionary containing the model data
-        
+
     Returns:
         An instance of the appropriate MCP model class
-        
+
     Raises:
         ValueError: If the method field is missing or no matching class is found
     """
     if "method" not in data:
         raise ValueError("Input dictionary must contain a 'method' field")
-        
+
     method = data["method"]
     if method not in _class_map:
         raise ValueError(f"No MCP model class found for method: {method}")
-        
+
     return _class_map[method].from_dict(data)

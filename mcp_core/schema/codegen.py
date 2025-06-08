@@ -285,26 +285,22 @@ class BaseModel:
             classes.append(class_def)
             continue
 
+        # Handle string enums as Literal types
+        if "enum" in schema and schema.get("type") == "string":
+            enum_values = [repr(x) for x in schema["enum"]]
+            class_def = f"""# Type alias for {name.lower()}
+{name} = Literal[{', '.join(enum_values)}]
+"""
+            classes.append(class_def)
+            continue
+
         # Skip empty classes that aren't referenced
         if not schema.get("properties") and name not in referenced_types:
             continue
 
         # If this is a referenced type but has no properties, check for special cases
         if not schema.get("properties") and name in referenced_types:
-            if "enum" in schema:
-                # Handle enum types (like Role)
-                enum_values = []
-                for value in schema["enum"]:
-                    # Convert value to uppercase for enum name
-                    enum_name = str(value).upper()
-                    enum_values.append(f"    {enum_name} = {repr(value)}")
-
-                class_def = f"""class {name}(Enum):
-{wrap_docstring(schema.get('description', ''))}
-{chr(10).join(enum_values)}
-"""
-                classes.append(class_def)
-            elif "type" in schema:
+            if "type" in schema:
                 # Handle basic types (like RequestId)
                 type_name = create_python_type(schema["type"], schema)
                 if name in ["RequestId", "ProgressToken"]:
