@@ -1,40 +1,134 @@
 import asyncio
 import json
 import uuid
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Protocol, Union
 
-from fastapi import FastAPI, Header, HTTPException, Request, Response
+from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.responses import JSONResponse
 from sse_starlette.sse import EventSourceResponse
 
+from .mcp_models import JSONRPCError, JSONRPCErrorErrorParams, MCPBaseModel
+
+
+class IMCPImplementation(Protocol):
+    """Protocol defining the interface for MCP implementations."""
+
+    async def handle_message(
+        self, request: list[MCPBaseModel]
+    ) -> Union[list[MCPBaseModel], EventSourceResponse]:
+        """Handle an MCP request.
+
+        Args:
+            request: The MCP request to handle
+
+        Returns:
+            Either a response model or an EventSourceResponse for streaming responses
+        """
+
+    async def handle_notifications(self, notifications: list[MCPBaseModel]) -> None:
+        """Handle an MCP notification.
+
+        Args:
+            notifications: The MCP notifications to handle
+        """
+
+    async def handle_responses(self, responses: list[MCPBaseModel]) -> None:
+        """Handle an MCP response.
+
+        Args:
+            responses: The MCP responses to handle
+        """
+
 
 class McpTransport:
-    def __init__(self, app: FastAPI) -> None:
+    def __init__(self, app: FastAPI, implementation: IMCPImplementation) -> None:
         @app.post("/mcp")
         async def handle_post(
             request: Request,
             accept: str = Header(...),
         ):
-            # Spec says: The client MUST use HTTP POST to send JSON-RPC messages to the MCP endpoint.
+            from sema4ai.mcp_core.mcp_base_model import MessageType
+            from sema4ai.mcp_core.mcp_models import create_mcp_model
 
+            # Spec says: The client MUST use HTTP POST to send JSON-RPC messages to the MCP endpoint.
             # Spec says: The client MUST include an Accept header, listing both application/json
             # and text/event-stream as supported content types.
             if "application/json" not in accept and "text/event-stream" not in accept:
                 raise HTTPException(status_code=400, detail="Invalid Accept header")
 
             # Read and parse the request body
-            body = await request.json()
+            try:
+                body = await request.json()
+            except Exception as e:
+                error = JSONRPCError(
+                    jsonrpc="2.0",
+                    id=0,  # Unable to get ID from request body because it's not a valid json
+                    error=JSONRPCErrorErrorParams(
+                        code=-32000,
+                        message=f"Error parsing request body as json: {e}",
+                    ),
+                )
+                return JSONResponse(content=error.to_dict())
 
             # Spec says: The body of the POST request MUST be one of the following:
             #     A single JSON-RPC request, notification, or response
             #     An array batching one or more requests and/or notifications
             #     An array batching one or more responses
 
-            # For requests, initiate SSE stream
-            return EventSourceResponse(
-                self.handle_sse_stream(body),
-                headers={"Content-Type": "text/event-stream"},
-            )
+            try:
+                if isinstance(body, dict):
+                    mcp_models = [create_mcp_model(body)]
+                elif isinstance(body, list):
+                    mcp_models = [create_mcp_model(item) for item in body]
+                    if len(mcp_models) == 0:
+                        raise ValueError("Empty list of MCP models")
+                else:
+                    raise ValueError(
+                        f"Invalid request body, expected dict or list, got {type(body)}"
+                    )
+
+                requests = []
+
+                for model in mcp_models:
+                    if model.get_message_type() == MessageType.REQUEST:
+                        requests.append(model)  # Requests are handled last
+                    elif model.get_message_type() == MessageType.NOTIFICATION:
+                        await implementation.handle_notifications([model])
+                    elif model.get_message_type() == MessageType.RESPONSE:
+                        await implementation.handle_responses([model])
+
+                if not len(requests) == 0:
+                    # Spec says: If the input consists solely of (any number of) JSON-RPC responses or notifications:
+                    #     If the server accepts the input, the server MUST return HTTP status code 202 Accepted with no body.
+                    #     If the server cannot accept the input, it MUST return an HTTP error status code (e.g., 400 Bad Request).
+                    # The HTTP response body MAY comprise a JSON-RPC error response that has no id.
+                    return JSONResponse(content={}, status_code=202)
+
+                response = await implementation.handle_message(mcp_models)
+
+                if isinstance(response, EventSourceResponse):
+                    return response
+
+                if isinstance(response, list):
+                    return JSONResponse(content=[item.to_dict() for item in response])
+                elif isinstance(response, MCPBaseModel):
+                    return JSONResponse(content=response.to_dict())
+                else:
+                    raise ValueError(
+                        f"Internal error in IMCPImplementation.handle_message: Invalid response type: {type(response)} -- {response}"
+                    )
+
+            except Exception as e:
+                # Create error response
+                error = JSONRPCError(
+                    jsonrpc="2.0",
+                    id=body.get("id", 1),
+                    error=JSONRPCErrorErrorParams(
+                        code=-32000,
+                        message=str(e),
+                    ),
+                )
+                return JSONResponse(content=error.to_dict())
 
         @app.get("/mcp")
         async def handle_get(
@@ -46,18 +140,3 @@ class McpTransport:
                 raise HTTPException(status_code=405, detail="SSE not supported")
 
             return EventSourceResponse(self.handle_sse_stream(None, last_event_id))
-
-    async def handle_sse_stream(
-        self,
-        request_body: Optional[Union[Dict, List]],
-        last_event_id: Optional[str] = None,
-    ):
-        """Handle SSE stream for both POST and GET requests"""
-        # TODO: Implement actual message handling and streaming
-        # This is a placeholder that sends a test message
-        yield {
-            "event": "message",
-            "id": str(uuid.uuid4()),
-            "data": json.dumps({"jsonrpc": "2.0", "method": "test", "params": {}}),
-        }
-        await asyncio.sleep(1)  # Keep connection alive
