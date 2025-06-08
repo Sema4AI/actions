@@ -1,5 +1,6 @@
-from typing import Any, TypeVar, Literal, Type
 from dataclasses import dataclass, field
+from typing import Any, Literal, Type, TypeVar
+
 from sema4ai.mcp_core.mcp_base_model import BaseModel
 
 T = TypeVar("T")

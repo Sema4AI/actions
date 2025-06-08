@@ -271,3 +271,32 @@ def test_embedded_resource_conversion():
     assert "text" in error_msg
     assert "blob" in error_msg
     assert "uri" in error_msg
+
+
+def test_annotations_from_dict():
+    """Test Annotations.from_dict with various inputs."""
+    # Test with both fields
+    data = {
+        "audience": ["user", "assistant"],
+        "priority": 0.75,
+    }
+    ann = Annotations.from_dict(data)
+    assert ann.audience == ["user", "assistant"]
+    assert ann.priority == 0.75
+
+    # Test with only audience
+    data = {"audience": ["assistant"]}
+    ann = Annotations.from_dict(data)
+    assert ann.audience == ["assistant"]
+    assert ann.priority is None
+
+    # Test with only priority
+    data = {"priority": 1.0}
+    ann = Annotations.from_dict(data)
+    assert ann.audience is None
+    assert ann.priority == 1.0
+
+    # Test with neither (defaults)
+    ann = Annotations.from_dict({})
+    assert ann.audience is None
+    assert ann.priority is None
