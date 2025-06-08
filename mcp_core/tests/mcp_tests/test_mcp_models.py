@@ -307,3 +307,12 @@ def test_annotations_from_dict_invalid_audience():
     data = {"audience": "not_a_list"}
     with pytest.raises(ValueError):
         Annotations.from_dict(data)
+
+
+def test_call_tool_result_with_invalid_annotations():
+    """Test that CallToolResult raises an error when annotations is not a dict."""
+    data = {"method": "callToolResult", "requestId": "123", "content": ["not a dict"]}
+    with pytest.raises(ValueError) as exc_info:
+        CallToolResult.from_dict(data)
+    assert "Expected a dict for union type" in str(exc_info.value)
+    assert "got <class 'str'>" in str(exc_info.value)

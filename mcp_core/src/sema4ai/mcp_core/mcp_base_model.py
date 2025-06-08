@@ -12,7 +12,7 @@ class MessageType(Enum):
 
 
 @dataclass
-class BaseModel:
+class MCPBaseModel:
     """Base class for all MCP models."""
 
     @classmethod
@@ -31,11 +31,11 @@ class BaseModel:
             if value is None:
                 continue
 
-            if isinstance(value, BaseModel):
+            if isinstance(value, MCPBaseModel):
                 result[field_name] = value.to_dict()
             elif isinstance(value, list):
                 result[field_name] = [
-                    item.to_dict() if isinstance(item, BaseModel) else item
+                    item.to_dict() if isinstance(item, MCPBaseModel) else item
                     for item in value
                 ]
             else:

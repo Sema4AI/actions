@@ -1,12 +1,12 @@
 from typing import Any, TypeVar, Literal, Type
 from dataclasses import dataclass, field
-from sema4ai.mcp_core.mcp_base_model import BaseModel
+from sema4ai.mcp_core.mcp_base_model import MCPBaseModel
 
 T = TypeVar("T")
 
 
 @dataclass
-class Annotations(BaseModel):
+class Annotations(MCPBaseModel):
     """
     Optional annotations for the client. The client can use annotations to inform how
     objects are used or displayed
@@ -45,7 +45,7 @@ class Annotations(BaseModel):
 
 
 @dataclass
-class AudioContent(BaseModel):
+class AudioContent(MCPBaseModel):
     """Audio provided to or from an LLM."""
 
     data: "str"
@@ -84,7 +84,7 @@ class AudioContent(BaseModel):
 
 
 @dataclass
-class BlobResourceContents(BaseModel):
+class BlobResourceContents(MCPBaseModel):
     blob: "str"
     uri: "str"
     mimeType: "None | str" = field(default=None)
@@ -114,7 +114,7 @@ class BlobResourceContents(BaseModel):
 
 
 @dataclass
-class CallToolRequest(BaseModel):
+class CallToolRequest(MCPBaseModel):
     """Used by the client to invoke a tool provided by the server."""
 
     method: "Literal['tools/call']"
@@ -143,7 +143,7 @@ class CallToolRequest(BaseModel):
 
 
 @dataclass
-class CallToolRequestParamsParams(BaseModel):
+class CallToolRequestParamsParams(MCPBaseModel):
     name: "str"
     arguments: "None | dict[str, Any]" = field(default=None)
 
@@ -168,7 +168,7 @@ class CallToolRequestParamsParams(BaseModel):
 
 
 @dataclass
-class CallToolResult(BaseModel):
+class CallToolResult(MCPBaseModel):
     """
     The server's response to a tool call. Any errors that originate from the tool
     SHOULD be reported inside the result object, with `isError` set to true, _not_ as
@@ -205,6 +205,10 @@ class CallToolResult(BaseModel):
             converted_items = []
             for item in value:
                 # Try to disambiguate using const fields
+                if not isinstance(item, dict):
+                    raise ValueError(
+                        f"Expected a dict for union type TextContent | ImageContent | AudioContent | EmbeddedResource, got {type(item)}"
+                    )
                 type_value = item.get("type")
                 type_to_class = {}
                 required_props_map = {}
@@ -250,7 +254,7 @@ class CallToolResult(BaseModel):
 
 
 @dataclass
-class CancelledNotification(BaseModel):
+class CancelledNotification(MCPBaseModel):
     """
     This notification can be sent by either side to indicate that it is cancelling a
     previously-issued request. The request SHOULD still be in-flight, but due to
@@ -286,7 +290,7 @@ class CancelledNotification(BaseModel):
 
 
 @dataclass
-class CancelledNotificationParamsParams(BaseModel):
+class CancelledNotificationParamsParams(MCPBaseModel):
     requestId: "RequestId"
     reason: "None | str" = field(default=None)
 
@@ -311,7 +315,7 @@ class CancelledNotificationParamsParams(BaseModel):
 
 
 @dataclass
-class ClientCapabilities(BaseModel):
+class ClientCapabilities(MCPBaseModel):
     """
     Capabilities a client may support. Known capabilities are defined here, in this
     schema, but this is not a closed set: any client can define its own, additional
@@ -349,7 +353,7 @@ class ClientCapabilities(BaseModel):
 
 
 @dataclass
-class ClientCapabilitiesRootsParams(BaseModel):
+class ClientCapabilitiesRootsParams(MCPBaseModel):
     """Present if the client supports listing roots."""
 
     listChanged: "None | bool" = field(default=None)
@@ -371,7 +375,7 @@ class ClientCapabilitiesRootsParams(BaseModel):
 
 
 @dataclass
-class CompleteRequest(BaseModel):
+class CompleteRequest(MCPBaseModel):
     """A request from the client to the server, to ask for completion options."""
 
     method: "Literal['completion/complete']"
@@ -400,7 +404,7 @@ class CompleteRequest(BaseModel):
 
 
 @dataclass
-class CompleteRequestParamsParams(BaseModel):
+class CompleteRequestParamsParams(MCPBaseModel):
     argument: "CompleteRequestParamsParamsArgumentParams"
     ref: "PromptReference | ResourceReference"
 
@@ -462,7 +466,7 @@ class CompleteRequestParamsParams(BaseModel):
 
 
 @dataclass
-class CompleteRequestParamsParamsArgumentParams(BaseModel):
+class CompleteRequestParamsParamsArgumentParams(MCPBaseModel):
     """The argument's information"""
 
     name: "str"
@@ -489,7 +493,7 @@ class CompleteRequestParamsParamsArgumentParams(BaseModel):
 
 
 @dataclass
-class CompleteResult(BaseModel):
+class CompleteResult(MCPBaseModel):
     """The server's response to a completion/complete request"""
 
     completion: "CompleteResultCompletionParams"
@@ -518,7 +522,7 @@ class CompleteResult(BaseModel):
 
 
 @dataclass
-class CompleteResultCompletionParams(BaseModel):
+class CompleteResultCompletionParams(MCPBaseModel):
     values: "list[str]"
     hasMore: "None | bool" = field(default=None)
     total: "None | int" = field(default=None)
@@ -555,7 +559,7 @@ class CompleteResultCompletionParams(BaseModel):
 
 
 @dataclass
-class CreateMessageRequest(BaseModel):
+class CreateMessageRequest(MCPBaseModel):
     """
     A request from the server to sample an LLM via the client. The client has full
     discretion over which model to select. The client should also inform the user
@@ -589,7 +593,7 @@ class CreateMessageRequest(BaseModel):
 
 
 @dataclass
-class CreateMessageRequestParamsParams(BaseModel):
+class CreateMessageRequestParamsParams(MCPBaseModel):
     maxTokens: "int"
     messages: "list[SamplingMessage]"
     includeContext: "None | Literal['allServers', 'none', 'thisServer']" = field(
@@ -666,7 +670,7 @@ class CreateMessageRequestParamsParams(BaseModel):
 
 
 @dataclass
-class CreateMessageResult(BaseModel):
+class CreateMessageResult(MCPBaseModel):
     """
     The client's response to a sampling/create_message request from the server. The
     client should inform the user before returning the sampled message, to allow them
@@ -749,7 +753,7 @@ class CreateMessageResult(BaseModel):
 
 
 @dataclass
-class EmbeddedResource(BaseModel):
+class EmbeddedResource(MCPBaseModel):
     """
     The contents of a resource, embedded into a prompt or tool call result. It is up
     to the client how best to render embedded resources for the benefit of the LLM
@@ -822,7 +826,7 @@ class EmbeddedResource(BaseModel):
 
 
 @dataclass
-class GetPromptRequest(BaseModel):
+class GetPromptRequest(MCPBaseModel):
     """Used by the client to get a prompt provided by the server."""
 
     method: "Literal['prompts/get']"
@@ -851,7 +855,7 @@ class GetPromptRequest(BaseModel):
 
 
 @dataclass
-class GetPromptRequestParamsParams(BaseModel):
+class GetPromptRequestParamsParams(MCPBaseModel):
     name: "str"
     arguments: "None | dict[str, Any]" = field(default=None)
 
@@ -876,7 +880,7 @@ class GetPromptRequestParamsParams(BaseModel):
 
 
 @dataclass
-class GetPromptResult(BaseModel):
+class GetPromptResult(MCPBaseModel):
     """The server's response to a prompts/get request from the client."""
 
     messages: "list[PromptMessage]"
@@ -917,7 +921,7 @@ class GetPromptResult(BaseModel):
 
 
 @dataclass
-class ImageContent(BaseModel):
+class ImageContent(MCPBaseModel):
     """An image provided to or from an LLM."""
 
     data: "str"
@@ -956,7 +960,7 @@ class ImageContent(BaseModel):
 
 
 @dataclass
-class Implementation(BaseModel):
+class Implementation(MCPBaseModel):
     """Describes the name and version of an MCP implementation."""
 
     name: "str"
@@ -983,7 +987,7 @@ class Implementation(BaseModel):
 
 
 @dataclass
-class InitializeRequest(BaseModel):
+class InitializeRequest(MCPBaseModel):
     """
     This request is sent from the client to the server when it first connects, asking
     it to begin initialization.
@@ -1015,7 +1019,7 @@ class InitializeRequest(BaseModel):
 
 
 @dataclass
-class InitializeRequestParamsParams(BaseModel):
+class InitializeRequestParamsParams(MCPBaseModel):
     capabilities: "ClientCapabilities"
     clientInfo: "Implementation"
     protocolVersion: "str"
@@ -1049,7 +1053,7 @@ class InitializeRequestParamsParams(BaseModel):
 
 
 @dataclass
-class InitializeResult(BaseModel):
+class InitializeResult(MCPBaseModel):
     """
     After receiving an initialize request from the client, the server sends this
     response.
@@ -1098,7 +1102,7 @@ class InitializeResult(BaseModel):
 
 
 @dataclass
-class InitializedNotification(BaseModel):
+class InitializedNotification(MCPBaseModel):
     """
     This notification is sent from the client to the server after initialization has
     finished.
@@ -1130,7 +1134,7 @@ class InitializedNotification(BaseModel):
 
 
 @dataclass
-class InitializedNotificationParamsParams(BaseModel):
+class InitializedNotificationParamsParams(MCPBaseModel):
     _meta: "None | dict[str, Any]" = field(default=None)
 
     @classmethod
@@ -1150,7 +1154,7 @@ class InitializedNotificationParamsParams(BaseModel):
 
 
 @dataclass
-class JSONRPCError(BaseModel):
+class JSONRPCError(MCPBaseModel):
     """A response to a request that indicates an error occurred."""
 
     error: "JSONRPCErrorErrorParams"
@@ -1184,7 +1188,7 @@ class JSONRPCError(BaseModel):
 
 
 @dataclass
-class JSONRPCErrorErrorParams(BaseModel):
+class JSONRPCErrorErrorParams(MCPBaseModel):
     code: "int"
     message: "str"
     data: "None | str" = field(default=None)
@@ -1214,7 +1218,7 @@ class JSONRPCErrorErrorParams(BaseModel):
 
 
 @dataclass
-class JSONRPCNotification(BaseModel):
+class JSONRPCNotification(MCPBaseModel):
     """A notification which does not expect a response."""
 
     jsonrpc: "Literal['2.0']"
@@ -1248,7 +1252,7 @@ class JSONRPCNotification(BaseModel):
 
 
 @dataclass
-class JSONRPCNotificationParamsParams(BaseModel):
+class JSONRPCNotificationParamsParams(MCPBaseModel):
     _meta: "None | dict[str, Any]" = field(default=None)
 
     @classmethod
@@ -1268,7 +1272,7 @@ class JSONRPCNotificationParamsParams(BaseModel):
 
 
 @dataclass
-class JSONRPCRequest(BaseModel):
+class JSONRPCRequest(MCPBaseModel):
     """A request that expects a response."""
 
     id: "RequestId"
@@ -1307,7 +1311,7 @@ class JSONRPCRequest(BaseModel):
 
 
 @dataclass
-class JSONRPCRequestParamsParams(BaseModel):
+class JSONRPCRequestParamsParams(MCPBaseModel):
     _meta: "None | JSONRPCRequestParamsParams_metaParams" = field(default=None)
 
     @classmethod
@@ -1329,7 +1333,7 @@ class JSONRPCRequestParamsParams(BaseModel):
 
 
 @dataclass
-class JSONRPCRequestParamsParams_metaParams(BaseModel):
+class JSONRPCRequestParamsParams_metaParams(MCPBaseModel):
     progressToken: "None | ProgressToken" = field(default=None)
 
     @classmethod
@@ -1349,7 +1353,7 @@ class JSONRPCRequestParamsParams_metaParams(BaseModel):
 
 
 @dataclass
-class JSONRPCResponse(BaseModel):
+class JSONRPCResponse(MCPBaseModel):
     """A successful (non-error) response to a request."""
 
     id: "RequestId"
@@ -1383,7 +1387,7 @@ class JSONRPCResponse(BaseModel):
 
 
 @dataclass
-class ListPromptsRequest(BaseModel):
+class ListPromptsRequest(MCPBaseModel):
     """
     Sent from the client to request a list of prompts and prompt templates the server
     has.
@@ -1415,7 +1419,7 @@ class ListPromptsRequest(BaseModel):
 
 
 @dataclass
-class ListPromptsRequestParamsParams(BaseModel):
+class ListPromptsRequestParamsParams(MCPBaseModel):
     cursor: "None | str" = field(default=None)
 
     @classmethod
@@ -1435,7 +1439,7 @@ class ListPromptsRequestParamsParams(BaseModel):
 
 
 @dataclass
-class ListPromptsResult(BaseModel):
+class ListPromptsResult(MCPBaseModel):
     """The server's response to a prompts/list request from the client."""
 
     prompts: "list[Prompt]"
@@ -1476,7 +1480,7 @@ class ListPromptsResult(BaseModel):
 
 
 @dataclass
-class ListResourceTemplatesRequest(BaseModel):
+class ListResourceTemplatesRequest(MCPBaseModel):
     """Sent from the client to request a list of resource templates the server has."""
 
     method: "Literal['resources/templates/list']"
@@ -1505,7 +1509,7 @@ class ListResourceTemplatesRequest(BaseModel):
 
 
 @dataclass
-class ListResourceTemplatesRequestParamsParams(BaseModel):
+class ListResourceTemplatesRequestParamsParams(MCPBaseModel):
     cursor: "None | str" = field(default=None)
 
     @classmethod
@@ -1525,7 +1529,7 @@ class ListResourceTemplatesRequestParamsParams(BaseModel):
 
 
 @dataclass
-class ListResourceTemplatesResult(BaseModel):
+class ListResourceTemplatesResult(MCPBaseModel):
     """The server's response to a resources/templates/list request from the client."""
 
     resourceTemplates: "list[ResourceTemplate]"
@@ -1566,7 +1570,7 @@ class ListResourceTemplatesResult(BaseModel):
 
 
 @dataclass
-class ListResourcesRequest(BaseModel):
+class ListResourcesRequest(MCPBaseModel):
     """Sent from the client to request a list of resources the server has."""
 
     method: "Literal['resources/list']"
@@ -1595,7 +1599,7 @@ class ListResourcesRequest(BaseModel):
 
 
 @dataclass
-class ListResourcesRequestParamsParams(BaseModel):
+class ListResourcesRequestParamsParams(MCPBaseModel):
     cursor: "None | str" = field(default=None)
 
     @classmethod
@@ -1615,7 +1619,7 @@ class ListResourcesRequestParamsParams(BaseModel):
 
 
 @dataclass
-class ListResourcesResult(BaseModel):
+class ListResourcesResult(MCPBaseModel):
     """The server's response to a resources/list request from the client."""
 
     resources: "list[Resource]"
@@ -1656,7 +1660,7 @@ class ListResourcesResult(BaseModel):
 
 
 @dataclass
-class ListRootsRequest(BaseModel):
+class ListRootsRequest(MCPBaseModel):
     """
     Sent from the server to request a list of root URIs from the client. Roots allow
     servers to ask for specific directories or files to operate on. A common example
@@ -1692,7 +1696,7 @@ class ListRootsRequest(BaseModel):
 
 
 @dataclass
-class ListRootsRequestParamsParams(BaseModel):
+class ListRootsRequestParamsParams(MCPBaseModel):
     _meta: "None | ListRootsRequestParamsParams_metaParams" = field(default=None)
 
     @classmethod
@@ -1714,7 +1718,7 @@ class ListRootsRequestParamsParams(BaseModel):
 
 
 @dataclass
-class ListRootsRequestParamsParams_metaParams(BaseModel):
+class ListRootsRequestParamsParams_metaParams(MCPBaseModel):
     progressToken: "None | ProgressToken" = field(default=None)
 
     @classmethod
@@ -1734,7 +1738,7 @@ class ListRootsRequestParamsParams_metaParams(BaseModel):
 
 
 @dataclass
-class ListRootsResult(BaseModel):
+class ListRootsResult(MCPBaseModel):
     """
     The client's response to a roots/list request from the server. This result
     contains an array of Root objects, each representing a root directory or file that
@@ -1772,7 +1776,7 @@ class ListRootsResult(BaseModel):
 
 
 @dataclass
-class ListToolsRequest(BaseModel):
+class ListToolsRequest(MCPBaseModel):
     """Sent from the client to request a list of tools the server has."""
 
     method: "Literal['tools/list']"
@@ -1801,7 +1805,7 @@ class ListToolsRequest(BaseModel):
 
 
 @dataclass
-class ListToolsRequestParamsParams(BaseModel):
+class ListToolsRequestParamsParams(MCPBaseModel):
     cursor: "None | str" = field(default=None)
 
     @classmethod
@@ -1821,7 +1825,7 @@ class ListToolsRequestParamsParams(BaseModel):
 
 
 @dataclass
-class ListToolsResult(BaseModel):
+class ListToolsResult(MCPBaseModel):
     """The server's response to a tools/list request from the client."""
 
     tools: "list[Tool]"
@@ -1866,7 +1870,7 @@ LoggingLevel = Literal[
 
 
 @dataclass
-class LoggingMessageNotification(BaseModel):
+class LoggingMessageNotification(MCPBaseModel):
     """
     Notification of a log message passed from server to client. If no
     logging/setLevel request has been sent from the client, the server MAY decide
@@ -1899,7 +1903,7 @@ class LoggingMessageNotification(BaseModel):
 
 
 @dataclass
-class LoggingMessageNotificationParamsParams(BaseModel):
+class LoggingMessageNotificationParamsParams(MCPBaseModel):
     data: "str"
     level: "LoggingLevel"
     logger: "None | str" = field(default=None)
@@ -1931,7 +1935,7 @@ class LoggingMessageNotificationParamsParams(BaseModel):
 
 
 @dataclass
-class ModelHint(BaseModel):
+class ModelHint(MCPBaseModel):
     """
     Hints to use for model selection. Keys not declared here are currently left
     unspecified by the spec and are up to the client to interpret.
@@ -1956,7 +1960,7 @@ class ModelHint(BaseModel):
 
 
 @dataclass
-class ModelPreferences(BaseModel):
+class ModelPreferences(MCPBaseModel):
     """
     The server's preferences for model selection, requested of the client during
     sampling. Because LLMs can vary along multiple dimensions, choosing the "best"
@@ -2010,7 +2014,7 @@ class ModelPreferences(BaseModel):
 
 
 @dataclass
-class Notification(BaseModel):
+class Notification(MCPBaseModel):
     method: "str"
     params: "None | NotificationParamsParams" = field(default=None)
 
@@ -2037,7 +2041,7 @@ class Notification(BaseModel):
 
 
 @dataclass
-class NotificationParamsParams(BaseModel):
+class NotificationParamsParams(MCPBaseModel):
     _meta: "None | dict[str, Any]" = field(default=None)
 
     @classmethod
@@ -2057,7 +2061,7 @@ class NotificationParamsParams(BaseModel):
 
 
 @dataclass
-class PaginatedRequest(BaseModel):
+class PaginatedRequest(MCPBaseModel):
     method: "str"
     params: "None | PaginatedRequestParamsParams" = field(default=None)
 
@@ -2084,7 +2088,7 @@ class PaginatedRequest(BaseModel):
 
 
 @dataclass
-class PaginatedRequestParamsParams(BaseModel):
+class PaginatedRequestParamsParams(MCPBaseModel):
     cursor: "None | str" = field(default=None)
 
     @classmethod
@@ -2104,7 +2108,7 @@ class PaginatedRequestParamsParams(BaseModel):
 
 
 @dataclass
-class PaginatedResult(BaseModel):
+class PaginatedResult(MCPBaseModel):
     _meta: "None | dict[str, Any]" = field(default=None)
     nextCursor: "None | str" = field(default=None)
 
@@ -2129,7 +2133,7 @@ class PaginatedResult(BaseModel):
 
 
 @dataclass
-class PingRequest(BaseModel):
+class PingRequest(MCPBaseModel):
     """
     A ping, issued by either the server or the client, to check that the other party
     is still alive. The receiver must promptly respond, or else may be disconnected.
@@ -2161,7 +2165,7 @@ class PingRequest(BaseModel):
 
 
 @dataclass
-class PingRequestParamsParams(BaseModel):
+class PingRequestParamsParams(MCPBaseModel):
     _meta: "None | PingRequestParamsParams_metaParams" = field(default=None)
 
     @classmethod
@@ -2183,7 +2187,7 @@ class PingRequestParamsParams(BaseModel):
 
 
 @dataclass
-class PingRequestParamsParams_metaParams(BaseModel):
+class PingRequestParamsParams_metaParams(MCPBaseModel):
     progressToken: "None | ProgressToken" = field(default=None)
 
     @classmethod
@@ -2203,7 +2207,7 @@ class PingRequestParamsParams_metaParams(BaseModel):
 
 
 @dataclass
-class ProgressNotification(BaseModel):
+class ProgressNotification(MCPBaseModel):
     """
     An out-of-band notification used to inform the receiver of a progress update for
     a long-running request.
@@ -2235,7 +2239,7 @@ class ProgressNotification(BaseModel):
 
 
 @dataclass
-class ProgressNotificationParamsParams(BaseModel):
+class ProgressNotificationParamsParams(MCPBaseModel):
     progress: "float"
     progressToken: "ProgressToken"
     message: "None | str" = field(default=None)
@@ -2274,7 +2278,7 @@ ProgressToken = str | int
 
 
 @dataclass
-class Prompt(BaseModel):
+class Prompt(MCPBaseModel):
     """A prompt or prompt template that the server offers."""
 
     name: "str"
@@ -2315,7 +2319,7 @@ class Prompt(BaseModel):
 
 
 @dataclass
-class PromptArgument(BaseModel):
+class PromptArgument(MCPBaseModel):
     """Describes an argument that a prompt can accept."""
 
     name: "str"
@@ -2347,7 +2351,7 @@ class PromptArgument(BaseModel):
 
 
 @dataclass
-class PromptListChangedNotification(BaseModel):
+class PromptListChangedNotification(MCPBaseModel):
     """
     An optional notification from the server to the client, informing it that the
     list of prompts it offers has changed. This may be issued by servers without any
@@ -2380,7 +2384,7 @@ class PromptListChangedNotification(BaseModel):
 
 
 @dataclass
-class PromptListChangedNotificationParamsParams(BaseModel):
+class PromptListChangedNotificationParamsParams(MCPBaseModel):
     _meta: "None | dict[str, Any]" = field(default=None)
 
     @classmethod
@@ -2400,7 +2404,7 @@ class PromptListChangedNotificationParamsParams(BaseModel):
 
 
 @dataclass
-class PromptMessage(BaseModel):
+class PromptMessage(MCPBaseModel):
     """
     Describes a message returned as part of a prompt. This is similar to
     `SamplingMessage`, but also supports the embedding of resources from the MCP
@@ -2468,7 +2472,7 @@ class PromptMessage(BaseModel):
 
 
 @dataclass
-class PromptReference(BaseModel):
+class PromptReference(MCPBaseModel):
     """Identifies a prompt."""
 
     name: "str"
@@ -2495,7 +2499,7 @@ class PromptReference(BaseModel):
 
 
 @dataclass
-class ReadResourceRequest(BaseModel):
+class ReadResourceRequest(MCPBaseModel):
     """Sent from the client to the server, to read a specific resource URI."""
 
     method: "Literal['resources/read']"
@@ -2524,7 +2528,7 @@ class ReadResourceRequest(BaseModel):
 
 
 @dataclass
-class ReadResourceRequestParamsParams(BaseModel):
+class ReadResourceRequestParamsParams(MCPBaseModel):
     uri: "str"
 
     @classmethod
@@ -2544,7 +2548,7 @@ class ReadResourceRequestParamsParams(BaseModel):
 
 
 @dataclass
-class ReadResourceResult(BaseModel):
+class ReadResourceResult(MCPBaseModel):
     """The server's response to a resources/read request from the client."""
 
     contents: "list[TextResourceContents | BlobResourceContents]"
@@ -2573,6 +2577,10 @@ class ReadResourceResult(BaseModel):
             converted_items = []
             for item in value:
                 # Try to disambiguate using const fields
+                if not isinstance(item, dict):
+                    raise ValueError(
+                        f"Expected a dict for union type TextResourceContents | BlobResourceContents, got {type(item)}"
+                    )
                 type_value = item.get("type")
                 type_to_class = {}
                 required_props_map = {}
@@ -2612,7 +2620,7 @@ class ReadResourceResult(BaseModel):
 
 
 @dataclass
-class Request(BaseModel):
+class Request(MCPBaseModel):
     method: "str"
     params: "None | RequestParamsParams" = field(default=None)
 
@@ -2639,7 +2647,7 @@ class Request(BaseModel):
 
 
 @dataclass
-class RequestParamsParams(BaseModel):
+class RequestParamsParams(MCPBaseModel):
     _meta: "None | RequestParamsParams_metaParams" = field(default=None)
 
     @classmethod
@@ -2661,7 +2669,7 @@ class RequestParamsParams(BaseModel):
 
 
 @dataclass
-class RequestParamsParams_metaParams(BaseModel):
+class RequestParamsParams_metaParams(MCPBaseModel):
     progressToken: "None | ProgressToken" = field(default=None)
 
     @classmethod
@@ -2685,7 +2693,7 @@ RequestId = str | int
 
 
 @dataclass
-class Resource(BaseModel):
+class Resource(MCPBaseModel):
     """A known resource that the server is capable of reading."""
 
     name: "str"
@@ -2734,7 +2742,7 @@ class Resource(BaseModel):
 
 
 @dataclass
-class ResourceContents(BaseModel):
+class ResourceContents(MCPBaseModel):
     """The contents of a specific resource or sub-resource."""
 
     uri: "str"
@@ -2761,7 +2769,7 @@ class ResourceContents(BaseModel):
 
 
 @dataclass
-class ResourceListChangedNotification(BaseModel):
+class ResourceListChangedNotification(MCPBaseModel):
     """
     An optional notification from the server to the client, informing it that the
     list of resources it can read from has changed. This may be issued by servers
@@ -2794,7 +2802,7 @@ class ResourceListChangedNotification(BaseModel):
 
 
 @dataclass
-class ResourceListChangedNotificationParamsParams(BaseModel):
+class ResourceListChangedNotificationParamsParams(MCPBaseModel):
     _meta: "None | dict[str, Any]" = field(default=None)
 
     @classmethod
@@ -2814,7 +2822,7 @@ class ResourceListChangedNotificationParamsParams(BaseModel):
 
 
 @dataclass
-class ResourceReference(BaseModel):
+class ResourceReference(MCPBaseModel):
     """A reference to a resource or resource template definition."""
 
     type: "Literal['ref/resource']"
@@ -2841,7 +2849,7 @@ class ResourceReference(BaseModel):
 
 
 @dataclass
-class ResourceTemplate(BaseModel):
+class ResourceTemplate(MCPBaseModel):
     """A template description for resources available on the server."""
 
     name: "str"
@@ -2885,7 +2893,7 @@ class ResourceTemplate(BaseModel):
 
 
 @dataclass
-class ResourceUpdatedNotification(BaseModel):
+class ResourceUpdatedNotification(MCPBaseModel):
     """
     A notification from the server to the client, informing it that a resource has
     changed and may need to be read again. This should only be sent if the client
@@ -2918,7 +2926,7 @@ class ResourceUpdatedNotification(BaseModel):
 
 
 @dataclass
-class ResourceUpdatedNotificationParamsParams(BaseModel):
+class ResourceUpdatedNotificationParamsParams(MCPBaseModel):
     uri: "str"
 
     @classmethod
@@ -2938,7 +2946,7 @@ class ResourceUpdatedNotificationParamsParams(BaseModel):
 
 
 @dataclass
-class Result(BaseModel):
+class Result(MCPBaseModel):
     _meta: "None | dict[str, Any]" = field(default=None)
 
     @classmethod
@@ -2962,7 +2970,7 @@ Role = Literal["assistant", "user"]
 
 
 @dataclass
-class Root(BaseModel):
+class Root(MCPBaseModel):
     """Represents a root directory or file that the server can operate on."""
 
     uri: "str"
@@ -2989,7 +2997,7 @@ class Root(BaseModel):
 
 
 @dataclass
-class RootsListChangedNotification(BaseModel):
+class RootsListChangedNotification(MCPBaseModel):
     """
     A notification from the client to the server, informing it that the list of roots
     has changed. This notification should be sent whenever the client adds, removes,
@@ -3023,7 +3031,7 @@ class RootsListChangedNotification(BaseModel):
 
 
 @dataclass
-class RootsListChangedNotificationParamsParams(BaseModel):
+class RootsListChangedNotificationParamsParams(MCPBaseModel):
     _meta: "None | dict[str, Any]" = field(default=None)
 
     @classmethod
@@ -3043,7 +3051,7 @@ class RootsListChangedNotificationParamsParams(BaseModel):
 
 
 @dataclass
-class SamplingMessage(BaseModel):
+class SamplingMessage(MCPBaseModel):
     """Describes a message issued to or received from an LLM API."""
 
     content: "TextContent | ImageContent | AudioContent"
@@ -3106,7 +3114,7 @@ class SamplingMessage(BaseModel):
 
 
 @dataclass
-class ServerCapabilities(BaseModel):
+class ServerCapabilities(MCPBaseModel):
     """
     Capabilities that a server may support. Known capabilities are defined here, in
     this schema, but this is not a closed set: any server can define its own,
@@ -3163,7 +3171,7 @@ class ServerCapabilities(BaseModel):
 
 
 @dataclass
-class ServerCapabilitiesPromptsParams(BaseModel):
+class ServerCapabilitiesPromptsParams(MCPBaseModel):
     """Present if the server offers any prompt templates."""
 
     listChanged: "None | bool" = field(default=None)
@@ -3185,7 +3193,7 @@ class ServerCapabilitiesPromptsParams(BaseModel):
 
 
 @dataclass
-class ServerCapabilitiesResourcesParams(BaseModel):
+class ServerCapabilitiesResourcesParams(MCPBaseModel):
     """Present if the server offers any resources to read."""
 
     listChanged: "None | bool" = field(default=None)
@@ -3212,7 +3220,7 @@ class ServerCapabilitiesResourcesParams(BaseModel):
 
 
 @dataclass
-class ServerCapabilitiesToolsParams(BaseModel):
+class ServerCapabilitiesToolsParams(MCPBaseModel):
     """Present if the server offers any tools to call."""
 
     listChanged: "None | bool" = field(default=None)
@@ -3234,7 +3242,7 @@ class ServerCapabilitiesToolsParams(BaseModel):
 
 
 @dataclass
-class SetLevelRequest(BaseModel):
+class SetLevelRequest(MCPBaseModel):
     """A request from the client to the server, to enable or adjust logging."""
 
     method: "Literal['logging/setLevel']"
@@ -3263,7 +3271,7 @@ class SetLevelRequest(BaseModel):
 
 
 @dataclass
-class SetLevelRequestParamsParams(BaseModel):
+class SetLevelRequestParamsParams(MCPBaseModel):
     level: "LoggingLevel"
 
     @classmethod
@@ -3285,7 +3293,7 @@ class SetLevelRequestParamsParams(BaseModel):
 
 
 @dataclass
-class SubscribeRequest(BaseModel):
+class SubscribeRequest(MCPBaseModel):
     """
     Sent from the client to request resources/updated notifications from the server
     whenever a particular resource changes.
@@ -3317,7 +3325,7 @@ class SubscribeRequest(BaseModel):
 
 
 @dataclass
-class SubscribeRequestParamsParams(BaseModel):
+class SubscribeRequestParamsParams(MCPBaseModel):
     uri: "str"
 
     @classmethod
@@ -3337,7 +3345,7 @@ class SubscribeRequestParamsParams(BaseModel):
 
 
 @dataclass
-class TextContent(BaseModel):
+class TextContent(MCPBaseModel):
     """Text provided to or from an LLM."""
 
     text: "str"
@@ -3371,7 +3379,7 @@ class TextContent(BaseModel):
 
 
 @dataclass
-class TextResourceContents(BaseModel):
+class TextResourceContents(MCPBaseModel):
     text: "str"
     uri: "str"
     mimeType: "None | str" = field(default=None)
@@ -3401,7 +3409,7 @@ class TextResourceContents(BaseModel):
 
 
 @dataclass
-class Tool(BaseModel):
+class Tool(MCPBaseModel):
     """Definition for a tool the client can call."""
 
     inputSchema: "ToolInputschemaParams"
@@ -3442,7 +3450,7 @@ class Tool(BaseModel):
 
 
 @dataclass
-class ToolInputschemaParams(BaseModel):
+class ToolInputschemaParams(MCPBaseModel):
     """A JSON Schema object defining the expected parameters for the tool."""
 
     type: "Literal['object']"
@@ -3483,7 +3491,7 @@ class ToolInputschemaParams(BaseModel):
 
 
 @dataclass
-class ToolAnnotations(BaseModel):
+class ToolAnnotations(MCPBaseModel):
     """
     Additional properties describing a Tool to clients. NOTE: all properties in
     ToolAnnotations are **hints**. They are not guaranteed to provide a faithful
@@ -3531,7 +3539,7 @@ class ToolAnnotations(BaseModel):
 
 
 @dataclass
-class ToolListChangedNotification(BaseModel):
+class ToolListChangedNotification(MCPBaseModel):
     """
     An optional notification from the server to the client, informing it that the
     list of tools it offers has changed. This may be issued by servers without any
@@ -3564,7 +3572,7 @@ class ToolListChangedNotification(BaseModel):
 
 
 @dataclass
-class ToolListChangedNotificationParamsParams(BaseModel):
+class ToolListChangedNotificationParamsParams(MCPBaseModel):
     _meta: "None | dict[str, Any]" = field(default=None)
 
     @classmethod
@@ -3584,7 +3592,7 @@ class ToolListChangedNotificationParamsParams(BaseModel):
 
 
 @dataclass
-class UnsubscribeRequest(BaseModel):
+class UnsubscribeRequest(MCPBaseModel):
     """
     Sent from the client to request cancellation of resources/updated notifications
     from the server. This should follow a previous resources/subscribe request.
@@ -3616,7 +3624,7 @@ class UnsubscribeRequest(BaseModel):
 
 
 @dataclass
-class UnsubscribeRequestParamsParams(BaseModel):
+class UnsubscribeRequestParamsParams(MCPBaseModel):
     uri: "str"
 
     @classmethod
@@ -3635,7 +3643,7 @@ class UnsubscribeRequestParamsParams(BaseModel):
         return cls(**kwargs)
 
 
-_class_map: dict[str, Type[BaseModel]] = {
+_class_map: dict[str, Type[MCPBaseModel]] = {
     "tools/call": CallToolRequest,
     "notifications/cancelled": CancelledNotification,
     "completion/complete": CompleteRequest,
@@ -3663,7 +3671,7 @@ _class_map: dict[str, Type[BaseModel]] = {
 }
 
 
-def create_mcp_model(data: dict[str, Any]) -> BaseModel:
+def create_mcp_model(data: dict[str, Any]) -> MCPBaseModel:
     """Create an MCP model instance from a dictionary based on its method field.
 
     Args:

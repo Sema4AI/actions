@@ -196,7 +196,7 @@ def generate_class(
     name: str,
     schema: dict[str, Any],
     definitions: dict[str, Any],
-    base_class: str = "BaseModel",
+    base_class: str = "MCPBaseModel",
 ) -> tuple[str, list[str]]:
     """Generate a Python class from a JSON schema definition.
 
@@ -304,6 +304,11 @@ def generate_class(
                 types = [t.strip() for t in item_type.split("|")]
                 indenter.add_line(
                     "# Try to disambiguate using const fields", extra_indent=3
+                )
+                indenter.add_line("if not isinstance(item, dict):", extra_indent=3)
+                indenter.add_line(
+                    f'raise ValueError(f"Expected a dict for union type {item_type}, got {{type(item)}}")',
+                    extra_indent=4,
                 )
                 indenter.add_line("type_value = item.get('type')", extra_indent=3)
                 indenter.add_line("type_to_class = {}", extra_indent=3)
@@ -500,7 +505,7 @@ def generate_all_classes(schema_data: dict[str, Any]) -> str:
     indenter.add_block(
         """from typing import Any, TypeVar, Literal, Type
 from dataclasses import dataclass, field
-from sema4ai.mcp_core.mcp_base_model import BaseModel
+from sema4ai.mcp_core.mcp_base_model import MCPBaseModel
 
 T = TypeVar('T')
 """
@@ -567,7 +572,7 @@ T = TypeVar('T')
                     indenter.add_line("")
                 else:
                     indenter.add_line(f"@dataclass")
-                    indenter.add_line(f"class {name}(BaseModel):")
+                    indenter.add_line(f"class {name}(MCPBaseModel):")
                     if schema.get("description"):
                         indenter.add_block(
                             wrap_docstring(schema.get("description", ""))
@@ -579,7 +584,7 @@ T = TypeVar('T')
             else:
                 # Fallback for unknown types
                 indenter.add_line(f"@dataclass")
-                indenter.add_line(f"class {name}(BaseModel):")
+                indenter.add_line(f"class {name}(MCPBaseModel):")
                 if schema.get("description"):
                     indenter.add_block(wrap_docstring(schema.get("description", "")))
                 indenter.indent()
@@ -599,7 +604,7 @@ T = TypeVar('T')
             method_to_class[method_value] = name
 
     # Generate class map with proper typing
-    indenter.add_line("_class_map: dict[str, Type[BaseModel]] = {")
+    indenter.add_line("_class_map: dict[str, Type[MCPBaseModel]] = {")
     indenter.indent()
     for method, class_name in method_to_class.items():
         indenter.add_line(f"{repr(method)}: {class_name},")
@@ -610,7 +615,7 @@ T = TypeVar('T')
     # Generate factory function
     factory_indenter = TextIndenter()
     factory_indenter.add_line(
-        "def create_mcp_model(data: dict[str, Any]) -> BaseModel:"
+        "def create_mcp_model(data: dict[str, Any]) -> MCPBaseModel:"
     )
     factory_indenter.add_line(
         '    """Create an MCP model instance from a dictionary based on its method field.'
@@ -779,7 +784,7 @@ def generate_class(cls: type) -> str:
     """Generate Python code for a Pydantic model class."""
     indenter = TextIndenter()
 
-    indenter.add_line(f"class {cls.__name__}(BaseModel):")
+    indenter.add_line(f"class {cls.__name__}(MCPBaseModel):")
     indenter.add_line('    """Generated from JSON Schema."""')
     indenter.add_line("")
 
