@@ -172,11 +172,13 @@ def generate_class(
     # Generate class fields
     required_fields = []
     optional_fields = []
+    field_types = {}  # Store field types for from_dict generation
 
     for prop_name, prop_schema in properties.items():
         prop_type = create_python_type(
             prop_schema.get("type", "string"), prop_schema, prop_name, name
         )
+        field_types[prop_name] = prop_type
 
         if prop_name not in required:
             # For optional fields, wrap type in union with None and set default
@@ -195,6 +197,74 @@ def generate_class(
     description = schema.get("description", "")
     docstring = wrap_docstring(description) if description else ""
 
+    # Generate from_dict method
+    from_dict_lines = []
+    from_dict_lines.append("    @classmethod")
+    from_dict_lines.append(
+        "    def from_dict(cls: Type[T], data: dict[str, Any]) -> T:"
+    )
+    from_dict_lines.append('        """Create an instance from a dictionary."""')
+    from_dict_lines.append("        if not isinstance(data, dict):")
+    from_dict_lines.append("            return data")
+    from_dict_lines.append("        kwargs = {}")
+
+    # Add field processing for each field
+    for field_name, field_type in field_types.items():
+        from_dict_lines.append(f"        # Process {field_name}")
+        from_dict_lines.append(f"        value = data.get({repr(field_name)})")
+        from_dict_lines.append("        if value is not None:")
+
+        # Handle different field types
+        if "list[" in field_type:
+            # Handle lists
+            item_type = field_type[5:-1]  # Extract type from list[type]
+            from_dict_lines.append("            if isinstance(value, list):")
+            from_dict_lines.append("                converted_items = []")
+            from_dict_lines.append("                for item in value:")
+            from_dict_lines.append("                    if isinstance(item, dict):")
+            from_dict_lines.append(
+                f"                        converted_items.append({item_type}.from_dict(item))"
+            )
+            from_dict_lines.append("                    else:")
+            from_dict_lines.append(
+                "                        converted_items.append(item)"
+            )
+            from_dict_lines.append("                value = converted_items")
+        elif field_type in ["str", "int", "float", "bool"]:
+            # Handle basic types - no conversion needed
+            from_dict_lines.append("            pass")
+        elif "Literal[" in field_type:
+            # Handle literal types - no conversion needed
+            from_dict_lines.append("            pass")
+        elif "|" in field_type:
+            # Handle union types
+            types = [t.strip() for t in field_type.split("|")]
+            from_dict_lines.append("            if isinstance(value, dict):")
+            from_dict_lines.append("                # Try each type in the union")
+            type_list = ", ".join(repr(t) for t in types if t != "None")
+            from_dict_lines.append(f"                for type_name in [{type_list}]:")
+            from_dict_lines.append("                    try:")
+            from_dict_lines.append(
+                "                        value = type_name.from_dict(value)"
+            )
+            from_dict_lines.append("                        break")
+            from_dict_lines.append(
+                "                    except (TypeError, ValueError):"
+            )
+            from_dict_lines.append("                        continue")
+        else:
+            # Handle custom types
+            from_dict_lines.append("            if isinstance(value, dict):")
+            from_dict_lines.append(
+                f"                value = {field_type}.from_dict(value)"
+            )
+
+        from_dict_lines.append(f"        kwargs[{repr(field_name)}] = value")
+        from_dict_lines.append("")
+
+    from_dict_lines.append("        return cls(**kwargs)")
+    from_dict_lines.append("")
+
     # Generate class definition
     class_def = f"""@dataclass
 class {name}({base_class}):
@@ -203,7 +273,10 @@ class {name}({base_class}):
 
     # Add fields
     if fields:
-        class_def += "\n".join(fields) + "\n"
+        class_def += "\n".join(fields) + "\n\n"
+
+    # Add from_dict method
+    class_def += "\n".join(from_dict_lines)
 
     return class_def, nested_classes
 
