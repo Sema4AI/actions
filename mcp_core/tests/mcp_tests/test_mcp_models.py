@@ -1,16 +1,10 @@
-import pytest
-
 from sema4ai.mcp_core.mcp_models import (
-    BaseModel,
     CallToolRequest,
     CallToolRequestParamsParams,
     CallToolResult,
-    Implementation,
     InitializeRequest,
     InitializeResult,
-    MessageType,
     ProgressNotification,
-    ServerCapabilities,
     TextContent,
     create_mcp_model,
 )
@@ -144,6 +138,26 @@ def test_nested_object_conversion():
     assert isinstance(result, CallToolResult)
     assert isinstance(result.content, list)
     assert len(result.content) == 2
-    assert all(isinstance(item, TextContent) for item in result.content)
-    assert result.content[0].text == "Hello"
-    assert result.content[1].text == "World"
+
+    # Provide detailed error messages for each item
+    for i, item in enumerate(result.content):
+        assert isinstance(
+            item, TextContent
+        ), f"Item {i} is {type(item)}, expected TextContent. Item data: {item}"
+        assert hasattr(
+            item, "type"
+        ), f"Item {i} missing 'type' attribute. Item data: {item}"
+        assert hasattr(
+            item, "text"
+        ), f"Item {i} missing 'text' attribute. Item data: {item}"
+        assert hasattr(
+            item, "kind"
+        ), f"Item {i} missing 'kind' attribute. Item data: {item}"
+
+    # Verify content values
+    assert (
+        result.content[0].text == "Hello"
+    ), f"First item text is {result.content[0].text}, expected 'Hello'"
+    assert (
+        result.content[1].text == "World"
+    ), f"Second item text is {result.content[1].text}, expected 'World'"
