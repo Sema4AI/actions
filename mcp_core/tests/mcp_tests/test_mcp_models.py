@@ -1,3 +1,5 @@
+import pytest
+
 from sema4ai.mcp_core.mcp_models import (
     Annotations,
     BlobResourceContents,
@@ -223,3 +225,49 @@ def test_embedded_resource_conversion():
     assert isinstance(annotated_resource.annotations, Annotations)
     assert annotated_resource.annotations.audience == ["user", "assistant"]
     assert annotated_resource.annotations.priority == 0.5
+
+    # Test with ambiguous data that cannot be disambiguated
+    ambiguous_resource_data = {
+        "type": "resource",
+        "resource": {
+            "type": "text",
+            "text": "Ambiguous content",
+            "blob": "SGVsbG8gV29ybGQ=",  # Both text and blob fields present
+            "uri": "data:text/plain;base64,SGVsbG8gV29ybGQ=",
+            "mimeType": "text/plain",
+        },
+    }
+
+    # Verify that ambiguous data raises an error with helpful message
+    with pytest.raises(ValueError) as exc_info:
+        EmbeddedResource.from_dict(ambiguous_resource_data)
+    error_msg = str(exc_info.value)
+    assert "Ambiguous match for union type" in error_msg
+    assert "TextResourceContents" in error_msg
+    assert "BlobResourceContents" in error_msg
+    assert "text" in error_msg
+    assert "blob" in error_msg
+    assert "uri" in error_msg
+
+    # Test with data that doesn't match any type
+    invalid_resource_data = {
+        "type": "resource",
+        "resource": {
+            "type": "unknown",
+            "mimeType": "text/plain",
+            # Missing both text and blob fields
+        },
+    }
+
+    # Verify that invalid data raises an error with helpful message
+    with pytest.raises(ValueError) as exc_info:
+        EmbeddedResource.from_dict(invalid_resource_data)
+    error_msg = str(exc_info.value)
+    assert "No match for union type" in error_msg
+    assert "Available fields" in error_msg
+    assert "Expected one of" in error_msg
+    assert "TextResourceContents" in error_msg
+    assert "BlobResourceContents" in error_msg
+    assert "text" in error_msg
+    assert "blob" in error_msg
+    assert "uri" in error_msg

@@ -220,9 +220,12 @@ class CallToolResult(BaseModel):
                             if len(matches) == 1:
                                 converted_items.append(matches[0].from_dict(item))
                             elif len(matches) > 1:
-                                raise ValueError('Ambiguous match for union type in list')
+                                match_details = [f'{name} (requires any of {required_props_map[name]})' for name in matches]
+                                raise ValueError(f'Ambiguous match for union type. Multiple types match: {', '.join(match_details)}')
                             else:
-                                raise ValueError('No match for union type in list')
+                                available_fields = list(item.keys())
+                                type_details = [f'{name} (requires any of {required_props_map[name]})' for name in required_props_map]
+                                raise ValueError(f'No match for union type. Available fields: {available_fields}. Expected one of: {', '.join(type_details)}')
                     else:
                         converted_items.append(item)
                 value = converted_items
@@ -423,9 +426,12 @@ class CompleteRequestParamsParams(BaseModel):
                     if len(matches) == 1:
                         value = matches[0].from_dict(value)
                     elif len(matches) > 1:
-                        raise ValueError('Ambiguous match for union type')
+                        match_details = [f'{name} (requires any of {required_props_map[name]})' for name in matches]
+                        raise ValueError(f'Ambiguous match for union type. Multiple types match: {', '.join(match_details)}')
                     else:
-                        raise ValueError('No match for union type')
+                        available_fields = list(value.keys())
+                        type_details = [f'{name} (requires any of {required_props_map[name]})' for name in required_props_map]
+                        raise ValueError(f'No match for union type. Available fields: {available_fields}. Expected one of: {', '.join(type_details)}')
         kwargs['ref'] = value
 
         return cls(**kwargs)
@@ -688,9 +694,12 @@ class CreateMessageResult(BaseModel):
                     if len(matches) == 1:
                         value = matches[0].from_dict(value)
                     elif len(matches) > 1:
-                        raise ValueError('Ambiguous match for union type')
+                        match_details = [f'{name} (requires any of {required_props_map[name]})' for name in matches]
+                        raise ValueError(f'Ambiguous match for union type. Multiple types match: {', '.join(match_details)}')
                     else:
-                        raise ValueError('No match for union type')
+                        available_fields = list(value.keys())
+                        type_details = [f'{name} (requires any of {required_props_map[name]})' for name in required_props_map]
+                        raise ValueError(f'No match for union type. Available fields: {available_fields}. Expected one of: {', '.join(type_details)}')
         kwargs['content'] = value
 
         # Process model
@@ -758,9 +767,12 @@ class EmbeddedResource(BaseModel):
                     if len(matches) == 1:
                         value = matches[0].from_dict(value)
                     elif len(matches) > 1:
-                        raise ValueError('Ambiguous match for union type')
+                        match_details = [f'{name} (requires any of {required_props_map[name]})' for name in matches]
+                        raise ValueError(f'Ambiguous match for union type. Multiple types match: {', '.join(match_details)}')
                     else:
-                        raise ValueError('No match for union type')
+                        available_fields = list(value.keys())
+                        type_details = [f'{name} (requires any of {required_props_map[name]})' for name in required_props_map]
+                        raise ValueError(f'No match for union type. Available fields: {available_fields}. Expected one of: {', '.join(type_details)}')
         kwargs['resource'] = value
 
         # Process type
@@ -2393,9 +2405,12 @@ class PromptMessage(BaseModel):
                     if len(matches) == 1:
                         value = matches[0].from_dict(value)
                     elif len(matches) > 1:
-                        raise ValueError('Ambiguous match for union type')
+                        match_details = [f'{name} (requires any of {required_props_map[name]})' for name in matches]
+                        raise ValueError(f'Ambiguous match for union type. Multiple types match: {', '.join(match_details)}')
                     else:
-                        raise ValueError('No match for union type')
+                        available_fields = list(value.keys())
+                        type_details = [f'{name} (requires any of {required_props_map[name]})' for name in required_props_map]
+                        raise ValueError(f'No match for union type. Available fields: {available_fields}. Expected one of: {', '.join(type_details)}')
         kwargs['content'] = value
 
         # Process role
@@ -2525,9 +2540,12 @@ class ReadResourceResult(BaseModel):
                             if len(matches) == 1:
                                 converted_items.append(matches[0].from_dict(item))
                             elif len(matches) > 1:
-                                raise ValueError('Ambiguous match for union type in list')
+                                match_details = [f'{name} (requires any of {required_props_map[name]})' for name in matches]
+                                raise ValueError(f'Ambiguous match for union type. Multiple types match: {', '.join(match_details)}')
                             else:
-                                raise ValueError('No match for union type in list')
+                                available_fields = list(item.keys())
+                                type_details = [f'{name} (requires any of {required_props_map[name]})' for name in required_props_map]
+                                raise ValueError(f'No match for union type. Available fields: {available_fields}. Expected one of: {', '.join(type_details)}')
                     else:
                         converted_items.append(item)
                 value = converted_items
@@ -3005,9 +3023,12 @@ class SamplingMessage(BaseModel):
                     if len(matches) == 1:
                         value = matches[0].from_dict(value)
                     elif len(matches) > 1:
-                        raise ValueError('Ambiguous match for union type')
+                        match_details = [f'{name} (requires any of {required_props_map[name]})' for name in matches]
+                        raise ValueError(f'Ambiguous match for union type. Multiple types match: {', '.join(match_details)}')
                     else:
-                        raise ValueError('No match for union type')
+                        available_fields = list(value.keys())
+                        type_details = [f'{name} (requires any of {required_props_map[name]})' for name in required_props_map]
+                        raise ValueError(f'No match for union type. Available fields: {available_fields}. Expected one of: {', '.join(type_details)}')
         kwargs['content'] = value
 
         # Process role

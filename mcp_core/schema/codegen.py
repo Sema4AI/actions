@@ -289,11 +289,20 @@ def generate_class(
                     "                            elif len(matches) > 1:"
                 )
                 from_dict_lines.append(
-                    "                                raise ValueError('Ambiguous match for union type in list')"
+                    "                                match_details = [f'{name} (requires any of {required_props_map[name]})' for name in matches]"
+                )
+                from_dict_lines.append(
+                    "                                raise ValueError(f'Ambiguous match for union type. Multiple types match: {', '.join(match_details)}')"
                 )
                 from_dict_lines.append("                            else:")
                 from_dict_lines.append(
-                    "                                raise ValueError('No match for union type in list')"
+                    "                                available_fields = list(item.keys())"
+                )
+                from_dict_lines.append(
+                    "                                type_details = [f'{name} (requires any of {required_props_map[name]})' for name in required_props_map]"
+                )
+                from_dict_lines.append(
+                    "                                raise ValueError(f'No match for union type. Available fields: {available_fields}. Expected one of: {', '.join(type_details)}')"
                 )
             else:
                 from_dict_lines.append(
@@ -364,11 +373,20 @@ def generate_class(
             )
             from_dict_lines.append("                    elif len(matches) > 1:")
             from_dict_lines.append(
-                "                        raise ValueError('Ambiguous match for union type')"
+                "                        match_details = [f'{name} (requires any of {required_props_map[name]})' for name in matches]"
+            )
+            from_dict_lines.append(
+                "                        raise ValueError(f'Ambiguous match for union type. Multiple types match: {', '.join(match_details)}')"
             )
             from_dict_lines.append("                    else:")
             from_dict_lines.append(
-                "                        raise ValueError('No match for union type')"
+                "                        available_fields = list(value.keys())"
+            )
+            from_dict_lines.append(
+                "                        type_details = [f'{name} (requires any of {required_props_map[name]})' for name in required_props_map]"
+            )
+            from_dict_lines.append(
+                "                        raise ValueError(f'No match for union type. Available fields: {available_fields}. Expected one of: {', '.join(type_details)}')"
             )
         elif field_type == "dict[str, Any]":
             # Handle dictionary type - no conversion needed
@@ -581,13 +599,11 @@ def generate_union_type_disambiguation(cls: type, union_type: type) -> str:
     # Generate the disambiguation code
     code = []
     code.append("    @classmethod")
-    code.append(
-        "    def __get_pydantic_core_schema__(cls, _source_type: Any, _handler: GetCoreSchemaHandler) -> CoreSchema:"
-    )
-    code.append("        # Get the schema for the base class")
-    code.append(
-        "        base_schema = super().__get_pydantic_core_schema__(_source_type, _handler)"
-    )
+    code.append("    def from_dict(cls: Type[T], data: dict[str, Any]) -> T:")
+    code.append('        """Create an instance from a dictionary."""')
+    code.append("        if not isinstance(data, dict):")
+    code.append("            return data")
+    code.append("        kwargs = {}")
     code.append("")
     code.append("        # Create a mapping of required fields for each type")
     code.append("        required_props_map = {")
@@ -595,36 +611,32 @@ def generate_union_type_disambiguation(cls: type, union_type: type) -> str:
         code.append(f"            {t.__name__}: {fields},")
     code.append("        }")
     code.append("")
-    code.append("        # Create a validator that checks for required fields")
-    code.append("        def validate_union_type(v: Any, info: ValidationInfo) -> Any:")
-    code.append("            if not isinstance(v, dict):")
-    code.append("                return v")
+    code.append("        # Check which type's required fields are present")
+    code.append("        matches = []")
+    code.append("        for type_name, required_fields in required_props_map.items():")
+    code.append("            if any(field in data for field in required_fields):")
+    code.append("                matches.append(type_name)")
     code.append("")
-    code.append("            # Check which type's required fields are present")
-    code.append("            matches = []")
+    code.append("        if len(matches) == 1:")
+    code.append("            # Use globals()[type_name] to get the class by name")
+    code.append("            return globals()[matches[0]].from_dict(data)")
+    code.append("        elif len(matches) > 1:")
     code.append(
-        "            for type_cls, required_fields in required_props_map.items():"
+        "            match_details = [f'{name} (requires any of {required_props_map[name]})' for name in matches]"
     )
-    code.append("                if any(field in v for field in required_fields):")
-    code.append("                    matches.append(type_cls)")
-    code.append("")
-    code.append("            if len(matches) == 1:")
-    code.append("                return matches[0].model_validate(v)")
-    code.append("            elif len(matches) > 1:")
-    code.append("                raise ValueError('Ambiguous match for union type')")
-    code.append("            else:")
-    code.append("                raise ValueError('No match for union type')")
-    code.append("")
-    code.append("        # Add the validator to the schema")
-    code.append("        return core_schema.chain_schema([")
-    code.append("            core_schema.json_or_python_schema(")
-    code.append("                json_schema=base_schema,")
-    code.append("                python_schema=base_schema,")
-    code.append("            ),")
     code.append(
-        "            core_schema.no_info_plain_validator_function(validate_union_type),"
+        "            raise ValueError(f'Ambiguous match for union type. Multiple types match: {', '.join(match_details)}')"
     )
-    code.append("        ])")
+    code.append("        else:")
+    code.append("            available_fields = list(data.keys())")
+    code.append(
+        "            type_details = [f'{name} (requires any of {required_props_map[name]})' for name in required_props_map]"
+    )
+    code.append(
+        "            raise ValueError(f'No match for union type. Available fields: {available_fields}. Expected one of: {', '.join(type_details)}')"
+    )
+    code.append("")
+    code.append("        return cls(**kwargs)")
 
     return "\n".join(code)
 
