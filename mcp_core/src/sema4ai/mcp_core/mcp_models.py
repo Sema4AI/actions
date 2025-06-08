@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Literal, TypeVar
+from typing import Any, Literal, Type, TypeVar
 
 
 T = TypeVar("T")
@@ -39,7 +39,8 @@ class BaseModel:
 
 @dataclass
 class Annotations(BaseModel):
-    """Optional annotations for the client. The client can use annotations to inform how objects are used or displayed"""
+    """Optional annotations for the client. The client can use annotations to inform how
+    objects are used or displayed"""
 
     audience: "None | list[Role]" = field(default=None)
     priority: "None | float" = field(default=None)
@@ -72,16 +73,12 @@ class CallToolRequest(BaseModel):
 
 @dataclass
 class CallToolResult(BaseModel):
-    """The server's response to a tool call.
-
-    Any errors that originate from the tool SHOULD be reported inside the result
-    object, with `isError` set to true, _not_ as an MCP protocol-level error
-    response. Otherwise, the LLM would not be able to see that an error occurred
-    and self-correct.
-
-    However, any errors in _finding_ the tool, an error indicating that the
-    server does not support tool calls, or any other exceptional conditions,
-    should be reported as an MCP error response."""
+    """The server's response to a tool call. Any errors that originate from the tool
+    SHOULD be reported inside the result object, with `isError` set to true, _not_ as
+    an MCP protocol-level error response. Otherwise, the LLM would not be able to see
+    that an error occurred and self-correct. However, any errors in _finding_ the
+    tool, an error indicating that the server does not support tool calls, or any
+    other exceptional conditions, should be reported as an MCP error response."""
 
     content: "list[TextContent | ImageContent | AudioContent | EmbeddedResource]"
     _meta: "None | dict[str, Any]" = field(default=None)
@@ -90,13 +87,12 @@ class CallToolResult(BaseModel):
 
 @dataclass
 class CancelledNotification(BaseModel):
-    """This notification can be sent by either side to indicate that it is cancelling a previously-issued request.
-
-    The request SHOULD still be in-flight, but due to communication latency, it is always possible that this notification MAY arrive after the request has already finished.
-
-    This notification indicates that the result will be unused, so any associated processing SHOULD cease.
-
-    A client MUST NOT attempt to cancel its `initialize` request."""
+    """This notification can be sent by either side to indicate that it is cancelling a
+    previously-issued request. The request SHOULD still be in-flight, but due to
+    communication latency, it is always possible that this notification MAY arrive
+    after the request has already finished. This notification indicates that the
+    result will be unused, so any associated processing SHOULD cease. A client MUST
+    NOT attempt to cancel its `initialize` request."""
 
     method: "Literal['notifications/cancelled']"
     params: "dict[str, Any]"
@@ -104,7 +100,9 @@ class CancelledNotification(BaseModel):
 
 @dataclass
 class ClientCapabilities(BaseModel):
-    """Capabilities a client may support. Known capabilities are defined here, in this schema, but this is not a closed set: any client can define its own, additional capabilities."""
+    """Capabilities a client may support. Known capabilities are defined here, in this
+    schema, but this is not a closed set: any client can define its own, additional
+    capabilities."""
 
     experimental: "None | dict[str, Any]" = field(default=None)
     roots: "None | dict[str, Any]" = field(default=None)
@@ -129,7 +127,10 @@ class CompleteResult(BaseModel):
 
 @dataclass
 class CreateMessageRequest(BaseModel):
-    """A request from the server to sample an LLM via the client. The client has full discretion over which model to select. The client should also inform the user before beginning sampling, to allow them to inspect the request (human in the loop) and decide whether to approve it."""
+    """A request from the server to sample an LLM via the client. The client has full
+    discretion over which model to select. The client should also inform the user
+    before beginning sampling, to allow them to inspect the request (human in the
+    loop) and decide whether to approve it."""
 
     method: "Literal['sampling/createMessage']"
     params: "dict[str, Any]"
@@ -137,7 +138,10 @@ class CreateMessageRequest(BaseModel):
 
 @dataclass
 class CreateMessageResult(BaseModel):
-    """The client's response to a sampling/create_message request from the server. The client should inform the user before returning the sampled message, to allow them to inspect the response (human in the loop) and decide whether to allow the server to see it."""
+    """The client's response to a sampling/create_message request from the server. The
+    client should inform the user before returning the sampled message, to allow them
+    to inspect the response (human in the loop) and decide whether to allow the server
+    to see it."""
 
     content: "TextContent | ImageContent | AudioContent"
     model: "str"
@@ -148,10 +152,9 @@ class CreateMessageResult(BaseModel):
 
 @dataclass
 class EmbeddedResource(BaseModel):
-    """The contents of a resource, embedded into a prompt or tool call result.
-
-    It is up to the client how best to render embedded resources for the benefit
-    of the LLM and/or the user."""
+    """The contents of a resource, embedded into a prompt or tool call result. It is up
+    to the client how best to render embedded resources for the benefit of the LLM
+    and/or the user."""
 
     resource: "TextResourceContents | BlobResourceContents"
     type: "str"
@@ -195,7 +198,8 @@ class Implementation(BaseModel):
 
 @dataclass
 class InitializeRequest(BaseModel):
-    """This request is sent from the client to the server when it first connects, asking it to begin initialization."""
+    """This request is sent from the client to the server when it first connects, asking
+    it to begin initialization."""
 
     method: "Literal['initialize']"
     params: "dict[str, Any]"
@@ -203,7 +207,8 @@ class InitializeRequest(BaseModel):
 
 @dataclass
 class InitializeResult(BaseModel):
-    """After receiving an initialize request from the client, the server sends this response."""
+    """After receiving an initialize request from the client, the server sends this
+    response."""
 
     capabilities: "ServerCapabilities"
     protocolVersion: "str"
@@ -214,7 +219,8 @@ class InitializeResult(BaseModel):
 
 @dataclass
 class InitializedNotification(BaseModel):
-    """This notification is sent from the client to the server after initialization has finished."""
+    """This notification is sent from the client to the server after initialization has
+    finished."""
 
     method: "Literal['notifications/initialized']"
     params: "None | dict[str, Any]" = field(default=None)
@@ -259,7 +265,8 @@ class JSONRPCResponse(BaseModel):
 
 @dataclass
 class ListPromptsRequest(BaseModel):
-    """Sent from the client to request a list of prompts and prompt templates the server has."""
+    """Sent from the client to request a list of prompts and prompt templates the server
+    has."""
 
     method: "Literal['prompts/list']"
     params: "None | dict[str, Any]" = field(default=None)
@@ -312,11 +319,10 @@ class ListResourcesResult(BaseModel):
 class ListRootsRequest(BaseModel):
     """Sent from the server to request a list of root URIs from the client. Roots allow
     servers to ask for specific directories or files to operate on. A common example
-    for roots is providing a set of repositories or directories a server should operate
-    on.
-
-    This request is typically used when the server needs to understand the file system
-    structure or access specific locations that the client has permission to read from."""
+    for roots is providing a set of repositories or directories a server should
+    operate on. This request is typically used when the server needs to understand the
+    file system structure or access specific locations that the client has permission
+    to read from."""
 
     method: "Literal['roots/list']"
     params: "None | dict[str, Any]" = field(default=None)
@@ -324,9 +330,9 @@ class ListRootsRequest(BaseModel):
 
 @dataclass
 class ListRootsResult(BaseModel):
-    """The client's response to a roots/list request from the server.
-    This result contains an array of Root objects, each representing a root directory
-    or file that the server can operate on."""
+    """The client's response to a roots/list request from the server. This result
+    contains an array of Root objects, each representing a root directory or file that
+    the server can operate on."""
 
     roots: "list[Root]"
     _meta: "None | dict[str, Any]" = field(default=None)
@@ -351,7 +357,9 @@ class ListToolsResult(BaseModel):
 
 @dataclass
 class LoggingMessageNotification(BaseModel):
-    """Notification of a log message passed from server to client. If no logging/setLevel request has been sent from the client, the server MAY decide which messages to send automatically."""
+    """Notification of a log message passed from server to client. If no
+    logging/setLevel request has been sent from the client, the server MAY decide
+    which messages to send automatically."""
 
     method: "Literal['notifications/message']"
     params: "dict[str, Any]"
@@ -359,27 +367,23 @@ class LoggingMessageNotification(BaseModel):
 
 @dataclass
 class ModelHint(BaseModel):
-    """Hints to use for model selection.
-
-    Keys not declared here are currently left unspecified by the spec and are up
-    to the client to interpret."""
+    """Hints to use for model selection. Keys not declared here are currently left
+    unspecified by the spec and are up to the client to interpret."""
 
     name: "None | str" = field(default=None)
 
 
 @dataclass
 class ModelPreferences(BaseModel):
-    """The server's preferences for model selection, requested of the client during sampling.
-
-    Because LLMs can vary along multiple dimensions, choosing the "best" model is
-    rarely straightforward.  Different models excel in different areas—some are
-    faster but less capable, others are more capable but more expensive, and so
+    """The server's preferences for model selection, requested of the client during
+    sampling. Because LLMs can vary along multiple dimensions, choosing the "best"
+    model is rarely straightforward. Different models excel in different areas—some
+    are faster but less capable, others are more capable but more expensive, and so
     on. This interface allows servers to express their priorities across multiple
-    dimensions to help clients make an appropriate selection for their use case.
-
-    These preferences are always advisory. The client MAY ignore them. It is also
-    up to the client to decide how to interpret these preferences and how to
-    balance them against other considerations."""
+    dimensions to help clients make an appropriate selection for their use case. These
+    preferences are always advisory. The client MAY ignore them. It is also up to the
+    client to decide how to interpret these preferences and how to balance them
+    against other considerations."""
 
     costPriority: "None | float" = field(default=None)
     hints: "None | list[ModelHint]" = field(default=None)
@@ -407,7 +411,8 @@ class PaginatedResult(BaseModel):
 
 @dataclass
 class PingRequest(BaseModel):
-    """A ping, issued by either the server or the client, to check that the other party is still alive. The receiver must promptly respond, or else may be disconnected."""
+    """A ping, issued by either the server or the client, to check that the other party
+    is still alive. The receiver must promptly respond, or else may be disconnected."""
 
     method: "Literal['ping']"
     params: "None | dict[str, Any]" = field(default=None)
@@ -415,7 +420,8 @@ class PingRequest(BaseModel):
 
 @dataclass
 class ProgressNotification(BaseModel):
-    """An out-of-band notification used to inform the receiver of a progress update for a long-running request."""
+    """An out-of-band notification used to inform the receiver of a progress update for
+    a long-running request."""
 
     method: "Literal['notifications/progress']"
     params: "dict[str, Any]"
@@ -441,7 +447,9 @@ class PromptArgument(BaseModel):
 
 @dataclass
 class PromptListChangedNotification(BaseModel):
-    """An optional notification from the server to the client, informing it that the list of prompts it offers has changed. This may be issued by servers without any previous subscription from the client."""
+    """An optional notification from the server to the client, informing it that the
+    list of prompts it offers has changed. This may be issued by servers without any
+    previous subscription from the client."""
 
     method: "Literal['notifications/prompts/list_changed']"
     params: "None | dict[str, Any]" = field(default=None)
@@ -449,10 +457,9 @@ class PromptListChangedNotification(BaseModel):
 
 @dataclass
 class PromptMessage(BaseModel):
-    """Describes a message returned as part of a prompt.
-
-    This is similar to `SamplingMessage`, but also supports the embedding of
-    resources from the MCP server."""
+    """Describes a message returned as part of a prompt. This is similar to
+    `SamplingMessage`, but also supports the embedding of resources from the MCP
+    server."""
 
     content: "TextContent | ImageContent | AudioContent | EmbeddedResource"
     role: "Role"
@@ -514,7 +521,9 @@ class ResourceContents(BaseModel):
 
 @dataclass
 class ResourceListChangedNotification(BaseModel):
-    """An optional notification from the server to the client, informing it that the list of resources it can read from has changed. This may be issued by servers without any previous subscription from the client."""
+    """An optional notification from the server to the client, informing it that the
+    list of resources it can read from has changed. This may be issued by servers
+    without any previous subscription from the client."""
 
     method: "Literal['notifications/resources/list_changed']"
     params: "None | dict[str, Any]" = field(default=None)
@@ -541,7 +550,9 @@ class ResourceTemplate(BaseModel):
 
 @dataclass
 class ResourceUpdatedNotification(BaseModel):
-    """A notification from the server to the client, informing it that a resource has changed and may need to be read again. This should only be sent if the client previously sent a resources/subscribe request."""
+    """A notification from the server to the client, informing it that a resource has
+    changed and may need to be read again. This should only be sent if the client
+    previously sent a resources/subscribe request."""
 
     method: "Literal['notifications/resources/updated']"
     params: "dict[str, Any]"
@@ -569,9 +580,10 @@ class Root(BaseModel):
 
 @dataclass
 class RootsListChangedNotification(BaseModel):
-    """A notification from the client to the server, informing it that the list of roots has changed.
-    This notification should be sent whenever the client adds, removes, or modifies any root.
-    The server should then request an updated list of roots using the ListRootsRequest."""
+    """A notification from the client to the server, informing it that the list of roots
+    has changed. This notification should be sent whenever the client adds, removes,
+    or modifies any root. The server should then request an updated list of roots
+    using the ListRootsRequest."""
 
     method: "Literal['notifications/roots/list_changed']"
     params: "None | dict[str, Any]" = field(default=None)
@@ -587,7 +599,9 @@ class SamplingMessage(BaseModel):
 
 @dataclass
 class ServerCapabilities(BaseModel):
-    """Capabilities that a server may support. Known capabilities are defined here, in this schema, but this is not a closed set: any server can define its own, additional capabilities."""
+    """Capabilities that a server may support. Known capabilities are defined here, in
+    this schema, but this is not a closed set: any server can define its own,
+    additional capabilities."""
 
     completions: "None | dict[str, Any]" = field(default=None)
     experimental: "None | dict[str, Any]" = field(default=None)
@@ -607,7 +621,8 @@ class SetLevelRequest(BaseModel):
 
 @dataclass
 class SubscribeRequest(BaseModel):
-    """Sent from the client to request resources/updated notifications from the server whenever a particular resource changes."""
+    """Sent from the client to request resources/updated notifications from the server
+    whenever a particular resource changes."""
 
     method: "Literal['resources/subscribe']"
     params: "dict[str, Any]"
@@ -641,14 +656,11 @@ class Tool(BaseModel):
 
 @dataclass
 class ToolAnnotations(BaseModel):
-    """Additional properties describing a Tool to clients.
-
-    NOTE: all properties in ToolAnnotations are **hints**.
-    They are not guaranteed to provide a faithful description of
-    tool behavior (including descriptive properties like `title`).
-
-    Clients should never make tool use decisions based on ToolAnnotations
-    received from untrusted servers."""
+    """Additional properties describing a Tool to clients. NOTE: all properties in
+    ToolAnnotations are **hints**. They are not guaranteed to provide a faithful
+    description of tool behavior (including descriptive properties like `title`).
+    Clients should never make tool use decisions based on ToolAnnotations received
+    from untrusted servers."""
 
     destructiveHint: "None | bool" = field(default=None)
     idempotentHint: "None | bool" = field(default=None)
@@ -659,7 +671,9 @@ class ToolAnnotations(BaseModel):
 
 @dataclass
 class ToolListChangedNotification(BaseModel):
-    """An optional notification from the server to the client, informing it that the list of tools it offers has changed. This may be issued by servers without any previous subscription from the client."""
+    """An optional notification from the server to the client, informing it that the
+    list of tools it offers has changed. This may be issued by servers without any
+    previous subscription from the client."""
 
     method: "Literal['notifications/tools/list_changed']"
     params: "None | dict[str, Any]" = field(default=None)
@@ -667,13 +681,14 @@ class ToolListChangedNotification(BaseModel):
 
 @dataclass
 class UnsubscribeRequest(BaseModel):
-    """Sent from the client to request cancellation of resources/updated notifications from the server. This should follow a previous resources/subscribe request."""
+    """Sent from the client to request cancellation of resources/updated notifications
+    from the server. This should follow a previous resources/subscribe request."""
 
     method: "Literal['resources/unsubscribe']"
     params: "dict[str, Any]"
 
 
-_class_map = {
+_class_map: dict[str, Type[BaseModel]] = {
     "tools/call": CallToolRequest,
     "notifications/cancelled": CancelledNotification,
     "completion/complete": CompleteRequest,

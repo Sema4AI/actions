@@ -64,6 +64,47 @@ def create_python_type(
     return "Any"
 
 
+def wrap_docstring(text: str, indent: int = 4) -> str:
+    """Wrap a docstring at 89 columns, respecting indentation."""
+    if not text:
+        return ""
+
+    # Trim whitespace and normalize newlines
+    text = text.strip()
+
+    # Calculate available width (89 - indentation - quotes)
+    width = 89 - indent - 3  # 3 for quotes and space
+
+    # Split into words and build lines
+    words = text.split()
+    lines = []
+    current_line = []
+    current_length = 0
+
+    for word in words:
+        # If adding this word would exceed width, start a new line
+        if current_length + len(word) + 1 > width:
+            lines.append(" ".join(current_line))
+            current_line = [word]
+            current_length = len(word)
+        else:
+            current_line.append(word)
+            current_length += len(word) + 1
+
+    if current_line:
+        lines.append(" ".join(current_line))
+
+    # Join lines with proper indentation, ensuring no trailing newline
+    if len(lines) == 1:
+        return f'    """{lines[0]}"""'
+    else:
+        return (
+            f'    """{lines[0]}\n'
+            + "\n".join(f"    {line}" for line in lines[1:])
+            + '"""'
+        )
+
+
 def generate_class(
     name: str, schema: dict[str, Any], base_class: str = "BaseModel"
 ) -> str:
@@ -95,7 +136,7 @@ def generate_class(
 
     # Generate class docstring
     description = schema.get("description", "")
-    docstring = f'    """{description}"""' if description else ""
+    docstring = wrap_docstring(description) if description else ""
 
     # Generate class definition
     class_def = f"""@dataclass
@@ -115,7 +156,7 @@ def generate_all_classes(schema_data: dict[str, Any]) -> str:
     definitions = schema_data.get("definitions", {})
 
     # Generate imports
-    imports = """from typing import Any, TypeVar, Literal
+    imports = """from typing import Any, TypeVar, Literal, Type
 from dataclasses import dataclass, field
 from enum import Enum
 
@@ -190,7 +231,7 @@ class BaseModel:
                     enum_values.append(f"    {enum_name} = {repr(value)}")
 
                 class_def = f"""class {name}(Enum):
-    \"\"\"{schema.get('description', '')}\"\"\"
+{wrap_docstring(schema.get('description', ''))}
 {chr(10).join(enum_values)}
 """
             elif "type" in schema:
@@ -204,14 +245,14 @@ class BaseModel:
                 else:
                     class_def = f"""@dataclass
 class {name}(BaseModel):
-    \"\"\"{schema.get('description', '')}\"\"\"
+{wrap_docstring(schema.get('description', ''))}
     value: {type_name} = field(default=None)
 """
             else:
                 # Fallback for unknown types
                 class_def = f"""@dataclass
 class {name}(BaseModel):
-    \"\"\"{schema.get('description', '')}\"\"\"
+{wrap_docstring(schema.get('description', ''))}
     value: Any = field(default=None)
 """
         else:
@@ -225,8 +266,8 @@ class {name}(BaseModel):
             method_value = properties["method"]["const"]
             method_to_class[method_value] = name
 
-    # Generate class map
-    class_map = "_class_map = {\n"
+    # Generate class map with proper typing
+    class_map = "_class_map: dict[str, Type[BaseModel]] = {\n"
     for method, class_name in method_to_class.items():
         class_map += f"    {repr(method)}: {class_name},\n"
     class_map += "}\n\n"
