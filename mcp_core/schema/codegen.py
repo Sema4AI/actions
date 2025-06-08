@@ -14,7 +14,10 @@ class MessageType(Enum):
 
 
 def create_python_type(
-    schema_type: str, schema: dict[str, Any], field_name: str = ""
+    schema_type: str | list[str],
+    schema: dict[str, Any],
+    field_name: str = "",
+    parent_name: str = "",
 ) -> str:
     """Convert JSON schema type to Python type annotation."""
     # Handle $ref first
@@ -33,9 +36,27 @@ def create_python_type(
             else:
                 # Handle inline type definitions
                 sub_type = create_python_type(
-                    sub_schema.get("type", "string"), sub_schema
+                    sub_schema.get("type", "string"),
+                    sub_schema,
+                    parent_name=parent_name,
                 )
                 types.append(sub_type)
+        return " | ".join(types)
+
+    # Handle array of types
+    if isinstance(schema_type, list):
+        types = []
+        for type_name in schema_type:
+            if type_name == "string":
+                types.append("str")
+            elif type_name == "integer":
+                types.append("int")
+            elif type_name == "number":
+                types.append("float")
+            elif type_name == "boolean":
+                types.append("bool")
+            else:
+                types.append("Any")
         return " | ".join(types)
 
     if schema_type == "string":
@@ -55,11 +76,19 @@ def create_python_type(
     elif schema_type == "array":
         items = schema.get("items", {})
         if isinstance(items, dict):
-            item_type = create_python_type(items.get("type", "string"), items)
+            item_type = create_python_type(
+                items.get("type", "string"), items, parent_name=parent_name
+            )
         else:
             item_type = "Any"
         return f"list[{item_type}]"
     elif schema_type == "object":
+        # For objects with additionalProperties and no specific properties, use dict
+        if "additionalProperties" in schema and not schema.get("properties"):
+            return "dict[str, Any]"
+        # For object types with properties, return a reference to the generated class name
+        if parent_name and field_name and schema.get("properties"):
+            return f"{parent_name}{field_name.capitalize()}Params"
         return "dict[str, Any]"
     return "Any"
 
@@ -107,10 +136,31 @@ def wrap_docstring(text: str, indent: int = 4) -> str:
 
 def generate_class(
     name: str, schema: dict[str, Any], base_class: str = "BaseModel"
-) -> str:
-    """Generate a Python class from a JSON schema definition."""
+) -> tuple[str, list[str]]:
+    """Generate a Python class from a JSON schema definition.
+
+    Returns:
+        tuple[str, list[str]]: The generated class definition and a list of nested class definitions
+    """
     properties = schema.get("properties", {})
     required = schema.get("required", [])
+
+    # Generate nested classes for object properties
+    nested_classes = []
+    for prop_name, prop_schema in properties.items():
+        # Skip generating nested classes for objects with only additionalProperties
+        if (
+            prop_schema.get("type") == "object"
+            and prop_schema.get("properties")
+            and not (
+                prop_schema.get("additionalProperties")
+                and not prop_schema.get("properties")
+            )
+        ):
+            nested_name = f"{name}{prop_name.capitalize()}Params"
+            nested_class, nested_nested = generate_class(nested_name, prop_schema)
+            nested_classes.append(nested_class)
+            nested_classes.extend(nested_nested)
 
     # Generate class fields
     required_fields = []
@@ -118,7 +168,7 @@ def generate_class(
 
     for prop_name, prop_schema in properties.items():
         prop_type = create_python_type(
-            prop_schema.get("type", "string"), prop_schema, prop_name
+            prop_schema.get("type", "string"), prop_schema, prop_name, name
         )
 
         if prop_name not in required:
@@ -148,7 +198,7 @@ class {name}({base_class}):
     if fields:
         class_def += "\n".join(fields) + "\n"
 
-    return class_def
+    return class_def, nested_classes
 
 
 def generate_all_classes(schema_data: dict[str, Any]) -> str:
@@ -200,23 +250,42 @@ class BaseModel:
     classes = []
     method_to_class: dict[str, str] = {}
 
-    # First pass: collect all referenced types
-    referenced_types = set()
-    for schema in definitions.values():
+    # First pass: collect all referenced types and their schemas
+    referenced_types = {}
+    for name, schema in definitions.items():
         properties = schema.get("properties", {})
         for prop_schema in properties.values():
             if "$ref" in prop_schema:
                 ref_type = prop_schema["$ref"].split("/")[-1]
-                referenced_types.add(ref_type)
+                if ref_type not in referenced_types:
+                    referenced_types[ref_type] = None  # Will be filled in second pass
             elif "anyOf" in prop_schema:
                 for sub_schema in prop_schema["anyOf"]:
                     if "$ref" in sub_schema:
                         ref_type = sub_schema["$ref"].split("/")[-1]
-                        referenced_types.add(ref_type)
+                        if ref_type not in referenced_types:
+                            referenced_types[
+                                ref_type
+                            ] = None  # Will be filled in second pass
 
-    # Second pass: generate classes for all types
+    # Second pass: fill in referenced type schemas
     for name, schema in definitions.items():
-        # Skip empty classes
+        if name in referenced_types:
+            referenced_types[name] = schema
+
+    # Third pass: generate classes for all types
+    for name, schema in definitions.items():
+        # Handle types defined with type arrays first (like ProgressToken)
+        if "type" in schema and isinstance(schema["type"], list):
+            print("found type array", name)
+            type_name = create_python_type(schema["type"], schema)
+            class_def = f"""# Type alias for {name.lower()}
+{name} = {type_name}
+"""
+            classes.append(class_def)
+            continue
+
+        # Skip empty classes that aren't referenced
         if not schema.get("properties") and name not in referenced_types:
             continue
 
@@ -234,20 +303,23 @@ class BaseModel:
 {wrap_docstring(schema.get('description', ''))}
 {chr(10).join(enum_values)}
 """
+                classes.append(class_def)
             elif "type" in schema:
                 # Handle basic types (like RequestId)
                 type_name = create_python_type(schema["type"], schema)
-                if name == "RequestId":
-                    # Special case for RequestId - make it a type alias
-                    class_def = f"""# Type alias for request identifiers
-{name} = int | str
+                if name in ["RequestId", "ProgressToken"]:
+                    # Special case for RequestId and ProgressToken - make them type aliases
+                    class_def = f"""# Type alias for {name.lower()}
+{name} = {type_name}
 """
+                    classes.append(class_def)
                 else:
                     class_def = f"""@dataclass
 class {name}(BaseModel):
 {wrap_docstring(schema.get('description', ''))}
     value: {type_name} = field(default=None)
 """
+                    classes.append(class_def)
             else:
                 # Fallback for unknown types
                 class_def = f"""@dataclass
@@ -255,10 +327,11 @@ class {name}(BaseModel):
 {wrap_docstring(schema.get('description', ''))}
     value: Any = field(default=None)
 """
+                classes.append(class_def)
         else:
-            class_def = generate_class(name, schema)
-
-        classes.append(class_def)
+            class_def, nested_classes = generate_class(name, schema)
+            classes.append(class_def)
+            classes.extend(nested_classes)
 
         # Check if this class has a method field with a const value
         properties = schema.get("properties", {})
