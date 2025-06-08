@@ -1,16 +1,13 @@
+from typing import Any, TypeVar, Literal, Type
 from dataclasses import dataclass, field
-from typing import Any, Literal, Type, TypeVar
-
 from sema4ai.mcp_core.mcp_base_model import BaseModel
 
-T = TypeVar("T")
-
+T = TypeVar('T')
 
 @dataclass
 class Annotations(BaseModel):
     """Optional annotations for the client. The client can use annotations to inform how
     objects are used or displayed"""
-
     audience: "None | list[Role]" = field(default=None)
     priority: "None | float" = field(default=None)
 
@@ -21,7 +18,7 @@ class Annotations(BaseModel):
             return data
         kwargs = {}
         # Process audience
-        value = data.get("audience")
+        value = data.get('audience')
         if value is not None:
             if isinstance(value, list):
                 converted_items = []
@@ -31,13 +28,13 @@ class Annotations(BaseModel):
                     else:
                         converted_items.append(item)
                 value = converted_items
-        kwargs["audience"] = value
+        kwargs['audience'] = value
 
         # Process priority
-        value = data.get("priority")
+        value = data.get('priority')
         if value is not None:
             pass
-        kwargs["priority"] = value
+        kwargs['priority'] = value
 
         return cls(**kwargs)
 
@@ -45,7 +42,6 @@ class Annotations(BaseModel):
 @dataclass
 class AudioContent(BaseModel):
     """Audio provided to or from an LLM."""
-
     data: "str"
     mimeType: "str"
     type: "Literal['audio']"
@@ -58,35 +54,36 @@ class AudioContent(BaseModel):
             return data
         kwargs = {}
         # Process annotations
-        value = data.get("annotations")
+        value = data.get('annotations')
         if value is not None:
             if isinstance(value, dict):
                 value = Annotations.from_dict(value)
-        kwargs["annotations"] = value
+        kwargs['annotations'] = value
 
         # Process data
-        value = data.get("data")
+        value = data.get('data')
         if value is not None:
             pass
-        kwargs["data"] = value
+        kwargs['data'] = value
 
         # Process mimeType
-        value = data.get("mimeType")
+        value = data.get('mimeType')
         if value is not None:
             pass
-        kwargs["mimeType"] = value
+        kwargs['mimeType'] = value
 
         # Process type
-        value = data.get("type")
+        value = data.get('type')
         if value is not None:
             pass
-        kwargs["type"] = value
+        kwargs['type'] = value
 
         return cls(**kwargs)
 
 
 @dataclass
 class BlobResourceContents(BaseModel):
+
     blob: "str"
     uri: "str"
     mimeType: "None | str" = field(default=None)
@@ -98,22 +95,22 @@ class BlobResourceContents(BaseModel):
             return data
         kwargs = {}
         # Process blob
-        value = data.get("blob")
+        value = data.get('blob')
         if value is not None:
             pass
-        kwargs["blob"] = value
+        kwargs['blob'] = value
 
         # Process mimeType
-        value = data.get("mimeType")
+        value = data.get('mimeType')
         if value is not None:
             pass
-        kwargs["mimeType"] = value
+        kwargs['mimeType'] = value
 
         # Process uri
-        value = data.get("uri")
+        value = data.get('uri')
         if value is not None:
             pass
-        kwargs["uri"] = value
+        kwargs['uri'] = value
 
         return cls(**kwargs)
 
@@ -121,7 +118,6 @@ class BlobResourceContents(BaseModel):
 @dataclass
 class CallToolRequest(BaseModel):
     """Used by the client to invoke a tool provided by the server."""
-
     method: "Literal['tools/call']"
     params: "CallToolRequestParamsParams"
 
@@ -132,23 +128,24 @@ class CallToolRequest(BaseModel):
             return data
         kwargs = {}
         # Process method
-        value = data.get("method")
+        value = data.get('method')
         if value is not None:
             pass
-        kwargs["method"] = value
+        kwargs['method'] = value
 
         # Process params
-        value = data.get("params")
+        value = data.get('params')
         if value is not None:
             if isinstance(value, dict):
                 value = CallToolRequestParamsParams.from_dict(value)
-        kwargs["params"] = value
+        kwargs['params'] = value
 
         return cls(**kwargs)
 
 
 @dataclass
 class CallToolRequestParamsParams(BaseModel):
+
     name: "str"
     arguments: "None | dict[str, Any]" = field(default=None)
 
@@ -159,17 +156,16 @@ class CallToolRequestParamsParams(BaseModel):
             return data
         kwargs = {}
         # Process arguments
-        value = data.get("arguments")
-        if value is not None:
-            if isinstance(value, dict):
-                value = dict[str, Any].from_dict(value)
-        kwargs["arguments"] = value
-
-        # Process name
-        value = data.get("name")
+        value = data.get('arguments')
         if value is not None:
             pass
-        kwargs["name"] = value
+        kwargs['arguments'] = value
+
+        # Process name
+        value = data.get('name')
+        if value is not None:
+            pass
+        kwargs['name'] = value
 
         return cls(**kwargs)
 
@@ -182,7 +178,6 @@ class CallToolResult(BaseModel):
     that an error occurred and self-correct. However, any errors in _finding_ the
     tool, an error indicating that the server does not support tool calls, or any
     other exceptional conditions, should be reported as an MCP error response."""
-
     content: "list[TextContent | ImageContent | AudioContent | EmbeddedResource]"
     _meta: "None | dict[str, Any]" = field(default=None)
     isError: "None | bool" = field(default=None)
@@ -194,35 +189,29 @@ class CallToolResult(BaseModel):
             return data
         kwargs = {}
         # Process _meta
-        value = data.get("_meta")
+        value = data.get('_meta')
         if value is not None:
-            if isinstance(value, dict):
-                value = dict[str, Any].from_dict(value)
-        kwargs["_meta"] = value
+            pass
+        kwargs['_meta'] = value
 
         # Process content
-        value = data.get("content")
+        value = data.get('content')
         if value is not None:
             if isinstance(value, list):
                 converted_items = []
                 for item in value:
                     if isinstance(item, dict):
-                        converted_items.append(
-                            TextContent
-                            | ImageContent
-                            | AudioContent
-                            | EmbeddedResource.from_dict(item)
-                        )
+                        converted_items.append(TextContent | ImageContent | AudioContent | EmbeddedResource.from_dict(item))
                     else:
                         converted_items.append(item)
                 value = converted_items
-        kwargs["content"] = value
+        kwargs['content'] = value
 
         # Process isError
-        value = data.get("isError")
+        value = data.get('isError')
         if value is not None:
             pass
-        kwargs["isError"] = value
+        kwargs['isError'] = value
 
         return cls(**kwargs)
 
@@ -235,7 +224,6 @@ class CancelledNotification(BaseModel):
     after the request has already finished. This notification indicates that the
     result will be unused, so any associated processing SHOULD cease. A client MUST
     NOT attempt to cancel its `initialize` request."""
-
     method: "Literal['notifications/cancelled']"
     params: "CancelledNotificationParamsParams"
 
@@ -246,23 +234,24 @@ class CancelledNotification(BaseModel):
             return data
         kwargs = {}
         # Process method
-        value = data.get("method")
+        value = data.get('method')
         if value is not None:
             pass
-        kwargs["method"] = value
+        kwargs['method'] = value
 
         # Process params
-        value = data.get("params")
+        value = data.get('params')
         if value is not None:
             if isinstance(value, dict):
                 value = CancelledNotificationParamsParams.from_dict(value)
-        kwargs["params"] = value
+        kwargs['params'] = value
 
         return cls(**kwargs)
 
 
 @dataclass
 class CancelledNotificationParamsParams(BaseModel):
+
     requestId: "RequestId"
     reason: "None | str" = field(default=None)
 
@@ -273,17 +262,17 @@ class CancelledNotificationParamsParams(BaseModel):
             return data
         kwargs = {}
         # Process reason
-        value = data.get("reason")
+        value = data.get('reason')
         if value is not None:
             pass
-        kwargs["reason"] = value
+        kwargs['reason'] = value
 
         # Process requestId
-        value = data.get("requestId")
+        value = data.get('requestId')
         if value is not None:
             if isinstance(value, dict):
                 value = RequestId.from_dict(value)
-        kwargs["requestId"] = value
+        kwargs['requestId'] = value
 
         return cls(**kwargs)
 
@@ -293,7 +282,6 @@ class ClientCapabilities(BaseModel):
     """Capabilities a client may support. Known capabilities are defined here, in this
     schema, but this is not a closed set: any client can define its own, additional
     capabilities."""
-
     experimental: "None | dict[str, Any]" = field(default=None)
     roots: "None | ClientCapabilitiesRootsParams" = field(default=None)
     sampling: "None | dict[str, Any]" = field(default=None)
@@ -305,25 +293,23 @@ class ClientCapabilities(BaseModel):
             return data
         kwargs = {}
         # Process experimental
-        value = data.get("experimental")
+        value = data.get('experimental')
         if value is not None:
-            if isinstance(value, dict):
-                value = dict[str, Any].from_dict(value)
-        kwargs["experimental"] = value
+            pass
+        kwargs['experimental'] = value
 
         # Process roots
-        value = data.get("roots")
+        value = data.get('roots')
         if value is not None:
             if isinstance(value, dict):
                 value = ClientCapabilitiesRootsParams.from_dict(value)
-        kwargs["roots"] = value
+        kwargs['roots'] = value
 
         # Process sampling
-        value = data.get("sampling")
+        value = data.get('sampling')
         if value is not None:
-            if isinstance(value, dict):
-                value = dict[str, Any].from_dict(value)
-        kwargs["sampling"] = value
+            pass
+        kwargs['sampling'] = value
 
         return cls(**kwargs)
 
@@ -331,7 +317,6 @@ class ClientCapabilities(BaseModel):
 @dataclass
 class ClientCapabilitiesRootsParams(BaseModel):
     """Present if the client supports listing roots."""
-
     listChanged: "None | bool" = field(default=None)
 
     @classmethod
@@ -341,10 +326,10 @@ class ClientCapabilitiesRootsParams(BaseModel):
             return data
         kwargs = {}
         # Process listChanged
-        value = data.get("listChanged")
+        value = data.get('listChanged')
         if value is not None:
             pass
-        kwargs["listChanged"] = value
+        kwargs['listChanged'] = value
 
         return cls(**kwargs)
 
@@ -352,7 +337,6 @@ class ClientCapabilitiesRootsParams(BaseModel):
 @dataclass
 class CompleteRequest(BaseModel):
     """A request from the client to the server, to ask for completion options."""
-
     method: "Literal['completion/complete']"
     params: "CompleteRequestParamsParams"
 
@@ -363,23 +347,24 @@ class CompleteRequest(BaseModel):
             return data
         kwargs = {}
         # Process method
-        value = data.get("method")
+        value = data.get('method')
         if value is not None:
             pass
-        kwargs["method"] = value
+        kwargs['method'] = value
 
         # Process params
-        value = data.get("params")
+        value = data.get('params')
         if value is not None:
             if isinstance(value, dict):
                 value = CompleteRequestParamsParams.from_dict(value)
-        kwargs["params"] = value
+        kwargs['params'] = value
 
         return cls(**kwargs)
 
 
 @dataclass
 class CompleteRequestParamsParams(BaseModel):
+
     argument: "CompleteRequestParamsParamsArgumentParams"
     ref: "PromptReference | ResourceReference"
 
@@ -390,24 +375,41 @@ class CompleteRequestParamsParams(BaseModel):
             return data
         kwargs = {}
         # Process argument
-        value = data.get("argument")
+        value = data.get('argument')
         if value is not None:
             if isinstance(value, dict):
                 value = CompleteRequestParamsParamsArgumentParams.from_dict(value)
-        kwargs["argument"] = value
+        kwargs['argument'] = value
 
         # Process ref
-        value = data.get("ref")
+        value = data.get('ref')
         if value is not None:
             if isinstance(value, dict):
-                # Try each type in the union
-                for type_name in ["PromptReference", "ResourceReference"]:
-                    try:
-                        value = type_name.from_dict(value)
-                        break
-                    except (TypeError, ValueError):
-                        continue
-        kwargs["ref"] = value
+                # Try to disambiguate using const fields
+                type_value = value.get('type')
+                if type_value is not None:
+                    # Map type values to their corresponding classes
+                    type_to_class = {
+                    }
+                    if type_value in type_to_class:
+                        value = type_to_class[type_value].from_dict(value)
+                    else:
+                        # Fallback to trying each type
+                        for type_name in ['PromptReference', 'ResourceReference']:
+                            try:
+                                value = type_name.from_dict(value)
+                                break
+                            except (TypeError, ValueError):
+                                continue
+                else:
+                    # No type field, try each type
+                    for type_name in ['PromptReference', 'ResourceReference']:
+                        try:
+                            value = type_name.from_dict(value)
+                            break
+                        except (TypeError, ValueError):
+                            continue
+        kwargs['ref'] = value
 
         return cls(**kwargs)
 
@@ -415,7 +417,6 @@ class CompleteRequestParamsParams(BaseModel):
 @dataclass
 class CompleteRequestParamsParamsArgumentParams(BaseModel):
     """The argument's information"""
-
     name: "str"
     value: "str"
 
@@ -426,16 +427,16 @@ class CompleteRequestParamsParamsArgumentParams(BaseModel):
             return data
         kwargs = {}
         # Process name
-        value = data.get("name")
+        value = data.get('name')
         if value is not None:
             pass
-        kwargs["name"] = value
+        kwargs['name'] = value
 
         # Process value
-        value = data.get("value")
+        value = data.get('value')
         if value is not None:
             pass
-        kwargs["value"] = value
+        kwargs['value'] = value
 
         return cls(**kwargs)
 
@@ -443,7 +444,6 @@ class CompleteRequestParamsParamsArgumentParams(BaseModel):
 @dataclass
 class CompleteResult(BaseModel):
     """The server's response to a completion/complete request"""
-
     completion: "CompleteResultCompletionParams"
     _meta: "None | dict[str, Any]" = field(default=None)
 
@@ -454,24 +454,24 @@ class CompleteResult(BaseModel):
             return data
         kwargs = {}
         # Process _meta
-        value = data.get("_meta")
+        value = data.get('_meta')
         if value is not None:
-            if isinstance(value, dict):
-                value = dict[str, Any].from_dict(value)
-        kwargs["_meta"] = value
+            pass
+        kwargs['_meta'] = value
 
         # Process completion
-        value = data.get("completion")
+        value = data.get('completion')
         if value is not None:
             if isinstance(value, dict):
                 value = CompleteResultCompletionParams.from_dict(value)
-        kwargs["completion"] = value
+        kwargs['completion'] = value
 
         return cls(**kwargs)
 
 
 @dataclass
 class CompleteResultCompletionParams(BaseModel):
+
     values: "list[str]"
     hasMore: "None | bool" = field(default=None)
     total: "None | int" = field(default=None)
@@ -483,19 +483,19 @@ class CompleteResultCompletionParams(BaseModel):
             return data
         kwargs = {}
         # Process hasMore
-        value = data.get("hasMore")
+        value = data.get('hasMore')
         if value is not None:
             pass
-        kwargs["hasMore"] = value
+        kwargs['hasMore'] = value
 
         # Process total
-        value = data.get("total")
+        value = data.get('total')
         if value is not None:
             pass
-        kwargs["total"] = value
+        kwargs['total'] = value
 
         # Process values
-        value = data.get("values")
+        value = data.get('values')
         if value is not None:
             if isinstance(value, list):
                 converted_items = []
@@ -505,7 +505,7 @@ class CompleteResultCompletionParams(BaseModel):
                     else:
                         converted_items.append(item)
                 value = converted_items
-        kwargs["values"] = value
+        kwargs['values'] = value
 
         return cls(**kwargs)
 
@@ -516,7 +516,6 @@ class CreateMessageRequest(BaseModel):
     discretion over which model to select. The client should also inform the user
     before beginning sampling, to allow them to inspect the request (human in the
     loop) and decide whether to approve it."""
-
     method: "Literal['sampling/createMessage']"
     params: "CreateMessageRequestParamsParams"
 
@@ -527,28 +526,27 @@ class CreateMessageRequest(BaseModel):
             return data
         kwargs = {}
         # Process method
-        value = data.get("method")
+        value = data.get('method')
         if value is not None:
             pass
-        kwargs["method"] = value
+        kwargs['method'] = value
 
         # Process params
-        value = data.get("params")
+        value = data.get('params')
         if value is not None:
             if isinstance(value, dict):
                 value = CreateMessageRequestParamsParams.from_dict(value)
-        kwargs["params"] = value
+        kwargs['params'] = value
 
         return cls(**kwargs)
 
 
 @dataclass
 class CreateMessageRequestParamsParams(BaseModel):
+
     maxTokens: "int"
     messages: "list[SamplingMessage]"
-    includeContext: "None | Literal['allServers', 'none', 'thisServer']" = field(
-        default=None
-    )
+    includeContext: "None | Literal['allServers', 'none', 'thisServer']" = field(default=None)
     metadata: "None | dict[str, Any]" = field(default=None)
     modelPreferences: "None | ModelPreferences" = field(default=None)
     stopSequences: "None | list[str]" = field(default=None)
@@ -562,19 +560,19 @@ class CreateMessageRequestParamsParams(BaseModel):
             return data
         kwargs = {}
         # Process includeContext
-        value = data.get("includeContext")
+        value = data.get('includeContext')
         if value is not None:
             pass
-        kwargs["includeContext"] = value
+        kwargs['includeContext'] = value
 
         # Process maxTokens
-        value = data.get("maxTokens")
+        value = data.get('maxTokens')
         if value is not None:
             pass
-        kwargs["maxTokens"] = value
+        kwargs['maxTokens'] = value
 
         # Process messages
-        value = data.get("messages")
+        value = data.get('messages')
         if value is not None:
             if isinstance(value, list):
                 converted_items = []
@@ -584,24 +582,23 @@ class CreateMessageRequestParamsParams(BaseModel):
                     else:
                         converted_items.append(item)
                 value = converted_items
-        kwargs["messages"] = value
+        kwargs['messages'] = value
 
         # Process metadata
-        value = data.get("metadata")
+        value = data.get('metadata')
         if value is not None:
-            if isinstance(value, dict):
-                value = dict[str, Any].from_dict(value)
-        kwargs["metadata"] = value
+            pass
+        kwargs['metadata'] = value
 
         # Process modelPreferences
-        value = data.get("modelPreferences")
+        value = data.get('modelPreferences')
         if value is not None:
             if isinstance(value, dict):
                 value = ModelPreferences.from_dict(value)
-        kwargs["modelPreferences"] = value
+        kwargs['modelPreferences'] = value
 
         # Process stopSequences
-        value = data.get("stopSequences")
+        value = data.get('stopSequences')
         if value is not None:
             if isinstance(value, list):
                 converted_items = []
@@ -611,19 +608,19 @@ class CreateMessageRequestParamsParams(BaseModel):
                     else:
                         converted_items.append(item)
                 value = converted_items
-        kwargs["stopSequences"] = value
+        kwargs['stopSequences'] = value
 
         # Process systemPrompt
-        value = data.get("systemPrompt")
+        value = data.get('systemPrompt')
         if value is not None:
             pass
-        kwargs["systemPrompt"] = value
+        kwargs['systemPrompt'] = value
 
         # Process temperature
-        value = data.get("temperature")
+        value = data.get('temperature')
         if value is not None:
             pass
-        kwargs["temperature"] = value
+        kwargs['temperature'] = value
 
         return cls(**kwargs)
 
@@ -634,7 +631,6 @@ class CreateMessageResult(BaseModel):
     client should inform the user before returning the sampled message, to allow them
     to inspect the response (human in the loop) and decide whether to allow the server
     to see it."""
-
     content: "TextContent | ImageContent | AudioContent"
     model: "str"
     role: "Role"
@@ -648,43 +644,59 @@ class CreateMessageResult(BaseModel):
             return data
         kwargs = {}
         # Process _meta
-        value = data.get("_meta")
-        if value is not None:
-            if isinstance(value, dict):
-                value = dict[str, Any].from_dict(value)
-        kwargs["_meta"] = value
-
-        # Process content
-        value = data.get("content")
-        if value is not None:
-            if isinstance(value, dict):
-                # Try each type in the union
-                for type_name in ["TextContent", "ImageContent", "AudioContent"]:
-                    try:
-                        value = type_name.from_dict(value)
-                        break
-                    except (TypeError, ValueError):
-                        continue
-        kwargs["content"] = value
-
-        # Process model
-        value = data.get("model")
+        value = data.get('_meta')
         if value is not None:
             pass
-        kwargs["model"] = value
+        kwargs['_meta'] = value
+
+        # Process content
+        value = data.get('content')
+        if value is not None:
+            if isinstance(value, dict):
+                # Try to disambiguate using const fields
+                type_value = value.get('type')
+                if type_value is not None:
+                    # Map type values to their corresponding classes
+                    type_to_class = {
+                    }
+                    if type_value in type_to_class:
+                        value = type_to_class[type_value].from_dict(value)
+                    else:
+                        # Fallback to trying each type
+                        for type_name in ['TextContent', 'ImageContent', 'AudioContent']:
+                            try:
+                                value = type_name.from_dict(value)
+                                break
+                            except (TypeError, ValueError):
+                                continue
+                else:
+                    # No type field, try each type
+                    for type_name in ['TextContent', 'ImageContent', 'AudioContent']:
+                        try:
+                            value = type_name.from_dict(value)
+                            break
+                        except (TypeError, ValueError):
+                            continue
+        kwargs['content'] = value
+
+        # Process model
+        value = data.get('model')
+        if value is not None:
+            pass
+        kwargs['model'] = value
 
         # Process role
-        value = data.get("role")
+        value = data.get('role')
         if value is not None:
             if isinstance(value, dict):
                 value = Role.from_dict(value)
-        kwargs["role"] = value
+        kwargs['role'] = value
 
         # Process stopReason
-        value = data.get("stopReason")
+        value = data.get('stopReason')
         if value is not None:
             pass
-        kwargs["stopReason"] = value
+        kwargs['stopReason'] = value
 
         return cls(**kwargs)
 
@@ -694,7 +706,6 @@ class EmbeddedResource(BaseModel):
     """The contents of a resource, embedded into a prompt or tool call result. It is up
     to the client how best to render embedded resources for the benefit of the LLM
     and/or the user."""
-
     resource: "TextResourceContents | BlobResourceContents"
     type: "Literal['resource']"
     annotations: "None | Annotations" = field(default=None)
@@ -706,30 +717,47 @@ class EmbeddedResource(BaseModel):
             return data
         kwargs = {}
         # Process annotations
-        value = data.get("annotations")
+        value = data.get('annotations')
         if value is not None:
             if isinstance(value, dict):
                 value = Annotations.from_dict(value)
-        kwargs["annotations"] = value
+        kwargs['annotations'] = value
 
         # Process resource
-        value = data.get("resource")
+        value = data.get('resource')
         if value is not None:
             if isinstance(value, dict):
-                # Try each type in the union
-                for type_name in ["TextResourceContents", "BlobResourceContents"]:
-                    try:
-                        value = type_name.from_dict(value)
-                        break
-                    except (TypeError, ValueError):
-                        continue
-        kwargs["resource"] = value
+                # Try to disambiguate using const fields
+                type_value = value.get('type')
+                if type_value is not None:
+                    # Map type values to their corresponding classes
+                    type_to_class = {
+                    }
+                    if type_value in type_to_class:
+                        value = type_to_class[type_value].from_dict(value)
+                    else:
+                        # Fallback to trying each type
+                        for type_name in ['TextResourceContents', 'BlobResourceContents']:
+                            try:
+                                value = type_name.from_dict(value)
+                                break
+                            except (TypeError, ValueError):
+                                continue
+                else:
+                    # No type field, try each type
+                    for type_name in ['TextResourceContents', 'BlobResourceContents']:
+                        try:
+                            value = type_name.from_dict(value)
+                            break
+                        except (TypeError, ValueError):
+                            continue
+        kwargs['resource'] = value
 
         # Process type
-        value = data.get("type")
+        value = data.get('type')
         if value is not None:
             pass
-        kwargs["type"] = value
+        kwargs['type'] = value
 
         return cls(**kwargs)
 
@@ -737,7 +765,6 @@ class EmbeddedResource(BaseModel):
 @dataclass
 class GetPromptRequest(BaseModel):
     """Used by the client to get a prompt provided by the server."""
-
     method: "Literal['prompts/get']"
     params: "GetPromptRequestParamsParams"
 
@@ -748,23 +775,24 @@ class GetPromptRequest(BaseModel):
             return data
         kwargs = {}
         # Process method
-        value = data.get("method")
+        value = data.get('method')
         if value is not None:
             pass
-        kwargs["method"] = value
+        kwargs['method'] = value
 
         # Process params
-        value = data.get("params")
+        value = data.get('params')
         if value is not None:
             if isinstance(value, dict):
                 value = GetPromptRequestParamsParams.from_dict(value)
-        kwargs["params"] = value
+        kwargs['params'] = value
 
         return cls(**kwargs)
 
 
 @dataclass
 class GetPromptRequestParamsParams(BaseModel):
+
     name: "str"
     arguments: "None | dict[str, Any]" = field(default=None)
 
@@ -775,17 +803,16 @@ class GetPromptRequestParamsParams(BaseModel):
             return data
         kwargs = {}
         # Process arguments
-        value = data.get("arguments")
-        if value is not None:
-            if isinstance(value, dict):
-                value = dict[str, Any].from_dict(value)
-        kwargs["arguments"] = value
-
-        # Process name
-        value = data.get("name")
+        value = data.get('arguments')
         if value is not None:
             pass
-        kwargs["name"] = value
+        kwargs['arguments'] = value
+
+        # Process name
+        value = data.get('name')
+        if value is not None:
+            pass
+        kwargs['name'] = value
 
         return cls(**kwargs)
 
@@ -793,7 +820,6 @@ class GetPromptRequestParamsParams(BaseModel):
 @dataclass
 class GetPromptResult(BaseModel):
     """The server's response to a prompts/get request from the client."""
-
     messages: "list[PromptMessage]"
     _meta: "None | dict[str, Any]" = field(default=None)
     description: "None | str" = field(default=None)
@@ -805,20 +831,19 @@ class GetPromptResult(BaseModel):
             return data
         kwargs = {}
         # Process _meta
-        value = data.get("_meta")
-        if value is not None:
-            if isinstance(value, dict):
-                value = dict[str, Any].from_dict(value)
-        kwargs["_meta"] = value
-
-        # Process description
-        value = data.get("description")
+        value = data.get('_meta')
         if value is not None:
             pass
-        kwargs["description"] = value
+        kwargs['_meta'] = value
+
+        # Process description
+        value = data.get('description')
+        if value is not None:
+            pass
+        kwargs['description'] = value
 
         # Process messages
-        value = data.get("messages")
+        value = data.get('messages')
         if value is not None:
             if isinstance(value, list):
                 converted_items = []
@@ -828,7 +853,7 @@ class GetPromptResult(BaseModel):
                     else:
                         converted_items.append(item)
                 value = converted_items
-        kwargs["messages"] = value
+        kwargs['messages'] = value
 
         return cls(**kwargs)
 
@@ -836,7 +861,6 @@ class GetPromptResult(BaseModel):
 @dataclass
 class ImageContent(BaseModel):
     """An image provided to or from an LLM."""
-
     data: "str"
     mimeType: "str"
     type: "Literal['image']"
@@ -849,29 +873,29 @@ class ImageContent(BaseModel):
             return data
         kwargs = {}
         # Process annotations
-        value = data.get("annotations")
+        value = data.get('annotations')
         if value is not None:
             if isinstance(value, dict):
                 value = Annotations.from_dict(value)
-        kwargs["annotations"] = value
+        kwargs['annotations'] = value
 
         # Process data
-        value = data.get("data")
+        value = data.get('data')
         if value is not None:
             pass
-        kwargs["data"] = value
+        kwargs['data'] = value
 
         # Process mimeType
-        value = data.get("mimeType")
+        value = data.get('mimeType')
         if value is not None:
             pass
-        kwargs["mimeType"] = value
+        kwargs['mimeType'] = value
 
         # Process type
-        value = data.get("type")
+        value = data.get('type')
         if value is not None:
             pass
-        kwargs["type"] = value
+        kwargs['type'] = value
 
         return cls(**kwargs)
 
@@ -879,7 +903,6 @@ class ImageContent(BaseModel):
 @dataclass
 class Implementation(BaseModel):
     """Describes the name and version of an MCP implementation."""
-
     name: "str"
     version: "str"
 
@@ -890,16 +913,16 @@ class Implementation(BaseModel):
             return data
         kwargs = {}
         # Process name
-        value = data.get("name")
+        value = data.get('name')
         if value is not None:
             pass
-        kwargs["name"] = value
+        kwargs['name'] = value
 
         # Process version
-        value = data.get("version")
+        value = data.get('version')
         if value is not None:
             pass
-        kwargs["version"] = value
+        kwargs['version'] = value
 
         return cls(**kwargs)
 
@@ -908,7 +931,6 @@ class Implementation(BaseModel):
 class InitializeRequest(BaseModel):
     """This request is sent from the client to the server when it first connects, asking
     it to begin initialization."""
-
     method: "Literal['initialize']"
     params: "InitializeRequestParamsParams"
 
@@ -919,23 +941,24 @@ class InitializeRequest(BaseModel):
             return data
         kwargs = {}
         # Process method
-        value = data.get("method")
+        value = data.get('method')
         if value is not None:
             pass
-        kwargs["method"] = value
+        kwargs['method'] = value
 
         # Process params
-        value = data.get("params")
+        value = data.get('params')
         if value is not None:
             if isinstance(value, dict):
                 value = InitializeRequestParamsParams.from_dict(value)
-        kwargs["params"] = value
+        kwargs['params'] = value
 
         return cls(**kwargs)
 
 
 @dataclass
 class InitializeRequestParamsParams(BaseModel):
+
     capabilities: "ClientCapabilities"
     clientInfo: "Implementation"
     protocolVersion: "str"
@@ -947,24 +970,24 @@ class InitializeRequestParamsParams(BaseModel):
             return data
         kwargs = {}
         # Process capabilities
-        value = data.get("capabilities")
+        value = data.get('capabilities')
         if value is not None:
             if isinstance(value, dict):
                 value = ClientCapabilities.from_dict(value)
-        kwargs["capabilities"] = value
+        kwargs['capabilities'] = value
 
         # Process clientInfo
-        value = data.get("clientInfo")
+        value = data.get('clientInfo')
         if value is not None:
             if isinstance(value, dict):
                 value = Implementation.from_dict(value)
-        kwargs["clientInfo"] = value
+        kwargs['clientInfo'] = value
 
         # Process protocolVersion
-        value = data.get("protocolVersion")
+        value = data.get('protocolVersion')
         if value is not None:
             pass
-        kwargs["protocolVersion"] = value
+        kwargs['protocolVersion'] = value
 
         return cls(**kwargs)
 
@@ -973,7 +996,6 @@ class InitializeRequestParamsParams(BaseModel):
 class InitializeResult(BaseModel):
     """After receiving an initialize request from the client, the server sends this
     response."""
-
     capabilities: "ServerCapabilities"
     protocolVersion: "str"
     serverInfo: "Implementation"
@@ -987,37 +1009,36 @@ class InitializeResult(BaseModel):
             return data
         kwargs = {}
         # Process _meta
-        value = data.get("_meta")
+        value = data.get('_meta')
         if value is not None:
-            if isinstance(value, dict):
-                value = dict[str, Any].from_dict(value)
-        kwargs["_meta"] = value
+            pass
+        kwargs['_meta'] = value
 
         # Process capabilities
-        value = data.get("capabilities")
+        value = data.get('capabilities')
         if value is not None:
             if isinstance(value, dict):
                 value = ServerCapabilities.from_dict(value)
-        kwargs["capabilities"] = value
+        kwargs['capabilities'] = value
 
         # Process instructions
-        value = data.get("instructions")
+        value = data.get('instructions')
         if value is not None:
             pass
-        kwargs["instructions"] = value
+        kwargs['instructions'] = value
 
         # Process protocolVersion
-        value = data.get("protocolVersion")
+        value = data.get('protocolVersion')
         if value is not None:
             pass
-        kwargs["protocolVersion"] = value
+        kwargs['protocolVersion'] = value
 
         # Process serverInfo
-        value = data.get("serverInfo")
+        value = data.get('serverInfo')
         if value is not None:
             if isinstance(value, dict):
                 value = Implementation.from_dict(value)
-        kwargs["serverInfo"] = value
+        kwargs['serverInfo'] = value
 
         return cls(**kwargs)
 
@@ -1026,7 +1047,6 @@ class InitializeResult(BaseModel):
 class InitializedNotification(BaseModel):
     """This notification is sent from the client to the server after initialization has
     finished."""
-
     method: "Literal['notifications/initialized']"
     params: "None | InitializedNotificationParamsParams" = field(default=None)
 
@@ -1037,23 +1057,24 @@ class InitializedNotification(BaseModel):
             return data
         kwargs = {}
         # Process method
-        value = data.get("method")
+        value = data.get('method')
         if value is not None:
             pass
-        kwargs["method"] = value
+        kwargs['method'] = value
 
         # Process params
-        value = data.get("params")
+        value = data.get('params')
         if value is not None:
             if isinstance(value, dict):
                 value = InitializedNotificationParamsParams.from_dict(value)
-        kwargs["params"] = value
+        kwargs['params'] = value
 
         return cls(**kwargs)
 
 
 @dataclass
 class InitializedNotificationParamsParams(BaseModel):
+
     _meta: "None | dict[str, Any]" = field(default=None)
 
     @classmethod
@@ -1063,11 +1084,10 @@ class InitializedNotificationParamsParams(BaseModel):
             return data
         kwargs = {}
         # Process _meta
-        value = data.get("_meta")
+        value = data.get('_meta')
         if value is not None:
-            if isinstance(value, dict):
-                value = dict[str, Any].from_dict(value)
-        kwargs["_meta"] = value
+            pass
+        kwargs['_meta'] = value
 
         return cls(**kwargs)
 
@@ -1075,7 +1095,6 @@ class InitializedNotificationParamsParams(BaseModel):
 @dataclass
 class JSONRPCError(BaseModel):
     """A response to a request that indicates an error occurred."""
-
     error: "JSONRPCErrorErrorParams"
     id: "RequestId"
     jsonrpc: "Literal['2.0']"
@@ -1087,30 +1106,31 @@ class JSONRPCError(BaseModel):
             return data
         kwargs = {}
         # Process error
-        value = data.get("error")
+        value = data.get('error')
         if value is not None:
             if isinstance(value, dict):
                 value = JSONRPCErrorErrorParams.from_dict(value)
-        kwargs["error"] = value
+        kwargs['error'] = value
 
         # Process id
-        value = data.get("id")
+        value = data.get('id')
         if value is not None:
             if isinstance(value, dict):
                 value = RequestId.from_dict(value)
-        kwargs["id"] = value
+        kwargs['id'] = value
 
         # Process jsonrpc
-        value = data.get("jsonrpc")
+        value = data.get('jsonrpc')
         if value is not None:
             pass
-        kwargs["jsonrpc"] = value
+        kwargs['jsonrpc'] = value
 
         return cls(**kwargs)
 
 
 @dataclass
 class JSONRPCErrorErrorParams(BaseModel):
+
     code: "int"
     message: "str"
     data: "None | str" = field(default=None)
@@ -1122,22 +1142,22 @@ class JSONRPCErrorErrorParams(BaseModel):
             return data
         kwargs = {}
         # Process code
-        value = data.get("code")
+        value = data.get('code')
         if value is not None:
             pass
-        kwargs["code"] = value
+        kwargs['code'] = value
 
         # Process data
-        value = data.get("data")
+        value = data.get('data')
         if value is not None:
             pass
-        kwargs["data"] = value
+        kwargs['data'] = value
 
         # Process message
-        value = data.get("message")
+        value = data.get('message')
         if value is not None:
             pass
-        kwargs["message"] = value
+        kwargs['message'] = value
 
         return cls(**kwargs)
 
@@ -1145,7 +1165,6 @@ class JSONRPCErrorErrorParams(BaseModel):
 @dataclass
 class JSONRPCNotification(BaseModel):
     """A notification which does not expect a response."""
-
     jsonrpc: "Literal['2.0']"
     method: "str"
     params: "None | JSONRPCNotificationParamsParams" = field(default=None)
@@ -1157,29 +1176,30 @@ class JSONRPCNotification(BaseModel):
             return data
         kwargs = {}
         # Process jsonrpc
-        value = data.get("jsonrpc")
+        value = data.get('jsonrpc')
         if value is not None:
             pass
-        kwargs["jsonrpc"] = value
+        kwargs['jsonrpc'] = value
 
         # Process method
-        value = data.get("method")
+        value = data.get('method')
         if value is not None:
             pass
-        kwargs["method"] = value
+        kwargs['method'] = value
 
         # Process params
-        value = data.get("params")
+        value = data.get('params')
         if value is not None:
             if isinstance(value, dict):
                 value = JSONRPCNotificationParamsParams.from_dict(value)
-        kwargs["params"] = value
+        kwargs['params'] = value
 
         return cls(**kwargs)
 
 
 @dataclass
 class JSONRPCNotificationParamsParams(BaseModel):
+
     _meta: "None | dict[str, Any]" = field(default=None)
 
     @classmethod
@@ -1189,11 +1209,10 @@ class JSONRPCNotificationParamsParams(BaseModel):
             return data
         kwargs = {}
         # Process _meta
-        value = data.get("_meta")
+        value = data.get('_meta')
         if value is not None:
-            if isinstance(value, dict):
-                value = dict[str, Any].from_dict(value)
-        kwargs["_meta"] = value
+            pass
+        kwargs['_meta'] = value
 
         return cls(**kwargs)
 
@@ -1201,7 +1220,6 @@ class JSONRPCNotificationParamsParams(BaseModel):
 @dataclass
 class JSONRPCRequest(BaseModel):
     """A request that expects a response."""
-
     id: "RequestId"
     jsonrpc: "Literal['2.0']"
     method: "str"
@@ -1214,36 +1232,37 @@ class JSONRPCRequest(BaseModel):
             return data
         kwargs = {}
         # Process id
-        value = data.get("id")
+        value = data.get('id')
         if value is not None:
             if isinstance(value, dict):
                 value = RequestId.from_dict(value)
-        kwargs["id"] = value
+        kwargs['id'] = value
 
         # Process jsonrpc
-        value = data.get("jsonrpc")
+        value = data.get('jsonrpc')
         if value is not None:
             pass
-        kwargs["jsonrpc"] = value
+        kwargs['jsonrpc'] = value
 
         # Process method
-        value = data.get("method")
+        value = data.get('method')
         if value is not None:
             pass
-        kwargs["method"] = value
+        kwargs['method'] = value
 
         # Process params
-        value = data.get("params")
+        value = data.get('params')
         if value is not None:
             if isinstance(value, dict):
                 value = JSONRPCRequestParamsParams.from_dict(value)
-        kwargs["params"] = value
+        kwargs['params'] = value
 
         return cls(**kwargs)
 
 
 @dataclass
 class JSONRPCRequestParamsParams(BaseModel):
+
     _meta: "None | JSONRPCRequestParamsParams_metaParams" = field(default=None)
 
     @classmethod
@@ -1253,17 +1272,18 @@ class JSONRPCRequestParamsParams(BaseModel):
             return data
         kwargs = {}
         # Process _meta
-        value = data.get("_meta")
+        value = data.get('_meta')
         if value is not None:
             if isinstance(value, dict):
                 value = JSONRPCRequestParamsParams_metaParams.from_dict(value)
-        kwargs["_meta"] = value
+        kwargs['_meta'] = value
 
         return cls(**kwargs)
 
 
 @dataclass
 class JSONRPCRequestParamsParams_metaParams(BaseModel):
+
     progressToken: "None | ProgressToken" = field(default=None)
 
     @classmethod
@@ -1273,11 +1293,11 @@ class JSONRPCRequestParamsParams_metaParams(BaseModel):
             return data
         kwargs = {}
         # Process progressToken
-        value = data.get("progressToken")
+        value = data.get('progressToken')
         if value is not None:
             if isinstance(value, dict):
                 value = ProgressToken.from_dict(value)
-        kwargs["progressToken"] = value
+        kwargs['progressToken'] = value
 
         return cls(**kwargs)
 
@@ -1285,7 +1305,6 @@ class JSONRPCRequestParamsParams_metaParams(BaseModel):
 @dataclass
 class JSONRPCResponse(BaseModel):
     """A successful (non-error) response to a request."""
-
     id: "RequestId"
     jsonrpc: "Literal['2.0']"
     result: "Result"
@@ -1297,24 +1316,24 @@ class JSONRPCResponse(BaseModel):
             return data
         kwargs = {}
         # Process id
-        value = data.get("id")
+        value = data.get('id')
         if value is not None:
             if isinstance(value, dict):
                 value = RequestId.from_dict(value)
-        kwargs["id"] = value
+        kwargs['id'] = value
 
         # Process jsonrpc
-        value = data.get("jsonrpc")
+        value = data.get('jsonrpc')
         if value is not None:
             pass
-        kwargs["jsonrpc"] = value
+        kwargs['jsonrpc'] = value
 
         # Process result
-        value = data.get("result")
+        value = data.get('result')
         if value is not None:
             if isinstance(value, dict):
                 value = Result.from_dict(value)
-        kwargs["result"] = value
+        kwargs['result'] = value
 
         return cls(**kwargs)
 
@@ -1323,7 +1342,6 @@ class JSONRPCResponse(BaseModel):
 class ListPromptsRequest(BaseModel):
     """Sent from the client to request a list of prompts and prompt templates the server
     has."""
-
     method: "Literal['prompts/list']"
     params: "None | ListPromptsRequestParamsParams" = field(default=None)
 
@@ -1334,23 +1352,24 @@ class ListPromptsRequest(BaseModel):
             return data
         kwargs = {}
         # Process method
-        value = data.get("method")
+        value = data.get('method')
         if value is not None:
             pass
-        kwargs["method"] = value
+        kwargs['method'] = value
 
         # Process params
-        value = data.get("params")
+        value = data.get('params')
         if value is not None:
             if isinstance(value, dict):
                 value = ListPromptsRequestParamsParams.from_dict(value)
-        kwargs["params"] = value
+        kwargs['params'] = value
 
         return cls(**kwargs)
 
 
 @dataclass
 class ListPromptsRequestParamsParams(BaseModel):
+
     cursor: "None | str" = field(default=None)
 
     @classmethod
@@ -1360,10 +1379,10 @@ class ListPromptsRequestParamsParams(BaseModel):
             return data
         kwargs = {}
         # Process cursor
-        value = data.get("cursor")
+        value = data.get('cursor')
         if value is not None:
             pass
-        kwargs["cursor"] = value
+        kwargs['cursor'] = value
 
         return cls(**kwargs)
 
@@ -1371,7 +1390,6 @@ class ListPromptsRequestParamsParams(BaseModel):
 @dataclass
 class ListPromptsResult(BaseModel):
     """The server's response to a prompts/list request from the client."""
-
     prompts: "list[Prompt]"
     _meta: "None | dict[str, Any]" = field(default=None)
     nextCursor: "None | str" = field(default=None)
@@ -1383,20 +1401,19 @@ class ListPromptsResult(BaseModel):
             return data
         kwargs = {}
         # Process _meta
-        value = data.get("_meta")
-        if value is not None:
-            if isinstance(value, dict):
-                value = dict[str, Any].from_dict(value)
-        kwargs["_meta"] = value
-
-        # Process nextCursor
-        value = data.get("nextCursor")
+        value = data.get('_meta')
         if value is not None:
             pass
-        kwargs["nextCursor"] = value
+        kwargs['_meta'] = value
+
+        # Process nextCursor
+        value = data.get('nextCursor')
+        if value is not None:
+            pass
+        kwargs['nextCursor'] = value
 
         # Process prompts
-        value = data.get("prompts")
+        value = data.get('prompts')
         if value is not None:
             if isinstance(value, list):
                 converted_items = []
@@ -1406,7 +1423,7 @@ class ListPromptsResult(BaseModel):
                     else:
                         converted_items.append(item)
                 value = converted_items
-        kwargs["prompts"] = value
+        kwargs['prompts'] = value
 
         return cls(**kwargs)
 
@@ -1414,7 +1431,6 @@ class ListPromptsResult(BaseModel):
 @dataclass
 class ListResourceTemplatesRequest(BaseModel):
     """Sent from the client to request a list of resource templates the server has."""
-
     method: "Literal['resources/templates/list']"
     params: "None | ListResourceTemplatesRequestParamsParams" = field(default=None)
 
@@ -1425,23 +1441,24 @@ class ListResourceTemplatesRequest(BaseModel):
             return data
         kwargs = {}
         # Process method
-        value = data.get("method")
+        value = data.get('method')
         if value is not None:
             pass
-        kwargs["method"] = value
+        kwargs['method'] = value
 
         # Process params
-        value = data.get("params")
+        value = data.get('params')
         if value is not None:
             if isinstance(value, dict):
                 value = ListResourceTemplatesRequestParamsParams.from_dict(value)
-        kwargs["params"] = value
+        kwargs['params'] = value
 
         return cls(**kwargs)
 
 
 @dataclass
 class ListResourceTemplatesRequestParamsParams(BaseModel):
+
     cursor: "None | str" = field(default=None)
 
     @classmethod
@@ -1451,10 +1468,10 @@ class ListResourceTemplatesRequestParamsParams(BaseModel):
             return data
         kwargs = {}
         # Process cursor
-        value = data.get("cursor")
+        value = data.get('cursor')
         if value is not None:
             pass
-        kwargs["cursor"] = value
+        kwargs['cursor'] = value
 
         return cls(**kwargs)
 
@@ -1462,7 +1479,6 @@ class ListResourceTemplatesRequestParamsParams(BaseModel):
 @dataclass
 class ListResourceTemplatesResult(BaseModel):
     """The server's response to a resources/templates/list request from the client."""
-
     resourceTemplates: "list[ResourceTemplate]"
     _meta: "None | dict[str, Any]" = field(default=None)
     nextCursor: "None | str" = field(default=None)
@@ -1474,20 +1490,19 @@ class ListResourceTemplatesResult(BaseModel):
             return data
         kwargs = {}
         # Process _meta
-        value = data.get("_meta")
-        if value is not None:
-            if isinstance(value, dict):
-                value = dict[str, Any].from_dict(value)
-        kwargs["_meta"] = value
-
-        # Process nextCursor
-        value = data.get("nextCursor")
+        value = data.get('_meta')
         if value is not None:
             pass
-        kwargs["nextCursor"] = value
+        kwargs['_meta'] = value
+
+        # Process nextCursor
+        value = data.get('nextCursor')
+        if value is not None:
+            pass
+        kwargs['nextCursor'] = value
 
         # Process resourceTemplates
-        value = data.get("resourceTemplates")
+        value = data.get('resourceTemplates')
         if value is not None:
             if isinstance(value, list):
                 converted_items = []
@@ -1497,7 +1512,7 @@ class ListResourceTemplatesResult(BaseModel):
                     else:
                         converted_items.append(item)
                 value = converted_items
-        kwargs["resourceTemplates"] = value
+        kwargs['resourceTemplates'] = value
 
         return cls(**kwargs)
 
@@ -1505,7 +1520,6 @@ class ListResourceTemplatesResult(BaseModel):
 @dataclass
 class ListResourcesRequest(BaseModel):
     """Sent from the client to request a list of resources the server has."""
-
     method: "Literal['resources/list']"
     params: "None | ListResourcesRequestParamsParams" = field(default=None)
 
@@ -1516,23 +1530,24 @@ class ListResourcesRequest(BaseModel):
             return data
         kwargs = {}
         # Process method
-        value = data.get("method")
+        value = data.get('method')
         if value is not None:
             pass
-        kwargs["method"] = value
+        kwargs['method'] = value
 
         # Process params
-        value = data.get("params")
+        value = data.get('params')
         if value is not None:
             if isinstance(value, dict):
                 value = ListResourcesRequestParamsParams.from_dict(value)
-        kwargs["params"] = value
+        kwargs['params'] = value
 
         return cls(**kwargs)
 
 
 @dataclass
 class ListResourcesRequestParamsParams(BaseModel):
+
     cursor: "None | str" = field(default=None)
 
     @classmethod
@@ -1542,10 +1557,10 @@ class ListResourcesRequestParamsParams(BaseModel):
             return data
         kwargs = {}
         # Process cursor
-        value = data.get("cursor")
+        value = data.get('cursor')
         if value is not None:
             pass
-        kwargs["cursor"] = value
+        kwargs['cursor'] = value
 
         return cls(**kwargs)
 
@@ -1553,7 +1568,6 @@ class ListResourcesRequestParamsParams(BaseModel):
 @dataclass
 class ListResourcesResult(BaseModel):
     """The server's response to a resources/list request from the client."""
-
     resources: "list[Resource]"
     _meta: "None | dict[str, Any]" = field(default=None)
     nextCursor: "None | str" = field(default=None)
@@ -1565,20 +1579,19 @@ class ListResourcesResult(BaseModel):
             return data
         kwargs = {}
         # Process _meta
-        value = data.get("_meta")
-        if value is not None:
-            if isinstance(value, dict):
-                value = dict[str, Any].from_dict(value)
-        kwargs["_meta"] = value
-
-        # Process nextCursor
-        value = data.get("nextCursor")
+        value = data.get('_meta')
         if value is not None:
             pass
-        kwargs["nextCursor"] = value
+        kwargs['_meta'] = value
+
+        # Process nextCursor
+        value = data.get('nextCursor')
+        if value is not None:
+            pass
+        kwargs['nextCursor'] = value
 
         # Process resources
-        value = data.get("resources")
+        value = data.get('resources')
         if value is not None:
             if isinstance(value, list):
                 converted_items = []
@@ -1588,7 +1601,7 @@ class ListResourcesResult(BaseModel):
                     else:
                         converted_items.append(item)
                 value = converted_items
-        kwargs["resources"] = value
+        kwargs['resources'] = value
 
         return cls(**kwargs)
 
@@ -1601,7 +1614,6 @@ class ListRootsRequest(BaseModel):
     operate on. This request is typically used when the server needs to understand the
     file system structure or access specific locations that the client has permission
     to read from."""
-
     method: "Literal['roots/list']"
     params: "None | ListRootsRequestParamsParams" = field(default=None)
 
@@ -1612,23 +1624,24 @@ class ListRootsRequest(BaseModel):
             return data
         kwargs = {}
         # Process method
-        value = data.get("method")
+        value = data.get('method')
         if value is not None:
             pass
-        kwargs["method"] = value
+        kwargs['method'] = value
 
         # Process params
-        value = data.get("params")
+        value = data.get('params')
         if value is not None:
             if isinstance(value, dict):
                 value = ListRootsRequestParamsParams.from_dict(value)
-        kwargs["params"] = value
+        kwargs['params'] = value
 
         return cls(**kwargs)
 
 
 @dataclass
 class ListRootsRequestParamsParams(BaseModel):
+
     _meta: "None | ListRootsRequestParamsParams_metaParams" = field(default=None)
 
     @classmethod
@@ -1638,17 +1651,18 @@ class ListRootsRequestParamsParams(BaseModel):
             return data
         kwargs = {}
         # Process _meta
-        value = data.get("_meta")
+        value = data.get('_meta')
         if value is not None:
             if isinstance(value, dict):
                 value = ListRootsRequestParamsParams_metaParams.from_dict(value)
-        kwargs["_meta"] = value
+        kwargs['_meta'] = value
 
         return cls(**kwargs)
 
 
 @dataclass
 class ListRootsRequestParamsParams_metaParams(BaseModel):
+
     progressToken: "None | ProgressToken" = field(default=None)
 
     @classmethod
@@ -1658,11 +1672,11 @@ class ListRootsRequestParamsParams_metaParams(BaseModel):
             return data
         kwargs = {}
         # Process progressToken
-        value = data.get("progressToken")
+        value = data.get('progressToken')
         if value is not None:
             if isinstance(value, dict):
                 value = ProgressToken.from_dict(value)
-        kwargs["progressToken"] = value
+        kwargs['progressToken'] = value
 
         return cls(**kwargs)
 
@@ -1672,7 +1686,6 @@ class ListRootsResult(BaseModel):
     """The client's response to a roots/list request from the server. This result
     contains an array of Root objects, each representing a root directory or file that
     the server can operate on."""
-
     roots: "list[Root]"
     _meta: "None | dict[str, Any]" = field(default=None)
 
@@ -1683,14 +1696,13 @@ class ListRootsResult(BaseModel):
             return data
         kwargs = {}
         # Process _meta
-        value = data.get("_meta")
+        value = data.get('_meta')
         if value is not None:
-            if isinstance(value, dict):
-                value = dict[str, Any].from_dict(value)
-        kwargs["_meta"] = value
+            pass
+        kwargs['_meta'] = value
 
         # Process roots
-        value = data.get("roots")
+        value = data.get('roots')
         if value is not None:
             if isinstance(value, list):
                 converted_items = []
@@ -1700,7 +1712,7 @@ class ListRootsResult(BaseModel):
                     else:
                         converted_items.append(item)
                 value = converted_items
-        kwargs["roots"] = value
+        kwargs['roots'] = value
 
         return cls(**kwargs)
 
@@ -1708,7 +1720,6 @@ class ListRootsResult(BaseModel):
 @dataclass
 class ListToolsRequest(BaseModel):
     """Sent from the client to request a list of tools the server has."""
-
     method: "Literal['tools/list']"
     params: "None | ListToolsRequestParamsParams" = field(default=None)
 
@@ -1719,23 +1730,24 @@ class ListToolsRequest(BaseModel):
             return data
         kwargs = {}
         # Process method
-        value = data.get("method")
+        value = data.get('method')
         if value is not None:
             pass
-        kwargs["method"] = value
+        kwargs['method'] = value
 
         # Process params
-        value = data.get("params")
+        value = data.get('params')
         if value is not None:
             if isinstance(value, dict):
                 value = ListToolsRequestParamsParams.from_dict(value)
-        kwargs["params"] = value
+        kwargs['params'] = value
 
         return cls(**kwargs)
 
 
 @dataclass
 class ListToolsRequestParamsParams(BaseModel):
+
     cursor: "None | str" = field(default=None)
 
     @classmethod
@@ -1745,10 +1757,10 @@ class ListToolsRequestParamsParams(BaseModel):
             return data
         kwargs = {}
         # Process cursor
-        value = data.get("cursor")
+        value = data.get('cursor')
         if value is not None:
             pass
-        kwargs["cursor"] = value
+        kwargs['cursor'] = value
 
         return cls(**kwargs)
 
@@ -1756,7 +1768,6 @@ class ListToolsRequestParamsParams(BaseModel):
 @dataclass
 class ListToolsResult(BaseModel):
     """The server's response to a tools/list request from the client."""
-
     tools: "list[Tool]"
     _meta: "None | dict[str, Any]" = field(default=None)
     nextCursor: "None | str" = field(default=None)
@@ -1768,20 +1779,19 @@ class ListToolsResult(BaseModel):
             return data
         kwargs = {}
         # Process _meta
-        value = data.get("_meta")
-        if value is not None:
-            if isinstance(value, dict):
-                value = dict[str, Any].from_dict(value)
-        kwargs["_meta"] = value
-
-        # Process nextCursor
-        value = data.get("nextCursor")
+        value = data.get('_meta')
         if value is not None:
             pass
-        kwargs["nextCursor"] = value
+        kwargs['_meta'] = value
+
+        # Process nextCursor
+        value = data.get('nextCursor')
+        if value is not None:
+            pass
+        kwargs['nextCursor'] = value
 
         # Process tools
-        value = data.get("tools")
+        value = data.get('tools')
         if value is not None:
             if isinstance(value, list):
                 converted_items = []
@@ -1791,15 +1801,13 @@ class ListToolsResult(BaseModel):
                     else:
                         converted_items.append(item)
                 value = converted_items
-        kwargs["tools"] = value
+        kwargs['tools'] = value
 
         return cls(**kwargs)
 
 
 # Type alias for logginglevel
-LoggingLevel = Literal[
-    "alert", "critical", "debug", "emergency", "error", "info", "notice", "warning"
-]
+LoggingLevel = Literal['alert', 'critical', 'debug', 'emergency', 'error', 'info', 'notice', 'warning']
 
 
 @dataclass
@@ -1807,7 +1815,6 @@ class LoggingMessageNotification(BaseModel):
     """Notification of a log message passed from server to client. If no
     logging/setLevel request has been sent from the client, the server MAY decide
     which messages to send automatically."""
-
     method: "Literal['notifications/message']"
     params: "LoggingMessageNotificationParamsParams"
 
@@ -1818,23 +1825,24 @@ class LoggingMessageNotification(BaseModel):
             return data
         kwargs = {}
         # Process method
-        value = data.get("method")
+        value = data.get('method')
         if value is not None:
             pass
-        kwargs["method"] = value
+        kwargs['method'] = value
 
         # Process params
-        value = data.get("params")
+        value = data.get('params')
         if value is not None:
             if isinstance(value, dict):
                 value = LoggingMessageNotificationParamsParams.from_dict(value)
-        kwargs["params"] = value
+        kwargs['params'] = value
 
         return cls(**kwargs)
 
 
 @dataclass
 class LoggingMessageNotificationParamsParams(BaseModel):
+
     data: "str"
     level: "LoggingLevel"
     logger: "None | str" = field(default=None)
@@ -1846,23 +1854,23 @@ class LoggingMessageNotificationParamsParams(BaseModel):
             return data
         kwargs = {}
         # Process data
-        value = data.get("data")
+        value = data.get('data')
         if value is not None:
             pass
-        kwargs["data"] = value
+        kwargs['data'] = value
 
         # Process level
-        value = data.get("level")
+        value = data.get('level')
         if value is not None:
             if isinstance(value, dict):
                 value = LoggingLevel.from_dict(value)
-        kwargs["level"] = value
+        kwargs['level'] = value
 
         # Process logger
-        value = data.get("logger")
+        value = data.get('logger')
         if value is not None:
             pass
-        kwargs["logger"] = value
+        kwargs['logger'] = value
 
         return cls(**kwargs)
 
@@ -1871,7 +1879,6 @@ class LoggingMessageNotificationParamsParams(BaseModel):
 class ModelHint(BaseModel):
     """Hints to use for model selection. Keys not declared here are currently left
     unspecified by the spec and are up to the client to interpret."""
-
     name: "None | str" = field(default=None)
 
     @classmethod
@@ -1881,10 +1888,10 @@ class ModelHint(BaseModel):
             return data
         kwargs = {}
         # Process name
-        value = data.get("name")
+        value = data.get('name')
         if value is not None:
             pass
-        kwargs["name"] = value
+        kwargs['name'] = value
 
         return cls(**kwargs)
 
@@ -1900,7 +1907,6 @@ class ModelPreferences(BaseModel):
     preferences are always advisory. The client MAY ignore them. It is also up to the
     client to decide how to interpret these preferences and how to balance them
     against other considerations."""
-
     costPriority: "None | float" = field(default=None)
     hints: "None | list[ModelHint]" = field(default=None)
     intelligencePriority: "None | float" = field(default=None)
@@ -1913,13 +1919,13 @@ class ModelPreferences(BaseModel):
             return data
         kwargs = {}
         # Process costPriority
-        value = data.get("costPriority")
+        value = data.get('costPriority')
         if value is not None:
             pass
-        kwargs["costPriority"] = value
+        kwargs['costPriority'] = value
 
         # Process hints
-        value = data.get("hints")
+        value = data.get('hints')
         if value is not None:
             if isinstance(value, list):
                 converted_items = []
@@ -1929,25 +1935,26 @@ class ModelPreferences(BaseModel):
                     else:
                         converted_items.append(item)
                 value = converted_items
-        kwargs["hints"] = value
+        kwargs['hints'] = value
 
         # Process intelligencePriority
-        value = data.get("intelligencePriority")
+        value = data.get('intelligencePriority')
         if value is not None:
             pass
-        kwargs["intelligencePriority"] = value
+        kwargs['intelligencePriority'] = value
 
         # Process speedPriority
-        value = data.get("speedPriority")
+        value = data.get('speedPriority')
         if value is not None:
             pass
-        kwargs["speedPriority"] = value
+        kwargs['speedPriority'] = value
 
         return cls(**kwargs)
 
 
 @dataclass
 class Notification(BaseModel):
+
     method: "str"
     params: "None | NotificationParamsParams" = field(default=None)
 
@@ -1958,23 +1965,24 @@ class Notification(BaseModel):
             return data
         kwargs = {}
         # Process method
-        value = data.get("method")
+        value = data.get('method')
         if value is not None:
             pass
-        kwargs["method"] = value
+        kwargs['method'] = value
 
         # Process params
-        value = data.get("params")
+        value = data.get('params')
         if value is not None:
             if isinstance(value, dict):
                 value = NotificationParamsParams.from_dict(value)
-        kwargs["params"] = value
+        kwargs['params'] = value
 
         return cls(**kwargs)
 
 
 @dataclass
 class NotificationParamsParams(BaseModel):
+
     _meta: "None | dict[str, Any]" = field(default=None)
 
     @classmethod
@@ -1984,17 +1992,17 @@ class NotificationParamsParams(BaseModel):
             return data
         kwargs = {}
         # Process _meta
-        value = data.get("_meta")
+        value = data.get('_meta')
         if value is not None:
-            if isinstance(value, dict):
-                value = dict[str, Any].from_dict(value)
-        kwargs["_meta"] = value
+            pass
+        kwargs['_meta'] = value
 
         return cls(**kwargs)
 
 
 @dataclass
 class PaginatedRequest(BaseModel):
+
     method: "str"
     params: "None | PaginatedRequestParamsParams" = field(default=None)
 
@@ -2005,23 +2013,24 @@ class PaginatedRequest(BaseModel):
             return data
         kwargs = {}
         # Process method
-        value = data.get("method")
+        value = data.get('method')
         if value is not None:
             pass
-        kwargs["method"] = value
+        kwargs['method'] = value
 
         # Process params
-        value = data.get("params")
+        value = data.get('params')
         if value is not None:
             if isinstance(value, dict):
                 value = PaginatedRequestParamsParams.from_dict(value)
-        kwargs["params"] = value
+        kwargs['params'] = value
 
         return cls(**kwargs)
 
 
 @dataclass
 class PaginatedRequestParamsParams(BaseModel):
+
     cursor: "None | str" = field(default=None)
 
     @classmethod
@@ -2031,16 +2040,17 @@ class PaginatedRequestParamsParams(BaseModel):
             return data
         kwargs = {}
         # Process cursor
-        value = data.get("cursor")
+        value = data.get('cursor')
         if value is not None:
             pass
-        kwargs["cursor"] = value
+        kwargs['cursor'] = value
 
         return cls(**kwargs)
 
 
 @dataclass
 class PaginatedResult(BaseModel):
+
     _meta: "None | dict[str, Any]" = field(default=None)
     nextCursor: "None | str" = field(default=None)
 
@@ -2051,17 +2061,16 @@ class PaginatedResult(BaseModel):
             return data
         kwargs = {}
         # Process _meta
-        value = data.get("_meta")
-        if value is not None:
-            if isinstance(value, dict):
-                value = dict[str, Any].from_dict(value)
-        kwargs["_meta"] = value
-
-        # Process nextCursor
-        value = data.get("nextCursor")
+        value = data.get('_meta')
         if value is not None:
             pass
-        kwargs["nextCursor"] = value
+        kwargs['_meta'] = value
+
+        # Process nextCursor
+        value = data.get('nextCursor')
+        if value is not None:
+            pass
+        kwargs['nextCursor'] = value
 
         return cls(**kwargs)
 
@@ -2070,7 +2079,6 @@ class PaginatedResult(BaseModel):
 class PingRequest(BaseModel):
     """A ping, issued by either the server or the client, to check that the other party
     is still alive. The receiver must promptly respond, or else may be disconnected."""
-
     method: "Literal['ping']"
     params: "None | PingRequestParamsParams" = field(default=None)
 
@@ -2081,23 +2089,24 @@ class PingRequest(BaseModel):
             return data
         kwargs = {}
         # Process method
-        value = data.get("method")
+        value = data.get('method')
         if value is not None:
             pass
-        kwargs["method"] = value
+        kwargs['method'] = value
 
         # Process params
-        value = data.get("params")
+        value = data.get('params')
         if value is not None:
             if isinstance(value, dict):
                 value = PingRequestParamsParams.from_dict(value)
-        kwargs["params"] = value
+        kwargs['params'] = value
 
         return cls(**kwargs)
 
 
 @dataclass
 class PingRequestParamsParams(BaseModel):
+
     _meta: "None | PingRequestParamsParams_metaParams" = field(default=None)
 
     @classmethod
@@ -2107,17 +2116,18 @@ class PingRequestParamsParams(BaseModel):
             return data
         kwargs = {}
         # Process _meta
-        value = data.get("_meta")
+        value = data.get('_meta')
         if value is not None:
             if isinstance(value, dict):
                 value = PingRequestParamsParams_metaParams.from_dict(value)
-        kwargs["_meta"] = value
+        kwargs['_meta'] = value
 
         return cls(**kwargs)
 
 
 @dataclass
 class PingRequestParamsParams_metaParams(BaseModel):
+
     progressToken: "None | ProgressToken" = field(default=None)
 
     @classmethod
@@ -2127,11 +2137,11 @@ class PingRequestParamsParams_metaParams(BaseModel):
             return data
         kwargs = {}
         # Process progressToken
-        value = data.get("progressToken")
+        value = data.get('progressToken')
         if value is not None:
             if isinstance(value, dict):
                 value = ProgressToken.from_dict(value)
-        kwargs["progressToken"] = value
+        kwargs['progressToken'] = value
 
         return cls(**kwargs)
 
@@ -2140,7 +2150,6 @@ class PingRequestParamsParams_metaParams(BaseModel):
 class ProgressNotification(BaseModel):
     """An out-of-band notification used to inform the receiver of a progress update for
     a long-running request."""
-
     method: "Literal['notifications/progress']"
     params: "ProgressNotificationParamsParams"
 
@@ -2151,23 +2160,24 @@ class ProgressNotification(BaseModel):
             return data
         kwargs = {}
         # Process method
-        value = data.get("method")
+        value = data.get('method')
         if value is not None:
             pass
-        kwargs["method"] = value
+        kwargs['method'] = value
 
         # Process params
-        value = data.get("params")
+        value = data.get('params')
         if value is not None:
             if isinstance(value, dict):
                 value = ProgressNotificationParamsParams.from_dict(value)
-        kwargs["params"] = value
+        kwargs['params'] = value
 
         return cls(**kwargs)
 
 
 @dataclass
 class ProgressNotificationParamsParams(BaseModel):
+
     progress: "float"
     progressToken: "ProgressToken"
     message: "None | str" = field(default=None)
@@ -2180,29 +2190,29 @@ class ProgressNotificationParamsParams(BaseModel):
             return data
         kwargs = {}
         # Process message
-        value = data.get("message")
+        value = data.get('message')
         if value is not None:
             pass
-        kwargs["message"] = value
+        kwargs['message'] = value
 
         # Process progress
-        value = data.get("progress")
+        value = data.get('progress')
         if value is not None:
             pass
-        kwargs["progress"] = value
+        kwargs['progress'] = value
 
         # Process progressToken
-        value = data.get("progressToken")
+        value = data.get('progressToken')
         if value is not None:
             if isinstance(value, dict):
                 value = ProgressToken.from_dict(value)
-        kwargs["progressToken"] = value
+        kwargs['progressToken'] = value
 
         # Process total
-        value = data.get("total")
+        value = data.get('total')
         if value is not None:
             pass
-        kwargs["total"] = value
+        kwargs['total'] = value
 
         return cls(**kwargs)
 
@@ -2214,7 +2224,6 @@ ProgressToken = str | int
 @dataclass
 class Prompt(BaseModel):
     """A prompt or prompt template that the server offers."""
-
     name: "str"
     arguments: "None | list[PromptArgument]" = field(default=None)
     description: "None | str" = field(default=None)
@@ -2226,7 +2235,7 @@ class Prompt(BaseModel):
             return data
         kwargs = {}
         # Process arguments
-        value = data.get("arguments")
+        value = data.get('arguments')
         if value is not None:
             if isinstance(value, list):
                 converted_items = []
@@ -2236,19 +2245,19 @@ class Prompt(BaseModel):
                     else:
                         converted_items.append(item)
                 value = converted_items
-        kwargs["arguments"] = value
+        kwargs['arguments'] = value
 
         # Process description
-        value = data.get("description")
+        value = data.get('description')
         if value is not None:
             pass
-        kwargs["description"] = value
+        kwargs['description'] = value
 
         # Process name
-        value = data.get("name")
+        value = data.get('name')
         if value is not None:
             pass
-        kwargs["name"] = value
+        kwargs['name'] = value
 
         return cls(**kwargs)
 
@@ -2256,7 +2265,6 @@ class Prompt(BaseModel):
 @dataclass
 class PromptArgument(BaseModel):
     """Describes an argument that a prompt can accept."""
-
     name: "str"
     description: "None | str" = field(default=None)
     required: "None | bool" = field(default=None)
@@ -2268,22 +2276,22 @@ class PromptArgument(BaseModel):
             return data
         kwargs = {}
         # Process description
-        value = data.get("description")
+        value = data.get('description')
         if value is not None:
             pass
-        kwargs["description"] = value
+        kwargs['description'] = value
 
         # Process name
-        value = data.get("name")
+        value = data.get('name')
         if value is not None:
             pass
-        kwargs["name"] = value
+        kwargs['name'] = value
 
         # Process required
-        value = data.get("required")
+        value = data.get('required')
         if value is not None:
             pass
-        kwargs["required"] = value
+        kwargs['required'] = value
 
         return cls(**kwargs)
 
@@ -2293,7 +2301,6 @@ class PromptListChangedNotification(BaseModel):
     """An optional notification from the server to the client, informing it that the
     list of prompts it offers has changed. This may be issued by servers without any
     previous subscription from the client."""
-
     method: "Literal['notifications/prompts/list_changed']"
     params: "None | PromptListChangedNotificationParamsParams" = field(default=None)
 
@@ -2304,23 +2311,24 @@ class PromptListChangedNotification(BaseModel):
             return data
         kwargs = {}
         # Process method
-        value = data.get("method")
+        value = data.get('method')
         if value is not None:
             pass
-        kwargs["method"] = value
+        kwargs['method'] = value
 
         # Process params
-        value = data.get("params")
+        value = data.get('params')
         if value is not None:
             if isinstance(value, dict):
                 value = PromptListChangedNotificationParamsParams.from_dict(value)
-        kwargs["params"] = value
+        kwargs['params'] = value
 
         return cls(**kwargs)
 
 
 @dataclass
 class PromptListChangedNotificationParamsParams(BaseModel):
+
     _meta: "None | dict[str, Any]" = field(default=None)
 
     @classmethod
@@ -2330,11 +2338,10 @@ class PromptListChangedNotificationParamsParams(BaseModel):
             return data
         kwargs = {}
         # Process _meta
-        value = data.get("_meta")
+        value = data.get('_meta')
         if value is not None:
-            if isinstance(value, dict):
-                value = dict[str, Any].from_dict(value)
-        kwargs["_meta"] = value
+            pass
+        kwargs['_meta'] = value
 
         return cls(**kwargs)
 
@@ -2344,7 +2351,6 @@ class PromptMessage(BaseModel):
     """Describes a message returned as part of a prompt. This is similar to
     `SamplingMessage`, but also supports the embedding of resources from the MCP
     server."""
-
     content: "TextContent | ImageContent | AudioContent | EmbeddedResource"
     role: "Role"
 
@@ -2355,29 +2361,41 @@ class PromptMessage(BaseModel):
             return data
         kwargs = {}
         # Process content
-        value = data.get("content")
+        value = data.get('content')
         if value is not None:
             if isinstance(value, dict):
-                # Try each type in the union
-                for type_name in [
-                    "TextContent",
-                    "ImageContent",
-                    "AudioContent",
-                    "EmbeddedResource",
-                ]:
-                    try:
-                        value = type_name.from_dict(value)
-                        break
-                    except (TypeError, ValueError):
-                        continue
-        kwargs["content"] = value
+                # Try to disambiguate using const fields
+                type_value = value.get('type')
+                if type_value is not None:
+                    # Map type values to their corresponding classes
+                    type_to_class = {
+                    }
+                    if type_value in type_to_class:
+                        value = type_to_class[type_value].from_dict(value)
+                    else:
+                        # Fallback to trying each type
+                        for type_name in ['TextContent', 'ImageContent', 'AudioContent', 'EmbeddedResource']:
+                            try:
+                                value = type_name.from_dict(value)
+                                break
+                            except (TypeError, ValueError):
+                                continue
+                else:
+                    # No type field, try each type
+                    for type_name in ['TextContent', 'ImageContent', 'AudioContent', 'EmbeddedResource']:
+                        try:
+                            value = type_name.from_dict(value)
+                            break
+                        except (TypeError, ValueError):
+                            continue
+        kwargs['content'] = value
 
         # Process role
-        value = data.get("role")
+        value = data.get('role')
         if value is not None:
             if isinstance(value, dict):
                 value = Role.from_dict(value)
-        kwargs["role"] = value
+        kwargs['role'] = value
 
         return cls(**kwargs)
 
@@ -2385,7 +2403,6 @@ class PromptMessage(BaseModel):
 @dataclass
 class PromptReference(BaseModel):
     """Identifies a prompt."""
-
     name: "str"
     type: "Literal['ref/prompt']"
 
@@ -2396,16 +2413,16 @@ class PromptReference(BaseModel):
             return data
         kwargs = {}
         # Process name
-        value = data.get("name")
+        value = data.get('name')
         if value is not None:
             pass
-        kwargs["name"] = value
+        kwargs['name'] = value
 
         # Process type
-        value = data.get("type")
+        value = data.get('type')
         if value is not None:
             pass
-        kwargs["type"] = value
+        kwargs['type'] = value
 
         return cls(**kwargs)
 
@@ -2413,7 +2430,6 @@ class PromptReference(BaseModel):
 @dataclass
 class ReadResourceRequest(BaseModel):
     """Sent from the client to the server, to read a specific resource URI."""
-
     method: "Literal['resources/read']"
     params: "ReadResourceRequestParamsParams"
 
@@ -2424,23 +2440,24 @@ class ReadResourceRequest(BaseModel):
             return data
         kwargs = {}
         # Process method
-        value = data.get("method")
+        value = data.get('method')
         if value is not None:
             pass
-        kwargs["method"] = value
+        kwargs['method'] = value
 
         # Process params
-        value = data.get("params")
+        value = data.get('params')
         if value is not None:
             if isinstance(value, dict):
                 value = ReadResourceRequestParamsParams.from_dict(value)
-        kwargs["params"] = value
+        kwargs['params'] = value
 
         return cls(**kwargs)
 
 
 @dataclass
 class ReadResourceRequestParamsParams(BaseModel):
+
     uri: "str"
 
     @classmethod
@@ -2450,10 +2467,10 @@ class ReadResourceRequestParamsParams(BaseModel):
             return data
         kwargs = {}
         # Process uri
-        value = data.get("uri")
+        value = data.get('uri')
         if value is not None:
             pass
-        kwargs["uri"] = value
+        kwargs['uri'] = value
 
         return cls(**kwargs)
 
@@ -2461,7 +2478,6 @@ class ReadResourceRequestParamsParams(BaseModel):
 @dataclass
 class ReadResourceResult(BaseModel):
     """The server's response to a resources/read request from the client."""
-
     contents: "list[TextResourceContents | BlobResourceContents]"
     _meta: "None | dict[str, Any]" = field(default=None)
 
@@ -2472,32 +2488,30 @@ class ReadResourceResult(BaseModel):
             return data
         kwargs = {}
         # Process _meta
-        value = data.get("_meta")
+        value = data.get('_meta')
         if value is not None:
-            if isinstance(value, dict):
-                value = dict[str, Any].from_dict(value)
-        kwargs["_meta"] = value
+            pass
+        kwargs['_meta'] = value
 
         # Process contents
-        value = data.get("contents")
+        value = data.get('contents')
         if value is not None:
             if isinstance(value, list):
                 converted_items = []
                 for item in value:
                     if isinstance(item, dict):
-                        converted_items.append(
-                            TextResourceContents | BlobResourceContents.from_dict(item)
-                        )
+                        converted_items.append(TextResourceContents | BlobResourceContents.from_dict(item))
                     else:
                         converted_items.append(item)
                 value = converted_items
-        kwargs["contents"] = value
+        kwargs['contents'] = value
 
         return cls(**kwargs)
 
 
 @dataclass
 class Request(BaseModel):
+
     method: "str"
     params: "None | RequestParamsParams" = field(default=None)
 
@@ -2508,23 +2522,24 @@ class Request(BaseModel):
             return data
         kwargs = {}
         # Process method
-        value = data.get("method")
+        value = data.get('method')
         if value is not None:
             pass
-        kwargs["method"] = value
+        kwargs['method'] = value
 
         # Process params
-        value = data.get("params")
+        value = data.get('params')
         if value is not None:
             if isinstance(value, dict):
                 value = RequestParamsParams.from_dict(value)
-        kwargs["params"] = value
+        kwargs['params'] = value
 
         return cls(**kwargs)
 
 
 @dataclass
 class RequestParamsParams(BaseModel):
+
     _meta: "None | RequestParamsParams_metaParams" = field(default=None)
 
     @classmethod
@@ -2534,17 +2549,18 @@ class RequestParamsParams(BaseModel):
             return data
         kwargs = {}
         # Process _meta
-        value = data.get("_meta")
+        value = data.get('_meta')
         if value is not None:
             if isinstance(value, dict):
                 value = RequestParamsParams_metaParams.from_dict(value)
-        kwargs["_meta"] = value
+        kwargs['_meta'] = value
 
         return cls(**kwargs)
 
 
 @dataclass
 class RequestParamsParams_metaParams(BaseModel):
+
     progressToken: "None | ProgressToken" = field(default=None)
 
     @classmethod
@@ -2554,11 +2570,11 @@ class RequestParamsParams_metaParams(BaseModel):
             return data
         kwargs = {}
         # Process progressToken
-        value = data.get("progressToken")
+        value = data.get('progressToken')
         if value is not None:
             if isinstance(value, dict):
                 value = ProgressToken.from_dict(value)
-        kwargs["progressToken"] = value
+        kwargs['progressToken'] = value
 
         return cls(**kwargs)
 
@@ -2570,7 +2586,6 @@ RequestId = str | int
 @dataclass
 class Resource(BaseModel):
     """A known resource that the server is capable of reading."""
-
     name: "str"
     uri: "str"
     annotations: "None | Annotations" = field(default=None)
@@ -2585,41 +2600,41 @@ class Resource(BaseModel):
             return data
         kwargs = {}
         # Process annotations
-        value = data.get("annotations")
+        value = data.get('annotations')
         if value is not None:
             if isinstance(value, dict):
                 value = Annotations.from_dict(value)
-        kwargs["annotations"] = value
+        kwargs['annotations'] = value
 
         # Process description
-        value = data.get("description")
+        value = data.get('description')
         if value is not None:
             pass
-        kwargs["description"] = value
+        kwargs['description'] = value
 
         # Process mimeType
-        value = data.get("mimeType")
+        value = data.get('mimeType')
         if value is not None:
             pass
-        kwargs["mimeType"] = value
+        kwargs['mimeType'] = value
 
         # Process name
-        value = data.get("name")
+        value = data.get('name')
         if value is not None:
             pass
-        kwargs["name"] = value
+        kwargs['name'] = value
 
         # Process size
-        value = data.get("size")
+        value = data.get('size')
         if value is not None:
             pass
-        kwargs["size"] = value
+        kwargs['size'] = value
 
         # Process uri
-        value = data.get("uri")
+        value = data.get('uri')
         if value is not None:
             pass
-        kwargs["uri"] = value
+        kwargs['uri'] = value
 
         return cls(**kwargs)
 
@@ -2627,7 +2642,6 @@ class Resource(BaseModel):
 @dataclass
 class ResourceContents(BaseModel):
     """The contents of a specific resource or sub-resource."""
-
     uri: "str"
     mimeType: "None | str" = field(default=None)
 
@@ -2638,16 +2652,16 @@ class ResourceContents(BaseModel):
             return data
         kwargs = {}
         # Process mimeType
-        value = data.get("mimeType")
+        value = data.get('mimeType')
         if value is not None:
             pass
-        kwargs["mimeType"] = value
+        kwargs['mimeType'] = value
 
         # Process uri
-        value = data.get("uri")
+        value = data.get('uri')
         if value is not None:
             pass
-        kwargs["uri"] = value
+        kwargs['uri'] = value
 
         return cls(**kwargs)
 
@@ -2657,7 +2671,6 @@ class ResourceListChangedNotification(BaseModel):
     """An optional notification from the server to the client, informing it that the
     list of resources it can read from has changed. This may be issued by servers
     without any previous subscription from the client."""
-
     method: "Literal['notifications/resources/list_changed']"
     params: "None | ResourceListChangedNotificationParamsParams" = field(default=None)
 
@@ -2668,23 +2681,24 @@ class ResourceListChangedNotification(BaseModel):
             return data
         kwargs = {}
         # Process method
-        value = data.get("method")
+        value = data.get('method')
         if value is not None:
             pass
-        kwargs["method"] = value
+        kwargs['method'] = value
 
         # Process params
-        value = data.get("params")
+        value = data.get('params')
         if value is not None:
             if isinstance(value, dict):
                 value = ResourceListChangedNotificationParamsParams.from_dict(value)
-        kwargs["params"] = value
+        kwargs['params'] = value
 
         return cls(**kwargs)
 
 
 @dataclass
 class ResourceListChangedNotificationParamsParams(BaseModel):
+
     _meta: "None | dict[str, Any]" = field(default=None)
 
     @classmethod
@@ -2694,11 +2708,10 @@ class ResourceListChangedNotificationParamsParams(BaseModel):
             return data
         kwargs = {}
         # Process _meta
-        value = data.get("_meta")
+        value = data.get('_meta')
         if value is not None:
-            if isinstance(value, dict):
-                value = dict[str, Any].from_dict(value)
-        kwargs["_meta"] = value
+            pass
+        kwargs['_meta'] = value
 
         return cls(**kwargs)
 
@@ -2706,7 +2719,6 @@ class ResourceListChangedNotificationParamsParams(BaseModel):
 @dataclass
 class ResourceReference(BaseModel):
     """A reference to a resource or resource template definition."""
-
     type: "Literal['ref/resource']"
     uri: "str"
 
@@ -2717,16 +2729,16 @@ class ResourceReference(BaseModel):
             return data
         kwargs = {}
         # Process type
-        value = data.get("type")
+        value = data.get('type')
         if value is not None:
             pass
-        kwargs["type"] = value
+        kwargs['type'] = value
 
         # Process uri
-        value = data.get("uri")
+        value = data.get('uri')
         if value is not None:
             pass
-        kwargs["uri"] = value
+        kwargs['uri'] = value
 
         return cls(**kwargs)
 
@@ -2734,7 +2746,6 @@ class ResourceReference(BaseModel):
 @dataclass
 class ResourceTemplate(BaseModel):
     """A template description for resources available on the server."""
-
     name: "str"
     uriTemplate: "str"
     annotations: "None | Annotations" = field(default=None)
@@ -2748,35 +2759,35 @@ class ResourceTemplate(BaseModel):
             return data
         kwargs = {}
         # Process annotations
-        value = data.get("annotations")
+        value = data.get('annotations')
         if value is not None:
             if isinstance(value, dict):
                 value = Annotations.from_dict(value)
-        kwargs["annotations"] = value
+        kwargs['annotations'] = value
 
         # Process description
-        value = data.get("description")
+        value = data.get('description')
         if value is not None:
             pass
-        kwargs["description"] = value
+        kwargs['description'] = value
 
         # Process mimeType
-        value = data.get("mimeType")
+        value = data.get('mimeType')
         if value is not None:
             pass
-        kwargs["mimeType"] = value
+        kwargs['mimeType'] = value
 
         # Process name
-        value = data.get("name")
+        value = data.get('name')
         if value is not None:
             pass
-        kwargs["name"] = value
+        kwargs['name'] = value
 
         # Process uriTemplate
-        value = data.get("uriTemplate")
+        value = data.get('uriTemplate')
         if value is not None:
             pass
-        kwargs["uriTemplate"] = value
+        kwargs['uriTemplate'] = value
 
         return cls(**kwargs)
 
@@ -2786,7 +2797,6 @@ class ResourceUpdatedNotification(BaseModel):
     """A notification from the server to the client, informing it that a resource has
     changed and may need to be read again. This should only be sent if the client
     previously sent a resources/subscribe request."""
-
     method: "Literal['notifications/resources/updated']"
     params: "ResourceUpdatedNotificationParamsParams"
 
@@ -2797,23 +2807,24 @@ class ResourceUpdatedNotification(BaseModel):
             return data
         kwargs = {}
         # Process method
-        value = data.get("method")
+        value = data.get('method')
         if value is not None:
             pass
-        kwargs["method"] = value
+        kwargs['method'] = value
 
         # Process params
-        value = data.get("params")
+        value = data.get('params')
         if value is not None:
             if isinstance(value, dict):
                 value = ResourceUpdatedNotificationParamsParams.from_dict(value)
-        kwargs["params"] = value
+        kwargs['params'] = value
 
         return cls(**kwargs)
 
 
 @dataclass
 class ResourceUpdatedNotificationParamsParams(BaseModel):
+
     uri: "str"
 
     @classmethod
@@ -2823,16 +2834,17 @@ class ResourceUpdatedNotificationParamsParams(BaseModel):
             return data
         kwargs = {}
         # Process uri
-        value = data.get("uri")
+        value = data.get('uri')
         if value is not None:
             pass
-        kwargs["uri"] = value
+        kwargs['uri'] = value
 
         return cls(**kwargs)
 
 
 @dataclass
 class Result(BaseModel):
+
     _meta: "None | dict[str, Any]" = field(default=None)
 
     @classmethod
@@ -2842,23 +2854,21 @@ class Result(BaseModel):
             return data
         kwargs = {}
         # Process _meta
-        value = data.get("_meta")
+        value = data.get('_meta')
         if value is not None:
-            if isinstance(value, dict):
-                value = dict[str, Any].from_dict(value)
-        kwargs["_meta"] = value
+            pass
+        kwargs['_meta'] = value
 
         return cls(**kwargs)
 
 
 # Type alias for role
-Role = Literal["assistant", "user"]
+Role = Literal['assistant', 'user']
 
 
 @dataclass
 class Root(BaseModel):
     """Represents a root directory or file that the server can operate on."""
-
     uri: "str"
     name: "None | str" = field(default=None)
 
@@ -2869,16 +2879,16 @@ class Root(BaseModel):
             return data
         kwargs = {}
         # Process name
-        value = data.get("name")
+        value = data.get('name')
         if value is not None:
             pass
-        kwargs["name"] = value
+        kwargs['name'] = value
 
         # Process uri
-        value = data.get("uri")
+        value = data.get('uri')
         if value is not None:
             pass
-        kwargs["uri"] = value
+        kwargs['uri'] = value
 
         return cls(**kwargs)
 
@@ -2889,7 +2899,6 @@ class RootsListChangedNotification(BaseModel):
     has changed. This notification should be sent whenever the client adds, removes,
     or modifies any root. The server should then request an updated list of roots
     using the ListRootsRequest."""
-
     method: "Literal['notifications/roots/list_changed']"
     params: "None | RootsListChangedNotificationParamsParams" = field(default=None)
 
@@ -2900,23 +2909,24 @@ class RootsListChangedNotification(BaseModel):
             return data
         kwargs = {}
         # Process method
-        value = data.get("method")
+        value = data.get('method')
         if value is not None:
             pass
-        kwargs["method"] = value
+        kwargs['method'] = value
 
         # Process params
-        value = data.get("params")
+        value = data.get('params')
         if value is not None:
             if isinstance(value, dict):
                 value = RootsListChangedNotificationParamsParams.from_dict(value)
-        kwargs["params"] = value
+        kwargs['params'] = value
 
         return cls(**kwargs)
 
 
 @dataclass
 class RootsListChangedNotificationParamsParams(BaseModel):
+
     _meta: "None | dict[str, Any]" = field(default=None)
 
     @classmethod
@@ -2926,11 +2936,10 @@ class RootsListChangedNotificationParamsParams(BaseModel):
             return data
         kwargs = {}
         # Process _meta
-        value = data.get("_meta")
+        value = data.get('_meta')
         if value is not None:
-            if isinstance(value, dict):
-                value = dict[str, Any].from_dict(value)
-        kwargs["_meta"] = value
+            pass
+        kwargs['_meta'] = value
 
         return cls(**kwargs)
 
@@ -2938,7 +2947,6 @@ class RootsListChangedNotificationParamsParams(BaseModel):
 @dataclass
 class SamplingMessage(BaseModel):
     """Describes a message issued to or received from an LLM API."""
-
     content: "TextContent | ImageContent | AudioContent"
     role: "Role"
 
@@ -2949,24 +2957,41 @@ class SamplingMessage(BaseModel):
             return data
         kwargs = {}
         # Process content
-        value = data.get("content")
+        value = data.get('content')
         if value is not None:
             if isinstance(value, dict):
-                # Try each type in the union
-                for type_name in ["TextContent", "ImageContent", "AudioContent"]:
-                    try:
-                        value = type_name.from_dict(value)
-                        break
-                    except (TypeError, ValueError):
-                        continue
-        kwargs["content"] = value
+                # Try to disambiguate using const fields
+                type_value = value.get('type')
+                if type_value is not None:
+                    # Map type values to their corresponding classes
+                    type_to_class = {
+                    }
+                    if type_value in type_to_class:
+                        value = type_to_class[type_value].from_dict(value)
+                    else:
+                        # Fallback to trying each type
+                        for type_name in ['TextContent', 'ImageContent', 'AudioContent']:
+                            try:
+                                value = type_name.from_dict(value)
+                                break
+                            except (TypeError, ValueError):
+                                continue
+                else:
+                    # No type field, try each type
+                    for type_name in ['TextContent', 'ImageContent', 'AudioContent']:
+                        try:
+                            value = type_name.from_dict(value)
+                            break
+                        except (TypeError, ValueError):
+                            continue
+        kwargs['content'] = value
 
         # Process role
-        value = data.get("role")
+        value = data.get('role')
         if value is not None:
             if isinstance(value, dict):
                 value = Role.from_dict(value)
-        kwargs["role"] = value
+        kwargs['role'] = value
 
         return cls(**kwargs)
 
@@ -2976,7 +3001,6 @@ class ServerCapabilities(BaseModel):
     """Capabilities that a server may support. Known capabilities are defined here, in
     this schema, but this is not a closed set: any server can define its own,
     additional capabilities."""
-
     completions: "None | dict[str, Any]" = field(default=None)
     experimental: "None | dict[str, Any]" = field(default=None)
     logging: "None | dict[str, Any]" = field(default=None)
@@ -2991,46 +3015,43 @@ class ServerCapabilities(BaseModel):
             return data
         kwargs = {}
         # Process completions
-        value = data.get("completions")
+        value = data.get('completions')
         if value is not None:
-            if isinstance(value, dict):
-                value = dict[str, Any].from_dict(value)
-        kwargs["completions"] = value
+            pass
+        kwargs['completions'] = value
 
         # Process experimental
-        value = data.get("experimental")
+        value = data.get('experimental')
         if value is not None:
-            if isinstance(value, dict):
-                value = dict[str, Any].from_dict(value)
-        kwargs["experimental"] = value
+            pass
+        kwargs['experimental'] = value
 
         # Process logging
-        value = data.get("logging")
+        value = data.get('logging')
         if value is not None:
-            if isinstance(value, dict):
-                value = dict[str, Any].from_dict(value)
-        kwargs["logging"] = value
+            pass
+        kwargs['logging'] = value
 
         # Process prompts
-        value = data.get("prompts")
+        value = data.get('prompts')
         if value is not None:
             if isinstance(value, dict):
                 value = ServerCapabilitiesPromptsParams.from_dict(value)
-        kwargs["prompts"] = value
+        kwargs['prompts'] = value
 
         # Process resources
-        value = data.get("resources")
+        value = data.get('resources')
         if value is not None:
             if isinstance(value, dict):
                 value = ServerCapabilitiesResourcesParams.from_dict(value)
-        kwargs["resources"] = value
+        kwargs['resources'] = value
 
         # Process tools
-        value = data.get("tools")
+        value = data.get('tools')
         if value is not None:
             if isinstance(value, dict):
                 value = ServerCapabilitiesToolsParams.from_dict(value)
-        kwargs["tools"] = value
+        kwargs['tools'] = value
 
         return cls(**kwargs)
 
@@ -3038,7 +3059,6 @@ class ServerCapabilities(BaseModel):
 @dataclass
 class ServerCapabilitiesPromptsParams(BaseModel):
     """Present if the server offers any prompt templates."""
-
     listChanged: "None | bool" = field(default=None)
 
     @classmethod
@@ -3048,10 +3068,10 @@ class ServerCapabilitiesPromptsParams(BaseModel):
             return data
         kwargs = {}
         # Process listChanged
-        value = data.get("listChanged")
+        value = data.get('listChanged')
         if value is not None:
             pass
-        kwargs["listChanged"] = value
+        kwargs['listChanged'] = value
 
         return cls(**kwargs)
 
@@ -3059,7 +3079,6 @@ class ServerCapabilitiesPromptsParams(BaseModel):
 @dataclass
 class ServerCapabilitiesResourcesParams(BaseModel):
     """Present if the server offers any resources to read."""
-
     listChanged: "None | bool" = field(default=None)
     subscribe: "None | bool" = field(default=None)
 
@@ -3070,16 +3089,16 @@ class ServerCapabilitiesResourcesParams(BaseModel):
             return data
         kwargs = {}
         # Process listChanged
-        value = data.get("listChanged")
+        value = data.get('listChanged')
         if value is not None:
             pass
-        kwargs["listChanged"] = value
+        kwargs['listChanged'] = value
 
         # Process subscribe
-        value = data.get("subscribe")
+        value = data.get('subscribe')
         if value is not None:
             pass
-        kwargs["subscribe"] = value
+        kwargs['subscribe'] = value
 
         return cls(**kwargs)
 
@@ -3087,7 +3106,6 @@ class ServerCapabilitiesResourcesParams(BaseModel):
 @dataclass
 class ServerCapabilitiesToolsParams(BaseModel):
     """Present if the server offers any tools to call."""
-
     listChanged: "None | bool" = field(default=None)
 
     @classmethod
@@ -3097,10 +3115,10 @@ class ServerCapabilitiesToolsParams(BaseModel):
             return data
         kwargs = {}
         # Process listChanged
-        value = data.get("listChanged")
+        value = data.get('listChanged')
         if value is not None:
             pass
-        kwargs["listChanged"] = value
+        kwargs['listChanged'] = value
 
         return cls(**kwargs)
 
@@ -3108,7 +3126,6 @@ class ServerCapabilitiesToolsParams(BaseModel):
 @dataclass
 class SetLevelRequest(BaseModel):
     """A request from the client to the server, to enable or adjust logging."""
-
     method: "Literal['logging/setLevel']"
     params: "SetLevelRequestParamsParams"
 
@@ -3119,23 +3136,24 @@ class SetLevelRequest(BaseModel):
             return data
         kwargs = {}
         # Process method
-        value = data.get("method")
+        value = data.get('method')
         if value is not None:
             pass
-        kwargs["method"] = value
+        kwargs['method'] = value
 
         # Process params
-        value = data.get("params")
+        value = data.get('params')
         if value is not None:
             if isinstance(value, dict):
                 value = SetLevelRequestParamsParams.from_dict(value)
-        kwargs["params"] = value
+        kwargs['params'] = value
 
         return cls(**kwargs)
 
 
 @dataclass
 class SetLevelRequestParamsParams(BaseModel):
+
     level: "LoggingLevel"
 
     @classmethod
@@ -3145,11 +3163,11 @@ class SetLevelRequestParamsParams(BaseModel):
             return data
         kwargs = {}
         # Process level
-        value = data.get("level")
+        value = data.get('level')
         if value is not None:
             if isinstance(value, dict):
                 value = LoggingLevel.from_dict(value)
-        kwargs["level"] = value
+        kwargs['level'] = value
 
         return cls(**kwargs)
 
@@ -3158,7 +3176,6 @@ class SetLevelRequestParamsParams(BaseModel):
 class SubscribeRequest(BaseModel):
     """Sent from the client to request resources/updated notifications from the server
     whenever a particular resource changes."""
-
     method: "Literal['resources/subscribe']"
     params: "SubscribeRequestParamsParams"
 
@@ -3169,23 +3186,24 @@ class SubscribeRequest(BaseModel):
             return data
         kwargs = {}
         # Process method
-        value = data.get("method")
+        value = data.get('method')
         if value is not None:
             pass
-        kwargs["method"] = value
+        kwargs['method'] = value
 
         # Process params
-        value = data.get("params")
+        value = data.get('params')
         if value is not None:
             if isinstance(value, dict):
                 value = SubscribeRequestParamsParams.from_dict(value)
-        kwargs["params"] = value
+        kwargs['params'] = value
 
         return cls(**kwargs)
 
 
 @dataclass
 class SubscribeRequestParamsParams(BaseModel):
+
     uri: "str"
 
     @classmethod
@@ -3195,10 +3213,10 @@ class SubscribeRequestParamsParams(BaseModel):
             return data
         kwargs = {}
         # Process uri
-        value = data.get("uri")
+        value = data.get('uri')
         if value is not None:
             pass
-        kwargs["uri"] = value
+        kwargs['uri'] = value
 
         return cls(**kwargs)
 
@@ -3206,7 +3224,6 @@ class SubscribeRequestParamsParams(BaseModel):
 @dataclass
 class TextContent(BaseModel):
     """Text provided to or from an LLM."""
-
     text: "str"
     type: "Literal['text']"
     annotations: "None | Annotations" = field(default=None)
@@ -3218,29 +3235,30 @@ class TextContent(BaseModel):
             return data
         kwargs = {}
         # Process annotations
-        value = data.get("annotations")
+        value = data.get('annotations')
         if value is not None:
             if isinstance(value, dict):
                 value = Annotations.from_dict(value)
-        kwargs["annotations"] = value
+        kwargs['annotations'] = value
 
         # Process text
-        value = data.get("text")
+        value = data.get('text')
         if value is not None:
             pass
-        kwargs["text"] = value
+        kwargs['text'] = value
 
         # Process type
-        value = data.get("type")
+        value = data.get('type')
         if value is not None:
             pass
-        kwargs["type"] = value
+        kwargs['type'] = value
 
         return cls(**kwargs)
 
 
 @dataclass
 class TextResourceContents(BaseModel):
+
     text: "str"
     uri: "str"
     mimeType: "None | str" = field(default=None)
@@ -3252,22 +3270,22 @@ class TextResourceContents(BaseModel):
             return data
         kwargs = {}
         # Process mimeType
-        value = data.get("mimeType")
+        value = data.get('mimeType')
         if value is not None:
             pass
-        kwargs["mimeType"] = value
+        kwargs['mimeType'] = value
 
         # Process text
-        value = data.get("text")
+        value = data.get('text')
         if value is not None:
             pass
-        kwargs["text"] = value
+        kwargs['text'] = value
 
         # Process uri
-        value = data.get("uri")
+        value = data.get('uri')
         if value is not None:
             pass
-        kwargs["uri"] = value
+        kwargs['uri'] = value
 
         return cls(**kwargs)
 
@@ -3275,7 +3293,6 @@ class TextResourceContents(BaseModel):
 @dataclass
 class Tool(BaseModel):
     """Definition for a tool the client can call."""
-
     inputSchema: "ToolInputschemaParams"
     name: "str"
     annotations: "None | ToolAnnotations" = field(default=None)
@@ -3288,30 +3305,30 @@ class Tool(BaseModel):
             return data
         kwargs = {}
         # Process annotations
-        value = data.get("annotations")
+        value = data.get('annotations')
         if value is not None:
             if isinstance(value, dict):
                 value = ToolAnnotations.from_dict(value)
-        kwargs["annotations"] = value
+        kwargs['annotations'] = value
 
         # Process description
-        value = data.get("description")
+        value = data.get('description')
         if value is not None:
             pass
-        kwargs["description"] = value
+        kwargs['description'] = value
 
         # Process inputSchema
-        value = data.get("inputSchema")
+        value = data.get('inputSchema')
         if value is not None:
             if isinstance(value, dict):
                 value = ToolInputschemaParams.from_dict(value)
-        kwargs["inputSchema"] = value
+        kwargs['inputSchema'] = value
 
         # Process name
-        value = data.get("name")
+        value = data.get('name')
         if value is not None:
             pass
-        kwargs["name"] = value
+        kwargs['name'] = value
 
         return cls(**kwargs)
 
@@ -3319,7 +3336,6 @@ class Tool(BaseModel):
 @dataclass
 class ToolInputschemaParams(BaseModel):
     """A JSON Schema object defining the expected parameters for the tool."""
-
     type: "Literal['object']"
     properties: "None | dict[str, Any]" = field(default=None)
     required: "None | list[str]" = field(default=None)
@@ -3331,14 +3347,13 @@ class ToolInputschemaParams(BaseModel):
             return data
         kwargs = {}
         # Process properties
-        value = data.get("properties")
+        value = data.get('properties')
         if value is not None:
-            if isinstance(value, dict):
-                value = dict[str, Any].from_dict(value)
-        kwargs["properties"] = value
+            pass
+        kwargs['properties'] = value
 
         # Process required
-        value = data.get("required")
+        value = data.get('required')
         if value is not None:
             if isinstance(value, list):
                 converted_items = []
@@ -3348,13 +3363,13 @@ class ToolInputschemaParams(BaseModel):
                     else:
                         converted_items.append(item)
                 value = converted_items
-        kwargs["required"] = value
+        kwargs['required'] = value
 
         # Process type
-        value = data.get("type")
+        value = data.get('type')
         if value is not None:
             pass
-        kwargs["type"] = value
+        kwargs['type'] = value
 
         return cls(**kwargs)
 
@@ -3366,7 +3381,6 @@ class ToolAnnotations(BaseModel):
     description of tool behavior (including descriptive properties like `title`).
     Clients should never make tool use decisions based on ToolAnnotations received
     from untrusted servers."""
-
     destructiveHint: "None | bool" = field(default=None)
     idempotentHint: "None | bool" = field(default=None)
     openWorldHint: "None | bool" = field(default=None)
@@ -3380,34 +3394,34 @@ class ToolAnnotations(BaseModel):
             return data
         kwargs = {}
         # Process destructiveHint
-        value = data.get("destructiveHint")
+        value = data.get('destructiveHint')
         if value is not None:
             pass
-        kwargs["destructiveHint"] = value
+        kwargs['destructiveHint'] = value
 
         # Process idempotentHint
-        value = data.get("idempotentHint")
+        value = data.get('idempotentHint')
         if value is not None:
             pass
-        kwargs["idempotentHint"] = value
+        kwargs['idempotentHint'] = value
 
         # Process openWorldHint
-        value = data.get("openWorldHint")
+        value = data.get('openWorldHint')
         if value is not None:
             pass
-        kwargs["openWorldHint"] = value
+        kwargs['openWorldHint'] = value
 
         # Process readOnlyHint
-        value = data.get("readOnlyHint")
+        value = data.get('readOnlyHint')
         if value is not None:
             pass
-        kwargs["readOnlyHint"] = value
+        kwargs['readOnlyHint'] = value
 
         # Process title
-        value = data.get("title")
+        value = data.get('title')
         if value is not None:
             pass
-        kwargs["title"] = value
+        kwargs['title'] = value
 
         return cls(**kwargs)
 
@@ -3417,7 +3431,6 @@ class ToolListChangedNotification(BaseModel):
     """An optional notification from the server to the client, informing it that the
     list of tools it offers has changed. This may be issued by servers without any
     previous subscription from the client."""
-
     method: "Literal['notifications/tools/list_changed']"
     params: "None | ToolListChangedNotificationParamsParams" = field(default=None)
 
@@ -3428,23 +3441,24 @@ class ToolListChangedNotification(BaseModel):
             return data
         kwargs = {}
         # Process method
-        value = data.get("method")
+        value = data.get('method')
         if value is not None:
             pass
-        kwargs["method"] = value
+        kwargs['method'] = value
 
         # Process params
-        value = data.get("params")
+        value = data.get('params')
         if value is not None:
             if isinstance(value, dict):
                 value = ToolListChangedNotificationParamsParams.from_dict(value)
-        kwargs["params"] = value
+        kwargs['params'] = value
 
         return cls(**kwargs)
 
 
 @dataclass
 class ToolListChangedNotificationParamsParams(BaseModel):
+
     _meta: "None | dict[str, Any]" = field(default=None)
 
     @classmethod
@@ -3454,11 +3468,10 @@ class ToolListChangedNotificationParamsParams(BaseModel):
             return data
         kwargs = {}
         # Process _meta
-        value = data.get("_meta")
+        value = data.get('_meta')
         if value is not None:
-            if isinstance(value, dict):
-                value = dict[str, Any].from_dict(value)
-        kwargs["_meta"] = value
+            pass
+        kwargs['_meta'] = value
 
         return cls(**kwargs)
 
@@ -3467,7 +3480,6 @@ class ToolListChangedNotificationParamsParams(BaseModel):
 class UnsubscribeRequest(BaseModel):
     """Sent from the client to request cancellation of resources/updated notifications
     from the server. This should follow a previous resources/subscribe request."""
-
     method: "Literal['resources/unsubscribe']"
     params: "UnsubscribeRequestParamsParams"
 
@@ -3478,23 +3490,24 @@ class UnsubscribeRequest(BaseModel):
             return data
         kwargs = {}
         # Process method
-        value = data.get("method")
+        value = data.get('method')
         if value is not None:
             pass
-        kwargs["method"] = value
+        kwargs['method'] = value
 
         # Process params
-        value = data.get("params")
+        value = data.get('params')
         if value is not None:
             if isinstance(value, dict):
                 value = UnsubscribeRequestParamsParams.from_dict(value)
-        kwargs["params"] = value
+        kwargs['params'] = value
 
         return cls(**kwargs)
 
 
 @dataclass
 class UnsubscribeRequestParamsParams(BaseModel):
+
     uri: "str"
 
     @classmethod
@@ -3504,59 +3517,58 @@ class UnsubscribeRequestParamsParams(BaseModel):
             return data
         kwargs = {}
         # Process uri
-        value = data.get("uri")
+        value = data.get('uri')
         if value is not None:
             pass
-        kwargs["uri"] = value
+        kwargs['uri'] = value
 
         return cls(**kwargs)
 
 
 _class_map: dict[str, Type[BaseModel]] = {
-    "tools/call": CallToolRequest,
-    "notifications/cancelled": CancelledNotification,
-    "completion/complete": CompleteRequest,
-    "sampling/createMessage": CreateMessageRequest,
-    "prompts/get": GetPromptRequest,
-    "initialize": InitializeRequest,
-    "notifications/initialized": InitializedNotification,
-    "prompts/list": ListPromptsRequest,
-    "resources/templates/list": ListResourceTemplatesRequest,
-    "resources/list": ListResourcesRequest,
-    "roots/list": ListRootsRequest,
-    "tools/list": ListToolsRequest,
-    "notifications/message": LoggingMessageNotification,
-    "ping": PingRequest,
-    "notifications/progress": ProgressNotification,
-    "notifications/prompts/list_changed": PromptListChangedNotification,
-    "resources/read": ReadResourceRequest,
-    "notifications/resources/list_changed": ResourceListChangedNotification,
-    "notifications/resources/updated": ResourceUpdatedNotification,
-    "notifications/roots/list_changed": RootsListChangedNotification,
-    "logging/setLevel": SetLevelRequest,
-    "resources/subscribe": SubscribeRequest,
-    "notifications/tools/list_changed": ToolListChangedNotification,
-    "resources/unsubscribe": UnsubscribeRequest,
+    'tools/call': CallToolRequest,
+    'notifications/cancelled': CancelledNotification,
+    'completion/complete': CompleteRequest,
+    'sampling/createMessage': CreateMessageRequest,
+    'prompts/get': GetPromptRequest,
+    'initialize': InitializeRequest,
+    'notifications/initialized': InitializedNotification,
+    'prompts/list': ListPromptsRequest,
+    'resources/templates/list': ListResourceTemplatesRequest,
+    'resources/list': ListResourcesRequest,
+    'roots/list': ListRootsRequest,
+    'tools/list': ListToolsRequest,
+    'notifications/message': LoggingMessageNotification,
+    'ping': PingRequest,
+    'notifications/progress': ProgressNotification,
+    'notifications/prompts/list_changed': PromptListChangedNotification,
+    'resources/read': ReadResourceRequest,
+    'notifications/resources/list_changed': ResourceListChangedNotification,
+    'notifications/resources/updated': ResourceUpdatedNotification,
+    'notifications/roots/list_changed': RootsListChangedNotification,
+    'logging/setLevel': SetLevelRequest,
+    'resources/subscribe': SubscribeRequest,
+    'notifications/tools/list_changed': ToolListChangedNotification,
+    'resources/unsubscribe': UnsubscribeRequest,
 }
-
 
 def create_mcp_model(data: dict[str, Any]) -> BaseModel:
     """Create an MCP model instance from a dictionary based on its method field.
-
+    
     Args:
         data: Dictionary containing the model data
-
+        
     Returns:
         An instance of the appropriate MCP model class
-
+        
     Raises:
         ValueError: If the method field is missing or no matching class is found
     """
     if "method" not in data:
         raise ValueError("Input dictionary must contain a 'method' field")
-
+        
     method = data["method"]
     if method not in _class_map:
         raise ValueError(f"No MCP model class found for method: {method}")
-
+        
     return _class_map[method].from_dict(data)

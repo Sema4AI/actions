@@ -240,18 +240,75 @@ def generate_class(
             # Handle union types
             types = [t.strip() for t in field_type.split("|")]
             from_dict_lines.append("            if isinstance(value, dict):")
-            from_dict_lines.append("                # Try each type in the union")
-            type_list = ", ".join(repr(t) for t in types if t != "None")
-            from_dict_lines.append(f"                for type_name in [{type_list}]:")
-            from_dict_lines.append("                    try:")
             from_dict_lines.append(
-                "                        value = type_name.from_dict(value)"
+                "                # Try to disambiguate using const fields"
             )
-            from_dict_lines.append("                        break")
+            from_dict_lines.append("                type_value = value.get('type')")
+            from_dict_lines.append("                if type_value is not None:")
             from_dict_lines.append(
-                "                    except (TypeError, ValueError):"
+                "                    # Map type values to their corresponding classes"
             )
-            from_dict_lines.append("                        continue")
+            from_dict_lines.append("                    type_to_class = {")
+
+            # For each type in the union, check if it has a const field
+            for t in types:
+                if t != "None":
+                    # Look up the type's schema in the definitions
+                    type_schema = schema.get("definitions", {}).get(t, {})
+                    properties = type_schema.get("properties", {})
+
+                    # Check each property for a const value
+                    for prop_name, prop_schema in properties.items():
+                        if "const" in prop_schema:
+                            const_value = prop_schema["const"]
+                            from_dict_lines.append(
+                                f"                        {repr(const_value)}: {t},"
+                            )
+
+            from_dict_lines.append("                    }")
+            from_dict_lines.append(
+                "                    if type_value in type_to_class:"
+            )
+            from_dict_lines.append(
+                "                        value = type_to_class[type_value].from_dict(value)"
+            )
+            from_dict_lines.append("                    else:")
+            from_dict_lines.append(
+                "                        # Fallback to trying each type"
+            )
+            from_dict_lines.append(
+                "                        for type_name in ["
+                + ", ".join(repr(t) for t in types if t != "None")
+                + "]:"
+            )
+            from_dict_lines.append("                            try:")
+            from_dict_lines.append(
+                "                                value = type_name.from_dict(value)"
+            )
+            from_dict_lines.append("                                break")
+            from_dict_lines.append(
+                "                            except (TypeError, ValueError):"
+            )
+            from_dict_lines.append("                                continue")
+            from_dict_lines.append("                else:")
+            from_dict_lines.append("                    # No type field, try each type")
+            from_dict_lines.append(
+                "                    for type_name in ["
+                + ", ".join(repr(t) for t in types if t != "None")
+                + "]:"
+            )
+            from_dict_lines.append("                        try:")
+            from_dict_lines.append(
+                "                            value = type_name.from_dict(value)"
+            )
+            from_dict_lines.append("                            break")
+            from_dict_lines.append(
+                "                        except (TypeError, ValueError):"
+            )
+            from_dict_lines.append("                            continue")
+        elif field_type == "dict[str, Any]":
+            # Handle dictionary type - no conversion needed
+            from_dict_lines.append("            pass")
         else:
             # Handle custom types
             from_dict_lines.append("            if isinstance(value, dict):")
