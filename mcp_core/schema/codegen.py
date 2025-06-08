@@ -72,36 +72,26 @@ def generate_class(
     required = schema.get("required", [])
 
     # Generate class fields
-    fields = []
+    required_fields = []
+    optional_fields = []
+
     for prop_name, prop_schema in properties.items():
         prop_type = create_python_type(
             prop_schema.get("type", "string"), prop_schema, prop_name
         )
 
-        # Handle default values based on whether the field is required
         if prop_name not in required:
-            # For optional fields, wrap type in union with None
+            # For optional fields, wrap type in union with None and set default
             prop_type = f"None | {prop_type}"
-            default = "None"
+            optional_fields.append(
+                f'    {prop_name}: "{prop_type}" = field(default=None)'
+            )
         else:
-            # For required fields, use appropriate defaults
-            if prop_type == "str":
-                default = '""'
-            elif prop_type == "int":
-                default = "0"
-            elif prop_type == "float":
-                default = "0.0"
-            elif prop_type == "bool":
-                default = "False"
-            elif prop_type.startswith("list"):
-                default = "field(default_factory=list)"
-            elif prop_type.startswith("dict"):
-                default = "field(default_factory=dict)"
-            else:
-                default = "..."
+            # For required fields, just specify the type without default
+            required_fields.append(f'    {prop_name}: "{prop_type}"')
 
-        # Wrap the entire type in quotes at the last moment
-        fields.append(f'    {prop_name}: "{prop_type}" = field(default={default})')
+    # Combine fields with required ones first
+    fields = required_fields + optional_fields
 
     # Generate class docstring
     description = schema.get("description", "")
