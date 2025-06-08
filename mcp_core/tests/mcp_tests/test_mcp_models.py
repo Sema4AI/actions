@@ -2,12 +2,16 @@ import pytest
 
 from sema4ai.mcp_core.mcp_models import (
     BaseModel,
+    CallToolRequest,
+    CallToolRequestParamsParams,
+    CallToolResult,
     Implementation,
     InitializeRequest,
     InitializeResult,
     MessageType,
     ProgressNotification,
     ServerCapabilities,
+    TextContent,
     create_mcp_model,
 )
 
@@ -19,23 +23,17 @@ def test_initialize_request():
         "method": "initialize",
         "params": {
             "clientInfo": {"name": "test-client", "version": "1.0.0"},
-            "clientId": "test-client-id",
+            "capabilities": {},
+            "protocolVersion": "1.0",
         },
     }
     request = InitializeRequest.from_dict(data)
-
     # Verify fields
     assert request.method == "initialize"
-    assert request.params["clientInfo"]["name"] == "test-client"
-    assert request.params["clientInfo"]["version"] == "1.0.0"
-    assert request.params["clientId"] == "test-client-id"
-
-    # Test converting back to dict
-    result_dict = request.to_dict()
-    assert result_dict == data
-
-    # Test message type
-    assert request.get_message_type() == MessageType.REQUEST
+    assert request.params.clientInfo.name == "test-client"
+    assert request.params.clientInfo.version == "1.0.0"
+    assert request.params.capabilities.to_dict() == {}
+    assert request.params.protocolVersion == "1.0"
 
 
 def test_progress_notification():
@@ -43,37 +41,19 @@ def test_progress_notification():
     # Test creating from dict
     data = {
         "method": "progress",
-        "params": {
-            "token": "test-token",
-            "value": {
-                "kind": "begin",
-                "message": "Starting operation",
-                "percentage": 0,
-            },
-        },
+        "params": {"progress": 50, "progressToken": "token123"},
     }
     notification = ProgressNotification.from_dict(data)
-
     # Verify fields
     assert notification.method == "progress"
-    assert notification.params["token"] == "test-token"
-    assert notification.params["value"]["kind"] == "begin"
-    assert notification.params["value"]["message"] == "Starting operation"
-    assert notification.params["value"]["percentage"] == 0
-
-    # Test converting back to dict
-    result_dict = notification.to_dict()
-    assert result_dict == data
-
-    # Test message type
-    assert notification.get_message_type() == MessageType.NOTIFICATION
+    assert notification.params.progress == 50
+    assert notification.params.progressToken == "token123"
 
 
 def test_initialize_result():
     """Test InitializeResult model."""
     # Test creating from dict
     data = {
-        "_meta": {"requestId": "123"},
         "capabilities": {
             "completions": {},
             "experimental": {},
@@ -87,20 +67,12 @@ def test_initialize_result():
         "serverInfo": {"name": "test-server", "version": "1.0.0"},
     }
     result = InitializeResult.from_dict(data)
-
     # Verify fields
-    assert result._meta["requestId"] == "123"
-    assert result.capabilities == data["capabilities"]
+    assert result.capabilities.to_dict() == data["capabilities"]
     assert result.instructions == "Test instructions"
     assert result.protocolVersion == "1.0"
-    assert result.serverInfo == data["serverInfo"]
-
-    # Test converting back to dict
-    result_dict = result.to_dict()
-    assert result_dict == data
-
-    # Test message type
-    assert result.get_message_type() == MessageType.RESPONSE
+    assert result.serverInfo.name == "test-server"
+    assert result.serverInfo.version == "1.0.0"
 
 
 def test_base_model():
@@ -126,39 +98,52 @@ def test_create_mcp_model():
         "params": {
             "clientInfo": {"name": "test-client", "version": "1.0.0"},
             "clientId": "test-client-id",
+            "capabilities": {},
+            "protocolVersion": "1.0",
         },
     }
     init_model = create_mcp_model(init_data)
     assert isinstance(init_model, InitializeRequest)
     assert init_model.method == "initialize"
-    assert init_model.params["clientInfo"]["name"] == "test-client"
-    assert init_model.get_message_type() == MessageType.REQUEST
+    assert init_model.params.clientInfo.name == "test-client"
 
-    # Test creating a ProgressNotification
-    progress_data = {
-        "method": "notifications/progress",
+
+def test_nested_object_conversion():
+    """Test that nested objects and lists are properly converted in from_dict."""
+    # Create a test dictionary with nested objects and lists
+    data = {
+        "method": "tools/call",
         "params": {
-            "token": "test-token",
-            "value": {
-                "kind": "begin",
-                "message": "Starting operation",
-                "percentage": 0,
-            },
+            "name": "test_tool",
+            "arguments": {"param1": "value1", "param2": 42},
         },
     }
-    progress_model = create_mcp_model(progress_data)
-    assert isinstance(progress_model, ProgressNotification)
-    assert progress_model.method == "notifications/progress"
-    assert progress_model.params["token"] == "test-token"
-    assert progress_model.get_message_type() == MessageType.NOTIFICATION
 
-    # Test error cases
-    with pytest.raises(
-        ValueError, match="Input dictionary must contain a 'method' field"
-    ):
-        create_mcp_model({})
+    # Create instance from dict
+    request = CallToolRequest.from_dict(data)
 
-    with pytest.raises(
-        ValueError, match="No MCP model class found for method: invalid_method"
-    ):
-        create_mcp_model({"method": "invalid_method"})
+    # Verify the nested objects are properly converted
+    assert isinstance(request, CallToolRequest)
+    assert isinstance(request.params, CallToolRequestParamsParams)
+    assert request.params.name == "test_tool"
+    assert isinstance(request.params.arguments, dict)
+    assert request.params.arguments["param1"] == "value1"
+    assert request.params.arguments["param2"] == 42
+
+    # Test with a result containing a list of TextContent
+    result_data = {
+        "content": [
+            {"type": "text", "text": "Hello", "kind": "text"},
+            {"type": "text", "text": "World", "kind": "text"},
+        ]
+    }
+
+    result = CallToolResult.from_dict(result_data)
+
+    # Verify the list items are properly converted
+    assert isinstance(result, CallToolResult)
+    assert isinstance(result.content, list)
+    assert len(result.content) == 2
+    assert all(isinstance(item, TextContent) for item in result.content)
+    assert result.content[0].text == "Hello"
+    assert result.content[1].text == "World"

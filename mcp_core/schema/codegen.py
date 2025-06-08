@@ -2,7 +2,17 @@ import json
 import os
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, ClassVar, Literal, Type, TypeVar, Union
+from typing import (
+    Any,
+    ClassVar,
+    Literal,
+    Type,
+    TypeVar,
+    Union,
+    get_args,
+    get_origin,
+    get_type_hints,
+)
 
 T = TypeVar("T")
 
@@ -206,7 +216,7 @@ def generate_all_classes(schema_data: dict[str, Any]) -> str:
     definitions = schema_data.get("definitions", {})
 
     # Generate imports
-    imports = """from typing import Any, TypeVar, Literal, Type
+    imports = """from typing import Any, TypeVar, Literal, Type, get_type_hints, get_origin, get_args
 from dataclasses import dataclass, field
 from enum import Enum
 
@@ -226,12 +236,79 @@ class BaseModel:
     
     @classmethod
     def from_dict(cls: type[T], data: dict[str, Any]) -> T:
-        \"\"\"Create an instance from a dictionary.\"\"\"
-        return cls(**data)
+        \"\"\"Create an instance from a dictionary.
+        
+        This method recursively converts dictionaries to their proper class instances
+        and handles lists of objects.
+        \"\"\"
+        if not isinstance(data, dict):
+            return data
+            
+        # Get type hints for the class
+        type_hints = get_type_hints(cls)
+        
+        # Process each field
+        kwargs = {}
+        for field_name, field_type in type_hints.items():
+            # Skip private fields
+            if field_name.startswith('_'):
+                continue
+                
+            # Get value from data or use None for missing fields
+            value = data.get(field_name)
+            
+            # Handle None values
+            if value is None:
+                kwargs[field_name] = None
+                continue
+                
+            # Handle lists of objects
+            origin = get_origin(field_type)
+            if origin is list:
+                item_type = get_args(field_type)[0]
+                if hasattr(item_type, 'from_dict'):
+                    # Special handling for TextContent
+                    if item_type.__name__ == 'TextContent':
+                        kwargs[field_name] = [
+                            item_type(
+                                type=item.get('type', 'text'),
+                                text=item.get('text', ''),
+                                kind=item.get('kind', 'text')
+                            ) for item in value
+                        ]
+                    else:
+                        kwargs[field_name] = [item_type.from_dict(item) for item in value]
+                else:
+                    kwargs[field_name] = value
+            # Handle nested objects
+            elif hasattr(field_type, 'from_dict'):
+                kwargs[field_name] = field_type.from_dict(value)
+            else:
+                kwargs[field_name] = value
+                
+        return cls(**kwargs)
     
     def to_dict(self) -> dict[str, Any]:
         \"\"\"Convert the instance to a dictionary.\"\"\"
-        return {k: v for k, v in self.__dict__.items() if v is not None}
+        result = {}
+        for field_name, value in self.__dict__.items():
+            # Skip private fields
+            if field_name.startswith('_'):
+                continue
+                
+            if value is None:
+                continue
+                
+            if isinstance(value, BaseModel):
+                result[field_name] = value.to_dict()
+            elif isinstance(value, list):
+                result[field_name] = [
+                    item.to_dict() if isinstance(item, BaseModel) else item
+                    for item in value
+                ]
+            else:
+                result[field_name] = value
+        return result
     
     @classmethod
     def get_message_type(cls) -> MessageType:
