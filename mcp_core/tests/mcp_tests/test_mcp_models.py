@@ -300,3 +300,10 @@ def test_annotations_from_dict():
     ann = Annotations.from_dict({})
     assert ann.audience is None
     assert ann.priority is None
+
+
+def test_annotations_from_dict_invalid_audience():
+    """Test that Annotations.from_dict raises ValueError when 'audience' is not a list."""
+    data = {"audience": "not_a_list"}
+    with pytest.raises(ValueError):
+        Annotations.from_dict(data)
