@@ -142,7 +142,10 @@ def wrap_docstring(text: str, indent: int = 4) -> str:
 
 
 def generate_class(
-    name: str, schema: dict[str, Any], base_class: str = "BaseModel"
+    name: str,
+    schema: dict[str, Any],
+    definitions: dict[str, Any],
+    base_class: str = "BaseModel",
 ) -> tuple[str, list[str]]:
     """Generate a Python class from a JSON schema definition.
 
@@ -165,7 +168,9 @@ def generate_class(
             )
         ):
             nested_name = f"{name}{prop_name.capitalize()}Params"
-            nested_class, nested_nested = generate_class(nested_name, prop_schema)
+            nested_class, nested_nested = generate_class(
+                nested_name, prop_schema, definitions
+            )
             nested_classes.append(nested_class)
             nested_classes.extend(nested_nested)
 
@@ -222,9 +227,56 @@ def generate_class(
             from_dict_lines.append("                converted_items = []")
             from_dict_lines.append("                for item in value:")
             from_dict_lines.append("                    if isinstance(item, dict):")
-            from_dict_lines.append(
-                f"                        converted_items.append({item_type}.from_dict(item))"
-            )
+
+            # Check if the item type is a union
+            if "|" in item_type:
+                types = [t.strip() for t in item_type.split("|")]
+                from_dict_lines.append(
+                    "                        # Try to disambiguate using const fields"
+                )
+                from_dict_lines.append(
+                    "                        type_value = item.get('type')"
+                )
+                from_dict_lines.append(
+                    "                        if type_value is not None:"
+                )
+                from_dict_lines.append(
+                    "                            # Map type values to their corresponding classes"
+                )
+                from_dict_lines.append("                            type_to_class = {")
+
+                # For each type in the union, check if it has a const field
+                for t in types:
+                    if t != "None":
+                        type_schema = definitions.get(t, {})
+                        properties = type_schema.get("properties", {})
+                        for prop_name, prop_schema in properties.items():
+                            if "const" in prop_schema:
+                                const_value = prop_schema["const"]
+                                from_dict_lines.append(
+                                    f"                                {repr(const_value)}: {t},"
+                                )
+
+                from_dict_lines.append("                            }")
+                from_dict_lines.append(
+                    "                            if type_value in type_to_class:"
+                )
+                from_dict_lines.append(
+                    "                                converted_items.append(type_to_class[type_value].from_dict(item))"
+                )
+                from_dict_lines.append("                            else:")
+                from_dict_lines.append(
+                    "                                raise ValueError(f'Unknown type value: {type_value}')"
+                )
+                from_dict_lines.append("                        else:")
+                from_dict_lines.append(
+                    "                            raise ValueError('Missing type field for disambiguation')"
+                )
+            else:
+                from_dict_lines.append(
+                    f"                        converted_items.append({item_type}.from_dict(item))"
+                )
+
             from_dict_lines.append("                    else:")
             from_dict_lines.append(
                 "                        converted_items.append(item)"
@@ -253,11 +305,8 @@ def generate_class(
             # For each type in the union, check if it has a const field
             for t in types:
                 if t != "None":
-                    # Look up the type's schema in the definitions
-                    type_schema = schema.get("definitions", {}).get(t, {})
+                    type_schema = definitions.get(t, {})
                     properties = type_schema.get("properties", {})
-
-                    # Check each property for a const value
                     for prop_name, prop_schema in properties.items():
                         if "const" in prop_schema:
                             const_value = prop_schema["const"]
@@ -274,38 +323,12 @@ def generate_class(
             )
             from_dict_lines.append("                    else:")
             from_dict_lines.append(
-                "                        # Fallback to trying each type"
+                "                        raise ValueError(f'Unknown type value: {type_value}')"
             )
-            from_dict_lines.append(
-                "                        for type_name in ["
-                + ", ".join(repr(t) for t in types if t != "None")
-                + "]:"
-            )
-            from_dict_lines.append("                            try:")
-            from_dict_lines.append(
-                "                                value = type_name.from_dict(value)"
-            )
-            from_dict_lines.append("                                break")
-            from_dict_lines.append(
-                "                            except (TypeError, ValueError):"
-            )
-            from_dict_lines.append("                                continue")
             from_dict_lines.append("                else:")
-            from_dict_lines.append("                    # No type field, try each type")
             from_dict_lines.append(
-                "                    for type_name in ["
-                + ", ".join(repr(t) for t in types if t != "None")
-                + "]:"
+                "                    raise ValueError('Missing type field for disambiguation')"
             )
-            from_dict_lines.append("                        try:")
-            from_dict_lines.append(
-                "                            value = type_name.from_dict(value)"
-            )
-            from_dict_lines.append("                            break")
-            from_dict_lines.append(
-                "                        except (TypeError, ValueError):"
-            )
-            from_dict_lines.append("                            continue")
         elif field_type == "dict[str, Any]":
             # Handle dictionary type - no conversion needed
             from_dict_lines.append("            pass")
@@ -382,7 +405,6 @@ T = TypeVar('T')
     for name, schema in definitions.items():
         # Handle types defined with type arrays first (like ProgressToken)
         if "type" in schema and isinstance(schema["type"], list):
-            print("found type array", name)
             type_name = create_python_type(schema["type"], schema)
             class_def = f"""# Type alias for {name.lower()}
 {name} = {type_name}
@@ -430,7 +452,7 @@ class {name}(BaseModel):
 """
                 classes.append(class_def)
         else:
-            class_def, nested_classes = generate_class(name, schema)
+            class_def, nested_classes = generate_class(name, schema, definitions)
             classes.append(class_def)
             classes.extend(nested_classes)
 
@@ -449,24 +471,19 @@ class {name}(BaseModel):
     # Generate factory function
     factory_function = """def create_mcp_model(data: dict[str, Any]) -> BaseModel:
     \"\"\"Create an MCP model instance from a dictionary based on its method field.
-    
-    Args:
+    \n    Args:
         data: Dictionary containing the model data
-        
-    Returns:
+        \n    Returns:
         An instance of the appropriate MCP model class
-        
-    Raises:
+        \n    Raises:
         ValueError: If the method field is missing or no matching class is found
     \"\"\"
     if "method" not in data:
         raise ValueError("Input dictionary must contain a 'method' field")
-        
-    method = data["method"]
+        \n    method = data["method"]
     if method not in _class_map:
         raise ValueError(f"No MCP model class found for method: {method}")
-        
-    return _class_map[method].from_dict(data)
+        \n    return _class_map[method].from_dict(data)
 """
 
     # Combine everything

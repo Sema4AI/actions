@@ -201,7 +201,22 @@ class CallToolResult(BaseModel):
                 converted_items = []
                 for item in value:
                     if isinstance(item, dict):
-                        converted_items.append(TextContent | ImageContent | AudioContent | EmbeddedResource.from_dict(item))
+                        # Try to disambiguate using const fields
+                        type_value = item.get('type')
+                        if type_value is not None:
+                            # Map type values to their corresponding classes
+                            type_to_class = {
+                                'text': TextContent,
+                                'image': ImageContent,
+                                'audio': AudioContent,
+                                'resource': EmbeddedResource,
+                            }
+                            if type_value in type_to_class:
+                                converted_items.append(type_to_class[type_value].from_dict(item))
+                            else:
+                                raise ValueError(f'Unknown type value: {type_value}')
+                        else:
+                            raise ValueError('Missing type field for disambiguation')
                     else:
                         converted_items.append(item)
                 value = converted_items
@@ -390,25 +405,15 @@ class CompleteRequestParamsParams(BaseModel):
                 if type_value is not None:
                     # Map type values to their corresponding classes
                     type_to_class = {
+                        'ref/prompt': PromptReference,
+                        'ref/resource': ResourceReference,
                     }
                     if type_value in type_to_class:
                         value = type_to_class[type_value].from_dict(value)
                     else:
-                        # Fallback to trying each type
-                        for type_name in ['PromptReference', 'ResourceReference']:
-                            try:
-                                value = type_name.from_dict(value)
-                                break
-                            except (TypeError, ValueError):
-                                continue
+                        raise ValueError(f'Unknown type value: {type_value}')
                 else:
-                    # No type field, try each type
-                    for type_name in ['PromptReference', 'ResourceReference']:
-                        try:
-                            value = type_name.from_dict(value)
-                            break
-                        except (TypeError, ValueError):
-                            continue
+                    raise ValueError('Missing type field for disambiguation')
         kwargs['ref'] = value
 
         return cls(**kwargs)
@@ -658,25 +663,16 @@ class CreateMessageResult(BaseModel):
                 if type_value is not None:
                     # Map type values to their corresponding classes
                     type_to_class = {
+                        'text': TextContent,
+                        'image': ImageContent,
+                        'audio': AudioContent,
                     }
                     if type_value in type_to_class:
                         value = type_to_class[type_value].from_dict(value)
                     else:
-                        # Fallback to trying each type
-                        for type_name in ['TextContent', 'ImageContent', 'AudioContent']:
-                            try:
-                                value = type_name.from_dict(value)
-                                break
-                            except (TypeError, ValueError):
-                                continue
+                        raise ValueError(f'Unknown type value: {type_value}')
                 else:
-                    # No type field, try each type
-                    for type_name in ['TextContent', 'ImageContent', 'AudioContent']:
-                        try:
-                            value = type_name.from_dict(value)
-                            break
-                        except (TypeError, ValueError):
-                            continue
+                    raise ValueError('Missing type field for disambiguation')
         kwargs['content'] = value
 
         # Process model
@@ -736,21 +732,9 @@ class EmbeddedResource(BaseModel):
                     if type_value in type_to_class:
                         value = type_to_class[type_value].from_dict(value)
                     else:
-                        # Fallback to trying each type
-                        for type_name in ['TextResourceContents', 'BlobResourceContents']:
-                            try:
-                                value = type_name.from_dict(value)
-                                break
-                            except (TypeError, ValueError):
-                                continue
+                        raise ValueError(f'Unknown type value: {type_value}')
                 else:
-                    # No type field, try each type
-                    for type_name in ['TextResourceContents', 'BlobResourceContents']:
-                        try:
-                            value = type_name.from_dict(value)
-                            break
-                        except (TypeError, ValueError):
-                            continue
+                    raise ValueError('Missing type field for disambiguation')
         kwargs['resource'] = value
 
         # Process type
@@ -2369,25 +2353,17 @@ class PromptMessage(BaseModel):
                 if type_value is not None:
                     # Map type values to their corresponding classes
                     type_to_class = {
+                        'text': TextContent,
+                        'image': ImageContent,
+                        'audio': AudioContent,
+                        'resource': EmbeddedResource,
                     }
                     if type_value in type_to_class:
                         value = type_to_class[type_value].from_dict(value)
                     else:
-                        # Fallback to trying each type
-                        for type_name in ['TextContent', 'ImageContent', 'AudioContent', 'EmbeddedResource']:
-                            try:
-                                value = type_name.from_dict(value)
-                                break
-                            except (TypeError, ValueError):
-                                continue
+                        raise ValueError(f'Unknown type value: {type_value}')
                 else:
-                    # No type field, try each type
-                    for type_name in ['TextContent', 'ImageContent', 'AudioContent', 'EmbeddedResource']:
-                        try:
-                            value = type_name.from_dict(value)
-                            break
-                        except (TypeError, ValueError):
-                            continue
+                    raise ValueError('Missing type field for disambiguation')
         kwargs['content'] = value
 
         # Process role
@@ -2500,7 +2476,18 @@ class ReadResourceResult(BaseModel):
                 converted_items = []
                 for item in value:
                     if isinstance(item, dict):
-                        converted_items.append(TextResourceContents | BlobResourceContents.from_dict(item))
+                        # Try to disambiguate using const fields
+                        type_value = item.get('type')
+                        if type_value is not None:
+                            # Map type values to their corresponding classes
+                            type_to_class = {
+                            }
+                            if type_value in type_to_class:
+                                converted_items.append(type_to_class[type_value].from_dict(item))
+                            else:
+                                raise ValueError(f'Unknown type value: {type_value}')
+                        else:
+                            raise ValueError('Missing type field for disambiguation')
                     else:
                         converted_items.append(item)
                 value = converted_items
@@ -2965,25 +2952,16 @@ class SamplingMessage(BaseModel):
                 if type_value is not None:
                     # Map type values to their corresponding classes
                     type_to_class = {
+                        'text': TextContent,
+                        'image': ImageContent,
+                        'audio': AudioContent,
                     }
                     if type_value in type_to_class:
                         value = type_to_class[type_value].from_dict(value)
                     else:
-                        # Fallback to trying each type
-                        for type_name in ['TextContent', 'ImageContent', 'AudioContent']:
-                            try:
-                                value = type_name.from_dict(value)
-                                break
-                            except (TypeError, ValueError):
-                                continue
+                        raise ValueError(f'Unknown type value: {type_value}')
                 else:
-                    # No type field, try each type
-                    for type_name in ['TextContent', 'ImageContent', 'AudioContent']:
-                        try:
-                            value = type_name.from_dict(value)
-                            break
-                        except (TypeError, ValueError):
-                            continue
+                    raise ValueError('Missing type field for disambiguation')
         kwargs['content'] = value
 
         # Process role

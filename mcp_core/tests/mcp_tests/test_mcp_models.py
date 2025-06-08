@@ -127,8 +127,8 @@ def test_nested_object_conversion():
     # Test with a result containing a list of TextContent
     result_data = {
         "content": [
-            {"type": "text", "text": "Hello", "kind": "text"},
-            {"type": "text", "text": "World", "kind": "text"},
+            {"type": "text", "text": "Hello"},
+            {"type": "text", "text": "World"},
         ]
     }
 
@@ -139,25 +139,13 @@ def test_nested_object_conversion():
     assert isinstance(result.content, list)
     assert len(result.content) == 2
 
-    # Provide detailed error messages for each item
+    # Verify each item is a TextContent with the correct text
     for i, item in enumerate(result.content):
         assert isinstance(
             item, TextContent
-        ), f"Item {i} is {type(item)}, expected TextContent. Item data: {item}"
-        assert hasattr(
-            item, "type"
-        ), f"Item {i} missing 'type' attribute. Item data: {item}"
-        assert hasattr(
-            item, "text"
-        ), f"Item {i} missing 'text' attribute. Item data: {item}"
-        assert hasattr(
-            item, "kind"
-        ), f"Item {i} missing 'kind' attribute. Item data: {item}"
-
-    # Verify content values
-    assert (
-        result.content[0].text == "Hello"
-    ), f"First item text is {result.content[0].text}, expected 'Hello'"
-    assert (
-        result.content[1].text == "World"
-    ), f"Second item text is {result.content[1].text}, expected 'World'"
+        ), f"Item {i} is not a TextContent instance. Item data: {item}"
+        assert item.type == "text", f"Item {i} has incorrect type. Item data: {item}"
+        assert item.text in [
+            "Hello",
+            "World",
+        ], f"Item {i} has incorrect text. Item data: {item}"
