@@ -29,7 +29,7 @@ class Annotations(BaseModel):
                 converted_items = []
                 for item in value:
                     if isinstance(item, dict):
-                        converted_items.append(Role.from_dict(item))
+                        converted_items.append(item)
                     else:
                         converted_items.append(item)
                 value = converted_items
@@ -714,8 +714,6 @@ class CreateMessageResult(BaseModel):
 
         # Process role
         value = data.get("role")
-        if value is not None:
-            value = Role.from_dict(value)
         kwargs["role"] = value
 
         # Process stopReason
@@ -2363,8 +2361,6 @@ class PromptMessage(BaseModel):
 
         # Process role
         value = data.get("role")
-        if value is not None:
-            value = Role.from_dict(value)
         kwargs["role"] = value
 
         return cls(**kwargs)
@@ -2979,8 +2975,6 @@ class SamplingMessage(BaseModel):
 
         # Process role
         value = data.get("role")
-        if value is not None:
-            value = Role.from_dict(value)
         kwargs["role"] = value
 
         return cls(**kwargs)

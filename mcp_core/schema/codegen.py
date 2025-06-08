@@ -309,7 +309,15 @@ def generate_class(
                 # Skip from_dict for type aliases and basic types
                 if (
                     item_type
-                    in ["str", "int", "float", "bool", "ProgressToken", "RequestId"]
+                    in [
+                        "str",
+                        "int",
+                        "float",
+                        "bool",
+                        "ProgressToken",
+                        "RequestId",
+                        "Role",
+                    ]
                     or "Literal[" in item_type
                 ):
                     from_dict_lines.append(
@@ -330,7 +338,7 @@ def generate_class(
         elif "Literal[" in field_type:
             # Handle literal types - no conversion needed
             pass
-        elif field_type in ["ProgressToken", "RequestId"]:
+        elif field_type in ["ProgressToken", "RequestId", "Role"]:
             # Handle type aliases - no conversion needed
             pass
         elif "|" in field_type:
@@ -511,7 +519,7 @@ T = TypeVar('T')
             if "type" in schema:
                 # Handle basic types (like RequestId)
                 type_name = create_python_type(schema["type"], schema)
-                if name in ["RequestId", "ProgressToken"]:
+                if name in ["RequestId", "ProgressToken", "Role"]:
                     # Special case for RequestId and ProgressToken - make them type aliases
                     class_def = f"""# Type alias for {name.lower()}
 {name} = {type_name}
