@@ -17,7 +17,12 @@ def create_python_type(
     schema_type: str, schema: dict[str, Any], field_name: str = ""
 ) -> str:
     """Convert JSON schema type to Python type annotation."""
-    # Handle anyOf types first
+    # Handle $ref first
+    if "$ref" in schema:
+        # Extract the type name from the ref (e.g., "#/definitions/Role" -> "Role")
+        return schema["$ref"].split("/")[-1]
+
+    # Handle anyOf types
     if "anyOf" in schema:
         types = []
         for sub_schema in schema["anyOf"]:
@@ -31,7 +36,7 @@ def create_python_type(
                     sub_schema.get("type", "string"), sub_schema
                 )
                 types.append(sub_type)
-        return f'"{(" | ".join(types))}"'
+        return " | ".join(types)
 
     if schema_type == "string":
         if "enum" in schema:
@@ -72,8 +77,31 @@ def generate_class(
         prop_type = create_python_type(
             prop_schema.get("type", "string"), prop_schema, prop_name
         )
-        default = "None" if prop_name not in required else "..."
-        fields.append(f"    {prop_name}: {prop_type} = field(default={default})")
+
+        # Handle default values based on whether the field is required
+        if prop_name not in required:
+            # For optional fields, wrap type in union with None
+            prop_type = f"None | {prop_type}"
+            default = "None"
+        else:
+            # For required fields, use appropriate defaults
+            if prop_type == "str":
+                default = '""'
+            elif prop_type == "int":
+                default = "0"
+            elif prop_type == "float":
+                default = "0.0"
+            elif prop_type == "bool":
+                default = "False"
+            elif prop_type.startswith("list"):
+                default = "field(default_factory=list)"
+            elif prop_type.startswith("dict"):
+                default = "field(default_factory=dict)"
+            else:
+                default = "..."
+
+        # Wrap the entire type in quotes at the last moment
+        fields.append(f'    {prop_name}: "{prop_type}" = field(default={default})')
 
     # Generate class docstring
     description = schema.get("description", "")
@@ -141,12 +169,64 @@ class BaseModel:
     classes = []
     method_to_class: dict[str, str] = {}
 
+    # First pass: collect all referenced types
+    referenced_types = set()
+    for schema in definitions.values():
+        properties = schema.get("properties", {})
+        for prop_schema in properties.values():
+            if "$ref" in prop_schema:
+                ref_type = prop_schema["$ref"].split("/")[-1]
+                referenced_types.add(ref_type)
+            elif "anyOf" in prop_schema:
+                for sub_schema in prop_schema["anyOf"]:
+                    if "$ref" in sub_schema:
+                        ref_type = sub_schema["$ref"].split("/")[-1]
+                        referenced_types.add(ref_type)
+
+    # Second pass: generate classes for all types
     for name, schema in definitions.items():
         # Skip empty classes
-        if not schema.get("properties"):
+        if not schema.get("properties") and name not in referenced_types:
             continue
 
-        class_def = generate_class(name, schema)
+        # If this is a referenced type but has no properties, check for special cases
+        if not schema.get("properties") and name in referenced_types:
+            if "enum" in schema:
+                # Handle enum types (like Role)
+                enum_values = []
+                for value in schema["enum"]:
+                    # Convert value to uppercase for enum name
+                    enum_name = str(value).upper()
+                    enum_values.append(f"    {enum_name} = {repr(value)}")
+
+                class_def = f"""class {name}(Enum):
+    \"\"\"{schema.get('description', '')}\"\"\"
+{chr(10).join(enum_values)}
+"""
+            elif "type" in schema:
+                # Handle basic types (like RequestId)
+                type_name = create_python_type(schema["type"], schema)
+                if name == "RequestId":
+                    # Special case for RequestId - make it a type alias
+                    class_def = f"""# Type alias for request identifiers
+{name} = int | str
+"""
+                else:
+                    class_def = f"""@dataclass
+class {name}(BaseModel):
+    \"\"\"{schema.get('description', '')}\"\"\"
+    value: {type_name} = field(default=None)
+"""
+            else:
+                # Fallback for unknown types
+                class_def = f"""@dataclass
+class {name}(BaseModel):
+    \"\"\"{schema.get('description', '')}\"\"\"
+    value: Any = field(default=None)
+"""
+        else:
+            class_def = generate_class(name, schema)
+
         classes.append(class_def)
 
         # Check if this class has a method field with a const value

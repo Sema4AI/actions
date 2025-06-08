@@ -36,32 +36,32 @@ class BaseModel:
 @dataclass
 class Annotations(BaseModel):
     """Optional annotations for the client. The client can use annotations to inform how objects are used or displayed"""
-    audience: list[str] = field(default=None)
-    priority: float = field(default=None)
+    audience: "None | list[Role]" = field(default=None)
+    priority: "None | float" = field(default=None)
 
 
 @dataclass
 class AudioContent(BaseModel):
     """Audio provided to or from an LLM."""
-    annotations: str = field(default=None)
-    data: str = field(default=...)
-    mimeType: str = field(default=...)
-    type: str = field(default=...)
+    annotations: "None | Annotations" = field(default=None)
+    data: "str" = field(default="")
+    mimeType: "str" = field(default="")
+    type: "str" = field(default="")
 
 
 @dataclass
 class BlobResourceContents(BaseModel):
 
-    blob: str = field(default=...)
-    mimeType: str = field(default=None)
-    uri: str = field(default=...)
+    blob: "str" = field(default="")
+    mimeType: "None | str" = field(default=None)
+    uri: "str" = field(default="")
 
 
 @dataclass
 class CallToolRequest(BaseModel):
     """Used by the client to invoke a tool provided by the server."""
-    method: Literal['tools/call'] = field(default=...)
-    params: dict[str, Any] = field(default=...)
+    method: "Literal['tools/call']" = field(default=...)
+    params: "dict[str, Any]" = field(default=field(default_factory=dict))
 
 
 @dataclass
@@ -76,9 +76,9 @@ and self-correct.
 However, any errors in _finding_ the tool, an error indicating that the
 server does not support tool calls, or any other exceptional conditions,
 should be reported as an MCP error response."""
-    _meta: dict[str, Any] = field(default=None)
-    content: list["TextContent | ImageContent | AudioContent | EmbeddedResource"] = field(default=...)
-    isError: bool = field(default=None)
+    _meta: "None | dict[str, Any]" = field(default=None)
+    content: "list[TextContent | ImageContent | AudioContent | EmbeddedResource]" = field(default=field(default_factory=list))
+    isError: "None | bool" = field(default=None)
 
 
 @dataclass
@@ -90,47 +90,47 @@ The request SHOULD still be in-flight, but due to communication latency, it is a
 This notification indicates that the result will be unused, so any associated processing SHOULD cease.
 
 A client MUST NOT attempt to cancel its `initialize` request."""
-    method: Literal['notifications/cancelled'] = field(default=...)
-    params: dict[str, Any] = field(default=...)
+    method: "Literal['notifications/cancelled']" = field(default=...)
+    params: "dict[str, Any]" = field(default=field(default_factory=dict))
 
 
 @dataclass
 class ClientCapabilities(BaseModel):
     """Capabilities a client may support. Known capabilities are defined here, in this schema, but this is not a closed set: any client can define its own, additional capabilities."""
-    experimental: dict[str, Any] = field(default=None)
-    roots: dict[str, Any] = field(default=None)
-    sampling: dict[str, Any] = field(default=None)
+    experimental: "None | dict[str, Any]" = field(default=None)
+    roots: "None | dict[str, Any]" = field(default=None)
+    sampling: "None | dict[str, Any]" = field(default=None)
 
 
 @dataclass
 class CompleteRequest(BaseModel):
     """A request from the client to the server, to ask for completion options."""
-    method: Literal['completion/complete'] = field(default=...)
-    params: dict[str, Any] = field(default=...)
+    method: "Literal['completion/complete']" = field(default=...)
+    params: "dict[str, Any]" = field(default=field(default_factory=dict))
 
 
 @dataclass
 class CompleteResult(BaseModel):
     """The server's response to a completion/complete request"""
-    _meta: dict[str, Any] = field(default=None)
-    completion: dict[str, Any] = field(default=...)
+    _meta: "None | dict[str, Any]" = field(default=None)
+    completion: "dict[str, Any]" = field(default=field(default_factory=dict))
 
 
 @dataclass
 class CreateMessageRequest(BaseModel):
     """A request from the server to sample an LLM via the client. The client has full discretion over which model to select. The client should also inform the user before beginning sampling, to allow them to inspect the request (human in the loop) and decide whether to approve it."""
-    method: Literal['sampling/createMessage'] = field(default=...)
-    params: dict[str, Any] = field(default=...)
+    method: "Literal['sampling/createMessage']" = field(default=...)
+    params: "dict[str, Any]" = field(default=field(default_factory=dict))
 
 
 @dataclass
 class CreateMessageResult(BaseModel):
     """The client's response to a sampling/create_message request from the server. The client should inform the user before returning the sampled message, to allow them to inspect the response (human in the loop) and decide whether to allow the server to see it."""
-    _meta: dict[str, Any] = field(default=None)
+    _meta: "None | dict[str, Any]" = field(default=None)
     content: "TextContent | ImageContent | AudioContent" = field(default=...)
-    model: str = field(default=...)
-    role: str = field(default=...)
-    stopReason: str = field(default=None)
+    model: "str" = field(default="")
+    role: "Role" = field(default=...)
+    stopReason: "None | str" = field(default=None)
 
 
 @dataclass
@@ -139,142 +139,142 @@ class EmbeddedResource(BaseModel):
 
 It is up to the client how best to render embedded resources for the benefit
 of the LLM and/or the user."""
-    annotations: str = field(default=None)
+    annotations: "None | Annotations" = field(default=None)
     resource: "TextResourceContents | BlobResourceContents" = field(default=...)
-    type: str = field(default=...)
+    type: "str" = field(default="")
 
 
 @dataclass
 class GetPromptRequest(BaseModel):
     """Used by the client to get a prompt provided by the server."""
-    method: Literal['prompts/get'] = field(default=...)
-    params: dict[str, Any] = field(default=...)
+    method: "Literal['prompts/get']" = field(default=...)
+    params: "dict[str, Any]" = field(default=field(default_factory=dict))
 
 
 @dataclass
 class GetPromptResult(BaseModel):
     """The server's response to a prompts/get request from the client."""
-    _meta: dict[str, Any] = field(default=None)
-    description: str = field(default=None)
-    messages: list[str] = field(default=...)
+    _meta: "None | dict[str, Any]" = field(default=None)
+    description: "None | str" = field(default=None)
+    messages: "list[PromptMessage]" = field(default=field(default_factory=list))
 
 
 @dataclass
 class ImageContent(BaseModel):
     """An image provided to or from an LLM."""
-    annotations: str = field(default=None)
-    data: str = field(default=...)
-    mimeType: str = field(default=...)
-    type: str = field(default=...)
+    annotations: "None | Annotations" = field(default=None)
+    data: "str" = field(default="")
+    mimeType: "str" = field(default="")
+    type: "str" = field(default="")
 
 
 @dataclass
 class Implementation(BaseModel):
     """Describes the name and version of an MCP implementation."""
-    name: str = field(default=...)
-    version: str = field(default=...)
+    name: "str" = field(default="")
+    version: "str" = field(default="")
 
 
 @dataclass
 class InitializeRequest(BaseModel):
     """This request is sent from the client to the server when it first connects, asking it to begin initialization."""
-    method: Literal['initialize'] = field(default=...)
-    params: dict[str, Any] = field(default=...)
+    method: "Literal['initialize']" = field(default=...)
+    params: "dict[str, Any]" = field(default=field(default_factory=dict))
 
 
 @dataclass
 class InitializeResult(BaseModel):
     """After receiving an initialize request from the client, the server sends this response."""
-    _meta: dict[str, Any] = field(default=None)
-    capabilities: str = field(default=...)
-    instructions: str = field(default=None)
-    protocolVersion: str = field(default=...)
-    serverInfo: str = field(default=...)
+    _meta: "None | dict[str, Any]" = field(default=None)
+    capabilities: "ServerCapabilities" = field(default=...)
+    instructions: "None | str" = field(default=None)
+    protocolVersion: "str" = field(default="")
+    serverInfo: "Implementation" = field(default=...)
 
 
 @dataclass
 class InitializedNotification(BaseModel):
     """This notification is sent from the client to the server after initialization has finished."""
-    method: Literal['notifications/initialized'] = field(default=...)
-    params: dict[str, Any] = field(default=None)
+    method: "Literal['notifications/initialized']" = field(default=...)
+    params: "None | dict[str, Any]" = field(default=None)
 
 
 @dataclass
 class JSONRPCError(BaseModel):
     """A response to a request that indicates an error occurred."""
-    error: dict[str, Any] = field(default=...)
-    id: str = field(default=...)
-    jsonrpc: str = field(default=...)
+    error: "dict[str, Any]" = field(default=field(default_factory=dict))
+    id: "RequestId" = field(default=...)
+    jsonrpc: "str" = field(default="")
 
 
 @dataclass
 class JSONRPCNotification(BaseModel):
     """A notification which does not expect a response."""
-    jsonrpc: str = field(default=...)
-    method: str = field(default=...)
-    params: dict[str, Any] = field(default=None)
+    jsonrpc: "str" = field(default="")
+    method: "str" = field(default="")
+    params: "None | dict[str, Any]" = field(default=None)
 
 
 @dataclass
 class JSONRPCRequest(BaseModel):
     """A request that expects a response."""
-    id: str = field(default=...)
-    jsonrpc: str = field(default=...)
-    method: str = field(default=...)
-    params: dict[str, Any] = field(default=None)
+    id: "RequestId" = field(default=...)
+    jsonrpc: "str" = field(default="")
+    method: "str" = field(default="")
+    params: "None | dict[str, Any]" = field(default=None)
 
 
 @dataclass
 class JSONRPCResponse(BaseModel):
     """A successful (non-error) response to a request."""
-    id: str = field(default=...)
-    jsonrpc: str = field(default=...)
-    result: str = field(default=...)
+    id: "RequestId" = field(default=...)
+    jsonrpc: "str" = field(default="")
+    result: "Result" = field(default=...)
 
 
 @dataclass
 class ListPromptsRequest(BaseModel):
     """Sent from the client to request a list of prompts and prompt templates the server has."""
-    method: Literal['prompts/list'] = field(default=...)
-    params: dict[str, Any] = field(default=None)
+    method: "Literal['prompts/list']" = field(default=...)
+    params: "None | dict[str, Any]" = field(default=None)
 
 
 @dataclass
 class ListPromptsResult(BaseModel):
     """The server's response to a prompts/list request from the client."""
-    _meta: dict[str, Any] = field(default=None)
-    nextCursor: str = field(default=None)
-    prompts: list[str] = field(default=...)
+    _meta: "None | dict[str, Any]" = field(default=None)
+    nextCursor: "None | str" = field(default=None)
+    prompts: "list[Prompt]" = field(default=field(default_factory=list))
 
 
 @dataclass
 class ListResourceTemplatesRequest(BaseModel):
     """Sent from the client to request a list of resource templates the server has."""
-    method: Literal['resources/templates/list'] = field(default=...)
-    params: dict[str, Any] = field(default=None)
+    method: "Literal['resources/templates/list']" = field(default=...)
+    params: "None | dict[str, Any]" = field(default=None)
 
 
 @dataclass
 class ListResourceTemplatesResult(BaseModel):
     """The server's response to a resources/templates/list request from the client."""
-    _meta: dict[str, Any] = field(default=None)
-    nextCursor: str = field(default=None)
-    resourceTemplates: list[str] = field(default=...)
+    _meta: "None | dict[str, Any]" = field(default=None)
+    nextCursor: "None | str" = field(default=None)
+    resourceTemplates: "list[ResourceTemplate]" = field(default=field(default_factory=list))
 
 
 @dataclass
 class ListResourcesRequest(BaseModel):
     """Sent from the client to request a list of resources the server has."""
-    method: Literal['resources/list'] = field(default=...)
-    params: dict[str, Any] = field(default=None)
+    method: "Literal['resources/list']" = field(default=...)
+    params: "None | dict[str, Any]" = field(default=None)
 
 
 @dataclass
 class ListResourcesResult(BaseModel):
     """The server's response to a resources/list request from the client."""
-    _meta: dict[str, Any] = field(default=None)
-    nextCursor: str = field(default=None)
-    resources: list[str] = field(default=...)
+    _meta: "None | dict[str, Any]" = field(default=None)
+    nextCursor: "None | str" = field(default=None)
+    resources: "list[Resource]" = field(default=field(default_factory=list))
 
 
 @dataclass
@@ -286,8 +286,8 @@ on.
 
 This request is typically used when the server needs to understand the file system
 structure or access specific locations that the client has permission to read from."""
-    method: Literal['roots/list'] = field(default=...)
-    params: dict[str, Any] = field(default=None)
+    method: "Literal['roots/list']" = field(default=...)
+    params: "None | dict[str, Any]" = field(default=None)
 
 
 @dataclass
@@ -295,30 +295,30 @@ class ListRootsResult(BaseModel):
     """The client's response to a roots/list request from the server.
 This result contains an array of Root objects, each representing a root directory
 or file that the server can operate on."""
-    _meta: dict[str, Any] = field(default=None)
-    roots: list[str] = field(default=...)
+    _meta: "None | dict[str, Any]" = field(default=None)
+    roots: "list[Root]" = field(default=field(default_factory=list))
 
 
 @dataclass
 class ListToolsRequest(BaseModel):
     """Sent from the client to request a list of tools the server has."""
-    method: Literal['tools/list'] = field(default=...)
-    params: dict[str, Any] = field(default=None)
+    method: "Literal['tools/list']" = field(default=...)
+    params: "None | dict[str, Any]" = field(default=None)
 
 
 @dataclass
 class ListToolsResult(BaseModel):
     """The server's response to a tools/list request from the client."""
-    _meta: dict[str, Any] = field(default=None)
-    nextCursor: str = field(default=None)
-    tools: list[str] = field(default=...)
+    _meta: "None | dict[str, Any]" = field(default=None)
+    nextCursor: "None | str" = field(default=None)
+    tools: "list[Tool]" = field(default=field(default_factory=list))
 
 
 @dataclass
 class LoggingMessageNotification(BaseModel):
     """Notification of a log message passed from server to client. If no logging/setLevel request has been sent from the client, the server MAY decide which messages to send automatically."""
-    method: Literal['notifications/message'] = field(default=...)
-    params: dict[str, Any] = field(default=...)
+    method: "Literal['notifications/message']" = field(default=...)
+    params: "dict[str, Any]" = field(default=field(default_factory=dict))
 
 
 @dataclass
@@ -327,7 +327,7 @@ class ModelHint(BaseModel):
 
 Keys not declared here are currently left unspecified by the spec and are up
 to the client to interpret."""
-    name: str = field(default=None)
+    name: "None | str" = field(default=None)
 
 
 @dataclass
@@ -343,68 +343,68 @@ dimensions to help clients make an appropriate selection for their use case.
 These preferences are always advisory. The client MAY ignore them. It is also
 up to the client to decide how to interpret these preferences and how to
 balance them against other considerations."""
-    costPriority: float = field(default=None)
-    hints: list[str] = field(default=None)
-    intelligencePriority: float = field(default=None)
-    speedPriority: float = field(default=None)
+    costPriority: "None | float" = field(default=None)
+    hints: "None | list[ModelHint]" = field(default=None)
+    intelligencePriority: "None | float" = field(default=None)
+    speedPriority: "None | float" = field(default=None)
 
 
 @dataclass
 class Notification(BaseModel):
 
-    method: str = field(default=...)
-    params: dict[str, Any] = field(default=None)
+    method: "str" = field(default="")
+    params: "None | dict[str, Any]" = field(default=None)
 
 
 @dataclass
 class PaginatedRequest(BaseModel):
 
-    method: str = field(default=...)
-    params: dict[str, Any] = field(default=None)
+    method: "str" = field(default="")
+    params: "None | dict[str, Any]" = field(default=None)
 
 
 @dataclass
 class PaginatedResult(BaseModel):
 
-    _meta: dict[str, Any] = field(default=None)
-    nextCursor: str = field(default=None)
+    _meta: "None | dict[str, Any]" = field(default=None)
+    nextCursor: "None | str" = field(default=None)
 
 
 @dataclass
 class PingRequest(BaseModel):
     """A ping, issued by either the server or the client, to check that the other party is still alive. The receiver must promptly respond, or else may be disconnected."""
-    method: Literal['ping'] = field(default=...)
-    params: dict[str, Any] = field(default=None)
+    method: "Literal['ping']" = field(default=...)
+    params: "None | dict[str, Any]" = field(default=None)
 
 
 @dataclass
 class ProgressNotification(BaseModel):
     """An out-of-band notification used to inform the receiver of a progress update for a long-running request."""
-    method: Literal['notifications/progress'] = field(default=...)
-    params: dict[str, Any] = field(default=...)
+    method: "Literal['notifications/progress']" = field(default=...)
+    params: "dict[str, Any]" = field(default=field(default_factory=dict))
 
 
 @dataclass
 class Prompt(BaseModel):
     """A prompt or prompt template that the server offers."""
-    arguments: list[str] = field(default=None)
-    description: str = field(default=None)
-    name: str = field(default=...)
+    arguments: "None | list[PromptArgument]" = field(default=None)
+    description: "None | str" = field(default=None)
+    name: "str" = field(default="")
 
 
 @dataclass
 class PromptArgument(BaseModel):
     """Describes an argument that a prompt can accept."""
-    description: str = field(default=None)
-    name: str = field(default=...)
-    required: bool = field(default=None)
+    description: "None | str" = field(default=None)
+    name: "str" = field(default="")
+    required: "None | bool" = field(default=None)
 
 
 @dataclass
 class PromptListChangedNotification(BaseModel):
     """An optional notification from the server to the client, informing it that the list of prompts it offers has changed. This may be issued by servers without any previous subscription from the client."""
-    method: Literal['notifications/prompts/list_changed'] = field(default=...)
-    params: dict[str, Any] = field(default=None)
+    method: "Literal['notifications/prompts/list_changed']" = field(default=...)
+    params: "None | dict[str, Any]" = field(default=None)
 
 
 @dataclass
@@ -414,97 +414,107 @@ class PromptMessage(BaseModel):
 This is similar to `SamplingMessage`, but also supports the embedding of
 resources from the MCP server."""
     content: "TextContent | ImageContent | AudioContent | EmbeddedResource" = field(default=...)
-    role: str = field(default=...)
+    role: "Role" = field(default=...)
 
 
 @dataclass
 class PromptReference(BaseModel):
     """Identifies a prompt."""
-    name: str = field(default=...)
-    type: str = field(default=...)
+    name: "str" = field(default="")
+    type: "str" = field(default="")
 
 
 @dataclass
 class ReadResourceRequest(BaseModel):
     """Sent from the client to the server, to read a specific resource URI."""
-    method: Literal['resources/read'] = field(default=...)
-    params: dict[str, Any] = field(default=...)
+    method: "Literal['resources/read']" = field(default=...)
+    params: "dict[str, Any]" = field(default=field(default_factory=dict))
 
 
 @dataclass
 class ReadResourceResult(BaseModel):
     """The server's response to a resources/read request from the client."""
-    _meta: dict[str, Any] = field(default=None)
-    contents: list["TextResourceContents | BlobResourceContents"] = field(default=...)
+    _meta: "None | dict[str, Any]" = field(default=None)
+    contents: "list[TextResourceContents | BlobResourceContents]" = field(default=field(default_factory=list))
 
 
 @dataclass
 class Request(BaseModel):
 
-    method: str = field(default=...)
-    params: dict[str, Any] = field(default=None)
+    method: "str" = field(default="")
+    params: "None | dict[str, Any]" = field(default=None)
+
+
+# Type alias for request identifiers
+RequestId = int | str
 
 
 @dataclass
 class Resource(BaseModel):
     """A known resource that the server is capable of reading."""
-    annotations: str = field(default=None)
-    description: str = field(default=None)
-    mimeType: str = field(default=None)
-    name: str = field(default=...)
-    size: int = field(default=None)
-    uri: str = field(default=...)
+    annotations: "None | Annotations" = field(default=None)
+    description: "None | str" = field(default=None)
+    mimeType: "None | str" = field(default=None)
+    name: "str" = field(default="")
+    size: "None | int" = field(default=None)
+    uri: "str" = field(default="")
 
 
 @dataclass
 class ResourceContents(BaseModel):
     """The contents of a specific resource or sub-resource."""
-    mimeType: str = field(default=None)
-    uri: str = field(default=...)
+    mimeType: "None | str" = field(default=None)
+    uri: "str" = field(default="")
 
 
 @dataclass
 class ResourceListChangedNotification(BaseModel):
     """An optional notification from the server to the client, informing it that the list of resources it can read from has changed. This may be issued by servers without any previous subscription from the client."""
-    method: Literal['notifications/resources/list_changed'] = field(default=...)
-    params: dict[str, Any] = field(default=None)
+    method: "Literal['notifications/resources/list_changed']" = field(default=...)
+    params: "None | dict[str, Any]" = field(default=None)
 
 
 @dataclass
 class ResourceReference(BaseModel):
     """A reference to a resource or resource template definition."""
-    type: str = field(default=...)
-    uri: str = field(default=...)
+    type: "str" = field(default="")
+    uri: "str" = field(default="")
 
 
 @dataclass
 class ResourceTemplate(BaseModel):
     """A template description for resources available on the server."""
-    annotations: str = field(default=None)
-    description: str = field(default=None)
-    mimeType: str = field(default=None)
-    name: str = field(default=...)
-    uriTemplate: str = field(default=...)
+    annotations: "None | Annotations" = field(default=None)
+    description: "None | str" = field(default=None)
+    mimeType: "None | str" = field(default=None)
+    name: "str" = field(default="")
+    uriTemplate: "str" = field(default="")
 
 
 @dataclass
 class ResourceUpdatedNotification(BaseModel):
     """A notification from the server to the client, informing it that a resource has changed and may need to be read again. This should only be sent if the client previously sent a resources/subscribe request."""
-    method: Literal['notifications/resources/updated'] = field(default=...)
-    params: dict[str, Any] = field(default=...)
+    method: "Literal['notifications/resources/updated']" = field(default=...)
+    params: "dict[str, Any]" = field(default=field(default_factory=dict))
 
 
 @dataclass
 class Result(BaseModel):
 
-    _meta: dict[str, Any] = field(default=None)
+    _meta: "None | dict[str, Any]" = field(default=None)
+
+
+class Role(Enum):
+    """The sender or recipient of messages and data in a conversation."""
+    ASSISTANT = 'assistant'
+    USER = 'user'
 
 
 @dataclass
 class Root(BaseModel):
     """Represents a root directory or file that the server can operate on."""
-    name: str = field(default=None)
-    uri: str = field(default=...)
+    name: "None | str" = field(default=None)
+    uri: "str" = field(default="")
 
 
 @dataclass
@@ -512,65 +522,65 @@ class RootsListChangedNotification(BaseModel):
     """A notification from the client to the server, informing it that the list of roots has changed.
 This notification should be sent whenever the client adds, removes, or modifies any root.
 The server should then request an updated list of roots using the ListRootsRequest."""
-    method: Literal['notifications/roots/list_changed'] = field(default=...)
-    params: dict[str, Any] = field(default=None)
+    method: "Literal['notifications/roots/list_changed']" = field(default=...)
+    params: "None | dict[str, Any]" = field(default=None)
 
 
 @dataclass
 class SamplingMessage(BaseModel):
     """Describes a message issued to or received from an LLM API."""
     content: "TextContent | ImageContent | AudioContent" = field(default=...)
-    role: str = field(default=...)
+    role: "Role" = field(default=...)
 
 
 @dataclass
 class ServerCapabilities(BaseModel):
     """Capabilities that a server may support. Known capabilities are defined here, in this schema, but this is not a closed set: any server can define its own, additional capabilities."""
-    completions: dict[str, Any] = field(default=None)
-    experimental: dict[str, Any] = field(default=None)
-    logging: dict[str, Any] = field(default=None)
-    prompts: dict[str, Any] = field(default=None)
-    resources: dict[str, Any] = field(default=None)
-    tools: dict[str, Any] = field(default=None)
+    completions: "None | dict[str, Any]" = field(default=None)
+    experimental: "None | dict[str, Any]" = field(default=None)
+    logging: "None | dict[str, Any]" = field(default=None)
+    prompts: "None | dict[str, Any]" = field(default=None)
+    resources: "None | dict[str, Any]" = field(default=None)
+    tools: "None | dict[str, Any]" = field(default=None)
 
 
 @dataclass
 class SetLevelRequest(BaseModel):
     """A request from the client to the server, to enable or adjust logging."""
-    method: Literal['logging/setLevel'] = field(default=...)
-    params: dict[str, Any] = field(default=...)
+    method: "Literal['logging/setLevel']" = field(default=...)
+    params: "dict[str, Any]" = field(default=field(default_factory=dict))
 
 
 @dataclass
 class SubscribeRequest(BaseModel):
     """Sent from the client to request resources/updated notifications from the server whenever a particular resource changes."""
-    method: Literal['resources/subscribe'] = field(default=...)
-    params: dict[str, Any] = field(default=...)
+    method: "Literal['resources/subscribe']" = field(default=...)
+    params: "dict[str, Any]" = field(default=field(default_factory=dict))
 
 
 @dataclass
 class TextContent(BaseModel):
     """Text provided to or from an LLM."""
-    annotations: str = field(default=None)
-    text: str = field(default=...)
-    type: str = field(default=...)
+    annotations: "None | Annotations" = field(default=None)
+    text: "str" = field(default="")
+    type: "str" = field(default="")
 
 
 @dataclass
 class TextResourceContents(BaseModel):
 
-    mimeType: str = field(default=None)
-    text: str = field(default=...)
-    uri: str = field(default=...)
+    mimeType: "None | str" = field(default=None)
+    text: "str" = field(default="")
+    uri: "str" = field(default="")
 
 
 @dataclass
 class Tool(BaseModel):
     """Definition for a tool the client can call."""
-    annotations: str = field(default=None)
-    description: str = field(default=None)
-    inputSchema: dict[str, Any] = field(default=...)
-    name: str = field(default=...)
+    annotations: "None | ToolAnnotations" = field(default=None)
+    description: "None | str" = field(default=None)
+    inputSchema: "dict[str, Any]" = field(default=field(default_factory=dict))
+    name: "str" = field(default="")
 
 
 @dataclass
@@ -583,25 +593,25 @@ tool behavior (including descriptive properties like `title`).
 
 Clients should never make tool use decisions based on ToolAnnotations
 received from untrusted servers."""
-    destructiveHint: bool = field(default=None)
-    idempotentHint: bool = field(default=None)
-    openWorldHint: bool = field(default=None)
-    readOnlyHint: bool = field(default=None)
-    title: str = field(default=None)
+    destructiveHint: "None | bool" = field(default=None)
+    idempotentHint: "None | bool" = field(default=None)
+    openWorldHint: "None | bool" = field(default=None)
+    readOnlyHint: "None | bool" = field(default=None)
+    title: "None | str" = field(default=None)
 
 
 @dataclass
 class ToolListChangedNotification(BaseModel):
     """An optional notification from the server to the client, informing it that the list of tools it offers has changed. This may be issued by servers without any previous subscription from the client."""
-    method: Literal['notifications/tools/list_changed'] = field(default=...)
-    params: dict[str, Any] = field(default=None)
+    method: "Literal['notifications/tools/list_changed']" = field(default=...)
+    params: "None | dict[str, Any]" = field(default=None)
 
 
 @dataclass
 class UnsubscribeRequest(BaseModel):
     """Sent from the client to request cancellation of resources/updated notifications from the server. This should follow a previous resources/subscribe request."""
-    method: Literal['resources/unsubscribe'] = field(default=...)
-    params: dict[str, Any] = field(default=...)
+    method: "Literal['resources/unsubscribe']" = field(default=...)
+    params: "dict[str, Any]" = field(default=field(default_factory=dict))
 
 
 _class_map = {
