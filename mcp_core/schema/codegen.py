@@ -225,23 +225,24 @@ def generate_class(
             # Handle lists
             from_dict_lines.append("        if value is not None:")
             item_type = field_type[5:-1]  # Extract type from list[type]
-            from_dict_lines.append("            if isinstance(value, list):")
-            from_dict_lines.append("                converted_items = []")
-            from_dict_lines.append("                for item in value:")
-            from_dict_lines.append("                    if isinstance(item, dict):")
+            from_dict_lines.append("            if not isinstance(value, list):")
+            from_dict_lines.append(
+                f'                raise ValueError(f"Expected a list for field {field_name}, got {{type(value)}}")'
+            )
+            from_dict_lines.append("            converted_items = []")
+            from_dict_lines.append("            for item in value:")
+            from_dict_lines.append("                if isinstance(item, dict):")
             # Check if the item type is a union
             if "|" in item_type:
                 types = [t.strip() for t in item_type.split("|")]
                 from_dict_lines.append(
-                    "                        # Try to disambiguate using const fields"
+                    "                    # Try to disambiguate using const fields"
                 )
                 from_dict_lines.append(
-                    "                        type_value = item.get('type')"
+                    "                    type_value = item.get('type')"
                 )
-                from_dict_lines.append("                        type_to_class = {}")
-                from_dict_lines.append(
-                    "                        required_props_map = {}"
-                )
+                from_dict_lines.append("                    type_to_class = {}")
+                from_dict_lines.append("                    required_props_map = {}")
                 # For each type in the union, check if it has a const field or required properties
                 for t in types:
                     if t != "None":
@@ -253,57 +254,53 @@ def generate_class(
                             if "const" in prop_schema_:
                                 const_value = prop_schema_["const"]
                                 from_dict_lines.append(
-                                    f"                        type_to_class[{repr(const_value)}] = {t}"
+                                    f"                    type_to_class[{repr(const_value)}] = {t}"
                                 )
                                 found_const = True
                         if not found_const and required_:
                             from_dict_lines.append(
-                                f"                        required_props_map[{t}] = {required_}"
+                                f"                    required_props_map[{t}] = {required_}"
                             )
                 from_dict_lines.append(
-                    "                        if type_value is not None and type_value in type_to_class:"
+                    "                    if type_value is not None and type_value in type_to_class:"
                 )
                 from_dict_lines.append(
-                    "                            converted_items.append(type_to_class[type_value].from_dict(item))"
+                    "                        converted_items.append(type_to_class[type_value].from_dict(item))"
+                )
+                from_dict_lines.append("                    else:")
+                from_dict_lines.append(
+                    "                        # Try to disambiguate by required properties"
+                )
+                from_dict_lines.append("                        matches = []")
+                from_dict_lines.append(
+                    "                        for type_name, reqs in required_props_map.items():"
+                )
+                from_dict_lines.append(
+                    "                            if all(r in item for r in reqs):"
+                )
+                from_dict_lines.append(
+                    "                                matches.append(type_name)"
+                )
+                from_dict_lines.append("                        if len(matches) == 1:")
+                from_dict_lines.append(
+                    "                            converted_items.append(matches[0].from_dict(item))"
+                )
+                from_dict_lines.append("                        elif len(matches) > 1:")
+                from_dict_lines.append(
+                    "                            match_details = [f'{name} (requires any of {required_props_map[name]})' for name in matches]"
+                )
+                from_dict_lines.append(
+                    "                            raise ValueError(f\"Ambiguous match for union type. Multiple types match: {'; '.join(match_details)}\")"
                 )
                 from_dict_lines.append("                        else:")
                 from_dict_lines.append(
-                    "                            # Try to disambiguate by required properties"
-                )
-                from_dict_lines.append("                            matches = []")
-                from_dict_lines.append(
-                    "                            for type_name, reqs in required_props_map.items():"
+                    "                            available_fields = list(item.keys())"
                 )
                 from_dict_lines.append(
-                    "                                if all(r in item for r in reqs):"
+                    "                            type_details = [f'{name} (requires any of {required_props_map[name]})' for name in required_props_map]"
                 )
                 from_dict_lines.append(
-                    "                                    matches.append(type_name)"
-                )
-                from_dict_lines.append(
-                    "                            if len(matches) == 1:"
-                )
-                from_dict_lines.append(
-                    "                                converted_items.append(matches[0].from_dict(item))"
-                )
-                from_dict_lines.append(
-                    "                            elif len(matches) > 1:"
-                )
-                from_dict_lines.append(
-                    "                                match_details = [f'{name} (requires any of {required_props_map[name]})' for name in matches]"
-                )
-                from_dict_lines.append(
-                    "                                raise ValueError(f\"Ambiguous match for union type. Multiple types match: {'; '.join(match_details)}\")"
-                )
-                from_dict_lines.append("                            else:")
-                from_dict_lines.append(
-                    "                                available_fields = list(item.keys())"
-                )
-                from_dict_lines.append(
-                    "                                type_details = [f'{name} (requires any of {required_props_map[name]})' for name in required_props_map]"
-                )
-                from_dict_lines.append(
-                    "                                raise ValueError(f\"No match for union type. Available fields: {available_fields}. Expected one of: {'; '.join(type_details)}\")"
+                    "                            raise ValueError(f\"No match for union type. Available fields: {available_fields}. Expected one of: {'; '.join(type_details)}\")"
                 )
             else:
                 # Skip from_dict for type aliases and basic types
@@ -321,17 +318,15 @@ def generate_class(
                     or "Literal[" in item_type
                 ):
                     from_dict_lines.append(
-                        "                        converted_items.append(item)"
+                        "                    converted_items.append(item)"
                     )
                 else:
                     from_dict_lines.append(
-                        f"                        converted_items.append({item_type}.from_dict(item))"
+                        f"                    converted_items.append({item_type}.from_dict(item))"
                     )
-            from_dict_lines.append("                    else:")
-            from_dict_lines.append(
-                "                        converted_items.append(item)"
-            )
-            from_dict_lines.append("                value = converted_items")
+            from_dict_lines.append("                else:")
+            from_dict_lines.append("                    converted_items.append(item)")
+            from_dict_lines.append("            value = converted_items")
         elif field_type in ["str", "int", "float", "bool"]:
             # Handle basic types - no conversion needed
             pass

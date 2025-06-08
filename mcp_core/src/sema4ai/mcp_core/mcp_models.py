@@ -1,6 +1,5 @@
+from typing import Any, TypeVar, Literal, Type
 from dataclasses import dataclass, field
-from typing import Any, Literal, Type, TypeVar
-
 from sema4ai.mcp_core.mcp_base_model import BaseModel
 
 T = TypeVar("T")
@@ -25,14 +24,17 @@ class Annotations(BaseModel):
         # Process audience
         value = data.get("audience")
         if value is not None:
-            if isinstance(value, list):
-                converted_items = []
-                for item in value:
-                    if isinstance(item, dict):
-                        converted_items.append(item)
-                    else:
-                        converted_items.append(item)
-                value = converted_items
+            if not isinstance(value, list):
+                raise ValueError(
+                    f"Expected a list for field audience, got {type(value)}"
+                )
+            converted_items = []
+            for item in value:
+                if isinstance(item, dict):
+                    converted_items.append(item)
+                else:
+                    converted_items.append(item)
+            value = converted_items
         kwargs["audience"] = value
 
         # Process priority
@@ -189,50 +191,53 @@ class CallToolResult(BaseModel):
         # Process content
         value = data.get("content")
         if value is not None:
-            if isinstance(value, list):
-                converted_items = []
-                for item in value:
-                    if isinstance(item, dict):
-                        # Try to disambiguate using const fields
-                        type_value = item.get("type")
-                        type_to_class = {}
-                        required_props_map = {}
-                        type_to_class["text"] = TextContent
-                        type_to_class["image"] = ImageContent
-                        type_to_class["audio"] = AudioContent
-                        type_to_class["resource"] = EmbeddedResource
-                        if type_value is not None and type_value in type_to_class:
-                            converted_items.append(
-                                type_to_class[type_value].from_dict(item)
+            if not isinstance(value, list):
+                raise ValueError(
+                    f"Expected a list for field content, got {type(value)}"
+                )
+            converted_items = []
+            for item in value:
+                if isinstance(item, dict):
+                    # Try to disambiguate using const fields
+                    type_value = item.get("type")
+                    type_to_class = {}
+                    required_props_map = {}
+                    type_to_class["text"] = TextContent
+                    type_to_class["image"] = ImageContent
+                    type_to_class["audio"] = AudioContent
+                    type_to_class["resource"] = EmbeddedResource
+                    if type_value is not None and type_value in type_to_class:
+                        converted_items.append(
+                            type_to_class[type_value].from_dict(item)
+                        )
+                    else:
+                        # Try to disambiguate by required properties
+                        matches = []
+                        for type_name, reqs in required_props_map.items():
+                            if all(r in item for r in reqs):
+                                matches.append(type_name)
+                        if len(matches) == 1:
+                            converted_items.append(matches[0].from_dict(item))
+                        elif len(matches) > 1:
+                            match_details = [
+                                f"{name} (requires any of {required_props_map[name]})"
+                                for name in matches
+                            ]
+                            raise ValueError(
+                                f"Ambiguous match for union type. Multiple types match: {'; '.join(match_details)}"
                             )
                         else:
-                            # Try to disambiguate by required properties
-                            matches = []
-                            for type_name, reqs in required_props_map.items():
-                                if all(r in item for r in reqs):
-                                    matches.append(type_name)
-                            if len(matches) == 1:
-                                converted_items.append(matches[0].from_dict(item))
-                            elif len(matches) > 1:
-                                match_details = [
-                                    f"{name} (requires any of {required_props_map[name]})"
-                                    for name in matches
-                                ]
-                                raise ValueError(
-                                    f"Ambiguous match for union type. Multiple types match: {'; '.join(match_details)}"
-                                )
-                            else:
-                                available_fields = list(item.keys())
-                                type_details = [
-                                    f"{name} (requires any of {required_props_map[name]})"
-                                    for name in required_props_map
-                                ]
-                                raise ValueError(
-                                    f"No match for union type. Available fields: {available_fields}. Expected one of: {'; '.join(type_details)}"
-                                )
-                    else:
-                        converted_items.append(item)
-                value = converted_items
+                            available_fields = list(item.keys())
+                            type_details = [
+                                f"{name} (requires any of {required_props_map[name]})"
+                                for name in required_props_map
+                            ]
+                            raise ValueError(
+                                f"No match for union type. Available fields: {available_fields}. Expected one of: {'; '.join(type_details)}"
+                            )
+                else:
+                    converted_items.append(item)
+            value = converted_items
         kwargs["content"] = value
 
         # Process isError
@@ -523,14 +528,15 @@ class CompleteResultCompletionParams(BaseModel):
         # Process values
         value = data.get("values")
         if value is not None:
-            if isinstance(value, list):
-                converted_items = []
-                for item in value:
-                    if isinstance(item, dict):
-                        converted_items.append(item)
-                    else:
-                        converted_items.append(item)
-                value = converted_items
+            if not isinstance(value, list):
+                raise ValueError(f"Expected a list for field values, got {type(value)}")
+            converted_items = []
+            for item in value:
+                if isinstance(item, dict):
+                    converted_items.append(item)
+                else:
+                    converted_items.append(item)
+            value = converted_items
         kwargs["values"] = value
 
         return cls(**kwargs)
@@ -599,14 +605,17 @@ class CreateMessageRequestParamsParams(BaseModel):
         # Process messages
         value = data.get("messages")
         if value is not None:
-            if isinstance(value, list):
-                converted_items = []
-                for item in value:
-                    if isinstance(item, dict):
-                        converted_items.append(SamplingMessage.from_dict(item))
-                    else:
-                        converted_items.append(item)
-                value = converted_items
+            if not isinstance(value, list):
+                raise ValueError(
+                    f"Expected a list for field messages, got {type(value)}"
+                )
+            converted_items = []
+            for item in value:
+                if isinstance(item, dict):
+                    converted_items.append(SamplingMessage.from_dict(item))
+                else:
+                    converted_items.append(item)
+            value = converted_items
         kwargs["messages"] = value
 
         # Process metadata
@@ -622,14 +631,17 @@ class CreateMessageRequestParamsParams(BaseModel):
         # Process stopSequences
         value = data.get("stopSequences")
         if value is not None:
-            if isinstance(value, list):
-                converted_items = []
-                for item in value:
-                    if isinstance(item, dict):
-                        converted_items.append(item)
-                    else:
-                        converted_items.append(item)
-                value = converted_items
+            if not isinstance(value, list):
+                raise ValueError(
+                    f"Expected a list for field stopSequences, got {type(value)}"
+                )
+            converted_items = []
+            for item in value:
+                if isinstance(item, dict):
+                    converted_items.append(item)
+                else:
+                    converted_items.append(item)
+            value = converted_items
         kwargs["stopSequences"] = value
 
         # Process systemPrompt
@@ -872,14 +884,17 @@ class GetPromptResult(BaseModel):
         # Process messages
         value = data.get("messages")
         if value is not None:
-            if isinstance(value, list):
-                converted_items = []
-                for item in value:
-                    if isinstance(item, dict):
-                        converted_items.append(PromptMessage.from_dict(item))
-                    else:
-                        converted_items.append(item)
-                value = converted_items
+            if not isinstance(value, list):
+                raise ValueError(
+                    f"Expected a list for field messages, got {type(value)}"
+                )
+            converted_items = []
+            for item in value:
+                if isinstance(item, dict):
+                    converted_items.append(PromptMessage.from_dict(item))
+                else:
+                    converted_items.append(item)
+            value = converted_items
         kwargs["messages"] = value
 
         return cls(**kwargs)
@@ -1405,14 +1420,17 @@ class ListPromptsResult(BaseModel):
         # Process prompts
         value = data.get("prompts")
         if value is not None:
-            if isinstance(value, list):
-                converted_items = []
-                for item in value:
-                    if isinstance(item, dict):
-                        converted_items.append(Prompt.from_dict(item))
-                    else:
-                        converted_items.append(item)
-                value = converted_items
+            if not isinstance(value, list):
+                raise ValueError(
+                    f"Expected a list for field prompts, got {type(value)}"
+                )
+            converted_items = []
+            for item in value:
+                if isinstance(item, dict):
+                    converted_items.append(Prompt.from_dict(item))
+                else:
+                    converted_items.append(item)
+            value = converted_items
         kwargs["prompts"] = value
 
         return cls(**kwargs)
@@ -1492,14 +1510,17 @@ class ListResourceTemplatesResult(BaseModel):
         # Process resourceTemplates
         value = data.get("resourceTemplates")
         if value is not None:
-            if isinstance(value, list):
-                converted_items = []
-                for item in value:
-                    if isinstance(item, dict):
-                        converted_items.append(ResourceTemplate.from_dict(item))
-                    else:
-                        converted_items.append(item)
-                value = converted_items
+            if not isinstance(value, list):
+                raise ValueError(
+                    f"Expected a list for field resourceTemplates, got {type(value)}"
+                )
+            converted_items = []
+            for item in value:
+                if isinstance(item, dict):
+                    converted_items.append(ResourceTemplate.from_dict(item))
+                else:
+                    converted_items.append(item)
+            value = converted_items
         kwargs["resourceTemplates"] = value
 
         return cls(**kwargs)
@@ -1579,14 +1600,17 @@ class ListResourcesResult(BaseModel):
         # Process resources
         value = data.get("resources")
         if value is not None:
-            if isinstance(value, list):
-                converted_items = []
-                for item in value:
-                    if isinstance(item, dict):
-                        converted_items.append(Resource.from_dict(item))
-                    else:
-                        converted_items.append(item)
-                value = converted_items
+            if not isinstance(value, list):
+                raise ValueError(
+                    f"Expected a list for field resources, got {type(value)}"
+                )
+            converted_items = []
+            for item in value:
+                if isinstance(item, dict):
+                    converted_items.append(Resource.from_dict(item))
+                else:
+                    converted_items.append(item)
+            value = converted_items
         kwargs["resources"] = value
 
         return cls(**kwargs)
@@ -1689,14 +1713,15 @@ class ListRootsResult(BaseModel):
         # Process roots
         value = data.get("roots")
         if value is not None:
-            if isinstance(value, list):
-                converted_items = []
-                for item in value:
-                    if isinstance(item, dict):
-                        converted_items.append(Root.from_dict(item))
-                    else:
-                        converted_items.append(item)
-                value = converted_items
+            if not isinstance(value, list):
+                raise ValueError(f"Expected a list for field roots, got {type(value)}")
+            converted_items = []
+            for item in value:
+                if isinstance(item, dict):
+                    converted_items.append(Root.from_dict(item))
+                else:
+                    converted_items.append(item)
+            value = converted_items
         kwargs["roots"] = value
 
         return cls(**kwargs)
@@ -1776,14 +1801,15 @@ class ListToolsResult(BaseModel):
         # Process tools
         value = data.get("tools")
         if value is not None:
-            if isinstance(value, list):
-                converted_items = []
-                for item in value:
-                    if isinstance(item, dict):
-                        converted_items.append(Tool.from_dict(item))
-                    else:
-                        converted_items.append(item)
-                value = converted_items
+            if not isinstance(value, list):
+                raise ValueError(f"Expected a list for field tools, got {type(value)}")
+            converted_items = []
+            for item in value:
+                if isinstance(item, dict):
+                    converted_items.append(Tool.from_dict(item))
+                else:
+                    converted_items.append(item)
+            value = converted_items
         kwargs["tools"] = value
 
         return cls(**kwargs)
@@ -1910,14 +1936,15 @@ class ModelPreferences(BaseModel):
         # Process hints
         value = data.get("hints")
         if value is not None:
-            if isinstance(value, list):
-                converted_items = []
-                for item in value:
-                    if isinstance(item, dict):
-                        converted_items.append(ModelHint.from_dict(item))
-                    else:
-                        converted_items.append(item)
-                value = converted_items
+            if not isinstance(value, list):
+                raise ValueError(f"Expected a list for field hints, got {type(value)}")
+            converted_items = []
+            for item in value:
+                if isinstance(item, dict):
+                    converted_items.append(ModelHint.from_dict(item))
+                else:
+                    converted_items.append(item)
+            value = converted_items
         kwargs["hints"] = value
 
         # Process intelligencePriority
@@ -2200,14 +2227,17 @@ class Prompt(BaseModel):
         # Process arguments
         value = data.get("arguments")
         if value is not None:
-            if isinstance(value, list):
-                converted_items = []
-                for item in value:
-                    if isinstance(item, dict):
-                        converted_items.append(PromptArgument.from_dict(item))
-                    else:
-                        converted_items.append(item)
-                value = converted_items
+            if not isinstance(value, list):
+                raise ValueError(
+                    f"Expected a list for field arguments, got {type(value)}"
+                )
+            converted_items = []
+            for item in value:
+                if isinstance(item, dict):
+                    converted_items.append(PromptArgument.from_dict(item))
+                else:
+                    converted_items.append(item)
+            value = converted_items
         kwargs["arguments"] = value
 
         # Process description
@@ -2461,48 +2491,51 @@ class ReadResourceResult(BaseModel):
         # Process contents
         value = data.get("contents")
         if value is not None:
-            if isinstance(value, list):
-                converted_items = []
-                for item in value:
-                    if isinstance(item, dict):
-                        # Try to disambiguate using const fields
-                        type_value = item.get("type")
-                        type_to_class = {}
-                        required_props_map = {}
-                        required_props_map[TextResourceContents] = ["text", "uri"]
-                        required_props_map[BlobResourceContents] = ["blob", "uri"]
-                        if type_value is not None and type_value in type_to_class:
-                            converted_items.append(
-                                type_to_class[type_value].from_dict(item)
+            if not isinstance(value, list):
+                raise ValueError(
+                    f"Expected a list for field contents, got {type(value)}"
+                )
+            converted_items = []
+            for item in value:
+                if isinstance(item, dict):
+                    # Try to disambiguate using const fields
+                    type_value = item.get("type")
+                    type_to_class = {}
+                    required_props_map = {}
+                    required_props_map[TextResourceContents] = ["text", "uri"]
+                    required_props_map[BlobResourceContents] = ["blob", "uri"]
+                    if type_value is not None and type_value in type_to_class:
+                        converted_items.append(
+                            type_to_class[type_value].from_dict(item)
+                        )
+                    else:
+                        # Try to disambiguate by required properties
+                        matches = []
+                        for type_name, reqs in required_props_map.items():
+                            if all(r in item for r in reqs):
+                                matches.append(type_name)
+                        if len(matches) == 1:
+                            converted_items.append(matches[0].from_dict(item))
+                        elif len(matches) > 1:
+                            match_details = [
+                                f"{name} (requires any of {required_props_map[name]})"
+                                for name in matches
+                            ]
+                            raise ValueError(
+                                f"Ambiguous match for union type. Multiple types match: {'; '.join(match_details)}"
                             )
                         else:
-                            # Try to disambiguate by required properties
-                            matches = []
-                            for type_name, reqs in required_props_map.items():
-                                if all(r in item for r in reqs):
-                                    matches.append(type_name)
-                            if len(matches) == 1:
-                                converted_items.append(matches[0].from_dict(item))
-                            elif len(matches) > 1:
-                                match_details = [
-                                    f"{name} (requires any of {required_props_map[name]})"
-                                    for name in matches
-                                ]
-                                raise ValueError(
-                                    f"Ambiguous match for union type. Multiple types match: {'; '.join(match_details)}"
-                                )
-                            else:
-                                available_fields = list(item.keys())
-                                type_details = [
-                                    f"{name} (requires any of {required_props_map[name]})"
-                                    for name in required_props_map
-                                ]
-                                raise ValueError(
-                                    f"No match for union type. Available fields: {available_fields}. Expected one of: {'; '.join(type_details)}"
-                                )
-                    else:
-                        converted_items.append(item)
-                value = converted_items
+                            available_fields = list(item.keys())
+                            type_details = [
+                                f"{name} (requires any of {required_props_map[name]})"
+                                for name in required_props_map
+                            ]
+                            raise ValueError(
+                                f"No match for union type. Available fields: {available_fields}. Expected one of: {'; '.join(type_details)}"
+                            )
+                else:
+                    converted_items.append(item)
+            value = converted_items
         kwargs["contents"] = value
 
         return cls(**kwargs)
@@ -3324,14 +3357,17 @@ class ToolInputschemaParams(BaseModel):
         # Process required
         value = data.get("required")
         if value is not None:
-            if isinstance(value, list):
-                converted_items = []
-                for item in value:
-                    if isinstance(item, dict):
-                        converted_items.append(item)
-                    else:
-                        converted_items.append(item)
-                value = converted_items
+            if not isinstance(value, list):
+                raise ValueError(
+                    f"Expected a list for field required, got {type(value)}"
+                )
+            converted_items = []
+            for item in value:
+                if isinstance(item, dict):
+                    converted_items.append(item)
+                else:
+                    converted_items.append(item)
+            value = converted_items
         kwargs["required"] = value
 
         # Process type
