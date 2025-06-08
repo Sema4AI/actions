@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, TypeVar
+from typing import Any, Type, TypeVar
 
 T = TypeVar("T")
 
@@ -14,6 +14,11 @@ class MessageType(Enum):
 @dataclass
 class BaseModel:
     """Base class for all MCP models."""
+
+    @classmethod
+    def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
+        """Create an instance from a dictionary."""
+        raise NotImplementedError("Subclasses must implement this method")
 
     def to_dict(self) -> dict[str, Any]:
         """Convert the instance to a dictionary."""

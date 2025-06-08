@@ -229,7 +229,6 @@ def generate_class(
             from_dict_lines.append("                converted_items = []")
             from_dict_lines.append("                for item in value:")
             from_dict_lines.append("                    if isinstance(item, dict):")
-
             # Check if the item type is a union
             if "|" in item_type:
                 types = [t.strip() for t in item_type.split("|")]
@@ -307,10 +306,19 @@ def generate_class(
                     "                                raise ValueError(f\"No match for union type. Available fields: {available_fields}. Expected one of: {'; '.join(type_details)}\")"
                 )
             else:
-                from_dict_lines.append(
-                    f"                        converted_items.append({item_type}.from_dict(item))"
-                )
-
+                # Skip from_dict for type aliases and basic types
+                if (
+                    item_type
+                    in ["str", "int", "float", "bool", "ProgressToken", "RequestId"]
+                    or "Literal[" in item_type
+                ):
+                    from_dict_lines.append(
+                        "                        converted_items.append(item)"
+                    )
+                else:
+                    from_dict_lines.append(
+                        f"                        converted_items.append({item_type}.from_dict(item))"
+                    )
             from_dict_lines.append("                    else:")
             from_dict_lines.append(
                 "                        converted_items.append(item)"
@@ -321,6 +329,9 @@ def generate_class(
             pass
         elif "Literal[" in field_type:
             # Handle literal types - no conversion needed
+            pass
+        elif field_type in ["ProgressToken", "RequestId"]:
+            # Handle type aliases - no conversion needed
             pass
         elif "|" in field_type:
             # Handle union types
@@ -397,7 +408,17 @@ def generate_class(
         else:
             # Handle custom types
             from_dict_lines.append("        if value is not None:")
-            from_dict_lines.append(f"            value = {field_type}.from_dict(value)")
+            # Skip from_dict for type aliases and basic types
+            if (
+                field_type
+                in ["str", "int", "float", "bool", "ProgressToken", "RequestId"]
+                or "Literal[" in field_type
+            ):
+                pass
+            else:
+                from_dict_lines.append(
+                    f"            value = {field_type}.from_dict(value)"
+                )
 
         from_dict_lines.append(f"        kwargs[{repr(field_name)}] = value")
         from_dict_lines.append("")

@@ -294,8 +294,6 @@ class CancelledNotificationParamsParams(BaseModel):
 
         # Process requestId
         value = data.get("requestId")
-        if value is not None:
-            value = RequestId.from_dict(value)
         kwargs["requestId"] = value
 
         return cls(**kwargs)
@@ -529,7 +527,7 @@ class CompleteResultCompletionParams(BaseModel):
                 converted_items = []
                 for item in value:
                     if isinstance(item, dict):
-                        converted_items.append(str.from_dict(item))
+                        converted_items.append(item)
                     else:
                         converted_items.append(item)
                 value = converted_items
@@ -628,7 +626,7 @@ class CreateMessageRequestParamsParams(BaseModel):
                 converted_items = []
                 for item in value:
                     if isinstance(item, dict):
-                        converted_items.append(str.from_dict(item))
+                        converted_items.append(item)
                     else:
                         converted_items.append(item)
                 value = converted_items
@@ -1133,8 +1131,6 @@ class JSONRPCError(BaseModel):
 
         # Process id
         value = data.get("id")
-        if value is not None:
-            value = RequestId.from_dict(value)
         kwargs["id"] = value
 
         # Process jsonrpc
@@ -1244,8 +1240,6 @@ class JSONRPCRequest(BaseModel):
         kwargs = {}
         # Process id
         value = data.get("id")
-        if value is not None:
-            value = RequestId.from_dict(value)
         kwargs["id"] = value
 
         # Process jsonrpc
@@ -1300,8 +1294,6 @@ class JSONRPCRequestParamsParams_metaParams(BaseModel):
         kwargs = {}
         # Process progressToken
         value = data.get("progressToken")
-        if value is not None:
-            value = ProgressToken.from_dict(value)
         kwargs["progressToken"] = value
 
         return cls(**kwargs)
@@ -1325,8 +1317,6 @@ class JSONRPCResponse(BaseModel):
         kwargs = {}
         # Process id
         value = data.get("id")
-        if value is not None:
-            value = RequestId.from_dict(value)
         kwargs["id"] = value
 
         # Process jsonrpc
@@ -1672,8 +1662,6 @@ class ListRootsRequestParamsParams_metaParams(BaseModel):
         kwargs = {}
         # Process progressToken
         value = data.get("progressToken")
-        if value is not None:
-            value = ProgressToken.from_dict(value)
         kwargs["progressToken"] = value
 
         return cls(**kwargs)
@@ -2123,8 +2111,6 @@ class PingRequestParamsParams_metaParams(BaseModel):
         kwargs = {}
         # Process progressToken
         value = data.get("progressToken")
-        if value is not None:
-            value = ProgressToken.from_dict(value)
         kwargs["progressToken"] = value
 
         return cls(**kwargs)
@@ -2184,8 +2170,6 @@ class ProgressNotificationParamsParams(BaseModel):
 
         # Process progressToken
         value = data.get("progressToken")
-        if value is not None:
-            value = ProgressToken.from_dict(value)
         kwargs["progressToken"] = value
 
         # Process total
@@ -2589,8 +2573,6 @@ class RequestParamsParams_metaParams(BaseModel):
         kwargs = {}
         # Process progressToken
         value = data.get("progressToken")
-        if value is not None:
-            value = ProgressToken.from_dict(value)
         kwargs["progressToken"] = value
 
         return cls(**kwargs)
@@ -3352,7 +3334,7 @@ class ToolInputschemaParams(BaseModel):
                 converted_items = []
                 for item in value:
                     if isinstance(item, dict):
-                        converted_items.append(str.from_dict(item))
+                        converted_items.append(item)
                     else:
                         converted_items.append(item)
                 value = converted_items
