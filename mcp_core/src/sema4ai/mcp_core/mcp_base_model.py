@@ -22,6 +22,8 @@ class BaseModel:
         This method recursively converts dictionaries to their proper class instances
         and handles lists of objects.
         """
+        from types import UnionType
+
         if not isinstance(data, dict):
             return data
 
@@ -29,7 +31,7 @@ class BaseModel:
         type_hints = get_type_hints(cls)
 
         # Process each field
-        kwargs = {}
+        kwargs: dict[str, Any] = {}
         for field_name, field_type in type_hints.items():
             # Skip private fields
             if field_name.startswith("_"):
@@ -48,7 +50,7 @@ class BaseModel:
             if origin is list:
                 item_type = get_args(field_type)[0]
                 # Handle union types in list items
-                if get_origin(item_type) is Union:
+                if get_origin(item_type) is UnionType:
                     # Try each possible type in the union
                     converted_items = []
                     for item in value:
@@ -57,28 +59,34 @@ class BaseModel:
                             continue
 
                         # Try each type in the union
+                        converted = False
                         for possible_type in get_args(item_type):
                             if hasattr(possible_type, "from_dict"):
                                 try:
+                                    # For TextContent, ensure type field is set
+                                    if possible_type.__name__ == "TextContent":
+                                        if "type" not in item:
+                                            item["type"] = "text"
+                                        # If kind is present, use it as type
+                                        elif "kind" in item:
+                                            item["type"] = item["kind"]
                                     converted_items.append(
                                         possible_type.from_dict(item)
                                     )
+                                    converted = True
                                     break
                                 except (TypeError, ValueError):
                                     continue
-                        else:
+                        if not converted:
                             # If no type worked, keep the original item
                             converted_items.append(item)
                     kwargs[field_name] = converted_items
                 elif hasattr(item_type, "from_dict"):
                     # For single type lists, convert each item
-                    converted_items = []
-                    for item in value:
-                        if isinstance(item, dict):
-                            converted_items.append(item_type.from_dict(item))
-                        else:
-                            converted_items.append(item)
-                    kwargs[field_name] = converted_items
+                    kwargs[field_name] = [
+                        item_type.from_dict(item) if isinstance(item, dict) else item
+                        for item in value
+                    ]
                 else:
                     kwargs[field_name] = value
             # Handle union types for single values
@@ -88,19 +96,35 @@ class BaseModel:
                     continue
 
                 # Try each possible type in the union
+                converted = False
                 for possible_type in get_args(field_type):
                     if hasattr(possible_type, "from_dict"):
                         try:
+                            # For TextContent, ensure type field is set
+                            if possible_type.__name__ == "TextContent":
+                                if "type" not in value:
+                                    value["type"] = "text"
+                                # If kind is present, use it as type
+                                elif "kind" in value:
+                                    value["type"] = value["kind"]
                             kwargs[field_name] = possible_type.from_dict(value)
+                            converted = True
                             break
                         except (TypeError, ValueError):
                             continue
-                else:
+                if not converted:
                     # If no type worked, keep the original value
                     kwargs[field_name] = value
             # Handle nested objects
             elif hasattr(field_type, "from_dict"):
                 if isinstance(value, dict):
+                    # For TextContent, ensure type field is set
+                    if field_type.__name__ == "TextContent":
+                        if "type" not in value:
+                            value["type"] = "text"
+                        # If kind is present, use it as type
+                        elif "kind" in value:
+                            value["type"] = value["kind"]
                     kwargs[field_name] = field_type.from_dict(value)
                 else:
                     kwargs[field_name] = value
@@ -111,7 +135,7 @@ class BaseModel:
 
     def to_dict(self) -> dict[str, Any]:
         """Convert the instance to a dictionary."""
-        result = {}
+        result: dict[str, Any] = {}
         for field_name, value in self.__dict__.items():
             # Skip private fields
             if field_name.startswith("_"):

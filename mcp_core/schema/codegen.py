@@ -66,6 +66,9 @@ def create_python_type(
     if schema_type == "string":
         if "enum" in schema:
             return f"Literal[{', '.join(repr(x) for x in schema['enum'])}]"
+        # Handle const values for string types
+        if "const" in schema:
+            return f"Literal[{repr(schema['const'])}]"
         # Special case for method fields
         if field_name == "method":
             if schema.get("const"):
