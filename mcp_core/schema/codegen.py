@@ -210,18 +210,20 @@ def generate_class(
     )
     from_dict_lines.append('        """Create an instance from a dictionary."""')
     from_dict_lines.append("        if not isinstance(data, dict):")
-    from_dict_lines.append("            return data")
+    from_dict_lines.append(
+        f'            raise ValueError(f"Expected a dict instead of: {{type(data)}} to create type {{cls.__name__}}. Data: {{data}}")'
+    )
     from_dict_lines.append("        kwargs = {}")
 
     # Add field processing for each field
     for field_name, field_type in field_types.items():
         from_dict_lines.append(f"        # Process {field_name}")
         from_dict_lines.append(f"        value = data.get({repr(field_name)})")
-        from_dict_lines.append("        if value is not None:")
 
         # Handle different field types
         if "list[" in field_type:
             # Handle lists
+            from_dict_lines.append("        if value is not None:")
             item_type = field_type[5:-1]  # Extract type from list[type]
             from_dict_lines.append("            if isinstance(value, list):")
             from_dict_lines.append("                converted_items = []")
@@ -292,7 +294,7 @@ def generate_class(
                     "                                match_details = [f'{name} (requires any of {required_props_map[name]})' for name in matches]"
                 )
                 from_dict_lines.append(
-                    "                                raise ValueError(f'Ambiguous match for union type. Multiple types match: {', '.join(match_details)}')"
+                    "                                raise ValueError(f\"Ambiguous match for union type. Multiple types match: {'; '.join(match_details)}\")"
                 )
                 from_dict_lines.append("                            else:")
                 from_dict_lines.append(
@@ -302,7 +304,7 @@ def generate_class(
                     "                                type_details = [f'{name} (requires any of {required_props_map[name]})' for name in required_props_map]"
                 )
                 from_dict_lines.append(
-                    "                                raise ValueError(f'No match for union type. Available fields: {available_fields}. Expected one of: {', '.join(type_details)}')"
+                    "                                raise ValueError(f\"No match for union type. Available fields: {available_fields}. Expected one of: {'; '.join(type_details)}\")"
                 )
             else:
                 from_dict_lines.append(
@@ -316,12 +318,13 @@ def generate_class(
             from_dict_lines.append("                value = converted_items")
         elif field_type in ["str", "int", "float", "bool"]:
             # Handle basic types - no conversion needed
-            from_dict_lines.append("            pass")
+            pass
         elif "Literal[" in field_type:
             # Handle literal types - no conversion needed
-            from_dict_lines.append("            pass")
+            pass
         elif "|" in field_type:
             # Handle union types
+            from_dict_lines.append("        if value is not None:")
             types = [t.strip() for t in field_type.split("|")]
             from_dict_lines.append("            if isinstance(value, dict):")
             from_dict_lines.append(
@@ -376,7 +379,7 @@ def generate_class(
                 "                        match_details = [f'{name} (requires any of {required_props_map[name]})' for name in matches]"
             )
             from_dict_lines.append(
-                "                        raise ValueError(f'Ambiguous match for union type. Multiple types match: {', '.join(match_details)}')"
+                "                        raise ValueError(f\"Ambiguous match for union type. Multiple types match: {'; '.join(match_details)}\")"
             )
             from_dict_lines.append("                    else:")
             from_dict_lines.append(
@@ -386,17 +389,15 @@ def generate_class(
                 "                        type_details = [f'{name} (requires any of {required_props_map[name]})' for name in required_props_map]"
             )
             from_dict_lines.append(
-                "                        raise ValueError(f'No match for union type. Available fields: {available_fields}. Expected one of: {', '.join(type_details)}')"
+                "                        raise ValueError(f\"No match for union type. Available fields: {available_fields}. Expected one of: {'; '.join(type_details)}\")"
             )
         elif field_type == "dict[str, Any]":
             # Handle dictionary type - no conversion needed
-            from_dict_lines.append("            pass")
+            pass
         else:
             # Handle custom types
-            from_dict_lines.append("            if isinstance(value, dict):")
-            from_dict_lines.append(
-                f"                value = {field_type}.from_dict(value)"
-            )
+            from_dict_lines.append("        if value is not None:")
+            from_dict_lines.append(f"            value = {field_type}.from_dict(value)")
 
         from_dict_lines.append(f"        kwargs[{repr(field_name)}] = value")
         from_dict_lines.append("")
@@ -602,7 +603,9 @@ def generate_union_type_disambiguation(cls: type, union_type: type) -> str:
     code.append("    def from_dict(cls: Type[T], data: dict[str, Any]) -> T:")
     code.append('        """Create an instance from a dictionary."""')
     code.append("        if not isinstance(data, dict):")
-    code.append("            return data")
+    code.append(
+        '            raise ValueError(f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}")'
+    )
     code.append("        kwargs = {}")
     code.append("")
     code.append("        # Create a mapping of required fields for each type")
@@ -625,7 +628,7 @@ def generate_union_type_disambiguation(cls: type, union_type: type) -> str:
         "            match_details = [f'{name} (requires any of {required_props_map[name]})' for name in matches]"
     )
     code.append(
-        "            raise ValueError(f'Ambiguous match for union type. Multiple types match: {', '.join(match_details)}')"
+        "            raise ValueError(f\"Ambiguous match for union type. Multiple types match: {'; '.join(match_details)}\")"
     )
     code.append("        else:")
     code.append("            available_fields = list(data.keys())")
@@ -633,7 +636,7 @@ def generate_union_type_disambiguation(cls: type, union_type: type) -> str:
         "            type_details = [f'{name} (requires any of {required_props_map[name]})' for name in required_props_map]"
     )
     code.append(
-        "            raise ValueError(f'No match for union type. Available fields: {available_fields}. Expected one of: {', '.join(type_details)}')"
+        "            raise ValueError(f\"No match for union type. Available fields: {available_fields}. Expected one of: {'; '.join(type_details)}\")"
     )
     code.append("")
     code.append("        return cls(**kwargs)")
