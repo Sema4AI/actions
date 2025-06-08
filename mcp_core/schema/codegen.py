@@ -237,40 +237,63 @@ def generate_class(
                 from_dict_lines.append(
                     "                        type_value = item.get('type')"
                 )
+                from_dict_lines.append("                        type_to_class = {}")
                 from_dict_lines.append(
-                    "                        if type_value is not None:"
+                    "                        required_props_map = {}"
                 )
-                from_dict_lines.append(
-                    "                            # Map type values to their corresponding classes"
-                )
-                from_dict_lines.append("                            type_to_class = {")
-
-                # For each type in the union, check if it has a const field
+                # For each type in the union, check if it has a const field or required properties
                 for t in types:
                     if t != "None":
                         type_schema = definitions.get(t, {})
-                        properties = type_schema.get("properties", {})
-                        for prop_name, prop_schema in properties.items():
-                            if "const" in prop_schema:
-                                const_value = prop_schema["const"]
+                        properties_ = type_schema.get("properties", {})
+                        required_ = type_schema.get("required", [])
+                        found_const = False
+                        for prop_name_, prop_schema_ in properties_.items():
+                            if "const" in prop_schema_:
+                                const_value = prop_schema_["const"]
                                 from_dict_lines.append(
-                                    f"                                {repr(const_value)}: {t},"
+                                    f"                        type_to_class[{repr(const_value)}] = {t}"
                                 )
-
-                from_dict_lines.append("                            }")
+                                found_const = True
+                        if not found_const and required_:
+                            from_dict_lines.append(
+                                f"                        required_props_map[{t}] = {required_}"
+                            )
                 from_dict_lines.append(
-                    "                            if type_value in type_to_class:"
+                    "                        if type_value is not None and type_value in type_to_class:"
                 )
                 from_dict_lines.append(
-                    "                                converted_items.append(type_to_class[type_value].from_dict(item))"
-                )
-                from_dict_lines.append("                            else:")
-                from_dict_lines.append(
-                    "                                raise ValueError(f'Unknown type value: {type_value}')"
+                    "                            converted_items.append(type_to_class[type_value].from_dict(item))"
                 )
                 from_dict_lines.append("                        else:")
                 from_dict_lines.append(
-                    "                            raise ValueError('Missing type field for disambiguation')"
+                    "                            # Try to disambiguate by required properties"
+                )
+                from_dict_lines.append("                            matches = []")
+                from_dict_lines.append(
+                    "                            for type_name, reqs in required_props_map.items():"
+                )
+                from_dict_lines.append(
+                    "                                if all(r in item for r in reqs):"
+                )
+                from_dict_lines.append(
+                    "                                    matches.append(type_name)"
+                )
+                from_dict_lines.append(
+                    "                            if len(matches) == 1:"
+                )
+                from_dict_lines.append(
+                    "                                converted_items.append(matches[0].from_dict(item))"
+                )
+                from_dict_lines.append(
+                    "                            elif len(matches) > 1:"
+                )
+                from_dict_lines.append(
+                    "                                raise ValueError('Ambiguous match for union type in list')"
+                )
+                from_dict_lines.append("                            else:")
+                from_dict_lines.append(
+                    "                                raise ValueError('No match for union type in list')"
                 )
             else:
                 from_dict_lines.append(
@@ -296,38 +319,56 @@ def generate_class(
                 "                # Try to disambiguate using const fields"
             )
             from_dict_lines.append("                type_value = value.get('type')")
-            from_dict_lines.append("                if type_value is not None:")
-            from_dict_lines.append(
-                "                    # Map type values to their corresponding classes"
-            )
-            from_dict_lines.append("                    type_to_class = {")
-
-            # For each type in the union, check if it has a const field
+            from_dict_lines.append("                type_to_class = {}")
+            from_dict_lines.append("                required_props_map = {}")
             for t in types:
                 if t != "None":
                     type_schema = definitions.get(t, {})
-                    properties = type_schema.get("properties", {})
-                    for prop_name, prop_schema in properties.items():
-                        if "const" in prop_schema:
-                            const_value = prop_schema["const"]
+                    properties_ = type_schema.get("properties", {})
+                    required_ = type_schema.get("required", [])
+                    found_const = False
+                    for prop_name_, prop_schema_ in properties_.items():
+                        if "const" in prop_schema_:
+                            const_value = prop_schema_["const"]
                             from_dict_lines.append(
-                                f"                        {repr(const_value)}: {t},"
+                                f"                type_to_class[{repr(const_value)}] = {t}"
                             )
-
-            from_dict_lines.append("                    }")
+                            found_const = True
+                    if not found_const and required_:
+                        from_dict_lines.append(
+                            f"                required_props_map[{t}] = {required_}"
+                        )
             from_dict_lines.append(
-                "                    if type_value in type_to_class:"
+                "                if type_value is not None and type_value in type_to_class:"
             )
             from_dict_lines.append(
-                "                        value = type_to_class[type_value].from_dict(value)"
-            )
-            from_dict_lines.append("                    else:")
-            from_dict_lines.append(
-                "                        raise ValueError(f'Unknown type value: {type_value}')"
+                "                    value = type_to_class[type_value].from_dict(value)"
             )
             from_dict_lines.append("                else:")
             from_dict_lines.append(
-                "                    raise ValueError('Missing type field for disambiguation')"
+                "                    # Try to disambiguate by required properties"
+            )
+            from_dict_lines.append("                    matches = []")
+            from_dict_lines.append(
+                "                    for type_name, reqs in required_props_map.items():"
+            )
+            from_dict_lines.append(
+                "                        if all(r in value for r in reqs):"
+            )
+            from_dict_lines.append(
+                "                            matches.append(type_name)"
+            )
+            from_dict_lines.append("                    if len(matches) == 1:")
+            from_dict_lines.append(
+                "                        value = matches[0].from_dict(value)"
+            )
+            from_dict_lines.append("                    elif len(matches) > 1:")
+            from_dict_lines.append(
+                "                        raise ValueError('Ambiguous match for union type')"
+            )
+            from_dict_lines.append("                    else:")
+            from_dict_lines.append(
+                "                        raise ValueError('No match for union type')"
             )
         elif field_type == "dict[str, Any]":
             # Handle dictionary type - no conversion needed
@@ -513,3 +554,103 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+def generate_union_type_disambiguation(cls: type, union_type: type) -> str:
+    """Generate code to disambiguate between types in a union."""
+    if not hasattr(union_type, "__origin__") or union_type.__origin__ is not Union:
+        return ""
+
+    # Get the actual types in the union
+    union_types = get_args(union_type)
+    if not union_types:
+        return ""
+
+    # Get the required fields for each type from the schema
+    required_fields = {}
+    for t in union_types:
+        if hasattr(t, "__annotations__"):
+            # Get the required fields from the schema
+            schema = get_schema_for_type(t)
+            if schema and "required" in schema:
+                required_fields[t] = schema["required"]
+            else:
+                # If no required fields in schema, use all fields
+                required_fields[t] = list(t.__annotations__.keys())
+
+    # Generate the disambiguation code
+    code = []
+    code.append("    @classmethod")
+    code.append(
+        "    def __get_pydantic_core_schema__(cls, _source_type: Any, _handler: GetCoreSchemaHandler) -> CoreSchema:"
+    )
+    code.append("        # Get the schema for the base class")
+    code.append(
+        "        base_schema = super().__get_pydantic_core_schema__(_source_type, _handler)"
+    )
+    code.append("")
+    code.append("        # Create a mapping of required fields for each type")
+    code.append("        required_props_map = {")
+    for t, fields in required_fields.items():
+        code.append(f"            {t.__name__}: {fields},")
+    code.append("        }")
+    code.append("")
+    code.append("        # Create a validator that checks for required fields")
+    code.append("        def validate_union_type(v: Any, info: ValidationInfo) -> Any:")
+    code.append("            if not isinstance(v, dict):")
+    code.append("                return v")
+    code.append("")
+    code.append("            # Check which type's required fields are present")
+    code.append("            matches = []")
+    code.append(
+        "            for type_cls, required_fields in required_props_map.items():"
+    )
+    code.append("                if any(field in v for field in required_fields):")
+    code.append("                    matches.append(type_cls)")
+    code.append("")
+    code.append("            if len(matches) == 1:")
+    code.append("                return matches[0].model_validate(v)")
+    code.append("            elif len(matches) > 1:")
+    code.append("                raise ValueError('Ambiguous match for union type')")
+    code.append("            else:")
+    code.append("                raise ValueError('No match for union type')")
+    code.append("")
+    code.append("        # Add the validator to the schema")
+    code.append("        return core_schema.chain_schema([")
+    code.append("            core_schema.json_or_python_schema(")
+    code.append("                json_schema=base_schema,")
+    code.append("                python_schema=base_schema,")
+    code.append("            ),")
+    code.append(
+        "            core_schema.no_info_plain_validator_function(validate_union_type),"
+    )
+    code.append("        ])")
+
+    return "\n".join(code)
+
+
+def generate_class(cls: type) -> str:
+    """Generate Python code for a Pydantic model class."""
+    code = []
+    code.append(f"class {cls.__name__}(BaseModel):")
+    code.append('    """Generated from JSON Schema."""')
+    code.append("")
+
+    # Add fields
+    for name, field in cls.model_fields.items():
+        field_type = field.annotation
+        field_info = field.json_schema_extra or {}
+        description = field_info.get("description", "")
+        if description:
+            code.append(f"    # {description}")
+        code.append(f"    {name}: {field_type}")
+        code.append("")
+
+    # Add union type disambiguation if needed
+    for name, field in cls.model_fields.items():
+        field_type = field.annotation
+        if hasattr(field_type, "__origin__") and field_type.__origin__ is Union:
+            code.append(generate_union_type_disambiguation(cls, field_type))
+            code.append("")
+
+    return "\n".join(code)

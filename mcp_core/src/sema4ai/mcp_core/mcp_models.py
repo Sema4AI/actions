@@ -203,20 +203,26 @@ class CallToolResult(BaseModel):
                     if isinstance(item, dict):
                         # Try to disambiguate using const fields
                         type_value = item.get('type')
-                        if type_value is not None:
-                            # Map type values to their corresponding classes
-                            type_to_class = {
-                                'text': TextContent,
-                                'image': ImageContent,
-                                'audio': AudioContent,
-                                'resource': EmbeddedResource,
-                            }
-                            if type_value in type_to_class:
-                                converted_items.append(type_to_class[type_value].from_dict(item))
-                            else:
-                                raise ValueError(f'Unknown type value: {type_value}')
+                        type_to_class = {}
+                        required_props_map = {}
+                        type_to_class['text'] = TextContent
+                        type_to_class['image'] = ImageContent
+                        type_to_class['audio'] = AudioContent
+                        type_to_class['resource'] = EmbeddedResource
+                        if type_value is not None and type_value in type_to_class:
+                            converted_items.append(type_to_class[type_value].from_dict(item))
                         else:
-                            raise ValueError('Missing type field for disambiguation')
+                            # Try to disambiguate by required properties
+                            matches = []
+                            for type_name, reqs in required_props_map.items():
+                                if all(r in item for r in reqs):
+                                    matches.append(type_name)
+                            if len(matches) == 1:
+                                converted_items.append(matches[0].from_dict(item))
+                            elif len(matches) > 1:
+                                raise ValueError('Ambiguous match for union type in list')
+                            else:
+                                raise ValueError('No match for union type in list')
                     else:
                         converted_items.append(item)
                 value = converted_items
@@ -402,18 +408,24 @@ class CompleteRequestParamsParams(BaseModel):
             if isinstance(value, dict):
                 # Try to disambiguate using const fields
                 type_value = value.get('type')
-                if type_value is not None:
-                    # Map type values to their corresponding classes
-                    type_to_class = {
-                        'ref/prompt': PromptReference,
-                        'ref/resource': ResourceReference,
-                    }
-                    if type_value in type_to_class:
-                        value = type_to_class[type_value].from_dict(value)
-                    else:
-                        raise ValueError(f'Unknown type value: {type_value}')
+                type_to_class = {}
+                required_props_map = {}
+                type_to_class['ref/prompt'] = PromptReference
+                type_to_class['ref/resource'] = ResourceReference
+                if type_value is not None and type_value in type_to_class:
+                    value = type_to_class[type_value].from_dict(value)
                 else:
-                    raise ValueError('Missing type field for disambiguation')
+                    # Try to disambiguate by required properties
+                    matches = []
+                    for type_name, reqs in required_props_map.items():
+                        if all(r in value for r in reqs):
+                            matches.append(type_name)
+                    if len(matches) == 1:
+                        value = matches[0].from_dict(value)
+                    elif len(matches) > 1:
+                        raise ValueError('Ambiguous match for union type')
+                    else:
+                        raise ValueError('No match for union type')
         kwargs['ref'] = value
 
         return cls(**kwargs)
@@ -660,19 +672,25 @@ class CreateMessageResult(BaseModel):
             if isinstance(value, dict):
                 # Try to disambiguate using const fields
                 type_value = value.get('type')
-                if type_value is not None:
-                    # Map type values to their corresponding classes
-                    type_to_class = {
-                        'text': TextContent,
-                        'image': ImageContent,
-                        'audio': AudioContent,
-                    }
-                    if type_value in type_to_class:
-                        value = type_to_class[type_value].from_dict(value)
-                    else:
-                        raise ValueError(f'Unknown type value: {type_value}')
+                type_to_class = {}
+                required_props_map = {}
+                type_to_class['text'] = TextContent
+                type_to_class['image'] = ImageContent
+                type_to_class['audio'] = AudioContent
+                if type_value is not None and type_value in type_to_class:
+                    value = type_to_class[type_value].from_dict(value)
                 else:
-                    raise ValueError('Missing type field for disambiguation')
+                    # Try to disambiguate by required properties
+                    matches = []
+                    for type_name, reqs in required_props_map.items():
+                        if all(r in value for r in reqs):
+                            matches.append(type_name)
+                    if len(matches) == 1:
+                        value = matches[0].from_dict(value)
+                    elif len(matches) > 1:
+                        raise ValueError('Ambiguous match for union type')
+                    else:
+                        raise ValueError('No match for union type')
         kwargs['content'] = value
 
         # Process model
@@ -725,16 +743,24 @@ class EmbeddedResource(BaseModel):
             if isinstance(value, dict):
                 # Try to disambiguate using const fields
                 type_value = value.get('type')
-                if type_value is not None:
-                    # Map type values to their corresponding classes
-                    type_to_class = {
-                    }
-                    if type_value in type_to_class:
-                        value = type_to_class[type_value].from_dict(value)
-                    else:
-                        raise ValueError(f'Unknown type value: {type_value}')
+                type_to_class = {}
+                required_props_map = {}
+                required_props_map[TextResourceContents] = ['text', 'uri']
+                required_props_map[BlobResourceContents] = ['blob', 'uri']
+                if type_value is not None and type_value in type_to_class:
+                    value = type_to_class[type_value].from_dict(value)
                 else:
-                    raise ValueError('Missing type field for disambiguation')
+                    # Try to disambiguate by required properties
+                    matches = []
+                    for type_name, reqs in required_props_map.items():
+                        if all(r in value for r in reqs):
+                            matches.append(type_name)
+                    if len(matches) == 1:
+                        value = matches[0].from_dict(value)
+                    elif len(matches) > 1:
+                        raise ValueError('Ambiguous match for union type')
+                    else:
+                        raise ValueError('No match for union type')
         kwargs['resource'] = value
 
         # Process type
@@ -2350,20 +2376,26 @@ class PromptMessage(BaseModel):
             if isinstance(value, dict):
                 # Try to disambiguate using const fields
                 type_value = value.get('type')
-                if type_value is not None:
-                    # Map type values to their corresponding classes
-                    type_to_class = {
-                        'text': TextContent,
-                        'image': ImageContent,
-                        'audio': AudioContent,
-                        'resource': EmbeddedResource,
-                    }
-                    if type_value in type_to_class:
-                        value = type_to_class[type_value].from_dict(value)
-                    else:
-                        raise ValueError(f'Unknown type value: {type_value}')
+                type_to_class = {}
+                required_props_map = {}
+                type_to_class['text'] = TextContent
+                type_to_class['image'] = ImageContent
+                type_to_class['audio'] = AudioContent
+                type_to_class['resource'] = EmbeddedResource
+                if type_value is not None and type_value in type_to_class:
+                    value = type_to_class[type_value].from_dict(value)
                 else:
-                    raise ValueError('Missing type field for disambiguation')
+                    # Try to disambiguate by required properties
+                    matches = []
+                    for type_name, reqs in required_props_map.items():
+                        if all(r in value for r in reqs):
+                            matches.append(type_name)
+                    if len(matches) == 1:
+                        value = matches[0].from_dict(value)
+                    elif len(matches) > 1:
+                        raise ValueError('Ambiguous match for union type')
+                    else:
+                        raise ValueError('No match for union type')
         kwargs['content'] = value
 
         # Process role
@@ -2478,16 +2510,24 @@ class ReadResourceResult(BaseModel):
                     if isinstance(item, dict):
                         # Try to disambiguate using const fields
                         type_value = item.get('type')
-                        if type_value is not None:
-                            # Map type values to their corresponding classes
-                            type_to_class = {
-                            }
-                            if type_value in type_to_class:
-                                converted_items.append(type_to_class[type_value].from_dict(item))
-                            else:
-                                raise ValueError(f'Unknown type value: {type_value}')
+                        type_to_class = {}
+                        required_props_map = {}
+                        required_props_map[TextResourceContents] = ['text', 'uri']
+                        required_props_map[BlobResourceContents] = ['blob', 'uri']
+                        if type_value is not None and type_value in type_to_class:
+                            converted_items.append(type_to_class[type_value].from_dict(item))
                         else:
-                            raise ValueError('Missing type field for disambiguation')
+                            # Try to disambiguate by required properties
+                            matches = []
+                            for type_name, reqs in required_props_map.items():
+                                if all(r in item for r in reqs):
+                                    matches.append(type_name)
+                            if len(matches) == 1:
+                                converted_items.append(matches[0].from_dict(item))
+                            elif len(matches) > 1:
+                                raise ValueError('Ambiguous match for union type in list')
+                            else:
+                                raise ValueError('No match for union type in list')
                     else:
                         converted_items.append(item)
                 value = converted_items
@@ -2949,19 +2989,25 @@ class SamplingMessage(BaseModel):
             if isinstance(value, dict):
                 # Try to disambiguate using const fields
                 type_value = value.get('type')
-                if type_value is not None:
-                    # Map type values to their corresponding classes
-                    type_to_class = {
-                        'text': TextContent,
-                        'image': ImageContent,
-                        'audio': AudioContent,
-                    }
-                    if type_value in type_to_class:
-                        value = type_to_class[type_value].from_dict(value)
-                    else:
-                        raise ValueError(f'Unknown type value: {type_value}')
+                type_to_class = {}
+                required_props_map = {}
+                type_to_class['text'] = TextContent
+                type_to_class['image'] = ImageContent
+                type_to_class['audio'] = AudioContent
+                if type_value is not None and type_value in type_to_class:
+                    value = type_to_class[type_value].from_dict(value)
                 else:
-                    raise ValueError('Missing type field for disambiguation')
+                    # Try to disambiguate by required properties
+                    matches = []
+                    for type_name, reqs in required_props_map.items():
+                        if all(r in value for r in reqs):
+                            matches.append(type_name)
+                    if len(matches) == 1:
+                        value = matches[0].from_dict(value)
+                    elif len(matches) > 1:
+                        raise ValueError('Ambiguous match for union type')
+                    else:
+                        raise ValueError('No match for union type')
         kwargs['content'] = value
 
         # Process role

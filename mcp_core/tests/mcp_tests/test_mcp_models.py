@@ -1,11 +1,15 @@
 from sema4ai.mcp_core.mcp_models import (
+    Annotations,
+    BlobResourceContents,
     CallToolRequest,
     CallToolRequestParamsParams,
     CallToolResult,
+    EmbeddedResource,
     InitializeRequest,
     InitializeResult,
     ProgressNotification,
     TextContent,
+    TextResourceContents,
     create_mcp_model,
 )
 
@@ -149,3 +153,73 @@ def test_nested_object_conversion():
             "Hello",
             "World",
         ], f"Item {i} has incorrect text. Item data: {item}"
+
+
+def test_embedded_resource_conversion():
+    """Test that EmbeddedResource objects are properly converted from dictionaries."""
+    # Test with TextResourceContents
+    text_resource_data = {
+        "type": "resource",
+        "resource": {
+            "type": "text",
+            "text": "Hello, this is some text content",
+            "mimeType": "text/plain",
+            "uri": "data:text/plain;base64,SGVsbG8gV29ybGQ=",
+        },
+    }
+
+    text_resource = EmbeddedResource.from_dict(text_resource_data)
+
+    # Verify the EmbeddedResource is properly converted
+    assert isinstance(text_resource, EmbeddedResource)
+    assert text_resource.type == "resource"
+    assert isinstance(text_resource.resource, TextResourceContents)
+    assert text_resource.resource.text == "Hello, this is some text content"
+    assert text_resource.resource.mimeType == "text/plain"
+    assert text_resource.resource.uri == "data:text/plain;base64,SGVsbG8gV29ybGQ="
+
+    # Test with BlobResourceContents
+    blob_resource_data = {
+        "type": "resource",
+        "resource": {
+            "type": "blob",
+            "blob": "SGVsbG8gV29ybGQ=",  # Base64 encoded "Hello World"
+            "uri": "data:text/plain;base64,SGVsbG8gV29ybGQ=",
+            "mimeType": "text/plain",
+        },
+    }
+
+    blob_resource = EmbeddedResource.from_dict(blob_resource_data)
+
+    # Verify the EmbeddedResource is properly converted
+    assert isinstance(blob_resource, EmbeddedResource)
+    assert blob_resource.type == "resource"
+    assert isinstance(blob_resource.resource, BlobResourceContents)
+    assert blob_resource.resource.blob == "SGVsbG8gV29ybGQ="
+    assert blob_resource.resource.uri == "data:text/plain;base64,SGVsbG8gV29ybGQ="
+    assert blob_resource.resource.mimeType == "text/plain"
+
+    # Test with annotations
+    annotated_resource_data = {
+        "type": "resource",
+        "resource": {
+            "type": "text",
+            "text": "Annotated text content",
+            "mimeType": "text/plain",
+            "uri": "data:text/plain;base64,SGVsbG8gV29ybGQ=",
+        },
+        "annotations": {"audience": ["user", "assistant"], "priority": 0.5},
+    }
+
+    annotated_resource = EmbeddedResource.from_dict(annotated_resource_data)
+
+    # Verify the EmbeddedResource with annotations is properly converted
+    assert isinstance(annotated_resource, EmbeddedResource)
+    assert annotated_resource.type == "resource"
+    assert isinstance(annotated_resource.resource, TextResourceContents)
+    assert annotated_resource.resource.text == "Annotated text content"
+    assert annotated_resource.resource.mimeType == "text/plain"
+    assert annotated_resource.resource.uri == "data:text/plain;base64,SGVsbG8gV29ybGQ="
+    assert isinstance(annotated_resource.annotations, Annotations)
+    assert annotated_resource.annotations.audience == ["user", "assistant"]
+    assert annotated_resource.annotations.priority == 0.5
