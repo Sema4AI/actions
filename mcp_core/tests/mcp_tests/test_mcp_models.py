@@ -36,6 +36,33 @@ def test_initialize_request():
     assert request.params.protocolVersion == "1.0"
 
 
+def test_initialize_request_model() -> None:
+    from sema4ai.mcp_core.mcp_models import (
+        ClientCapabilities,
+        Implementation,
+        InitializeRequestParamsParams,
+    )
+
+    initialize_request = InitializeRequest(
+        method="initialize",
+        params=InitializeRequestParamsParams(
+            clientInfo=Implementation(name="test-client", version="1.0.0"),
+            capabilities=ClientCapabilities(),
+            protocolVersion="1.0",
+        ),
+    )
+    dct = initialize_request.to_dict()
+    assert dct == {
+        "method": "initialize",
+        "params": {
+            "clientInfo": {"name": "test-client", "version": "1.0.0"},
+            "capabilities": {},
+            "protocolVersion": "1.0",
+        },
+    }
+    assert isinstance(create_mcp_model(dct), InitializeRequest)
+
+
 def test_progress_notification():
     """Test ProgressNotification model."""
     # Test creating from dict
