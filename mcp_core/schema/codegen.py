@@ -579,6 +579,19 @@ class {name}(BaseModel):
     return imports + "\n\n".join(classes) + "\n\n" + class_map + factory_function
 
 
+def code_format(code: str) -> str:
+    """Format code using ruff via stdin/stdout."""
+    import subprocess
+
+    result = subprocess.run(
+        ["ruff", "format", "-"],
+        input=code.encode("utf-8"),
+        stdout=subprocess.PIPE,
+        check=True,
+    )
+    return result.stdout.decode("utf-8")
+
+
 def main():
     """Main function to generate Python classes from schema."""
     schema_path = os.path.join(os.path.dirname(__file__), "2025-03-26-schema.json")
@@ -590,14 +603,17 @@ def main():
     # Generate Python classes
     python_code = generate_all_classes(schema_data)
 
+    # Format the code using ruff
+    formatted_code = code_format(python_code)
+
     # Write to output file
     output_path = os.path.join(
         os.path.dirname(__file__), "..", "src", "sema4ai", "mcp_core", "mcp_models.py"
     )
     with open(output_path, "w", encoding="utf-8") as f:
-        f.write(python_code)
+        f.write(formatted_code)
 
-    print(f"Generated Python classes in {output_path}")
+    print(f"Generated and formatted Python classes in {output_path}")
 
 
 if __name__ == "__main__":
