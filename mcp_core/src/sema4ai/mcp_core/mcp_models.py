@@ -1,5 +1,6 @@
-from typing import Any, TypeVar, Literal, Type
 from dataclasses import dataclass, field
+from typing import Any, Literal, Type, TypeVar
+
 from sema4ai.mcp_core.mcp_base_model import BaseModel
 
 T = TypeVar("T")
@@ -21,6 +22,7 @@ class Annotations(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process audience
         value = data.get("audience")
         if value is not None:
@@ -61,6 +63,7 @@ class AudioContent(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process annotations
         value = data.get("annotations")
         if value is not None:
@@ -96,6 +99,7 @@ class BlobResourceContents(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process blob
         value = data.get("blob")
         kwargs["blob"] = value
@@ -126,6 +130,7 @@ class CallToolRequest(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process method
         value = data.get("method")
         kwargs["method"] = value
@@ -152,6 +157,7 @@ class CallToolRequestParamsParams(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process arguments
         value = data.get("arguments")
         kwargs["arguments"] = value
@@ -184,6 +190,7 @@ class CallToolResult(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process _meta
         value = data.get("_meta")
         kwargs["_meta"] = value
@@ -267,6 +274,7 @@ class CancelledNotification(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process method
         value = data.get("method")
         kwargs["method"] = value
@@ -293,6 +301,7 @@ class CancelledNotificationParamsParams(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process reason
         value = data.get("reason")
         kwargs["reason"] = value
@@ -322,6 +331,7 @@ class ClientCapabilities(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process experimental
         value = data.get("experimental")
         kwargs["experimental"] = value
@@ -353,6 +363,7 @@ class ClientCapabilitiesRootsParams(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process listChanged
         value = data.get("listChanged")
         kwargs["listChanged"] = value
@@ -375,6 +386,7 @@ class CompleteRequest(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process method
         value = data.get("method")
         kwargs["method"] = value
@@ -401,6 +413,7 @@ class CompleteRequestParamsParams(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process argument
         value = data.get("argument")
         if value is not None:
@@ -464,6 +477,7 @@ class CompleteRequestParamsParamsArgumentParams(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process name
         value = data.get("name")
         kwargs["name"] = value
@@ -490,6 +504,7 @@ class CompleteResult(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process _meta
         value = data.get("_meta")
         kwargs["_meta"] = value
@@ -517,6 +532,7 @@ class CompleteResultCompletionParams(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process hasMore
         value = data.get("hasMore")
         kwargs["hasMore"] = value
@@ -560,6 +576,7 @@ class CreateMessageRequest(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process method
         value = data.get("method")
         kwargs["method"] = value
@@ -594,6 +611,7 @@ class CreateMessageRequestParamsParams(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process includeContext
         value = data.get("includeContext")
         kwargs["includeContext"] = value
@@ -676,6 +694,7 @@ class CreateMessageResult(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process _meta
         value = data.get("_meta")
         kwargs["_meta"] = value
@@ -753,6 +772,7 @@ class EmbeddedResource(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process annotations
         value = data.get("annotations")
         if value is not None:
@@ -820,6 +840,7 @@ class GetPromptRequest(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process method
         value = data.get("method")
         kwargs["method"] = value
@@ -846,6 +867,7 @@ class GetPromptRequestParamsParams(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process arguments
         value = data.get("arguments")
         kwargs["arguments"] = value
@@ -873,6 +895,7 @@ class GetPromptResult(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process _meta
         value = data.get("_meta")
         kwargs["_meta"] = value
@@ -917,6 +940,7 @@ class ImageContent(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process annotations
         value = data.get("annotations")
         if value is not None:
@@ -953,6 +977,7 @@ class Implementation(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process name
         value = data.get("name")
         kwargs["name"] = value
@@ -980,6 +1005,7 @@ class InitializeRequest(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process method
         value = data.get("method")
         kwargs["method"] = value
@@ -1007,6 +1033,7 @@ class InitializeRequestParamsParams(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process capabilities
         value = data.get("capabilities")
         if value is not None:
@@ -1045,6 +1072,7 @@ class InitializeResult(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process _meta
         value = data.get("_meta")
         kwargs["_meta"] = value
@@ -1088,6 +1116,7 @@ class InitializedNotification(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process method
         value = data.get("method")
         kwargs["method"] = value
@@ -1113,6 +1142,7 @@ class InitializedNotificationParamsParams(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process _meta
         value = data.get("_meta")
         kwargs["_meta"] = value
@@ -1136,6 +1166,7 @@ class JSONRPCError(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process error
         value = data.get("error")
         if value is not None:
@@ -1167,6 +1198,7 @@ class JSONRPCErrorErrorParams(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process code
         value = data.get("code")
         kwargs["code"] = value
@@ -1198,6 +1230,7 @@ class JSONRPCNotification(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process jsonrpc
         value = data.get("jsonrpc")
         kwargs["jsonrpc"] = value
@@ -1227,6 +1260,7 @@ class JSONRPCNotificationParamsParams(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process _meta
         value = data.get("_meta")
         kwargs["_meta"] = value
@@ -1251,6 +1285,7 @@ class JSONRPCRequest(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process id
         value = data.get("id")
         kwargs["id"] = value
@@ -1284,6 +1319,7 @@ class JSONRPCRequestParamsParams(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process _meta
         value = data.get("_meta")
         if value is not None:
@@ -1305,6 +1341,7 @@ class JSONRPCRequestParamsParams_metaParams(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process progressToken
         value = data.get("progressToken")
         kwargs["progressToken"] = value
@@ -1328,6 +1365,7 @@ class JSONRPCResponse(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process id
         value = data.get("id")
         kwargs["id"] = value
@@ -1361,6 +1399,7 @@ class ListPromptsRequest(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process method
         value = data.get("method")
         kwargs["method"] = value
@@ -1386,6 +1425,7 @@ class ListPromptsRequestParamsParams(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process cursor
         value = data.get("cursor")
         kwargs["cursor"] = value
@@ -1409,6 +1449,7 @@ class ListPromptsResult(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process _meta
         value = data.get("_meta")
         kwargs["_meta"] = value
@@ -1451,6 +1492,7 @@ class ListResourceTemplatesRequest(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process method
         value = data.get("method")
         kwargs["method"] = value
@@ -1476,6 +1518,7 @@ class ListResourceTemplatesRequestParamsParams(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process cursor
         value = data.get("cursor")
         kwargs["cursor"] = value
@@ -1499,6 +1542,7 @@ class ListResourceTemplatesResult(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process _meta
         value = data.get("_meta")
         kwargs["_meta"] = value
@@ -1541,6 +1585,7 @@ class ListResourcesRequest(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process method
         value = data.get("method")
         kwargs["method"] = value
@@ -1566,6 +1611,7 @@ class ListResourcesRequestParamsParams(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process cursor
         value = data.get("cursor")
         kwargs["cursor"] = value
@@ -1589,6 +1635,7 @@ class ListResourcesResult(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process _meta
         value = data.get("_meta")
         kwargs["_meta"] = value
@@ -1636,6 +1683,7 @@ class ListRootsRequest(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process method
         value = data.get("method")
         kwargs["method"] = value
@@ -1661,6 +1709,7 @@ class ListRootsRequestParamsParams(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process _meta
         value = data.get("_meta")
         if value is not None:
@@ -1682,6 +1731,7 @@ class ListRootsRequestParamsParams_metaParams(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process progressToken
         value = data.get("progressToken")
         kwargs["progressToken"] = value
@@ -1706,6 +1756,7 @@ class ListRootsResult(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process _meta
         value = data.get("_meta")
         kwargs["_meta"] = value
@@ -1742,6 +1793,7 @@ class ListToolsRequest(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process method
         value = data.get("method")
         kwargs["method"] = value
@@ -1767,6 +1819,7 @@ class ListToolsRequestParamsParams(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process cursor
         value = data.get("cursor")
         kwargs["cursor"] = value
@@ -1790,6 +1843,7 @@ class ListToolsResult(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process _meta
         value = data.get("_meta")
         kwargs["_meta"] = value
@@ -1838,6 +1892,7 @@ class LoggingMessageNotification(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process method
         value = data.get("method")
         kwargs["method"] = value
@@ -1865,6 +1920,7 @@ class LoggingMessageNotificationParamsParams(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process data
         value = data.get("data")
         kwargs["data"] = value
@@ -1897,6 +1953,7 @@ class ModelHint(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process name
         value = data.get("name")
         kwargs["name"] = value
@@ -1929,6 +1986,7 @@ class ModelPreferences(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process costPriority
         value = data.get("costPriority")
         kwargs["costPriority"] = value
@@ -1971,6 +2029,7 @@ class Notification(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process method
         value = data.get("method")
         kwargs["method"] = value
@@ -1996,6 +2055,7 @@ class NotificationParamsParams(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process _meta
         value = data.get("_meta")
         kwargs["_meta"] = value
@@ -2016,6 +2076,7 @@ class PaginatedRequest(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process method
         value = data.get("method")
         kwargs["method"] = value
@@ -2041,6 +2102,7 @@ class PaginatedRequestParamsParams(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process cursor
         value = data.get("cursor")
         kwargs["cursor"] = value
@@ -2061,6 +2123,7 @@ class PaginatedResult(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process _meta
         value = data.get("_meta")
         kwargs["_meta"] = value
@@ -2088,6 +2151,7 @@ class PingRequest(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process method
         value = data.get("method")
         kwargs["method"] = value
@@ -2113,6 +2177,7 @@ class PingRequestParamsParams(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process _meta
         value = data.get("_meta")
         if value is not None:
@@ -2134,6 +2199,7 @@ class PingRequestParamsParams_metaParams(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process progressToken
         value = data.get("progressToken")
         kwargs["progressToken"] = value
@@ -2157,6 +2223,7 @@ class ProgressNotification(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process method
         value = data.get("method")
         kwargs["method"] = value
@@ -2185,6 +2252,7 @@ class ProgressNotificationParamsParams(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process message
         value = data.get("message")
         kwargs["message"] = value
@@ -2224,6 +2292,7 @@ class Prompt(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process arguments
         value = data.get("arguments")
         if value is not None:
@@ -2267,6 +2336,7 @@ class PromptArgument(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process description
         value = data.get("description")
         kwargs["description"] = value
@@ -2299,6 +2369,7 @@ class PromptListChangedNotification(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process method
         value = data.get("method")
         kwargs["method"] = value
@@ -2324,6 +2395,7 @@ class PromptListChangedNotificationParamsParams(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process _meta
         value = data.get("_meta")
         kwargs["_meta"] = value
@@ -2348,6 +2420,7 @@ class PromptMessage(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process content
         value = data.get("content")
         if value is not None:
@@ -2411,6 +2484,7 @@ class PromptReference(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process name
         value = data.get("name")
         kwargs["name"] = value
@@ -2437,6 +2511,7 @@ class ReadResourceRequest(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process method
         value = data.get("method")
         kwargs["method"] = value
@@ -2462,6 +2537,7 @@ class ReadResourceRequestParamsParams(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process uri
         value = data.get("uri")
         kwargs["uri"] = value
@@ -2484,6 +2560,7 @@ class ReadResourceResult(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process _meta
         value = data.get("_meta")
         kwargs["_meta"] = value
@@ -2554,6 +2631,7 @@ class Request(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process method
         value = data.get("method")
         kwargs["method"] = value
@@ -2579,6 +2657,7 @@ class RequestParamsParams(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process _meta
         value = data.get("_meta")
         if value is not None:
@@ -2600,6 +2679,7 @@ class RequestParamsParams_metaParams(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process progressToken
         value = data.get("progressToken")
         kwargs["progressToken"] = value
@@ -2630,6 +2710,7 @@ class Resource(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process annotations
         value = data.get("annotations")
         if value is not None:
@@ -2674,6 +2755,7 @@ class ResourceContents(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process mimeType
         value = data.get("mimeType")
         kwargs["mimeType"] = value
@@ -2702,6 +2784,7 @@ class ResourceListChangedNotification(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process method
         value = data.get("method")
         kwargs["method"] = value
@@ -2727,6 +2810,7 @@ class ResourceListChangedNotificationParamsParams(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process _meta
         value = data.get("_meta")
         kwargs["_meta"] = value
@@ -2749,6 +2833,7 @@ class ResourceReference(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process type
         value = data.get("type")
         kwargs["type"] = value
@@ -2778,6 +2863,7 @@ class ResourceTemplate(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process annotations
         value = data.get("annotations")
         if value is not None:
@@ -2820,6 +2906,7 @@ class ResourceUpdatedNotification(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process method
         value = data.get("method")
         kwargs["method"] = value
@@ -2845,6 +2932,7 @@ class ResourceUpdatedNotificationParamsParams(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process uri
         value = data.get("uri")
         kwargs["uri"] = value
@@ -2864,6 +2952,7 @@ class Result(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process _meta
         value = data.get("_meta")
         kwargs["_meta"] = value
@@ -2890,6 +2979,7 @@ class Root(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process name
         value = data.get("name")
         kwargs["name"] = value
@@ -2919,6 +3009,7 @@ class RootsListChangedNotification(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process method
         value = data.get("method")
         kwargs["method"] = value
@@ -2944,6 +3035,7 @@ class RootsListChangedNotificationParamsParams(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process _meta
         value = data.get("_meta")
         kwargs["_meta"] = value
@@ -2966,6 +3058,7 @@ class SamplingMessage(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process content
         value = data.get("content")
         if value is not None:
@@ -3034,6 +3127,7 @@ class ServerCapabilities(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process completions
         value = data.get("completions")
         kwargs["completions"] = value
@@ -3081,6 +3175,7 @@ class ServerCapabilitiesPromptsParams(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process listChanged
         value = data.get("listChanged")
         kwargs["listChanged"] = value
@@ -3103,6 +3198,7 @@ class ServerCapabilitiesResourcesParams(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process listChanged
         value = data.get("listChanged")
         kwargs["listChanged"] = value
@@ -3128,6 +3224,7 @@ class ServerCapabilitiesToolsParams(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process listChanged
         value = data.get("listChanged")
         kwargs["listChanged"] = value
@@ -3150,6 +3247,7 @@ class SetLevelRequest(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process method
         value = data.get("method")
         kwargs["method"] = value
@@ -3175,6 +3273,7 @@ class SetLevelRequestParamsParams(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process level
         value = data.get("level")
         if value is not None:
@@ -3200,6 +3299,7 @@ class SubscribeRequest(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process method
         value = data.get("method")
         kwargs["method"] = value
@@ -3225,6 +3325,7 @@ class SubscribeRequestParamsParams(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process uri
         value = data.get("uri")
         kwargs["uri"] = value
@@ -3248,6 +3349,7 @@ class TextContent(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process annotations
         value = data.get("annotations")
         if value is not None:
@@ -3279,6 +3381,7 @@ class TextResourceContents(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process mimeType
         value = data.get("mimeType")
         kwargs["mimeType"] = value
@@ -3311,6 +3414,7 @@ class Tool(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process annotations
         value = data.get("annotations")
         if value is not None:
@@ -3350,6 +3454,7 @@ class ToolInputschemaParams(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process properties
         value = data.get("properties")
         kwargs["properties"] = value
@@ -3399,6 +3504,7 @@ class ToolAnnotations(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process destructiveHint
         value = data.get("destructiveHint")
         kwargs["destructiveHint"] = value
@@ -3439,6 +3545,7 @@ class ToolListChangedNotification(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process method
         value = data.get("method")
         kwargs["method"] = value
@@ -3464,6 +3571,7 @@ class ToolListChangedNotificationParamsParams(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process _meta
         value = data.get("_meta")
         kwargs["_meta"] = value
@@ -3487,6 +3595,7 @@ class UnsubscribeRequest(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process method
         value = data.get("method")
         kwargs["method"] = value
@@ -3512,6 +3621,7 @@ class UnsubscribeRequestParamsParams(BaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
         # Process uri
         value = data.get("uri")
         kwargs["uri"] = value
@@ -3561,9 +3671,7 @@ def create_mcp_model(data: dict[str, Any]) -> BaseModel:
     """
     if "method" not in data:
         raise ValueError("Input dictionary must contain a 'method' field")
-
     method = data["method"]
     if method not in _class_map:
         raise ValueError(f"No MCP model class found for method: {method}")
-
     return _class_map[method].from_dict(data)
