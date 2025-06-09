@@ -1,5 +1,3 @@
-from typing import Any, Union
-
 import uvicorn
 from fastapi.applications import FastAPI
 from sse_starlette.sse import EventSourceResponse
@@ -14,7 +12,7 @@ from sema4ai.mcp_core.mcp_models import (
     ServerCapabilities,
 )
 from sema4ai.mcp_core.protocols import IMCPHandler, IMCPSessionHandler
-from sema4ai.mcp_core.transport import McpTransport
+from sema4ai.mcp_core.transport import config_streamable_http
 
 
 class SampleMCPImplementation(IMCPHandler):
@@ -98,7 +96,7 @@ def run_server(host: str = "127.0.0.1", port: int = 8000):
         allow_headers=["*"],
     )
 
-    transport = McpTransport(app, SampleMCPSessionHandler())
+    config_streamable_http(app, SampleMCPSessionHandler())
 
     uvicorn.run(app, host=host, port=port)
 
