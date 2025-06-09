@@ -50,7 +50,7 @@ class AudioContent(MCPBaseModel):
 
     data: "str"
     mimeType: "str"
-    type: "Literal['audio']"
+    type: "Literal['audio']" = field(default="audio")
     annotations: "None | Annotations" = field(default=None)
 
     @classmethod
@@ -117,10 +117,10 @@ class BlobResourceContents(MCPBaseModel):
 class CallToolRequest(MCPBaseModel):
     """Used by the client to invoke a tool provided by the server."""
 
-    jsonrpc: "Literal['2.0']"
     id: "RequestId"
-    method: "Literal['tools/call']"
     params: "CallToolRequestParamsParams"
+    jsonrpc: "Literal['2.0']" = field(default="2.0")
+    method: "Literal['tools/call']" = field(default="tools/call")
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -274,8 +274,10 @@ class CancelledNotification(MCPBaseModel):
     NOT attempt to cancel its `initialize` request.
     """
 
-    method: "Literal['notifications/cancelled']"
     params: "CancelledNotificationParamsParams"
+    method: "Literal['notifications/cancelled']" = field(
+        default="notifications/cancelled"
+    )
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -388,10 +390,10 @@ class ClientCapabilitiesRootsParams(MCPBaseModel):
 class CompleteRequest(MCPBaseModel):
     """A request from the client to the server, to ask for completion options."""
 
-    jsonrpc: "Literal['2.0']"
     id: "RequestId"
-    method: "Literal['completion/complete']"
     params: "CompleteRequestParamsParams"
+    jsonrpc: "Literal['2.0']" = field(default="2.0")
+    method: "Literal['completion/complete']" = field(default="completion/complete")
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -587,10 +589,12 @@ class CreateMessageRequest(MCPBaseModel):
     loop) and decide whether to approve it.
     """
 
-    jsonrpc: "Literal['2.0']"
     id: "RequestId"
-    method: "Literal['sampling/createMessage']"
     params: "CreateMessageRequestParamsParams"
+    jsonrpc: "Literal['2.0']" = field(default="2.0")
+    method: "Literal['sampling/createMessage']" = field(
+        default="sampling/createMessage"
+    )
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -791,7 +795,7 @@ class EmbeddedResource(MCPBaseModel):
     """
 
     resource: "TextResourceContents | BlobResourceContents"
-    type: "Literal['resource']"
+    type: "Literal['resource']" = field(default="resource")
     annotations: "None | Annotations" = field(default=None)
 
     @classmethod
@@ -859,10 +863,10 @@ class EmbeddedResource(MCPBaseModel):
 class GetPromptRequest(MCPBaseModel):
     """Used by the client to get a prompt provided by the server."""
 
-    jsonrpc: "Literal['2.0']"
     id: "RequestId"
-    method: "Literal['prompts/get']"
     params: "GetPromptRequestParamsParams"
+    jsonrpc: "Literal['2.0']" = field(default="2.0")
+    method: "Literal['prompts/get']" = field(default="prompts/get")
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -966,7 +970,7 @@ class ImageContent(MCPBaseModel):
 
     data: "str"
     mimeType: "str"
-    type: "Literal['image']"
+    type: "Literal['image']" = field(default="image")
     annotations: "None | Annotations" = field(default=None)
 
     @classmethod
@@ -1033,10 +1037,10 @@ class InitializeRequest(MCPBaseModel):
     it to begin initialization.
     """
 
-    jsonrpc: "Literal['2.0']"
     id: "RequestId"
-    method: "Literal['initialize']"
     params: "InitializeRequestParamsParams"
+    jsonrpc: "Literal['2.0']" = field(default="2.0")
+    method: "Literal['initialize']" = field(default="initialize")
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -1158,7 +1162,9 @@ class InitializedNotification(MCPBaseModel):
     finished.
     """
 
-    method: "Literal['notifications/initialized']"
+    method: "Literal['notifications/initialized']" = field(
+        default="notifications/initialized"
+    )
     params: "None | InitializedNotificationParamsParams" = field(default=None)
 
     @classmethod
@@ -1209,7 +1215,7 @@ class JSONRPCError(MCPBaseModel):
 
     error: "JSONRPCErrorErrorParams"
     id: "RequestId"
-    jsonrpc: "Literal['2.0']"
+    jsonrpc: "Literal['2.0']" = field(default="2.0")
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -1271,8 +1277,8 @@ class JSONRPCErrorErrorParams(MCPBaseModel):
 class JSONRPCNotification(MCPBaseModel):
     """A notification which does not expect a response."""
 
-    jsonrpc: "Literal['2.0']"
     method: "str"
+    jsonrpc: "Literal['2.0']" = field(default="2.0")
     params: "None | JSONRPCNotificationParamsParams" = field(default=None)
 
     @classmethod
@@ -1325,11 +1331,9 @@ class JSONRPCNotificationParamsParams(MCPBaseModel):
 class JSONRPCRequest(MCPBaseModel):
     """A request that expects a response."""
 
-    jsonrpc: "Literal['2.0']"
     id: "RequestId"
-    id: "RequestId"
-    jsonrpc: "Literal['2.0']"
     method: "str"
+    jsonrpc: "Literal['2.0']" = field(default="2.0")
     params: "None | JSONRPCRequestParamsParams" = field(default=None)
 
     @classmethod
@@ -1341,13 +1345,13 @@ class JSONRPCRequest(MCPBaseModel):
             )
         kwargs = {}
 
-        # Process jsonrpc
-        value = data.get("jsonrpc")
-        kwargs["jsonrpc"] = value
-
         # Process id
         value = data.get("id")
         kwargs["id"] = value
+
+        # Process jsonrpc
+        value = data.get("jsonrpc")
+        kwargs["jsonrpc"] = value
 
         # Process method
         value = data.get("method")
@@ -1409,8 +1413,8 @@ class JSONRPCResponse(MCPBaseModel):
     """A successful (non-error) response to a request."""
 
     id: "RequestId"
-    jsonrpc: "Literal['2.0']"
     result: "Result"
+    jsonrpc: "Literal['2.0']" = field(default="2.0")
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -1445,9 +1449,9 @@ class ListPromptsRequest(MCPBaseModel):
     has.
     """
 
-    jsonrpc: "Literal['2.0']"
     id: "RequestId"
-    method: "Literal['prompts/list']"
+    jsonrpc: "Literal['2.0']" = field(default="2.0")
+    method: "Literal['prompts/list']" = field(default="prompts/list")
     params: "None | ListPromptsRequestParamsParams" = field(default=None)
 
     @classmethod
@@ -1545,9 +1549,11 @@ class ListPromptsResult(MCPBaseModel):
 class ListResourceTemplatesRequest(MCPBaseModel):
     """Sent from the client to request a list of resource templates the server has."""
 
-    jsonrpc: "Literal['2.0']"
     id: "RequestId"
-    method: "Literal['resources/templates/list']"
+    jsonrpc: "Literal['2.0']" = field(default="2.0")
+    method: "Literal['resources/templates/list']" = field(
+        default="resources/templates/list"
+    )
     params: "None | ListResourceTemplatesRequestParamsParams" = field(default=None)
 
     @classmethod
@@ -1645,9 +1651,9 @@ class ListResourceTemplatesResult(MCPBaseModel):
 class ListResourcesRequest(MCPBaseModel):
     """Sent from the client to request a list of resources the server has."""
 
-    jsonrpc: "Literal['2.0']"
     id: "RequestId"
-    method: "Literal['resources/list']"
+    jsonrpc: "Literal['2.0']" = field(default="2.0")
+    method: "Literal['resources/list']" = field(default="resources/list")
     params: "None | ListResourcesRequestParamsParams" = field(default=None)
 
     @classmethod
@@ -1752,9 +1758,9 @@ class ListRootsRequest(MCPBaseModel):
     to read from.
     """
 
-    jsonrpc: "Literal['2.0']"
     id: "RequestId"
-    method: "Literal['roots/list']"
+    jsonrpc: "Literal['2.0']" = field(default="2.0")
+    method: "Literal['roots/list']" = field(default="roots/list")
     params: "None | ListRootsRequestParamsParams" = field(default=None)
 
     @classmethod
@@ -1871,9 +1877,9 @@ class ListRootsResult(MCPBaseModel):
 class ListToolsRequest(MCPBaseModel):
     """Sent from the client to request a list of tools the server has."""
 
-    jsonrpc: "Literal['2.0']"
     id: "RequestId"
-    method: "Literal['tools/list']"
+    jsonrpc: "Literal['2.0']" = field(default="2.0")
+    method: "Literal['tools/list']" = field(default="tools/list")
     params: "None | ListToolsRequestParamsParams" = field(default=None)
 
     @classmethod
@@ -1979,8 +1985,8 @@ class LoggingMessageNotification(MCPBaseModel):
     which messages to send automatically.
     """
 
-    method: "Literal['notifications/message']"
     params: "LoggingMessageNotificationParamsParams"
+    method: "Literal['notifications/message']" = field(default="notifications/message")
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -2162,9 +2168,9 @@ class NotificationParamsParams(MCPBaseModel):
 
 @dataclass
 class PaginatedRequest(MCPBaseModel):
-    jsonrpc: "Literal['2.0']"
     id: "RequestId"
     method: "str"
+    jsonrpc: "Literal['2.0']" = field(default="2.0")
     params: "None | PaginatedRequestParamsParams" = field(default=None)
 
     @classmethod
@@ -2249,9 +2255,9 @@ class PingRequest(MCPBaseModel):
     is still alive. The receiver must promptly respond, or else may be disconnected.
     """
 
-    jsonrpc: "Literal['2.0']"
     id: "RequestId"
-    method: "Literal['ping']"
+    jsonrpc: "Literal['2.0']" = field(default="2.0")
+    method: "Literal['ping']" = field(default="ping")
     params: "None | PingRequestParamsParams" = field(default=None)
 
     @classmethod
@@ -2333,8 +2339,10 @@ class ProgressNotification(MCPBaseModel):
     a long-running request.
     """
 
-    method: "Literal['notifications/progress']"
     params: "ProgressNotificationParamsParams"
+    method: "Literal['notifications/progress']" = field(
+        default="notifications/progress"
+    )
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -2478,7 +2486,9 @@ class PromptListChangedNotification(MCPBaseModel):
     previous subscription from the client.
     """
 
-    method: "Literal['notifications/prompts/list_changed']"
+    method: "Literal['notifications/prompts/list_changed']" = field(
+        default="notifications/prompts/list_changed"
+    )
     params: "None | PromptListChangedNotificationParamsParams" = field(default=None)
 
     @classmethod
@@ -2596,7 +2606,7 @@ class PromptReference(MCPBaseModel):
     """Identifies a prompt."""
 
     name: "str"
-    type: "Literal['ref/prompt']"
+    type: "Literal['ref/prompt']" = field(default="ref/prompt")
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -2622,10 +2632,10 @@ class PromptReference(MCPBaseModel):
 class ReadResourceRequest(MCPBaseModel):
     """Sent from the client to the server, to read a specific resource URI."""
 
-    jsonrpc: "Literal['2.0']"
     id: "RequestId"
-    method: "Literal['resources/read']"
     params: "ReadResourceRequestParamsParams"
+    jsonrpc: "Literal['2.0']" = field(default="2.0")
+    method: "Literal['resources/read']" = field(default="resources/read")
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -2751,9 +2761,9 @@ class ReadResourceResult(MCPBaseModel):
 
 @dataclass
 class Request(MCPBaseModel):
-    jsonrpc: "Literal['2.0']"
     id: "RequestId"
     method: "str"
+    jsonrpc: "Literal['2.0']" = field(default="2.0")
     params: "None | RequestParamsParams" = field(default=None)
 
     @classmethod
@@ -2916,7 +2926,9 @@ class ResourceListChangedNotification(MCPBaseModel):
     without any previous subscription from the client.
     """
 
-    method: "Literal['notifications/resources/list_changed']"
+    method: "Literal['notifications/resources/list_changed']" = field(
+        default="notifications/resources/list_changed"
+    )
     params: "None | ResourceListChangedNotificationParamsParams" = field(default=None)
 
     @classmethod
@@ -2965,8 +2977,8 @@ class ResourceListChangedNotificationParamsParams(MCPBaseModel):
 class ResourceReference(MCPBaseModel):
     """A reference to a resource or resource template definition."""
 
-    type: "Literal['ref/resource']"
     uri: "str"
+    type: "Literal['ref/resource']" = field(default="ref/resource")
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -3040,8 +3052,10 @@ class ResourceUpdatedNotification(MCPBaseModel):
     previously sent a resources/subscribe request.
     """
 
-    method: "Literal['notifications/resources/updated']"
     params: "ResourceUpdatedNotificationParamsParams"
+    method: "Literal['notifications/resources/updated']" = field(
+        default="notifications/resources/updated"
+    )
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -3145,7 +3159,9 @@ class RootsListChangedNotification(MCPBaseModel):
     using the ListRootsRequest.
     """
 
-    method: "Literal['notifications/roots/list_changed']"
+    method: "Literal['notifications/roots/list_changed']" = field(
+        default="notifications/roots/list_changed"
+    )
     params: "None | RootsListChangedNotificationParamsParams" = field(default=None)
 
     @classmethod
@@ -3385,10 +3401,10 @@ class ServerCapabilitiesToolsParams(MCPBaseModel):
 class SetLevelRequest(MCPBaseModel):
     """A request from the client to the server, to enable or adjust logging."""
 
-    jsonrpc: "Literal['2.0']"
     id: "RequestId"
-    method: "Literal['logging/setLevel']"
     params: "SetLevelRequestParamsParams"
+    jsonrpc: "Literal['2.0']" = field(default="2.0")
+    method: "Literal['logging/setLevel']" = field(default="logging/setLevel")
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -3447,10 +3463,10 @@ class SubscribeRequest(MCPBaseModel):
     whenever a particular resource changes.
     """
 
-    jsonrpc: "Literal['2.0']"
     id: "RequestId"
-    method: "Literal['resources/subscribe']"
     params: "SubscribeRequestParamsParams"
+    jsonrpc: "Literal['2.0']" = field(default="2.0")
+    method: "Literal['resources/subscribe']" = field(default="resources/subscribe")
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -3507,7 +3523,7 @@ class TextContent(MCPBaseModel):
     """Text provided to or from an LLM."""
 
     text: "str"
-    type: "Literal['text']"
+    type: "Literal['text']" = field(default="text")
     annotations: "None | Annotations" = field(default=None)
 
     @classmethod
@@ -3611,7 +3627,7 @@ class Tool(MCPBaseModel):
 class ToolInputschemaParams(MCPBaseModel):
     """A JSON Schema object defining the expected parameters for the tool."""
 
-    type: "Literal['object']"
+    type: "Literal['object']" = field(default="object")
     properties: "None | dict[str, Any]" = field(default=None)
     required: "None | list[str]" = field(default=None)
 
@@ -3704,7 +3720,9 @@ class ToolListChangedNotification(MCPBaseModel):
     previous subscription from the client.
     """
 
-    method: "Literal['notifications/tools/list_changed']"
+    method: "Literal['notifications/tools/list_changed']" = field(
+        default="notifications/tools/list_changed"
+    )
     params: "None | ToolListChangedNotificationParamsParams" = field(default=None)
 
     @classmethod
@@ -3756,10 +3774,10 @@ class UnsubscribeRequest(MCPBaseModel):
     from the server. This should follow a previous resources/subscribe request.
     """
 
-    jsonrpc: "Literal['2.0']"
     id: "RequestId"
-    method: "Literal['resources/unsubscribe']"
     params: "UnsubscribeRequestParamsParams"
+    jsonrpc: "Literal['2.0']" = field(default="2.0")
+    method: "Literal['resources/unsubscribe']" = field(default="resources/unsubscribe")
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:

@@ -44,6 +44,7 @@ def test_initialize_request_model() -> None:
     )
 
     initialize_request = InitializeRequest(
+        id=1,
         method="initialize",
         params=InitializeRequestParamsParams(
             clientInfo=Implementation(name="test-client", version="1.0.0"),
@@ -53,6 +54,8 @@ def test_initialize_request_model() -> None:
     )
     dct = initialize_request.to_dict()
     assert dct == {
+        "id": 1,
+        "jsonrpc": "2.0",
         "method": "initialize",
         "params": {
             "clientInfo": {"name": "test-client", "version": "1.0.0"},
@@ -106,6 +109,7 @@ def test_base_model():
     """Test BaseModel functionality."""
     # Test that BaseModel methods are available on subclasses
     request = InitializeRequest(
+        id=1,
         method="initialize",
         params={
             "clientInfo": {"name": "test", "version": "1.0"},

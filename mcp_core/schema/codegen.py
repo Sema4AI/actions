@@ -226,16 +226,21 @@ def generate_class(
             nested_classes.extend(nested_nested)
 
     # Generate class fields
-    required_fields = []
-    optional_fields = []
+    required_fields_no_default = []  # Fields that are required and have no default
+    required_fields_with_default = []  # Fields that are required but have a default
+    optional_fields = []  # Optional fields (all have defaults)
     field_types = {}  # Store field types for from_dict generation
 
-    # Add jsonrpc and id fields for Request classes
+    # Add jsonrpc and id fields for Request classes if they don't already exist
     if name.endswith("Request"):
-        required_fields.append("jsonrpc: \"Literal['2.0']\"")
-        required_fields.append('id: "RequestId"')
-        field_types["jsonrpc"] = "Literal['2.0']"
-        field_types["id"] = "RequestId"
+        if "jsonrpc" not in properties:
+            required_fields_with_default.append(
+                'jsonrpc: "Literal[\'2.0\']" = field(default="2.0")'
+            )
+            field_types["jsonrpc"] = "Literal['2.0']"
+        if "id" not in properties:
+            required_fields_no_default.append('id: "RequestId"')
+            field_types["id"] = "RequestId"
 
     for prop_name, prop_schema in properties.items():
         prop_type = create_python_type(
@@ -243,16 +248,30 @@ def generate_class(
         )
         field_types[prop_name] = prop_type
 
-        if prop_name not in required:
+        # Check for const values
+        const_value = prop_schema.get("const")
+        if const_value is not None:
+            # For const fields, always set the default value
+            if isinstance(const_value, str):
+                default_value = f'field(default="{const_value}")'
+            else:
+                default_value = f"field(default={const_value})"
+            if prop_name in required:
+                required_fields_with_default.append(
+                    f'{prop_name}: "{prop_type}" = {default_value}'
+                )
+            else:
+                optional_fields.append(f'{prop_name}: "{prop_type}" = {default_value}')
+        elif prop_name not in required:
             # For optional fields, wrap type in union with None and set default
             prop_type = f"None | {prop_type}"
             optional_fields.append(f'{prop_name}: "{prop_type}" = field(default=None)')
         else:
-            # For required fields, just specify the type without default
-            required_fields.append(f'{prop_name}: "{prop_type}"')
+            # For required fields without const, just specify the type without default
+            required_fields_no_default.append(f'{prop_name}: "{prop_type}"')
 
-    # Combine fields with required ones first
-    fields = required_fields + optional_fields
+    # Combine fields in the correct order: required without defaults, required with defaults, optional
+    fields = required_fields_no_default + required_fields_with_default + optional_fields
 
     # Generate class docstring
     description = schema.get("description", "")
