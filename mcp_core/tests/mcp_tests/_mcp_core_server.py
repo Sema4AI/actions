@@ -29,6 +29,7 @@ class SampleMCPImplementation(IMCPImplementation):
         Returns:
             A list of MCP models or an EventSourceResponse
         """
+        from sema4ai.mcp_core.mcp_models import JSONRPCResponse
 
         single_model = len(mcp_models) == 1
 
@@ -38,11 +39,16 @@ class SampleMCPImplementation(IMCPImplementation):
                     single_model
                 ), f"Error: InitializeRequest cannot be batched, received: {mcp_models}"
 
-                return InitializeResult(
-                    capabilities=ServerCapabilities(),
-                    protocolVersion="1.0",
-                    serverInfo=Implementation(name="test-server", version="1.0.0"),
+                response = JSONRPCResponse(
+                    id=model.id,
+                    jsonrpc="2.0",
+                    result=InitializeResult(
+                        capabilities=ServerCapabilities(),
+                        protocolVersion="1.0",
+                        serverInfo=Implementation(name="test-server", version="1.0.0"),
+                    ),
                 )
+                return response
 
         raise NotImplementedError(f"TODO: Implement support to handle: {mcp_models}")
 
