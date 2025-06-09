@@ -9,6 +9,8 @@ class MessageType(Enum):
     REQUEST = "request"
     NOTIFICATION = "notification"
     RESPONSE = "response"
+    RESULT = "result"
+    OTHER = "other"
 
 
 @dataclass
@@ -61,6 +63,10 @@ class MCPBaseModel:
             return MessageType.REQUEST
         elif cls.__name__.endswith("Notification"):
             return MessageType.NOTIFICATION
-        elif cls.__name__.endswith("Result") or cls.__name__.endswith("Response"):
+        elif cls.__name__.endswith("Result"):
+            return MessageType.RESULT  # A Result is contained inside a Response
+        elif cls.__name__.endswith("Response"):
             return MessageType.RESPONSE
-        return MessageType.REQUEST  # Default to request if unknown
+
+        # This is for inner messages that are not requests, notifications, responses, or results
+        return MessageType.OTHER

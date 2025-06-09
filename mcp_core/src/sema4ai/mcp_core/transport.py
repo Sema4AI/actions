@@ -120,13 +120,9 @@ class McpTransport:
                     return response
 
                 if isinstance(response, MCPBaseModel):
-                    return JSONResponse(
-                        content=JSONRPCResponse(
-                            id=response.id,
-                            jsonrpc="2.0",
-                            result=response,
-                        ).to_dict()
-                    )
+                    msg_as_dict = response.to_dict()
+
+                    return JSONResponse(content=msg_as_dict)
                 else:
                     raise ValueError(
                         f"Internal error in IMCPImplementation.handle_message: Invalid response type: {type(response)} -- {response}"
