@@ -6,6 +6,20 @@ T = TypeVar("T")
 
 
 @dataclass
+class Result(MCPBaseModel):
+    @classmethod
+    def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
+        """Create an instance from a dictionary."""
+        if not isinstance(data, dict):
+            raise ValueError(
+                f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
+            )
+        kwargs = {}
+
+        return cls(**kwargs)
+
+
+@dataclass
 class Annotations(MCPBaseModel):
     """
     Optional annotations for the client. The client can use annotations to inform how
@@ -3095,20 +3109,6 @@ class ResourceUpdatedNotificationParamsParams(MCPBaseModel):
         # Process uri
         value = data.get("uri")
         kwargs["uri"] = value
-
-        return cls(**kwargs)
-
-
-@dataclass
-class Result(MCPBaseModel):
-    @classmethod
-    def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
-        """Create an instance from a dictionary."""
-        if not isinstance(data, dict):
-            raise ValueError(
-                f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
-            )
-        kwargs = {}
 
         return cls(**kwargs)
 

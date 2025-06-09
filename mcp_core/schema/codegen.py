@@ -584,7 +584,19 @@ T = TypeVar('T')
             referenced_types[name] = schema
 
     # Third pass: generate classes for all types
+    # First handle the Result class if it exists
+    if "Result" in definitions:
+        schema = definitions["Result"]
+        class_def, nested_classes = generate_class("Result", schema, definitions)
+        indenter.add_block(class_def)
+        for nested_class in nested_classes:
+            indenter.add_block(nested_class)
+
+    # Then handle all other classes
     for name, schema in definitions.items():
+        if name == "Result":  # Skip Result as it was already handled
+            continue
+
         # Handle types defined with type arrays first (like ProgressToken)
         if "type" in schema and isinstance(schema["type"], list):
             type_name = create_python_type(schema["type"], schema)
