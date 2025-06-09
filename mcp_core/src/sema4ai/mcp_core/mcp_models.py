@@ -1,6 +1,5 @@
+from typing import Any, TypeVar, Literal, Type
 from dataclasses import dataclass, field
-from typing import Any, Literal, Type, TypeVar
-
 from sema4ai.mcp_core.mcp_base_model import MCPBaseModel
 
 T = TypeVar("T")
@@ -118,6 +117,8 @@ class BlobResourceContents(MCPBaseModel):
 class CallToolRequest(MCPBaseModel):
     """Used by the client to invoke a tool provided by the server."""
 
+    jsonrpc: "Literal['2.0']"
+    id: "RequestId"
     method: "Literal['tools/call']"
     params: "CallToolRequestParamsParams"
 
@@ -129,6 +130,14 @@ class CallToolRequest(MCPBaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
+        # Process jsonrpc
+        value = data.get("jsonrpc")
+        kwargs["jsonrpc"] = value
+
+        # Process id
+        value = data.get("id")
+        kwargs["id"] = value
 
         # Process method
         value = data.get("method")
@@ -379,6 +388,8 @@ class ClientCapabilitiesRootsParams(MCPBaseModel):
 class CompleteRequest(MCPBaseModel):
     """A request from the client to the server, to ask for completion options."""
 
+    jsonrpc: "Literal['2.0']"
+    id: "RequestId"
     method: "Literal['completion/complete']"
     params: "CompleteRequestParamsParams"
 
@@ -390,6 +401,14 @@ class CompleteRequest(MCPBaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
+        # Process jsonrpc
+        value = data.get("jsonrpc")
+        kwargs["jsonrpc"] = value
+
+        # Process id
+        value = data.get("id")
+        kwargs["id"] = value
 
         # Process method
         value = data.get("method")
@@ -568,6 +587,8 @@ class CreateMessageRequest(MCPBaseModel):
     loop) and decide whether to approve it.
     """
 
+    jsonrpc: "Literal['2.0']"
+    id: "RequestId"
     method: "Literal['sampling/createMessage']"
     params: "CreateMessageRequestParamsParams"
 
@@ -579,6 +600,14 @@ class CreateMessageRequest(MCPBaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
+        # Process jsonrpc
+        value = data.get("jsonrpc")
+        kwargs["jsonrpc"] = value
+
+        # Process id
+        value = data.get("id")
+        kwargs["id"] = value
 
         # Process method
         value = data.get("method")
@@ -830,6 +859,8 @@ class EmbeddedResource(MCPBaseModel):
 class GetPromptRequest(MCPBaseModel):
     """Used by the client to get a prompt provided by the server."""
 
+    jsonrpc: "Literal['2.0']"
+    id: "RequestId"
     method: "Literal['prompts/get']"
     params: "GetPromptRequestParamsParams"
 
@@ -841,6 +872,14 @@ class GetPromptRequest(MCPBaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
+        # Process jsonrpc
+        value = data.get("jsonrpc")
+        kwargs["jsonrpc"] = value
+
+        # Process id
+        value = data.get("id")
+        kwargs["id"] = value
 
         # Process method
         value = data.get("method")
@@ -994,6 +1033,8 @@ class InitializeRequest(MCPBaseModel):
     it to begin initialization.
     """
 
+    jsonrpc: "Literal['2.0']"
+    id: "RequestId"
     method: "Literal['initialize']"
     params: "InitializeRequestParamsParams"
 
@@ -1005,6 +1046,14 @@ class InitializeRequest(MCPBaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
+        # Process jsonrpc
+        value = data.get("jsonrpc")
+        kwargs["jsonrpc"] = value
+
+        # Process id
+        value = data.get("id")
+        kwargs["id"] = value
 
         # Process method
         value = data.get("method")
@@ -1276,6 +1325,8 @@ class JSONRPCNotificationParamsParams(MCPBaseModel):
 class JSONRPCRequest(MCPBaseModel):
     """A request that expects a response."""
 
+    jsonrpc: "Literal['2.0']"
+    id: "RequestId"
     id: "RequestId"
     jsonrpc: "Literal['2.0']"
     method: "str"
@@ -1290,13 +1341,13 @@ class JSONRPCRequest(MCPBaseModel):
             )
         kwargs = {}
 
-        # Process id
-        value = data.get("id")
-        kwargs["id"] = value
-
         # Process jsonrpc
         value = data.get("jsonrpc")
         kwargs["jsonrpc"] = value
+
+        # Process id
+        value = data.get("id")
+        kwargs["id"] = value
 
         # Process method
         value = data.get("method")
@@ -1394,6 +1445,8 @@ class ListPromptsRequest(MCPBaseModel):
     has.
     """
 
+    jsonrpc: "Literal['2.0']"
+    id: "RequestId"
     method: "Literal['prompts/list']"
     params: "None | ListPromptsRequestParamsParams" = field(default=None)
 
@@ -1405,6 +1458,14 @@ class ListPromptsRequest(MCPBaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
+        # Process jsonrpc
+        value = data.get("jsonrpc")
+        kwargs["jsonrpc"] = value
+
+        # Process id
+        value = data.get("id")
+        kwargs["id"] = value
 
         # Process method
         value = data.get("method")
@@ -1484,6 +1545,8 @@ class ListPromptsResult(MCPBaseModel):
 class ListResourceTemplatesRequest(MCPBaseModel):
     """Sent from the client to request a list of resource templates the server has."""
 
+    jsonrpc: "Literal['2.0']"
+    id: "RequestId"
     method: "Literal['resources/templates/list']"
     params: "None | ListResourceTemplatesRequestParamsParams" = field(default=None)
 
@@ -1495,6 +1558,14 @@ class ListResourceTemplatesRequest(MCPBaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
+        # Process jsonrpc
+        value = data.get("jsonrpc")
+        kwargs["jsonrpc"] = value
+
+        # Process id
+        value = data.get("id")
+        kwargs["id"] = value
 
         # Process method
         value = data.get("method")
@@ -1574,6 +1645,8 @@ class ListResourceTemplatesResult(MCPBaseModel):
 class ListResourcesRequest(MCPBaseModel):
     """Sent from the client to request a list of resources the server has."""
 
+    jsonrpc: "Literal['2.0']"
+    id: "RequestId"
     method: "Literal['resources/list']"
     params: "None | ListResourcesRequestParamsParams" = field(default=None)
 
@@ -1585,6 +1658,14 @@ class ListResourcesRequest(MCPBaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
+        # Process jsonrpc
+        value = data.get("jsonrpc")
+        kwargs["jsonrpc"] = value
+
+        # Process id
+        value = data.get("id")
+        kwargs["id"] = value
 
         # Process method
         value = data.get("method")
@@ -1671,6 +1752,8 @@ class ListRootsRequest(MCPBaseModel):
     to read from.
     """
 
+    jsonrpc: "Literal['2.0']"
+    id: "RequestId"
     method: "Literal['roots/list']"
     params: "None | ListRootsRequestParamsParams" = field(default=None)
 
@@ -1682,6 +1765,14 @@ class ListRootsRequest(MCPBaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
+        # Process jsonrpc
+        value = data.get("jsonrpc")
+        kwargs["jsonrpc"] = value
+
+        # Process id
+        value = data.get("id")
+        kwargs["id"] = value
 
         # Process method
         value = data.get("method")
@@ -1780,6 +1871,8 @@ class ListRootsResult(MCPBaseModel):
 class ListToolsRequest(MCPBaseModel):
     """Sent from the client to request a list of tools the server has."""
 
+    jsonrpc: "Literal['2.0']"
+    id: "RequestId"
     method: "Literal['tools/list']"
     params: "None | ListToolsRequestParamsParams" = field(default=None)
 
@@ -1791,6 +1884,14 @@ class ListToolsRequest(MCPBaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
+        # Process jsonrpc
+        value = data.get("jsonrpc")
+        kwargs["jsonrpc"] = value
+
+        # Process id
+        value = data.get("id")
+        kwargs["id"] = value
 
         # Process method
         value = data.get("method")
@@ -2061,6 +2162,8 @@ class NotificationParamsParams(MCPBaseModel):
 
 @dataclass
 class PaginatedRequest(MCPBaseModel):
+    jsonrpc: "Literal['2.0']"
+    id: "RequestId"
     method: "str"
     params: "None | PaginatedRequestParamsParams" = field(default=None)
 
@@ -2072,6 +2175,14 @@ class PaginatedRequest(MCPBaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
+        # Process jsonrpc
+        value = data.get("jsonrpc")
+        kwargs["jsonrpc"] = value
+
+        # Process id
+        value = data.get("id")
+        kwargs["id"] = value
 
         # Process method
         value = data.get("method")
@@ -2138,6 +2249,8 @@ class PingRequest(MCPBaseModel):
     is still alive. The receiver must promptly respond, or else may be disconnected.
     """
 
+    jsonrpc: "Literal['2.0']"
+    id: "RequestId"
     method: "Literal['ping']"
     params: "None | PingRequestParamsParams" = field(default=None)
 
@@ -2149,6 +2262,14 @@ class PingRequest(MCPBaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
+        # Process jsonrpc
+        value = data.get("jsonrpc")
+        kwargs["jsonrpc"] = value
+
+        # Process id
+        value = data.get("id")
+        kwargs["id"] = value
 
         # Process method
         value = data.get("method")
@@ -2501,6 +2622,8 @@ class PromptReference(MCPBaseModel):
 class ReadResourceRequest(MCPBaseModel):
     """Sent from the client to the server, to read a specific resource URI."""
 
+    jsonrpc: "Literal['2.0']"
+    id: "RequestId"
     method: "Literal['resources/read']"
     params: "ReadResourceRequestParamsParams"
 
@@ -2512,6 +2635,14 @@ class ReadResourceRequest(MCPBaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
+        # Process jsonrpc
+        value = data.get("jsonrpc")
+        kwargs["jsonrpc"] = value
+
+        # Process id
+        value = data.get("id")
+        kwargs["id"] = value
 
         # Process method
         value = data.get("method")
@@ -2620,6 +2751,8 @@ class ReadResourceResult(MCPBaseModel):
 
 @dataclass
 class Request(MCPBaseModel):
+    jsonrpc: "Literal['2.0']"
+    id: "RequestId"
     method: "str"
     params: "None | RequestParamsParams" = field(default=None)
 
@@ -2631,6 +2764,14 @@ class Request(MCPBaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
+        # Process jsonrpc
+        value = data.get("jsonrpc")
+        kwargs["jsonrpc"] = value
+
+        # Process id
+        value = data.get("id")
+        kwargs["id"] = value
 
         # Process method
         value = data.get("method")
@@ -3244,6 +3385,8 @@ class ServerCapabilitiesToolsParams(MCPBaseModel):
 class SetLevelRequest(MCPBaseModel):
     """A request from the client to the server, to enable or adjust logging."""
 
+    jsonrpc: "Literal['2.0']"
+    id: "RequestId"
     method: "Literal['logging/setLevel']"
     params: "SetLevelRequestParamsParams"
 
@@ -3255,6 +3398,14 @@ class SetLevelRequest(MCPBaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
+        # Process jsonrpc
+        value = data.get("jsonrpc")
+        kwargs["jsonrpc"] = value
+
+        # Process id
+        value = data.get("id")
+        kwargs["id"] = value
 
         # Process method
         value = data.get("method")
@@ -3296,6 +3447,8 @@ class SubscribeRequest(MCPBaseModel):
     whenever a particular resource changes.
     """
 
+    jsonrpc: "Literal['2.0']"
+    id: "RequestId"
     method: "Literal['resources/subscribe']"
     params: "SubscribeRequestParamsParams"
 
@@ -3307,6 +3460,14 @@ class SubscribeRequest(MCPBaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
+        # Process jsonrpc
+        value = data.get("jsonrpc")
+        kwargs["jsonrpc"] = value
+
+        # Process id
+        value = data.get("id")
+        kwargs["id"] = value
 
         # Process method
         value = data.get("method")
@@ -3595,6 +3756,8 @@ class UnsubscribeRequest(MCPBaseModel):
     from the server. This should follow a previous resources/subscribe request.
     """
 
+    jsonrpc: "Literal['2.0']"
+    id: "RequestId"
     method: "Literal['resources/unsubscribe']"
     params: "UnsubscribeRequestParamsParams"
 
@@ -3606,6 +3769,14 @@ class UnsubscribeRequest(MCPBaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
+        # Process jsonrpc
+        value = data.get("jsonrpc")
+        kwargs["jsonrpc"] = value
+
+        # Process id
+        value = data.get("id")
+        kwargs["id"] = value
 
         # Process method
         value = data.get("method")

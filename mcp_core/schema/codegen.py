@@ -230,6 +230,13 @@ def generate_class(
     optional_fields = []
     field_types = {}  # Store field types for from_dict generation
 
+    # Add jsonrpc and id fields for Request classes
+    if name.endswith("Request"):
+        required_fields.append("jsonrpc: \"Literal['2.0']\"")
+        required_fields.append('id: "RequestId"')
+        field_types["jsonrpc"] = "Literal['2.0']"
+        field_types["id"] = "RequestId"
+
     for prop_name, prop_schema in properties.items():
         prop_type = create_python_type(
             prop_schema.get("type", "string"), prop_schema, prop_name, name
