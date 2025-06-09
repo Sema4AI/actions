@@ -30,7 +30,7 @@ class McpTransport:
                 request, mcp_session_id
             )
 
-            response_headers = {}
+            response_headers: dict[str, str] = {}
             if mcp_handler.session_id:
                 response_headers["Mcp-Session-Id"] = mcp_handler.session_id
 

@@ -13,8 +13,6 @@ class IMCPSessionHandler(Protocol):
     how to handle session expiration, or even always return the same handler if there should be only one session.
     """
 
-    session_id: str | None
-
     async def obtain_session_handler(
         self, request: Request, session_id: str | None
     ) -> "IMCPHandler":
@@ -51,6 +49,8 @@ class IMCPSessionHandler(Protocol):
 
 class IMCPHandler(Protocol):
     """Low-level protocol defining the interface for handling MCP messages."""
+
+    session_id: str | None
 
     async def handle_sse_stream(self, last_event_id: str | None) -> EventSourceResponse:
         """Handle an SSE stream.
