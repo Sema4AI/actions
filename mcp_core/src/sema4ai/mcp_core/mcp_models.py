@@ -178,7 +178,7 @@ class CallToolRequestParamsParams(MCPBaseModel):
 
 
 @dataclass
-class CallToolResult(MCPBaseModel):
+class CallToolResult(Result):
     """
     The server's response to a tool call. Any errors that originate from the tool
     SHOULD be reported inside the result object, with `isError` set to true, _not_ as
@@ -515,7 +515,7 @@ class CompleteRequestParamsParamsArgumentParams(MCPBaseModel):
 
 
 @dataclass
-class CompleteResult(MCPBaseModel):
+class CompleteResult(Result):
     """The server's response to a completion/complete request"""
 
     completion: "CompleteResultCompletionParams"
@@ -704,7 +704,7 @@ class CreateMessageRequestParamsParams(MCPBaseModel):
 
 
 @dataclass
-class CreateMessageResult(MCPBaseModel):
+class CreateMessageResult(Result):
     """
     The client's response to a sampling/create_message request from the server. The
     client should inform the user before returning the sampled message, to allow them
@@ -924,7 +924,7 @@ class GetPromptRequestParamsParams(MCPBaseModel):
 
 
 @dataclass
-class GetPromptResult(MCPBaseModel):
+class GetPromptResult(Result):
     """The server's response to a prompts/get request from the client."""
 
     messages: "list[PromptMessage]"
@@ -1107,7 +1107,7 @@ class InitializeRequestParamsParams(MCPBaseModel):
 
 
 @dataclass
-class InitializeResult(MCPBaseModel):
+class InitializeResult(Result):
     """
     After receiving an initialize request from the client, the server sends this
     response.
@@ -1505,7 +1505,7 @@ class ListPromptsRequestParamsParams(MCPBaseModel):
 
 
 @dataclass
-class ListPromptsResult(MCPBaseModel):
+class ListPromptsResult(Result):
     """The server's response to a prompts/list request from the client."""
 
     prompts: "list[Prompt]"
@@ -1607,7 +1607,7 @@ class ListResourceTemplatesRequestParamsParams(MCPBaseModel):
 
 
 @dataclass
-class ListResourceTemplatesResult(MCPBaseModel):
+class ListResourceTemplatesResult(Result):
     """The server's response to a resources/templates/list request from the client."""
 
     resourceTemplates: "list[ResourceTemplate]"
@@ -1707,7 +1707,7 @@ class ListResourcesRequestParamsParams(MCPBaseModel):
 
 
 @dataclass
-class ListResourcesResult(MCPBaseModel):
+class ListResourcesResult(Result):
     """The server's response to a resources/list request from the client."""
 
     resources: "list[Resource]"
@@ -1836,7 +1836,7 @@ class ListRootsRequestParamsParams_metaParams(MCPBaseModel):
 
 
 @dataclass
-class ListRootsResult(MCPBaseModel):
+class ListRootsResult(Result):
     """
     The client's response to a roots/list request from the server. This result
     contains an array of Root objects, each representing a root directory or file that
@@ -1933,7 +1933,7 @@ class ListToolsRequestParamsParams(MCPBaseModel):
 
 
 @dataclass
-class ListToolsResult(MCPBaseModel):
+class ListToolsResult(Result):
     """The server's response to a tools/list request from the client."""
 
     tools: "list[Tool]"
@@ -2224,7 +2224,7 @@ class PaginatedRequestParamsParams(MCPBaseModel):
 
 
 @dataclass
-class PaginatedResult(MCPBaseModel):
+class PaginatedResult(Result):
     _meta: "None | dict[str, Any]" = field(default=None)
     nextCursor: "None | str" = field(default=None)
 
@@ -2688,7 +2688,7 @@ class ReadResourceRequestParamsParams(MCPBaseModel):
 
 
 @dataclass
-class ReadResourceResult(MCPBaseModel):
+class ReadResourceResult(Result):
     """The server's response to a resources/read request from the client."""
 
     contents: "list[TextResourceContents | BlobResourceContents]"
@@ -3101,8 +3101,6 @@ class ResourceUpdatedNotificationParamsParams(MCPBaseModel):
 
 @dataclass
 class Result(MCPBaseModel):
-    _meta: "None | dict[str, Any]" = field(default=None)
-
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
         """Create an instance from a dictionary."""
@@ -3111,10 +3109,6 @@ class Result(MCPBaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
-
-        # Process _meta
-        value = data.get("_meta")
-        kwargs["_meta"] = value
 
         return cls(**kwargs)
 

@@ -203,6 +203,10 @@ def generate_class(
     Returns:
         tuple[str, list[str]]: The generated class definition and a list of nested class definitions
     """
+    # For Result class, ensure it has no properties
+    if name == "Result":
+        schema = {"type": "object", "properties": {}, "required": []}
+
     properties = schema.get("properties", {})
     required = schema.get("required", [])
 
@@ -280,9 +284,15 @@ def generate_class(
     # Create indenter for the class
     indenter = TextIndenter()
 
+    # Determine the base class for this class
+    if name.endswith("Result") and name != "Result":
+        actual_base_class = "Result"
+    else:
+        actual_base_class = base_class
+
     # Generate class definition
     indenter.add_line("@dataclass")
-    indenter.add_line(f"class {name}({base_class}):")
+    indenter.add_line(f"class {name}({actual_base_class}):")
     if docstring:
         indenter.add_block(docstring)
     indenter.add_line("")
