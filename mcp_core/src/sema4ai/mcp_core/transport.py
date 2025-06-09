@@ -10,6 +10,20 @@ from .mcp_models import JSONRPCError, JSONRPCErrorErrorParams, MCPBaseModel
 class IMCPImplementation(Protocol):
     """Protocol defining the interface for MCP implementations."""
 
+    async def start_session(self, session_id: str) -> None:
+        """Start an MCP session.
+
+        Args:
+            session_id: The ID of the session
+        """
+
+    async def end_session(self, session_id: str) -> None:
+        """End an MCP session.
+
+        Args:
+            session_id: The ID of the session
+        """
+
     async def handle_sse_stream(
         self, last_event_id: Optional[str]
     ) -> EventSourceResponse:
@@ -45,7 +59,7 @@ class IMCPImplementation(Protocol):
         """Handle an MCP response.
 
         Args:
-            responses: The MCP responses to handle
+            responses: The MCP responses to handle (from a request the server sent to the client)
         """
 
 
