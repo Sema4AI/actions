@@ -4,6 +4,7 @@ import uvicorn
 from fastapi.applications import FastAPI
 from sse_starlette.sse import EventSourceResponse
 from starlette.middleware.cors import CORSMiddleware
+from starlette.requests import Request
 
 from sema4ai.mcp_core.mcp_models import (
     Implementation,
@@ -12,11 +13,15 @@ from sema4ai.mcp_core.mcp_models import (
     MCPBaseModel,
     ServerCapabilities,
 )
-from sema4ai.mcp_core.transport import IMCPImplementation, McpTransport
+from sema4ai.mcp_core.protocols import IMCPHandler, IMCPSessionHandler
+from sema4ai.mcp_core.transport import McpTransport
 
 
-class SampleMCPImplementation(IMCPImplementation):
+class SampleMCPImplementation(IMCPHandler):
     """Sample implementation that handles initialization."""
+
+    def __init__(self, session_id: str) -> None:
+        self.session_id = session_id
 
     async def handle_message(
         self, mcp_models: list[MCPBaseModel]
@@ -53,6 +58,34 @@ class SampleMCPImplementation(IMCPImplementation):
         raise NotImplementedError(f"TODO: Implement support to handle: {mcp_models}")
 
 
+class SampleMCPSessionHandler(IMCPSessionHandler):
+    """Sample session handler that handles sessions."""
+
+    def __init__(self) -> None:
+        self.session_handlers: dict[str, IMCPHandler] = {}
+
+    async def obtain_session_handler(
+        self, request: Request, session_id: str | None
+    ) -> IMCPHandler:
+        """Obtain an MCP session handler."""
+        import uuid
+
+        if session_id is None:
+            session_id = str(uuid.uuid4())
+        self.session_handlers[session_id] = SampleMCPImplementation(session_id)
+        return self.session_handlers[session_id]
+
+    async def get_session_handler(
+        self, request: Request, session_id: str
+    ) -> IMCPHandler:
+        """Get an MCP session handler."""
+        return self.session_handlers[session_id]
+
+    async def end_session(self, request: Request, session_id: str) -> None:
+        """End an MCP session."""
+        self.session_handlers.pop(session_id, None)
+
+
 def run_server(host: str = "127.0.0.1", port: int = 8000):
     """Run the MCP server"""
     app = FastAPI()
@@ -65,8 +98,7 @@ def run_server(host: str = "127.0.0.1", port: int = 8000):
         allow_headers=["*"],
     )
 
-    # Create the transport instance with sample implementation
-    transport = McpTransport(app, SampleMCPImplementation())
+    transport = McpTransport(app, SampleMCPSessionHandler())
 
     uvicorn.run(app, host=host, port=port)
 

@@ -1,74 +1,21 @@
-from typing import Optional, Protocol
+from typing import Optional
 
 from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.responses import JSONResponse
 from sse_starlette.sse import EventSourceResponse
 
+from sema4ai.mcp_core.protocols import IMCPSessionHandler
+
 from .mcp_models import JSONRPCError, JSONRPCErrorErrorParams, MCPBaseModel
 
 
-class IMCPImplementation(Protocol):
-    """Protocol defining the interface for MCP implementations."""
-
-    async def start_session(self, session_id: str) -> None:
-        """Start an MCP session.
-
-        Args:
-            session_id: The ID of the session
-        """
-
-    async def end_session(self, session_id: str) -> None:
-        """End an MCP session.
-
-        Args:
-            session_id: The ID of the session
-        """
-
-    async def handle_sse_stream(
-        self, last_event_id: Optional[str]
-    ) -> EventSourceResponse:
-        """Handle an SSE stream.
-
-        Args:
-            last_event_id: The last event ID
-
-        Returns:
-            An EventSourceResponse for streaming responses
-        """
-
-    async def handle_message(
-        self, request: list[MCPBaseModel]
-    ) -> MCPBaseModel | EventSourceResponse:
-        """Handle an MCP request.
-
-        Args:
-            request: The MCP request to handle
-
-        Returns:
-            Either a response model or an EventSourceResponse for streaming responses
-        """
-
-    async def handle_notifications(self, notifications: list[MCPBaseModel]) -> None:
-        """Handle an MCP notification.
-
-        Args:
-            notifications: The MCP notifications to handle
-        """
-
-    async def handle_responses(self, responses: list[MCPBaseModel]) -> None:
-        """Handle an MCP response.
-
-        Args:
-            responses: The MCP responses to handle (from a request the server sent to the client)
-        """
-
-
 class McpTransport:
-    def __init__(self, app: FastAPI, implementation: IMCPImplementation) -> None:
+    def __init__(self, app: FastAPI, session_handler: IMCPSessionHandler) -> None:
         @app.post("/mcp")
         async def handle_post(
             request: Request,
             accept: str = Header(...),
+            mcp_session_id: Optional[str] = Header(None, alias="Mcp-Session-Id"),
         ):
             from sema4ai.mcp_core.mcp_base_model import MessageType
             from sema4ai.mcp_core.mcp_models import create_mcp_model
@@ -78,6 +25,14 @@ class McpTransport:
             # and text/event-stream as supported content types.
             if "application/json" not in accept and "text/event-stream" not in accept:
                 raise HTTPException(status_code=400, detail="Invalid Accept header")
+
+            mcp_handler = await session_handler.obtain_session_handler(
+                request, mcp_session_id
+            )
+
+            response_headers = {}
+            if mcp_handler.session_id:
+                response_headers["Mcp-Session-Id"] = mcp_handler.session_id
 
             # Read and parse the request body
             try:
@@ -91,7 +46,7 @@ class McpTransport:
                         message=f"Error parsing request body as json: {e}",
                     ),
                 )
-                return JSONResponse(content=error.to_dict())
+                return JSONResponse(content=error.to_dict(), headers=response_headers)
 
             # Spec says: The body of the POST request MUST be one of the following:
             #     A single JSON-RPC request, notification, or response
@@ -118,10 +73,10 @@ class McpTransport:
                         requests.append(model)  # Requests are handled last
 
                     elif message_type == MessageType.NOTIFICATION:
-                        await implementation.handle_notifications([model])
+                        await mcp_handler.handle_notifications([model])
 
                     elif message_type == MessageType.RESPONSE:
-                        await implementation.handle_responses([model])
+                        await mcp_handler.handle_responses([model])
                     else:
                         raise ValueError(
                             f"Invalid message type: {message_type} -- {model}"
@@ -132,9 +87,11 @@ class McpTransport:
                     #     If the server accepts the input, the server MUST return HTTP status code 202 Accepted with no body.
                     #     If the server cannot accept the input, it MUST return an HTTP error status code (e.g., 400 Bad Request).
                     # The HTTP response body MAY comprise a JSON-RPC error response that has no id.
-                    return JSONResponse(content={}, status_code=202)
+                    return JSONResponse(
+                        content={}, status_code=202, headers=response_headers
+                    )
 
-                response = await implementation.handle_message(mcp_models)
+                response = await mcp_handler.handle_message(mcp_models)
 
                 # Spec says: If the input contains any number of JSON-RPC requests, the server MUST either return Content-Type: text/event-stream,
                 # to initiate an SSE stream, or Content-Type: application/json, to return one JSON object. The client MUST support both these cases.
@@ -145,7 +102,7 @@ class McpTransport:
                 if isinstance(response, MCPBaseModel):
                     msg_as_dict = response.to_dict()
 
-                    return JSONResponse(content=msg_as_dict)
+                    return JSONResponse(content=msg_as_dict, headers=response_headers)
 
                 raise ValueError(
                     f"Internal error in IMCPImplementation.handle_message: Invalid response type: {type(response)} -- {response}"
@@ -161,15 +118,33 @@ class McpTransport:
                         message=str(e),
                     ),
                 )
-                return JSONResponse(content=error.to_dict())
+                return JSONResponse(content=error.to_dict(), headers=response_headers)
 
         @app.get("/mcp")
         async def handle_get(
             request: Request,
             last_event_id: Optional[str] = Header(None, alias="Last-Event-ID"),
             accept: str = Header(...),
+            mcp_session_id: Optional[str] = Header(None, alias="Mcp-Session-Id"),
         ):
             if "text/event-stream" not in accept:
                 raise HTTPException(status_code=405, detail="SSE not supported")
 
-            return implementation.handle_sse_stream(last_event_id)
+            if mcp_session_id is None:
+                raise HTTPException(
+                    status_code=400, detail="Mcp-Session-Id is required"
+                )
+
+            session_handler = await session_handler.get_session_handler(
+                request, mcp_session_id
+            )
+
+            return session_handler.handle_sse_stream(last_event_id)
+
+        @app.delete("/mcp")
+        async def handle_delete(
+            request: Request,
+            mcp_session_id: str = Header(..., alias="Mcp-Session-Id"),
+        ):
+            await session_handler.end_session(request, mcp_session_id)
+            return JSONResponse(content={}, status_code=200)

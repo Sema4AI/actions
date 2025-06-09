@@ -67,18 +67,17 @@ async def test_mcp_initialize(mcp_server: str):
         Implementation,
         InitializeRequest,
         InitializeRequestParamsParams,
-        JSONRPCRequest,
     )
 
     async with httpx.AsyncClient() as client:
         # Send initialize request
         initialize_request = InitializeRequest(
-            method="initialize",
             params=InitializeRequestParamsParams(
                 clientInfo=Implementation(name="test-client", version="1.0.0"),
                 capabilities=ClientCapabilities(),
                 protocolVersion="1.0",
             ),
+            id=1,
         )
 
         response = await client.post(
@@ -87,16 +86,7 @@ async def test_mcp_initialize(mcp_server: str):
                 "Accept": "application/json, text/event-stream",
                 "Content-Type": "application/json",
             },
-            json=JSONRPCRequest(
-                id=1,
-                jsonrpc="2.0",
-                method="initialize",
-                params=InitializeRequestParamsParams(
-                    clientInfo=Implementation(name="test-client", version="1.0.0"),
-                    capabilities=ClientCapabilities(),
-                    protocolVersion="1.0",
-                ),
-            ).to_dict(),
+            json=initialize_request.to_dict(),
             timeout=None,
         )
 
@@ -112,8 +102,6 @@ async def test_mcp_initialize(mcp_server: str):
         # Get session ID from headers
         session_id = response.headers.get("Mcp-Session-Id")
         assert session_id is not None
-
-        return session_id
 
 
 @pytest.mark.asyncio
