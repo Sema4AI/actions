@@ -388,6 +388,7 @@ def generate_class(
                         "ProgressToken",
                         "RequestId",
                         "Role",
+                        "LoggingLevel",
                     ]
                     or "Literal[" in item_type
                 ):
@@ -402,7 +403,7 @@ def generate_class(
             pass
         elif "Literal[" in field_type:
             pass
-        elif field_type in ["ProgressToken", "RequestId", "Role"]:
+        elif field_type in ["ProgressToken", "RequestId", "Role", "LoggingLevel"]:
             pass
         elif "|" in field_type:
             indenter.add_line("if value is not None:", extra_indent=1)
@@ -476,7 +477,15 @@ def generate_class(
             indenter.add_line("if value is not None:", extra_indent=1)
             if (
                 field_type
-                in ["str", "int", "float", "bool", "ProgressToken", "RequestId"]
+                in [
+                    "str",
+                    "int",
+                    "float",
+                    "bool",
+                    "ProgressToken",
+                    "RequestId",
+                    "LoggingLevel",
+                ]
                 or "Literal[" in field_type
             ):
                 pass
@@ -565,7 +574,7 @@ T = TypeVar('T')
             if "type" in schema:
                 # Handle basic types (like RequestId)
                 type_name = create_python_type(schema["type"], schema)
-                if name in ["RequestId", "ProgressToken", "Role"]:
+                if name in ["RequestId", "ProgressToken", "Role", "LoggingLevel"]:
                     # Special case for RequestId and ProgressToken - make them type aliases
                     indenter.add_line(f"# Type alias for {name.lower()}")
                     indenter.add_line(f"{name} = {type_name}")
@@ -691,118 +700,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-def generate_union_type_disambiguation(cls: type, union_type: type) -> str:
-    """Generate code to disambiguate between types in a union."""
-    if not hasattr(union_type, "__origin__") or union_type.__origin__ is not Union:
-        return ""
-
-    # Get the actual types in the union
-    union_types = get_args(union_type)
-    if not union_types:
-        return ""
-
-    # Get the required fields for each type from the schema
-    required_fields = {}
-    for t in union_types:
-        if hasattr(t, "__annotations__"):
-            # Get the required fields from the schema
-            schema = get_schema_for_type(t)
-            if schema and "required" in schema:
-                required_fields[t] = schema["required"]
-            else:
-                # If no required fields in schema, use all fields
-                required_fields[t] = list(t.__annotations__.keys())
-
-    # Create indenter for the disambiguation code
-    indenter = TextIndenter()
-
-    # Generate the disambiguation code
-    indenter.add_line("@classmethod")
-    indenter.add_line("def from_dict(cls: Type[T], data: dict[str, Any]) -> T:")
-    indenter.add_line('"""Create an instance from a dictionary."""', extra_indent=1)
-    indenter.add_line("if not isinstance(data, dict):", extra_indent=1)
-    indenter.add_line(
-        'raise ValueError(f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}")',
-        extra_indent=2,
-    )
-    indenter.add_line("kwargs = {}", extra_indent=1)
-    indenter.add_line("")
-    indenter.add_line(
-        "# Create a mapping of required fields for each type", extra_indent=1
-    )
-    indenter.add_line("required_props_map = {", extra_indent=1)
-    for t, fields in required_fields.items():
-        indenter.add_line(f"{t.__name__}: {fields},", extra_indent=2)
-    indenter.add_line("}", extra_indent=1)
-    indenter.add_line("")
-    indenter.add_line(
-        "# Check which type's required fields are present", extra_indent=1
-    )
-    indenter.add_line("matches = []", extra_indent=1)
-    indenter.add_line(
-        "for type_name, required_fields in required_props_map.items():",
-        extra_indent=1,
-    )
-    indenter.add_line(
-        "if any(field in data for field in required_fields):", extra_indent=2
-    )
-    indenter.add_line("matches.append(type_name)", extra_indent=3)
-    indenter.add_line("")
-    indenter.add_line("if len(matches) == 1:", extra_indent=1)
-    indenter.add_line(
-        "# Use globals()[type_name] to get the class by name", extra_indent=2
-    )
-    indenter.add_line("return globals()[matches[0]].from_dict(data)", extra_indent=2)
-    indenter.add_line("elif len(matches) > 1:", extra_indent=1)
-    indenter.add_line(
-        "match_details = [f'{name} (requires any of {required_props_map[name]})' for name in matches]",
-        extra_indent=2,
-    )
-    indenter.add_line(
-        "raise ValueError(f\"Ambiguous match for union type. Multiple types match: {'; '.join(match_details)}\")",
-        extra_indent=2,
-    )
-    indenter.add_line("else:", extra_indent=1)
-    indenter.add_line("available_fields = list(data.keys())", extra_indent=2)
-    indenter.add_line(
-        "type_details = [f'{name} (requires any of {required_props_map[name]})' for name in required_props_map]",
-        extra_indent=2,
-    )
-    indenter.add_line(
-        "raise ValueError(f\"No match for union type. Available fields: {available_fields}. Expected one of: {'; '.join(type_details)}\")",
-        extra_indent=2,
-    )
-    indenter.add_line("")
-    indenter.add_line("return cls(**kwargs)", extra_indent=1)
-
-    return indenter.get_text()
-
-
-def generate_class(cls: type) -> str:
-    """Generate Python code for a Pydantic model class."""
-    indenter = TextIndenter()
-
-    indenter.add_line(f"class {cls.__name__}(MCPBaseModel):")
-    indenter.add_line('    """Generated from JSON Schema."""')
-    indenter.add_line("")
-
-    # Add fields
-    for name, field in cls.model_fields.items():
-        field_type = field.annotation
-        field_info = field.json_schema_extra or {}
-        description = field_info.get("description", "")
-        if description:
-            indenter.add_line(f"    # {description}")
-        indenter.add_line(f"    {name}: {field_type}")
-        indenter.add_line("")
-
-    # Add union type disambiguation if needed
-    for name, field in cls.model_fields.items():
-        field_type = field.annotation
-        if hasattr(field_type, "__origin__") and field_type.__origin__ is Union:
-            indenter.add_block(generate_union_type_disambiguation(cls, field_type))
-            indenter.add_line("")
-
-    return indenter.get_text()

@@ -1,5 +1,6 @@
-from typing import Any, TypeVar, Literal, Type
 from dataclasses import dataclass, field
+from typing import Any, Literal, Type, TypeVar
+
 from sema4ai.mcp_core.mcp_base_model import MCPBaseModel
 
 T = TypeVar("T")
@@ -1923,8 +1924,6 @@ class LoggingMessageNotificationParamsParams(MCPBaseModel):
 
         # Process level
         value = data.get("level")
-        if value is not None:
-            value = LoggingLevel.from_dict(value)
         kwargs["level"] = value
 
         # Process logger
@@ -3285,8 +3284,6 @@ class SetLevelRequestParamsParams(MCPBaseModel):
 
         # Process level
         value = data.get("level")
-        if value is not None:
-            value = LoggingLevel.from_dict(value)
         kwargs["level"] = value
 
         return cls(**kwargs)

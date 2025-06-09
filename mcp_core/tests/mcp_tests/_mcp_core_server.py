@@ -19,15 +19,32 @@ class SampleMCPImplementation(IMCPImplementation):
     """Sample implementation that handles initialization."""
 
     async def handle_message(
-        self, request: list[MCPBaseModel]
+        self, mcp_models: list[MCPBaseModel]
     ) -> list[MCPBaseModel] | MCPBaseModel | EventSourceResponse:
-        if isinstance(request, InitializeRequest):
-            return InitializeResult(
-                capabilities=ServerCapabilities(),
-                protocolVersion="1.0",
-                serverInfo=Implementation(name="test-server", version="1.0.0"),
-            )
-        raise NotImplementedError(f"Method {request.method} not implemented")
+        """Handle an MCP request.
+
+        Args:
+            mcp_models: The MCP models to handle (one or more).
+
+        Returns:
+            A list of MCP models or an EventSourceResponse
+        """
+
+        single_model = len(mcp_models) == 1
+
+        for model in mcp_models:
+            if isinstance(model, InitializeRequest):
+                assert (
+                    single_model
+                ), f"Error: InitializeRequest cannot be batched, received: {mcp_models}"
+
+                return InitializeResult(
+                    capabilities=ServerCapabilities(),
+                    protocolVersion="1.0",
+                    serverInfo=Implementation(name="test-server", version="1.0.0"),
+                )
+
+        raise NotImplementedError(f"TODO: Implement support to handle: {mcp_models}")
 
 
 def run_server(host: str = "127.0.0.1", port: int = 8000):

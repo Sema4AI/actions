@@ -42,6 +42,18 @@ class MCPBaseModel:
                 result[field_name] = value
         return result
 
+    def __str__(self) -> str:
+        import json
+
+        try:
+            return (
+                f"{self.__class__.__name__} -- {json.dumps(self.to_dict(), indent=4)}"
+            )
+        except Exception:
+            return f"{self.__class__.__name__} -- {self.__dict__}"
+
+    __repr__ = __str__
+
     @classmethod
     def get_message_type(cls) -> MessageType:
         """Get the type of message this class represents."""

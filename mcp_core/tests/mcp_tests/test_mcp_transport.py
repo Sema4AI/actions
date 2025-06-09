@@ -67,6 +67,7 @@ async def test_mcp_initialize(mcp_server: str):
         Implementation,
         InitializeRequest,
         InitializeRequestParamsParams,
+        JSONRPCRequest,
     )
 
     async with httpx.AsyncClient() as client:
@@ -86,7 +87,17 @@ async def test_mcp_initialize(mcp_server: str):
                 "Accept": "application/json, text/event-stream",
                 "Content-Type": "application/json",
             },
-            json=initialize_request.to_dict(),
+            json=JSONRPCRequest(
+                id=1,
+                jsonrpc="2.0",
+                method="initialize",
+                params=InitializeRequestParamsParams(
+                    clientInfo=Implementation(name="test-client", version="1.0.0"),
+                    capabilities=ClientCapabilities(),
+                    protocolVersion="1.0",
+                ),
+            ).to_dict(),
+            timeout=None,
         )
 
         assert response.status_code == 200
