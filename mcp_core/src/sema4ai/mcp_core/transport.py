@@ -1,7 +1,4 @@
-import asyncio
-import json
-import uuid
-from typing import Any, Dict, List, Optional, Protocol, Union
+from typing import Optional, Protocol
 
 from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.responses import JSONResponse
@@ -12,6 +9,18 @@ from .mcp_models import JSONRPCError, JSONRPCErrorErrorParams, MCPBaseModel
 
 class IMCPImplementation(Protocol):
     """Protocol defining the interface for MCP implementations."""
+
+    async def handle_sse_stream(
+        self, last_event_id: Optional[str]
+    ) -> EventSourceResponse:
+        """Handle an SSE stream.
+
+        Args:
+            last_event_id: The last event ID
+
+        Returns:
+            An EventSourceResponse for streaming responses
+        """
 
     async def handle_message(
         self, request: list[MCPBaseModel]
@@ -48,7 +57,7 @@ class McpTransport:
             accept: str = Header(...),
         ):
             from sema4ai.mcp_core.mcp_base_model import MessageType
-            from sema4ai.mcp_core.mcp_models import JSONRPCResponse, create_mcp_model
+            from sema4ai.mcp_core.mcp_models import create_mcp_model
 
             # Spec says: The client MUST use HTTP POST to send JSON-RPC messages to the MCP endpoint.
             # Spec says: The client MUST include an Accept header, listing both application/json
@@ -123,10 +132,10 @@ class McpTransport:
                     msg_as_dict = response.to_dict()
 
                     return JSONResponse(content=msg_as_dict)
-                else:
-                    raise ValueError(
-                        f"Internal error in IMCPImplementation.handle_message: Invalid response type: {type(response)} -- {response}"
-                    )
+
+                raise ValueError(
+                    f"Internal error in IMCPImplementation.handle_message: Invalid response type: {type(response)} -- {response}"
+                )
 
             except Exception as e:
                 # Create error response
@@ -149,4 +158,4 @@ class McpTransport:
             if "text/event-stream" not in accept:
                 raise HTTPException(status_code=405, detail="SSE not supported")
 
-            return EventSourceResponse(self.handle_sse_stream(None, last_event_id))
+            return implementation.handle_sse_stream(last_event_id)

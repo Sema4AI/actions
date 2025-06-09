@@ -20,7 +20,7 @@ class SampleMCPImplementation(IMCPImplementation):
 
     async def handle_message(
         self, mcp_models: list[MCPBaseModel]
-    ) -> list[MCPBaseModel] | MCPBaseModel | EventSourceResponse:
+    ) -> MCPBaseModel | EventSourceResponse:
         """Handle an MCP request.
 
         Args:
