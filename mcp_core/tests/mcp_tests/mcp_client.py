@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-from typing import TYPE_CHECKING, AsyncIterator
+from typing import TYPE_CHECKING, AsyncIterator, Callable
 
 from sema4ai.mcp_core.mcp_models import InitializeResult
 
@@ -14,11 +14,16 @@ class MCPSession:
         session_id: str,
         client: "httpx.AsyncClient",
         initialize_result: InitializeResult,
+        next_id: Callable[[], int | str],
     ):
         self.url = url
         self.session_id = session_id
         self.client = client
         self.initialize_result = initialize_result
+        self._next_id = next_id
+
+    def next_id(self) -> int | str:
+        return self._next_id()
 
 
 class MCPClient:
@@ -136,7 +141,7 @@ class MCPClient:
             # Get session ID from headers
             session_id = response.headers.get("Mcp-Session-Id")  # type: ignore
             assert session_id is not None
-            session = MCPSession(self.url, session_id, client, result)
+            session = MCPSession(self.url, session_id, client, result, self._next_id)
             try:
                 yield session
             finally:

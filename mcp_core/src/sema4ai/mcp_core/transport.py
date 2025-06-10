@@ -32,9 +32,7 @@ def create_streamable_http_router(
         if "application/json" not in accept and "text/event-stream" not in accept:
             raise HTTPException(status_code=400, detail="Invalid Accept header")
 
-        mcp_handler = await session_handler.obtain_session_handler(
-            request, mcp_session_id
-        )
+        mcp_handler = await session_handler.obtain_session_handler(request, mcp_session_id)
 
         response_headers: dict[str, str] = {}
         if mcp_handler.session_id:
@@ -67,9 +65,7 @@ def create_streamable_http_router(
                 if len(mcp_models) == 0:
                     raise ValueError("Empty list of MCP models")
             else:
-                raise ValueError(
-                    f"Invalid request body, expected dict or list, got {type(body)}"
-                )
+                raise ValueError(f"Invalid request body, expected dict or list, got {type(body)}")
 
             requests = []
 
@@ -91,11 +87,9 @@ def create_streamable_http_router(
                 #     If the server accepts the input, the server MUST return HTTP status code 202 Accepted with no body.
                 #     If the server cannot accept the input, it MUST return an HTTP error status code (e.g., 400 Bad Request).
                 # The HTTP response body MAY comprise a JSON-RPC error response that has no id.
-                return JSONResponse(
-                    content={}, status_code=202, headers=response_headers
-                )
+                return JSONResponse(content={}, status_code=202, headers=response_headers)
 
-            response = await mcp_handler.handle_message(mcp_models)
+            response = await mcp_handler.handle_requests(mcp_models)
 
             # Spec says: If the input contains any number of JSON-RPC requests, the server MUST either return Content-Type: text/event-stream,
             # to initiate an SSE stream, or Content-Type: application/json, to return one JSON object. The client MUST support both these cases.
@@ -109,7 +103,7 @@ def create_streamable_http_router(
                 return JSONResponse(content=msg_as_dict, headers=response_headers)
 
             raise ValueError(
-                f"Internal error in IMCPImplementation.handle_message: Invalid response type: {type(response)} -- {response}"
+                f"Internal error in IMCPImplementation.handle_requests: Invalid response type: {type(response)} -- {response}"
             )
 
         except Exception as e:
@@ -147,9 +141,7 @@ def create_streamable_http_router(
             raise HTTPException(status_code=400, detail="Mcp-Session-Id is required")
 
         try:
-            mcp_handler = await session_handler.get_session_handler(
-                request, mcp_session_id
-            )
+            mcp_handler = await session_handler.get_session_handler(request, mcp_session_id)
         except KeyError:
             raise HTTPException(status_code=404, detail="Session not found")
 

@@ -20,8 +20,9 @@ class SampleMCPImplementation(IMCPHandler):
 
     def __init__(self, session_id: str) -> None:
         self.session_id = session_id
+        self._initialized = False
 
-    async def handle_message(
+    async def handle_requests(
         self, mcp_models: list[MCPBaseModel]
     ) -> MCPBaseModel | EventSourceResponse:
         """Handle an MCP request.
@@ -36,36 +37,46 @@ class SampleMCPImplementation(IMCPHandler):
 
         single_model = len(mcp_models) == 1
 
-        for model in mcp_models:
-            if isinstance(model, InitializeRequest):
-                assert (
-                    single_model
-                ), f"Error: InitializeRequest cannot be batched, received: {mcp_models}"
+        if not self._initialized:
+            for model in mcp_models:
+                if isinstance(model, InitializeRequest):
+                    if self._initialized:
+                        raise ValueError(
+                            f"Error: InitializeRequest cannot be sent more than once, received: {mcp_models}"
+                        )
+                    if not single_model:
+                        raise ValueError(
+                            f"Error: InitializeRequest cannot be batched, received: {mcp_models}"
+                        )
+                    self._initialized = True
 
-                response = JSONRPCResponse(
-                    id=model.id,
-                    result=InitializeResult(
-                        capabilities=ServerCapabilities(),
-                        protocolVersion="2025-03-26",
-                        serverInfo=Implementation(name="test-server", version="1.0.0"),
-                    ),
-                )
-                return response
+                    response = JSONRPCResponse(
+                        id=model.id,
+                        result=InitializeResult(
+                            capabilities=ServerCapabilities(),
+                            protocolVersion="2025-03-26",
+                            serverInfo=Implementation(name="test-server", version="1.0.0"),
+                        ),
+                    )
+                    return response
 
+        return await self._handle_requests(mcp_models)
+
+    async def _handle_requests(
+        self, mcp_models: list[MCPBaseModel]
+    ) -> MCPBaseModel | EventSourceResponse:
+        """Handle MCP requests."""
         raise NotImplementedError(f"TODO: Implement support to handle: {mcp_models}")
 
     async def handle_notifications(self, mcp_models: list[MCPBaseModel]) -> None:
-        """Handle MCP notifications."""
-        # Sample implementation just ignores notifications
+        """Handle MCP notifications (sent from the client to the server)."""
 
     async def handle_responses(self, mcp_models: list[MCPBaseModel]) -> None:
-        """Handle MCP responses."""
-        # Sample implementation just ignores responses
+        """Handle MCP responses (something requested by the server and answered by the client)."""
 
     async def handle_sse_stream(self, last_event_id: str | None) -> EventSourceResponse:
-        """Handle SSE stream requests."""
+        """Handle SSE stream requests (sent from the server to the client)."""
 
-        # Sample implementation returns an empty stream
         async def event_generator():
             if False:
                 yield {"data": "test"}

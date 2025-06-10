@@ -139,7 +139,42 @@ async def test_mcp_notification(mcp_session: MCPSession):
 
 @pytest.mark.asyncio
 async def test_mcp_tool_call(mcp_session: MCPSession):
-    pass
+    from sema4ai.mcp_core.mcp_models import CallToolRequest, CallToolRequestParams
+    from sema4ai.mcp_core.mcp_models._generated_mcp_models import ListToolsRequest
+
+    session_id = mcp_session.session_id
+
+    # First, list the tools
+    response = await mcp_session.client.post(
+        mcp_session.url,
+        headers={
+            "Accept": "application/json, text/event-stream",
+            "Content-Type": "application/json",
+            "Mcp-Session-Id": session_id,
+        },
+        json=ListToolsRequest(
+            id=mcp_session.next_id(),
+        ).to_dict(),
+    )
+    assert response.status_code == 200
+    print(response.text)
+
+    response = await mcp_session.client.post(
+        mcp_session.url,
+        headers={
+            "Accept": "application/json, text/event-stream",
+            "Content-Type": "application/json",
+            "Mcp-Session-Id": session_id,
+        },
+        json=CallToolRequest(
+            id=mcp_session.next_id(),
+            params=CallToolRequestParams(
+                name="test",
+                arguments={"message": "test"},
+            ),
+        ).to_dict(),
+    )
+    assert response.status_code == 200
 
 
 # @pytest.mark.asyncio

@@ -26,9 +26,7 @@ class IMCPSessionHandler(Protocol):
             KeyError: If the session handler is not found given the request and session_id.
         """
 
-    async def get_session_handler(
-        self, request: Request, session_id: str
-    ) -> "IMCPHandler":
+    async def get_session_handler(self, request: Request, session_id: str) -> "IMCPHandler":
         """Get the session handler given a request and a session ID.
 
         Args:
@@ -62,7 +60,7 @@ class IMCPHandler(Protocol):
             An EventSourceResponse for streaming responses
         """
 
-    async def handle_message(
+    async def handle_requests(
         self, request: list[MCPBaseModel]
     ) -> MCPBaseModel | EventSourceResponse:
         """Handle an MCP request.
