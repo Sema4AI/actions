@@ -22,13 +22,13 @@ class MCPClient:
             ClientCapabilities,
             Implementation,
             InitializeRequest,
-            InitializeRequestParamsParams,
+            InitializeRequestParams,
         )
 
         async with httpx.AsyncClient() as client:
             # Send initialize request
             initialize_request = InitializeRequest(
-                params=InitializeRequestParamsParams(
+                params=InitializeRequestParams(
                     clientInfo=Implementation(name="test-client", version="1.0.0"),
                     capabilities=ClientCapabilities(),
                     protocolVersion="1.0",

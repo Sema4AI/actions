@@ -83,7 +83,7 @@ async def test_mcp_notification(mcp_session: MCPSession):
     """Test sending a notification to the MCP server."""
     from sema4ai.mcp_core.mcp_models import (
         CancelledNotification,
-        CancelledNotificationParamsParams,
+        CancelledNotificationParams,
     )
 
     session_id = mcp_session.session_id
@@ -97,7 +97,7 @@ async def test_mcp_notification(mcp_session: MCPSession):
                 "Mcp-Session-Id": session_id,
             },
             json=CancelledNotification(
-                params=CancelledNotificationParamsParams(requestId=1),
+                params=CancelledNotificationParams(requestId=1),
             ).to_dict(),
         )
 
