@@ -33,3 +33,31 @@ def build_result_model(request_model: MCPBaseModel, kwargs: dict) -> MCPBaseMode
         The result model
     """
     return _generated_mcp_models._request_to_result_map[type(request_model)].from_dict(kwargs)
+
+
+ERROR_CODE_PARSE_ERROR = -32700  # Invalid JSON was received by the server.
+ERROR_CODE_INVALID_REQUEST = -32600  # The JSON sent is not a valid Request object.
+ERROR_CODE_METHOD_NOT_FOUND = -32601  # The method does not exist / is not available.
+ERROR_CODE_INVALID_PARAMS = -32602  # Invalid method parameter(s).
+ERROR_CODE_INTERNAL_ERROR = -32603  # Internal JSON-RPC error.
+ERROR_CODE_SERVER_ERROR_CUSTOM_MIN = (
+    -32099
+)  # Reserved for implementation-defined server errors (min)
+ERROR_CODE_SERVER_ERROR_CUSTOM_MAX = (
+    -32000
+)  # Reserved for implementation-defined server errors (max)
+
+
+def create_json_rpc_error(
+    error: str, id: int | None = None, code: int = ERROR_CODE_INTERNAL_ERROR
+) -> dict[str, Any]:
+    """Create a JSON-RPC error response.
+
+    Args:
+        id: The request ID
+        error: The error details
+    """
+    if id is not None:
+        return {"jsonrpc": "2.0", "error": {"code": code, "message": error}, "id": id}
+
+    return {"jsonrpc": "2.0", "error": {"code": code, "message": error}}

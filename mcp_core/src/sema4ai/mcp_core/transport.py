@@ -6,7 +6,7 @@ from sse_starlette.sse import EventSourceResponse
 
 from sema4ai.mcp_core.protocols import IMCPSessionHandler
 
-from .mcp_models import JSONRPCError, JSONRPCErrorErrorParams, MCPBaseModel
+from .mcp_models import MCPBaseModel
 
 
 def create_streamable_http_router(
@@ -24,7 +24,11 @@ def create_streamable_http_router(
         mcp_session_id: Optional[str] = Header(None, alias="Mcp-Session-Id"),
     ):
         from sema4ai.mcp_core.mcp_base_model import MessageType
-        from sema4ai.mcp_core.mcp_models import create_mcp_model
+        from sema4ai.mcp_core.mcp_models import (
+            ERROR_CODE_PARSE_ERROR,
+            create_json_rpc_error,
+            create_mcp_model,
+        )
 
         # Spec says: The client MUST use HTTP POST to send JSON-RPC messages to the MCP endpoint.
         # Spec says: The client MUST include an Accept header, listing both application/json
@@ -42,15 +46,11 @@ def create_streamable_http_router(
         try:
             body = await request.json()
         except Exception as e:
-            error = JSONRPCError(
-                jsonrpc="2.0",
-                id=0,  # Unable to get ID from request body because it's not a valid json
-                error=JSONRPCErrorErrorParams(
-                    code=-32000,
-                    message=f"Error parsing request body as json: {e}",
-                ),
+            error_dict = create_json_rpc_error(
+                f"Error parsing request body as json: {e}",
+                code=ERROR_CODE_PARSE_ERROR,
             )
-            return JSONResponse(content=error.to_dict(), headers=response_headers)
+            return JSONResponse(content=error_dict, headers=response_headers)
 
         # Spec says: The body of the POST request MUST be one of the following:
         #     A single JSON-RPC request, notification, or response
@@ -107,16 +107,9 @@ def create_streamable_http_router(
             )
 
         except Exception as e:
-            # Create error response
-            error = JSONRPCError(
-                jsonrpc="2.0",
-                id=body.get("id", 1),
-                error=JSONRPCErrorErrorParams(
-                    code=-32000,
-                    message=str(e),
-                ),
-            )
-            return JSONResponse(content=error.to_dict(), headers=response_headers)
+            # Create error response (generic error)
+            error_dict = create_json_rpc_error(str(e), id=body.get("id", None))
+            return JSONResponse(content=error_dict, headers=response_headers)
 
     @router.get(route_name)
     async def handle_get(

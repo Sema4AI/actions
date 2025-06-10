@@ -1,3 +1,7 @@
+import asyncio
+import logging
+from typing import Literal
+
 import uvicorn
 from fastapi.applications import FastAPI
 from sse_starlette.sse import EventSourceResponse
@@ -14,9 +18,14 @@ from sema4ai.mcp_core.mcp_models import (
 from sema4ai.mcp_core.protocols import IMCPHandler, IMCPSessionHandler
 from sema4ai.mcp_core.transport import create_streamable_http_router
 
+log = logging.getLogger(__name__)
 
-class SampleMCPImplementation(IMCPHandler):
-    """Sample implementation that handles initialization."""
+
+_DONE: Literal["DONE"] = "DONE"
+
+
+class StreamableHttpMCPHandler(IMCPHandler):
+    """Base MCP low-level implementation (base framework to handle MCP requests using streamable HTTP)."""
 
     def __init__(self, session_id: str) -> None:
         self.session_id = session_id
@@ -62,11 +71,61 @@ class SampleMCPImplementation(IMCPHandler):
 
         return await self._handle_requests(mcp_models)
 
+    async def _process_mcp_requests(
+        self,
+        queue: asyncio.Queue[dict[str, str] | Literal["DONE"]],
+        mcp_models: list[MCPBaseModel],
+    ) -> None:
+        """Process MCP requests and put results in the queue."""
+        from sema4ai.mcp_core.mcp_models import create_json_rpc_error
+
+        try:
+            for model in mcp_models:
+                # Process each model and put results in queue
+                # For now, just echo the model as JSON
+                pass
+
+            # Signal completion
+            await queue.put(_DONE)
+        except Exception as e:
+            # Handle errors by sending them to the queue
+            await queue.put(create_json_rpc_error(str(e)))
+            await queue.put(_DONE)
+
+    async def event_generator(self, queue: asyncio.Queue[dict[str, str] | Literal["DONE"]]):
+        """Generate SSE events from the queue."""
+        from sema4ai.mcp_core.mcp_models import create_json_rpc_error
+
+        while True:
+            try:
+                # Get next item from queue
+                item = await queue.get()
+
+                # Check if we're done
+                if item == _DONE:
+                    break
+
+                yield item
+
+            except Exception as e:
+                log.exception(e)
+                yield create_json_rpc_error(str(e))
+                break
+            finally:
+                queue.task_done()
+
     async def _handle_requests(
         self, mcp_models: list[MCPBaseModel]
     ) -> MCPBaseModel | EventSourceResponse:
-        """Handle MCP requests."""
-        raise NotImplementedError(f"TODO: Implement support to handle: {mcp_models}")
+        """Handle MCP requests using an async queue and EventSourceResponse."""
+
+        # A queue to store the results of the requests (or other messages to be sent to the client)
+        # until a "DONE" message is put in the queue.
+        queue: asyncio.Queue[dict[str, str] | Literal["DONE"]] = asyncio.Queue()
+
+        _task = asyncio.create_task(self._process_mcp_requests(queue, mcp_models))
+
+        return EventSourceResponse(self.event_generator(queue))
 
     async def handle_notifications(self, mcp_models: list[MCPBaseModel]) -> None:
         """Handle MCP notifications (sent from the client to the server)."""
@@ -84,8 +143,8 @@ class SampleMCPImplementation(IMCPHandler):
         return EventSourceResponse(event_generator())
 
 
-class SampleMCPSessionHandler(IMCPSessionHandler):
-    """Sample session handler that handles sessions."""
+class StreamableHttpMCPSessionHandler(IMCPSessionHandler):
+    """Base MCP session handler that handles sessions."""
 
     def __init__(self) -> None:
         self._handlers: dict[str, IMCPHandler] = {}
@@ -96,7 +155,7 @@ class SampleMCPSessionHandler(IMCPSessionHandler):
 
         if session_id is None:
             session_id = str(uuid.uuid4())
-        self._handlers[session_id] = SampleMCPImplementation(session_id)
+        self._handlers[session_id] = StreamableHttpMCPHandler(session_id)
         return self._handlers[session_id]
 
     async def get_session_handler(self, request: Request, session_id: str) -> IMCPHandler:
@@ -120,7 +179,7 @@ def run_server(host: str = "127.0.0.1", port: int = 8000):
         allow_headers=["*"],
     )
 
-    router = create_streamable_http_router(SampleMCPSessionHandler())
+    router = create_streamable_http_router(StreamableHttpMCPSessionHandler())
     app.include_router(router)
 
     uvicorn.run(app, host=host, port=port)
