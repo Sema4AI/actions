@@ -1,6 +1,6 @@
 from typing import Optional
 
-from fastapi import FastAPI, Header, HTTPException, Request
+from fastapi import APIRouter, Header, HTTPException, Request
 from fastapi.responses import JSONResponse
 from sse_starlette.sse import EventSourceResponse
 
@@ -9,8 +9,15 @@ from sema4ai.mcp_core.protocols import IMCPSessionHandler
 from .mcp_models import JSONRPCError, JSONRPCErrorErrorParams, MCPBaseModel
 
 
-def config_streamable_http(app: FastAPI, session_handler: IMCPSessionHandler) -> None:
-    @app.post("/mcp")
+def create_streamable_http_router(
+    session_handler: IMCPSessionHandler,
+    router: APIRouter | None = None,
+    route_name: str = "/mcp",
+) -> APIRouter:
+    router = APIRouter() if router is None else router
+    route_name = route_name if route_name.startswith("/") else f"/{route_name}"
+
+    @router.post(route_name)
     async def handle_post(
         request: Request,
         accept: str = Header(...),
@@ -117,7 +124,7 @@ def config_streamable_http(app: FastAPI, session_handler: IMCPSessionHandler) ->
             )
             return JSONResponse(content=error.to_dict(), headers=response_headers)
 
-    @app.get("/mcp")
+    @router.get(route_name)
     async def handle_get(
         request: Request,
         last_event_id: Optional[str] = Header(None, alias="Last-Event-ID"),
@@ -134,10 +141,12 @@ def config_streamable_http(app: FastAPI, session_handler: IMCPSessionHandler) ->
 
         return mcp_handler.handle_sse_stream(last_event_id)
 
-    @app.delete("/mcp")
+    @router.delete(route_name)
     async def handle_delete(
         request: Request,
         mcp_session_id: str = Header(..., alias="Mcp-Session-Id"),
     ):
         await session_handler.end_session(request, mcp_session_id)
         return JSONResponse(content={}, status_code=200)
+
+    return router

@@ -12,7 +12,7 @@ from sema4ai.mcp_core.mcp_models import (
     ServerCapabilities,
 )
 from sema4ai.mcp_core.protocols import IMCPHandler, IMCPSessionHandler
-from sema4ai.mcp_core.transport import config_streamable_http
+from sema4ai.mcp_core.transport import create_streamable_http_router
 
 
 class SampleMCPImplementation(IMCPHandler):
@@ -55,6 +55,25 @@ class SampleMCPImplementation(IMCPHandler):
 
         raise NotImplementedError(f"TODO: Implement support to handle: {mcp_models}")
 
+    async def handle_notifications(self, mcp_models: list[MCPBaseModel]) -> None:
+        """Handle MCP notifications."""
+        # Sample implementation just ignores notifications
+        pass
+
+    async def handle_responses(self, mcp_models: list[MCPBaseModel]) -> None:
+        """Handle MCP responses."""
+        # Sample implementation just ignores responses
+        pass
+
+    async def handle_sse_stream(self, last_event_id: str | None) -> EventSourceResponse:
+        """Handle SSE stream requests."""
+
+        # Sample implementation returns an empty stream
+        async def event_generator():
+            yield {"data": ""}
+
+        return EventSourceResponse(event_generator())
+
 
 class SampleMCPSessionHandler(IMCPSessionHandler):
     """Sample session handler that handles sessions."""
@@ -96,7 +115,8 @@ def run_server(host: str = "127.0.0.1", port: int = 8000):
         allow_headers=["*"],
     )
 
-    config_streamable_http(app, SampleMCPSessionHandler())
+    router = create_streamable_http_router(SampleMCPSessionHandler())
+    app.include_router(router)
 
     uvicorn.run(app, host=host, port=port)
 
