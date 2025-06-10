@@ -6,7 +6,7 @@ from starlette.requests import Request
 from sema4ai.mcp_core.mcp_base_model import MCPBaseModel
 
 
-class IMCPSessionHandler(Protocol):
+class IStreamableHttpMCPSessionHandler(Protocol):
     """Protocol defining the interface for managing a session.
 
     Implementors can decide to use a database or a simple in-memory store to store the session handlers,
@@ -15,7 +15,7 @@ class IMCPSessionHandler(Protocol):
 
     async def obtain_session_handler(
         self, request: Request, session_id: str | None
-    ) -> "IMCPHandler":
+    ) -> "IStreamableHttpMCPHandler":
         """Obtain an MCP session (i.e.: creates a new session if session_id is None
         or returns the existing session handler if session_id is provided).
 
@@ -26,7 +26,9 @@ class IMCPSessionHandler(Protocol):
             KeyError: If the session handler is not found given the request and session_id.
         """
 
-    async def get_session_handler(self, request: Request, session_id: str) -> "IMCPHandler":
+    async def get_session_handler(
+        self, request: Request, session_id: str
+    ) -> "IStreamableHttpMCPHandler":
         """Get the session handler given a request and a session ID.
 
         Args:
@@ -45,7 +47,7 @@ class IMCPSessionHandler(Protocol):
         """
 
 
-class IMCPHandler(Protocol):
+class IStreamableHttpMCPHandler(Protocol):
     """Low-level protocol defining the interface for handling MCP messages."""
 
     session_id: str | None
