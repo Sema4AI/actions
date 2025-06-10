@@ -133,10 +133,10 @@ def create_streamable_http_router(
     ):
         # Spec says:
         # - The client MAY issue an HTTP GET to the MCP endpoint. This can be used to open an SSE stream,
-        # allowing the server to communicate to the client, without the client first sending data via HTTP POST.
+        #   allowing the server to communicate to the client, without the client first sending data via HTTP POST.
         # - The client MUST include an Accept header, listing text/event-stream as a supported content type.
         # - The server MUST either return Content-Type: text/event-stream in response to this HTTP GET, or else
-        # return HTTP 405 Method Not Allowed, indicating that the server does not offer an SSE stream at this endpoint.
+        #   return HTTP 405 Method Not Allowed, indicating that the server does not offer an SSE stream at this endpoint.
         if "text/event-stream" not in accept:
             raise HTTPException(
                 status_code=405,
@@ -152,6 +152,13 @@ def create_streamable_http_router(
             )
         except KeyError:
             raise HTTPException(status_code=404, detail="Session not found")
+
+        # Spec says: If the server initiates an SSE stream:
+        #     The server MAY send JSON-RPC requests and notifications on the stream. These requests and notifications MAY be batched.
+        #     These messages SHOULD be unrelated to any concurrently-running JSON-RPC request from the client.
+        #     The server MUST NOT send a JSON-RPC response on the stream unless resuming a stream associated with a previous client request.
+        #     The server MAY close the SSE stream at any time.
+        #     The client MAY close the SSE stream at any time.
 
         return mcp_handler.handle_sse_stream(last_event_id)
 

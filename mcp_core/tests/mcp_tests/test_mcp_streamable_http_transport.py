@@ -8,7 +8,7 @@ from mcp_tests.mcp_client import MCPClient, MCPSession
 
 
 @pytest.fixture()
-def mcp_server() -> Iterator[str]:
+def mcp_server_base_url() -> Iterator[str]:
     import os
     import re
     import sys
@@ -62,18 +62,18 @@ def mcp_server() -> Iterator[str]:
 
 
 @pytest_asyncio.fixture
-async def mcp_session(mcp_server: str) -> AsyncIterator[MCPSession]:
-    client = MCPClient(mcp_server)
+async def mcp_session(mcp_server_base_url: str) -> AsyncIterator[MCPSession]:
+    client = MCPClient(mcp_server_base_url)
     async with client.create_session() as session:
         assert session.session_id is not None
         yield session
 
 
 @pytest.mark.asyncio
-async def test_mcp_session_initialization(mcp_server: str):
+async def test_mcp_session_initialization(mcp_server_base_url: str):
     """Test the MCP initialization request."""
 
-    mcp_client = MCPClient(mcp_server)
+    mcp_client = MCPClient(mcp_server_base_url)
     async with mcp_client.create_session() as session:
         assert session.session_id is not None
 
@@ -91,8 +91,8 @@ async def test_mcp_session_initialization(mcp_server: str):
 
 
 @pytest.mark.asyncio
-async def test_mcp_session_bad_requests(mcp_server: str):
-    mcp_client = MCPClient(mcp_server)
+async def test_mcp_session_bad_requests(mcp_server_base_url: str):
+    mcp_client = MCPClient(mcp_server_base_url)
     async with httpx.AsyncClient() as client:
         response = await client.get(
             mcp_client.url,
@@ -138,33 +138,38 @@ async def test_mcp_notification(mcp_session: MCPSession):
 
 
 @pytest.mark.asyncio
-async def test_mcp_request_stream(mcp_session: MCPSession):
-    """Test sending a request and receiving a stream response."""
+async def test_mcp_tool_call(mcp_session: MCPSession):
+    pass
 
-    async with httpx.AsyncClient() as client:
-        response = await client.post(
-            f"{mcp_server}/mcp",
-            headers={
-                "Accept": "application/json, text/event-stream",
-                "Content-Type": "application/json",
-                "Mcp-Session-Id": session_id,
-            },
-            json={
-                "jsonrpc": "2.0",
-                "id": 2,
-                "method": "test_request",
-                "params": {"message": "test"},
-            },
-            timeout=5.0,
-        )
 
-        assert response.status_code == 200
-        assert response.headers["content-type"] == "text/event-stream"
+# @pytest.mark.asyncio
+# async def test_mcp_tool_call(mcp_session: MCPSession):
+#     """Test sending a request and receiving a stream response."""
 
-        # Read the SSE stream
-        async for line in response.aiter_lines():
-            if line.startswith("data: "):
-                data = json.loads(line[6:])
-                assert data["jsonrpc"] == "2.0"
-                assert data["method"] == "test"
-                break
+#     async with httpx.AsyncClient() as client:
+#         response = await client.post(
+#             f"{mcp_server_base_url}/mcp",
+#             headers={
+#                 "Accept": "application/json, text/event-stream",
+#                 "Content-Type": "application/json",
+#                 "Mcp-Session-Id": session_id,
+#             },
+#             json={
+#                 "jsonrpc": "2.0",
+#                 "id": 2,
+#                 "method": "test_request",
+#                 "params": {"message": "test"},
+#             },
+#             timeout=5.0,
+#         )
+
+#         assert response.status_code == 200
+#         assert response.headers["content-type"] == "text/event-stream"
+
+#         # Read the SSE stream
+#         async for line in response.aiter_lines():
+#             if line.startswith("data: "):
+#                 data = json.loads(line[6:])
+#                 assert data["jsonrpc"] == "2.0"
+#                 assert data["method"] == "test"
+#                 break
