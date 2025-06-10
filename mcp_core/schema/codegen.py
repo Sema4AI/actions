@@ -697,39 +697,6 @@ T = TypeVar('T')
     indenter.add_line("}")
     indenter.add_line("")
 
-    # Generate factory function
-    factory_indenter = TextIndenter()
-    factory_indenter.add_line(
-        "def create_mcp_model(data: dict[str, Any]) -> MCPBaseModel:"
-    )
-    factory_indenter.add_line(
-        '    """Create an MCP model instance from a dictionary based on its method field.'
-    )
-    factory_indenter.add_line("")
-    factory_indenter.add_line("    Args:")
-    factory_indenter.add_line("        data: Dictionary containing the model data")
-    factory_indenter.add_line("")
-    factory_indenter.add_line("    Returns:")
-    factory_indenter.add_line("        An instance of the appropriate MCP model class")
-    factory_indenter.add_line("")
-    factory_indenter.add_line("    Raises:")
-    factory_indenter.add_line(
-        "        ValueError: If the method field is missing or no matching class is found"
-    )
-    factory_indenter.add_line('    """')
-    factory_indenter.add_line('    if "method" not in data:')
-    factory_indenter.add_line(
-        "        raise ValueError(\"Input dictionary must contain a 'method' field\")"
-    )
-    factory_indenter.add_line('    method = data["method"]')
-    factory_indenter.add_line("    if method not in _class_map:")
-    factory_indenter.add_line(
-        f'        raise ValueError(f"No MCP model class found for method: {{method}}")'
-    )
-    factory_indenter.add_line("    return _class_map[method].from_dict(data)")
-
-    indenter.add_block(factory_indenter.get_text())
-
     return indenter.get_text()
 
 
@@ -766,7 +733,13 @@ def main():
 
     # Write to output file
     output_path = os.path.join(
-        os.path.dirname(__file__), "..", "src", "sema4ai", "mcp_core", "mcp_models.py"
+        os.path.dirname(__file__),
+        "..",
+        "src",
+        "sema4ai",
+        "mcp_core",
+        "mcp_models",
+        "_generated_mcp_models.py",
     )
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(formatted_code)

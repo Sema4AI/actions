@@ -33,6 +33,10 @@ profile = "black"
 [tool.pytest.ini_options]
 addopts = "-s"
 
+[tool.ruff]
+ignore = ["F403", "F405"]
+line-length = 100
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
