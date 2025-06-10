@@ -44,7 +44,6 @@ class SampleMCPImplementation(IMCPHandler):
 
                 response = JSONRPCResponse(
                     id=model.id,
-                    jsonrpc="2.0",
                     result=InitializeResult(
                         capabilities=ServerCapabilities(),
                         protocolVersion="1.0",
@@ -70,7 +69,8 @@ class SampleMCPImplementation(IMCPHandler):
 
         # Sample implementation returns an empty stream
         async def event_generator():
-            yield {"data": ""}
+            if False:
+                yield {"data": "test"}
 
         return EventSourceResponse(event_generator())
 
@@ -79,7 +79,7 @@ class SampleMCPSessionHandler(IMCPSessionHandler):
     """Sample session handler that handles sessions."""
 
     def __init__(self) -> None:
-        self.session_handlers: dict[str, IMCPHandler] = {}
+        self._handlers: dict[str, IMCPHandler] = {}
 
     async def obtain_session_handler(
         self, request: Request, session_id: str | None
@@ -89,18 +89,18 @@ class SampleMCPSessionHandler(IMCPSessionHandler):
 
         if session_id is None:
             session_id = str(uuid.uuid4())
-        self.session_handlers[session_id] = SampleMCPImplementation(session_id)
-        return self.session_handlers[session_id]
+        self._handlers[session_id] = SampleMCPImplementation(session_id)
+        return self._handlers[session_id]
 
     async def get_session_handler(
         self, request: Request, session_id: str
     ) -> IMCPHandler:
         """Get an MCP session handler."""
-        return self.session_handlers[session_id]
+        return self._handlers[session_id]
 
     async def end_session(self, request: Request, session_id: str) -> None:
         """End an MCP session."""
-        self.session_handlers.pop(session_id, None)
+        self._handlers.pop(session_id, None)
 
 
 def run_server(host: str = "127.0.0.1", port: int = 8000):

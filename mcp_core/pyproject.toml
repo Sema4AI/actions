@@ -30,6 +30,9 @@ skip-magic-trailing-comma = false
 [tool.isort]
 profile = "black"
 
+[tool.pytest.ini_options]
+addopts = "-s"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

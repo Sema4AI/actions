@@ -131,13 +131,27 @@ def create_streamable_http_router(
         accept: str = Header(...),
         mcp_session_id: Optional[str] = Header(None, alias="Mcp-Session-Id"),
     ):
+        # Spec says:
+        # - The client MAY issue an HTTP GET to the MCP endpoint. This can be used to open an SSE stream,
+        # allowing the server to communicate to the client, without the client first sending data via HTTP POST.
+        # - The client MUST include an Accept header, listing text/event-stream as a supported content type.
+        # - The server MUST either return Content-Type: text/event-stream in response to this HTTP GET, or else
+        # return HTTP 405 Method Not Allowed, indicating that the server does not offer an SSE stream at this endpoint.
         if "text/event-stream" not in accept:
-            raise HTTPException(status_code=405, detail="SSE not supported")
+            raise HTTPException(
+                status_code=405,
+                detail="text/event-stream not included in Accept header",
+            )
 
         if mcp_session_id is None:
             raise HTTPException(status_code=400, detail="Mcp-Session-Id is required")
 
-        mcp_handler = await session_handler.get_session_handler(request, mcp_session_id)
+        try:
+            mcp_handler = await session_handler.get_session_handler(
+                request, mcp_session_id
+            )
+        except KeyError:
+            raise HTTPException(status_code=404, detail="Session not found")
 
         return mcp_handler.handle_sse_stream(last_event_id)
 

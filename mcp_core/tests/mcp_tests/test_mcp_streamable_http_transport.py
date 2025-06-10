@@ -61,21 +61,54 @@ def mcp_server() -> Iterator[str]:
     process.stop()
 
 
-@pytest.mark.asyncio
-async def test_mcp_initialize(mcp_server: str):
-    """Test the MCP initialization request."""
-
-    client = MCPClient(mcp_server)
-    async with client.create_session() as session:
-        assert session.session_id is not None
-
-
 @pytest_asyncio.fixture
 async def mcp_session(mcp_server: str) -> AsyncIterator[MCPSession]:
     client = MCPClient(mcp_server)
     async with client.create_session() as session:
         assert session.session_id is not None
         yield session
+
+
+@pytest.mark.asyncio
+async def test_mcp_session_initialization(mcp_server: str):
+    """Test the MCP initialization request."""
+
+    mcp_client = MCPClient(mcp_server)
+    async with mcp_client.create_session() as session:
+        assert session.session_id is not None
+
+    # Test that the session is deleted after the context manager is exited
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            mcp_client.url,
+            headers={
+                "Accept": "text/event-stream",
+                "Mcp-Session-Id": session.session_id,
+            },
+        )
+        assert response.status_code == 404
+        assert json.loads(response.text) == {"detail": "Session not found"}
+
+
+@pytest.mark.asyncio
+async def test_mcp_session_bad_requests(mcp_server: str):
+    mcp_client = MCPClient(mcp_server)
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            mcp_client.url,
+            headers={},
+        )
+        assert response.status_code == 405
+        assert json.loads(response.text) == {
+            "detail": "text/event-stream not included in Accept header"
+        }
+
+        response = await client.get(
+            mcp_client.url,
+            headers={"Accept": "text/event-stream"},
+        )
+        assert response.status_code == 400
+        assert json.loads(response.text) == {"detail": "Mcp-Session-Id is required"}
 
 
 @pytest.mark.asyncio
@@ -105,9 +138,8 @@ async def test_mcp_notification(mcp_session: MCPSession):
 
 
 @pytest.mark.asyncio
-async def test_mcp_request_stream(mcp_server: str):
+async def test_mcp_request_stream(mcp_session: MCPSession):
     """Test sending a request and receiving a stream response."""
-    session_id = await test_mcp_initialize(mcp_server)
 
     async with httpx.AsyncClient() as client:
         response = await client.post(

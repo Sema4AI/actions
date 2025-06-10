@@ -10,12 +10,13 @@ class MCPSession:
 
 class MCPClient:
     def __init__(self, base_url: str):
+        from urllib.parse import urljoin
+
         self.base_url = base_url
+        self.url = urljoin(base_url, "mcp")
 
     @asynccontextmanager
     async def create_session(self) -> AsyncIterator[MCPSession]:
-        from urllib.parse import urljoin
-
         import httpx
 
         from sema4ai.mcp_core.mcp_models import (
@@ -36,7 +37,7 @@ class MCPClient:
                 id=1,
             )
 
-            url = urljoin(self.base_url, "mcp")
+            url = self.url
             response = await client.post(
                 url,
                 headers={
@@ -63,5 +64,5 @@ class MCPClient:
             try:
                 yield session
             finally:
-                # Cleanup if needed
-                pass
+                # Delete the session now DELETE on /mcp
+                await client.delete(url, headers={"Mcp-Session-Id": session_id})
