@@ -36,9 +36,7 @@ class TextIndenter:
     def add_line(self, line: str, extra_indent: int = 0) -> None:
         """Add a line with the current indentation plus extra indentation levels."""
         if line.strip():
-            self.lines.append(
-                " " * (self.current_indent + extra_indent * self.indent_size) + line
-            )
+            self.lines.append(" " * (self.current_indent + extra_indent * self.indent_size) + line)
         else:
             self.lines.append("")
 
@@ -245,15 +243,10 @@ def generate_class(
         if (
             prop_schema.get("type") == "object"
             and prop_schema.get("properties")
-            and not (
-                prop_schema.get("additionalProperties")
-                and not prop_schema.get("properties")
-            )
+            and not (prop_schema.get("additionalProperties") and not prop_schema.get("properties"))
         ):
             nested_name = make_params_class_name(name, prop_name)
-            nested_class, nested_nested = generate_class(
-                nested_name, prop_schema, definitions
-            )
+            nested_class, nested_nested = generate_class(nested_name, prop_schema, definitions)
             nested_classes.append(nested_class)
             nested_classes.extend(nested_nested)
 
@@ -289,9 +282,7 @@ def generate_class(
             else:
                 default_value = f"field(default={const_value})"
             if prop_name in required:
-                required_fields_with_default.append(
-                    f'{prop_name}: "{prop_type}" = {default_value}'
-                )
+                required_fields_with_default.append(f'{prop_name}: "{prop_type}" = {default_value}')
             else:
                 optional_fields.append(f'{prop_name}: "{prop_type}" = {default_value}')
         elif prop_name not in required:
@@ -366,9 +357,7 @@ def generate_class(
             # Check if the item type is a union
             if "|" in item_type:
                 types = [t.strip() for t in item_type.split("|")]
-                indenter.add_line(
-                    "# Try to disambiguate using const fields", extra_indent=3
-                )
+                indenter.add_line("# Try to disambiguate using const fields", extra_indent=3)
                 indenter.add_line("if not isinstance(item, dict):", extra_indent=3)
                 indenter.add_line(
                     f'raise ValueError(f"Expected a dict for union type {item_type}, got {{type(item)}}")',
@@ -405,9 +394,7 @@ def generate_class(
                     extra_indent=4,
                 )
                 indenter.add_line("else:", extra_indent=3)
-                indenter.add_line(
-                    "# Try to disambiguate by required properties", extra_indent=4
-                )
+                indenter.add_line("# Try to disambiguate by required properties", extra_indent=4)
                 indenter.add_line("matches = []", extra_indent=4)
                 indenter.add_line(
                     "for type_name, reqs in required_props_map.items():",
@@ -430,9 +417,7 @@ def generate_class(
                     extra_indent=5,
                 )
                 indenter.add_line("else:", extra_indent=4)
-                indenter.add_line(
-                    "available_fields = list(item.keys())", extra_indent=5
-                )
+                indenter.add_line("available_fields = list(item.keys())", extra_indent=5)
                 indenter.add_line(
                     "type_details = [f'{name} (requires any of {required_props_map[name]})' for name in required_props_map]",
                     extra_indent=5,
@@ -472,9 +457,7 @@ def generate_class(
         elif "|" in field_type:
             indenter.add_line("if value is not None:", extra_indent=1)
             indenter.add_line("if isinstance(value, dict):", extra_indent=2)
-            indenter.add_line(
-                "# Try to disambiguate using const fields", extra_indent=3
-            )
+            indenter.add_line("# Try to disambiguate using const fields", extra_indent=3)
             indenter.add_line("type_value = value.get('type')", extra_indent=3)
             indenter.add_line("type_to_class = {}", extra_indent=3)
             indenter.add_line("required_props_map = {}", extra_indent=3)
@@ -494,24 +477,16 @@ def generate_class(
                             )
                             found_const = True
                     if not found_const and required_:
-                        indenter.add_line(
-                            f"required_props_map[{t}] = {required_}", extra_indent=3
-                        )
+                        indenter.add_line(f"required_props_map[{t}] = {required_}", extra_indent=3)
             indenter.add_line(
                 "if type_value is not None and type_value in type_to_class:",
                 extra_indent=3,
             )
-            indenter.add_line(
-                "value = type_to_class[type_value].from_dict(value)", extra_indent=4
-            )
+            indenter.add_line("value = type_to_class[type_value].from_dict(value)", extra_indent=4)
             indenter.add_line("else:", extra_indent=3)
-            indenter.add_line(
-                "# Try to disambiguate by required properties", extra_indent=4
-            )
+            indenter.add_line("# Try to disambiguate by required properties", extra_indent=4)
             indenter.add_line("matches = []", extra_indent=4)
-            indenter.add_line(
-                "for type_name, reqs in required_props_map.items():", extra_indent=4
-            )
+            indenter.add_line("for type_name, reqs in required_props_map.items():", extra_indent=4)
             indenter.add_line("if all(r in value for r in reqs):", extra_indent=5)
             indenter.add_line("matches.append(type_name)", extra_indent=6)
             indenter.add_line("if len(matches) == 1:", extra_indent=4)
@@ -554,9 +529,7 @@ def generate_class(
             ):
                 pass
             else:
-                indenter.add_line(
-                    f"value = {field_type}.from_dict(value)", extra_indent=2
-                )
+                indenter.add_line(f"value = {field_type}.from_dict(value)", extra_indent=2)
 
         indenter.add_line(f"kwargs[{repr(field_name)}] = value", extra_indent=1)
         indenter.add_line("", extra_indent=0)
@@ -602,9 +575,7 @@ T = TypeVar('T')
                     if "$ref" in sub_schema:
                         ref_type = sub_schema["$ref"].split("/")[-1]
                         if ref_type not in referenced_types:
-                            referenced_types[
-                                ref_type
-                            ] = None  # Will be filled in second pass
+                            referenced_types[ref_type] = None  # Will be filled in second pass
 
     # Second pass: fill in referenced type schemas
     for name, schema in definitions.items():
@@ -659,9 +630,7 @@ T = TypeVar('T')
                     indenter.add_line(f"@dataclass")
                     indenter.add_line(f"class {name}(MCPBaseModel):")
                     if schema.get("description"):
-                        indenter.add_block(
-                            wrap_docstring(schema.get("description", ""))
-                        )
+                        indenter.add_block(wrap_docstring(schema.get("description", "")))
                     indenter.indent()
                     indenter.add_line(f"value: {type_name} = field(default=None)")
                     indenter.dedent()
@@ -693,6 +662,21 @@ T = TypeVar('T')
     indenter.indent()
     for method, class_name in method_to_class.items():
         indenter.add_line(f"{repr(method)}: {class_name},")
+    indenter.dedent()
+    indenter.add_line("}")
+    indenter.add_line("")
+
+    # Generate request to result class mapping
+    indenter.add_line("_request_to_result_map: dict[Type[MCPBaseModel], Type[MCPBaseModel]] = {")
+    indenter.indent()
+    for name, schema in definitions.items():
+        if name.endswith("Request"):
+            # Only map if this is a request class with a method field
+            properties = schema.get("properties", {})
+            if "method" in properties and "const" in properties["method"]:
+                result_name = name[:-7] + "Result"  # Convert Request to Result
+                if result_name in definitions:
+                    indenter.add_line(f"{name}: {result_name},")
     indenter.dedent()
     indenter.add_line("}")
     indenter.add_line("")

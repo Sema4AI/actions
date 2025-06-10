@@ -42,9 +42,7 @@ class Annotations(MCPBaseModel):
         value = data.get("audience")
         if value is not None:
             if not isinstance(value, list):
-                raise ValueError(
-                    f"Expected a list for field audience, got {type(value)}"
-                )
+                raise ValueError(f"Expected a list for field audience, got {type(value)}")
             converted_items = []
             for item in value:
                 converted_items.append(item)
@@ -223,9 +221,7 @@ class CallToolResult(Result):
         value = data.get("content")
         if value is not None:
             if not isinstance(value, list):
-                raise ValueError(
-                    f"Expected a list for field content, got {type(value)}"
-                )
+                raise ValueError(f"Expected a list for field content, got {type(value)}")
             converted_items = []
             for item in value:
                 # Try to disambiguate using const fields
@@ -289,9 +285,7 @@ class CancelledNotification(MCPBaseModel):
     """
 
     params: "CancelledNotificationParams"
-    method: "Literal['notifications/cancelled']" = field(
-        default="notifications/cancelled"
-    )
+    method: "Literal['notifications/cancelled']" = field(default="notifications/cancelled")
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -606,9 +600,7 @@ class CreateMessageRequest(MCPBaseModel):
     id: "RequestId"
     params: "CreateMessageRequestParams"
     jsonrpc: "Literal['2.0']" = field(default="2.0")
-    method: "Literal['sampling/createMessage']" = field(
-        default="sampling/createMessage"
-    )
+    method: "Literal['sampling/createMessage']" = field(default="sampling/createMessage")
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -644,9 +636,7 @@ class CreateMessageRequest(MCPBaseModel):
 class CreateMessageRequestParams(MCPBaseModel):
     maxTokens: "int"
     messages: "list[SamplingMessage]"
-    includeContext: "None | Literal['allServers', 'none', 'thisServer']" = field(
-        default=None
-    )
+    includeContext: "None | Literal['allServers', 'none', 'thisServer']" = field(default=None)
     metadata: "None | dict[str, Any]" = field(default=None)
     modelPreferences: "None | ModelPreferences" = field(default=None)
     stopSequences: "None | list[str]" = field(default=None)
@@ -674,9 +664,7 @@ class CreateMessageRequestParams(MCPBaseModel):
         value = data.get("messages")
         if value is not None:
             if not isinstance(value, list):
-                raise ValueError(
-                    f"Expected a list for field messages, got {type(value)}"
-                )
+                raise ValueError(f"Expected a list for field messages, got {type(value)}")
             converted_items = []
             for item in value:
                 converted_items.append(SamplingMessage.from_dict(item))
@@ -697,9 +685,7 @@ class CreateMessageRequestParams(MCPBaseModel):
         value = data.get("stopSequences")
         if value is not None:
             if not isinstance(value, list):
-                raise ValueError(
-                    f"Expected a list for field stopSequences, got {type(value)}"
-                )
+                raise ValueError(f"Expected a list for field stopSequences, got {type(value)}")
             converted_items = []
             for item in value:
                 converted_items.append(item)
@@ -966,9 +952,7 @@ class GetPromptResult(Result):
         value = data.get("messages")
         if value is not None:
             if not isinstance(value, list):
-                raise ValueError(
-                    f"Expected a list for field messages, got {type(value)}"
-                )
+                raise ValueError(f"Expected a list for field messages, got {type(value)}")
             converted_items = []
             for item in value:
                 converted_items.append(PromptMessage.from_dict(item))
@@ -1176,9 +1160,7 @@ class InitializedNotification(MCPBaseModel):
     finished.
     """
 
-    method: "Literal['notifications/initialized']" = field(
-        default="notifications/initialized"
-    )
+    method: "Literal['notifications/initialized']" = field(default="notifications/initialized")
     params: "None | InitializedNotificationParams" = field(default=None)
 
     @classmethod
@@ -1547,9 +1529,7 @@ class ListPromptsResult(Result):
         value = data.get("prompts")
         if value is not None:
             if not isinstance(value, list):
-                raise ValueError(
-                    f"Expected a list for field prompts, got {type(value)}"
-                )
+                raise ValueError(f"Expected a list for field prompts, got {type(value)}")
             converted_items = []
             for item in value:
                 converted_items.append(Prompt.from_dict(item))
@@ -1565,9 +1545,7 @@ class ListResourceTemplatesRequest(MCPBaseModel):
 
     id: "RequestId"
     jsonrpc: "Literal['2.0']" = field(default="2.0")
-    method: "Literal['resources/templates/list']" = field(
-        default="resources/templates/list"
-    )
+    method: "Literal['resources/templates/list']" = field(default="resources/templates/list")
     params: "None | ListResourceTemplatesRequestParams" = field(default=None)
 
     @classmethod
@@ -1649,9 +1627,7 @@ class ListResourceTemplatesResult(Result):
         value = data.get("resourceTemplates")
         if value is not None:
             if not isinstance(value, list):
-                raise ValueError(
-                    f"Expected a list for field resourceTemplates, got {type(value)}"
-                )
+                raise ValueError(f"Expected a list for field resourceTemplates, got {type(value)}")
             converted_items = []
             for item in value:
                 converted_items.append(ResourceTemplate.from_dict(item))
@@ -1749,9 +1725,7 @@ class ListResourcesResult(Result):
         value = data.get("resources")
         if value is not None:
             if not isinstance(value, list):
-                raise ValueError(
-                    f"Expected a list for field resources, got {type(value)}"
-                )
+                raise ValueError(f"Expected a list for field resources, got {type(value)}")
             converted_items = []
             for item in value:
                 converted_items.append(Resource.from_dict(item))
@@ -2354,9 +2328,7 @@ class ProgressNotification(MCPBaseModel):
     """
 
     params: "ProgressNotificationParams"
-    method: "Literal['notifications/progress']" = field(
-        default="notifications/progress"
-    )
+    method: "Literal['notifications/progress']" = field(default="notifications/progress")
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -2440,9 +2412,7 @@ class Prompt(MCPBaseModel):
         value = data.get("arguments")
         if value is not None:
             if not isinstance(value, list):
-                raise ValueError(
-                    f"Expected a list for field arguments, got {type(value)}"
-                )
+                raise ValueError(f"Expected a list for field arguments, got {type(value)}")
             converted_items = []
             for item in value:
                 converted_items.append(PromptArgument.from_dict(item))
@@ -2725,9 +2695,7 @@ class ReadResourceResult(Result):
         value = data.get("contents")
         if value is not None:
             if not isinstance(value, list):
-                raise ValueError(
-                    f"Expected a list for field contents, got {type(value)}"
-                )
+                raise ValueError(f"Expected a list for field contents, got {type(value)}")
             converted_items = []
             for item in value:
                 # Try to disambiguate using const fields
@@ -3642,9 +3610,7 @@ class ToolInputschemaParams(MCPBaseModel):
         value = data.get("required")
         if value is not None:
             if not isinstance(value, list):
-                raise ValueError(
-                    f"Expected a list for field required, got {type(value)}"
-                )
+                raise ValueError(f"Expected a list for field required, got {type(value)}")
             converted_items = []
             for item in value:
                 converted_items.append(item)
@@ -3848,4 +3814,18 @@ _class_map: dict[str, Type[MCPBaseModel]] = {
     "resources/subscribe": SubscribeRequest,
     "notifications/tools/list_changed": ToolListChangedNotification,
     "resources/unsubscribe": UnsubscribeRequest,
+}
+
+_request_to_result_map: dict[Type[MCPBaseModel], Type[MCPBaseModel]] = {
+    CallToolRequest: CallToolResult,
+    CompleteRequest: CompleteResult,
+    CreateMessageRequest: CreateMessageResult,
+    GetPromptRequest: GetPromptResult,
+    InitializeRequest: InitializeResult,
+    ListPromptsRequest: ListPromptsResult,
+    ListResourceTemplatesRequest: ListResourceTemplatesResult,
+    ListResourcesRequest: ListResourcesResult,
+    ListRootsRequest: ListRootsResult,
+    ListToolsRequest: ListToolsResult,
+    ReadResourceRequest: ReadResourceResult,
 }
