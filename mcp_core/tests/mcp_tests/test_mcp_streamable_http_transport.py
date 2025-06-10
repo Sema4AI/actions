@@ -1,8 +1,10 @@
 import json
-from typing import Iterator
+from typing import AsyncIterator, Iterator
 
 import httpx
 import pytest
+import pytest_asyncio
+from mcp_tests.mcp_client import MCPClient, MCPSession
 
 
 @pytest.fixture()
@@ -62,31 +64,41 @@ def mcp_server() -> Iterator[str]:
 @pytest.mark.asyncio
 async def test_mcp_initialize(mcp_server: str):
     """Test the MCP initialization request."""
-    from mcp_tests.mcp_client import MCPClient
 
     client = MCPClient(mcp_server)
     async with client.create_session() as session:
         assert session.session_id is not None
 
 
+@pytest_asyncio.fixture
+async def mcp_session(mcp_server: str) -> AsyncIterator[MCPSession]:
+    client = MCPClient(mcp_server)
+    async with client.create_session() as session:
+        assert session.session_id is not None
+        yield session
+
+
 @pytest.mark.asyncio
-async def test_mcp_notification(mcp_server: str):
+async def test_mcp_notification(mcp_session: MCPSession):
     """Test sending a notification to the MCP server."""
-    session_id = await test_mcp_initialize(mcp_server)
+    from sema4ai.mcp_core.mcp_models import (
+        CancelledNotification,
+        CancelledNotificationParamsParams,
+    )
+
+    session_id = mcp_session.session_id
 
     async with httpx.AsyncClient() as client:
         response = await client.post(
-            f"{mcp_server}/mcp",
+            mcp_session.url,
             headers={
                 "Accept": "application/json, text/event-stream",
                 "Content-Type": "application/json",
                 "Mcp-Session-Id": session_id,
             },
-            json={
-                "jsonrpc": "2.0",
-                "method": "test_notification",
-                "params": {"message": "test"},
-            },
+            json=CancelledNotification(
+                params=CancelledNotificationParamsParams(requestId=1),
+            ).to_dict(),
         )
 
         assert response.status_code == 202
