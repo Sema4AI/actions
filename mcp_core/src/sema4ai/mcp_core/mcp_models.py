@@ -1,5 +1,6 @@
-from typing import Any, TypeVar, Literal, Type
 from dataclasses import dataclass, field
+from typing import Any, Literal, Type, TypeVar
+
 from sema4ai.mcp_core.mcp_base_model import MCPBaseModel
 
 T = TypeVar("T")
@@ -132,7 +133,7 @@ class CallToolRequest(MCPBaseModel):
     """Used by the client to invoke a tool provided by the server."""
 
     id: "RequestId"
-    params: "CallToolRequestParamsParams"
+    params: "CallToolRequestParams"
     jsonrpc: "Literal['2.0']" = field(default="2.0")
     method: "Literal['tools/call']" = field(default="tools/call")
 
@@ -160,14 +161,14 @@ class CallToolRequest(MCPBaseModel):
         # Process params
         value = data.get("params")
         if value is not None:
-            value = CallToolRequestParamsParams.from_dict(value)
+            value = CallToolRequestParams.from_dict(value)
         kwargs["params"] = value
 
         return cls(**kwargs)
 
 
 @dataclass
-class CallToolRequestParamsParams(MCPBaseModel):
+class CallToolRequestParams(MCPBaseModel):
     name: "str"
     arguments: "None | dict[str, Any]" = field(default=None)
 
@@ -288,7 +289,7 @@ class CancelledNotification(MCPBaseModel):
     NOT attempt to cancel its `initialize` request.
     """
 
-    params: "CancelledNotificationParamsParams"
+    params: "CancelledNotificationParams"
     method: "Literal['notifications/cancelled']" = field(
         default="notifications/cancelled"
     )
@@ -309,14 +310,14 @@ class CancelledNotification(MCPBaseModel):
         # Process params
         value = data.get("params")
         if value is not None:
-            value = CancelledNotificationParamsParams.from_dict(value)
+            value = CancelledNotificationParams.from_dict(value)
         kwargs["params"] = value
 
         return cls(**kwargs)
 
 
 @dataclass
-class CancelledNotificationParamsParams(MCPBaseModel):
+class CancelledNotificationParams(MCPBaseModel):
     requestId: "RequestId"
     reason: "None | str" = field(default=None)
 
@@ -405,7 +406,7 @@ class CompleteRequest(MCPBaseModel):
     """A request from the client to the server, to ask for completion options."""
 
     id: "RequestId"
-    params: "CompleteRequestParamsParams"
+    params: "CompleteRequestParams"
     jsonrpc: "Literal['2.0']" = field(default="2.0")
     method: "Literal['completion/complete']" = field(default="completion/complete")
 
@@ -433,15 +434,15 @@ class CompleteRequest(MCPBaseModel):
         # Process params
         value = data.get("params")
         if value is not None:
-            value = CompleteRequestParamsParams.from_dict(value)
+            value = CompleteRequestParams.from_dict(value)
         kwargs["params"] = value
 
         return cls(**kwargs)
 
 
 @dataclass
-class CompleteRequestParamsParams(MCPBaseModel):
-    argument: "CompleteRequestParamsParamsArgumentParams"
+class CompleteRequestParams(MCPBaseModel):
+    argument: "CompleteRequestParamsArgument"
     ref: "PromptReference | ResourceReference"
 
     @classmethod
@@ -456,7 +457,7 @@ class CompleteRequestParamsParams(MCPBaseModel):
         # Process argument
         value = data.get("argument")
         if value is not None:
-            value = CompleteRequestParamsParamsArgumentParams.from_dict(value)
+            value = CompleteRequestParamsArgument.from_dict(value)
         kwargs["argument"] = value
 
         # Process ref
@@ -502,7 +503,7 @@ class CompleteRequestParamsParams(MCPBaseModel):
 
 
 @dataclass
-class CompleteRequestParamsParamsArgumentParams(MCPBaseModel):
+class CompleteRequestParamsArgument(MCPBaseModel):
     """The argument's information"""
 
     name: "str"
@@ -604,7 +605,7 @@ class CreateMessageRequest(MCPBaseModel):
     """
 
     id: "RequestId"
-    params: "CreateMessageRequestParamsParams"
+    params: "CreateMessageRequestParams"
     jsonrpc: "Literal['2.0']" = field(default="2.0")
     method: "Literal['sampling/createMessage']" = field(
         default="sampling/createMessage"
@@ -634,14 +635,14 @@ class CreateMessageRequest(MCPBaseModel):
         # Process params
         value = data.get("params")
         if value is not None:
-            value = CreateMessageRequestParamsParams.from_dict(value)
+            value = CreateMessageRequestParams.from_dict(value)
         kwargs["params"] = value
 
         return cls(**kwargs)
 
 
 @dataclass
-class CreateMessageRequestParamsParams(MCPBaseModel):
+class CreateMessageRequestParams(MCPBaseModel):
     maxTokens: "int"
     messages: "list[SamplingMessage]"
     includeContext: "None | Literal['allServers', 'none', 'thisServer']" = field(
@@ -878,7 +879,7 @@ class GetPromptRequest(MCPBaseModel):
     """Used by the client to get a prompt provided by the server."""
 
     id: "RequestId"
-    params: "GetPromptRequestParamsParams"
+    params: "GetPromptRequestParams"
     jsonrpc: "Literal['2.0']" = field(default="2.0")
     method: "Literal['prompts/get']" = field(default="prompts/get")
 
@@ -906,14 +907,14 @@ class GetPromptRequest(MCPBaseModel):
         # Process params
         value = data.get("params")
         if value is not None:
-            value = GetPromptRequestParamsParams.from_dict(value)
+            value = GetPromptRequestParams.from_dict(value)
         kwargs["params"] = value
 
         return cls(**kwargs)
 
 
 @dataclass
-class GetPromptRequestParamsParams(MCPBaseModel):
+class GetPromptRequestParams(MCPBaseModel):
     name: "str"
     arguments: "None | dict[str, Any]" = field(default=None)
 
@@ -1052,7 +1053,7 @@ class InitializeRequest(MCPBaseModel):
     """
 
     id: "RequestId"
-    params: "InitializeRequestParamsParams"
+    params: "InitializeRequestParams"
     jsonrpc: "Literal['2.0']" = field(default="2.0")
     method: "Literal['initialize']" = field(default="initialize")
 
@@ -1080,14 +1081,14 @@ class InitializeRequest(MCPBaseModel):
         # Process params
         value = data.get("params")
         if value is not None:
-            value = InitializeRequestParamsParams.from_dict(value)
+            value = InitializeRequestParams.from_dict(value)
         kwargs["params"] = value
 
         return cls(**kwargs)
 
 
 @dataclass
-class InitializeRequestParamsParams(MCPBaseModel):
+class InitializeRequestParams(MCPBaseModel):
     capabilities: "ClientCapabilities"
     clientInfo: "Implementation"
     protocolVersion: "str"
@@ -1179,7 +1180,7 @@ class InitializedNotification(MCPBaseModel):
     method: "Literal['notifications/initialized']" = field(
         default="notifications/initialized"
     )
-    params: "None | InitializedNotificationParamsParams" = field(default=None)
+    params: "None | InitializedNotificationParams" = field(default=None)
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -1197,14 +1198,14 @@ class InitializedNotification(MCPBaseModel):
         # Process params
         value = data.get("params")
         if value is not None:
-            value = InitializedNotificationParamsParams.from_dict(value)
+            value = InitializedNotificationParams.from_dict(value)
         kwargs["params"] = value
 
         return cls(**kwargs)
 
 
 @dataclass
-class InitializedNotificationParamsParams(MCPBaseModel):
+class InitializedNotificationParams(MCPBaseModel):
     _meta: "None | dict[str, Any]" = field(default=None)
 
     @classmethod
@@ -1293,7 +1294,7 @@ class JSONRPCNotification(MCPBaseModel):
 
     method: "str"
     jsonrpc: "Literal['2.0']" = field(default="2.0")
-    params: "None | JSONRPCNotificationParamsParams" = field(default=None)
+    params: "None | JSONRPCNotificationParams" = field(default=None)
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -1315,14 +1316,14 @@ class JSONRPCNotification(MCPBaseModel):
         # Process params
         value = data.get("params")
         if value is not None:
-            value = JSONRPCNotificationParamsParams.from_dict(value)
+            value = JSONRPCNotificationParams.from_dict(value)
         kwargs["params"] = value
 
         return cls(**kwargs)
 
 
 @dataclass
-class JSONRPCNotificationParamsParams(MCPBaseModel):
+class JSONRPCNotificationParams(MCPBaseModel):
     _meta: "None | dict[str, Any]" = field(default=None)
 
     @classmethod
@@ -1348,7 +1349,7 @@ class JSONRPCRequest(MCPBaseModel):
     id: "RequestId"
     method: "str"
     jsonrpc: "Literal['2.0']" = field(default="2.0")
-    params: "None | JSONRPCRequestParamsParams" = field(default=None)
+    params: "None | JSONRPCRequestParams" = field(default=None)
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -1374,15 +1375,15 @@ class JSONRPCRequest(MCPBaseModel):
         # Process params
         value = data.get("params")
         if value is not None:
-            value = JSONRPCRequestParamsParams.from_dict(value)
+            value = JSONRPCRequestParams.from_dict(value)
         kwargs["params"] = value
 
         return cls(**kwargs)
 
 
 @dataclass
-class JSONRPCRequestParamsParams(MCPBaseModel):
-    _meta: "None | JSONRPCRequestParamsParams_metaParams" = field(default=None)
+class JSONRPCRequestParams(MCPBaseModel):
+    _meta: "None | JSONRPCRequestParams_meta" = field(default=None)
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -1396,14 +1397,14 @@ class JSONRPCRequestParamsParams(MCPBaseModel):
         # Process _meta
         value = data.get("_meta")
         if value is not None:
-            value = JSONRPCRequestParamsParams_metaParams.from_dict(value)
+            value = JSONRPCRequestParams_meta.from_dict(value)
         kwargs["_meta"] = value
 
         return cls(**kwargs)
 
 
 @dataclass
-class JSONRPCRequestParamsParams_metaParams(MCPBaseModel):
+class JSONRPCRequestParams_meta(MCPBaseModel):
     progressToken: "None | ProgressToken" = field(default=None)
 
     @classmethod
@@ -1466,7 +1467,7 @@ class ListPromptsRequest(MCPBaseModel):
     id: "RequestId"
     jsonrpc: "Literal['2.0']" = field(default="2.0")
     method: "Literal['prompts/list']" = field(default="prompts/list")
-    params: "None | ListPromptsRequestParamsParams" = field(default=None)
+    params: "None | ListPromptsRequestParams" = field(default=None)
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -1492,14 +1493,14 @@ class ListPromptsRequest(MCPBaseModel):
         # Process params
         value = data.get("params")
         if value is not None:
-            value = ListPromptsRequestParamsParams.from_dict(value)
+            value = ListPromptsRequestParams.from_dict(value)
         kwargs["params"] = value
 
         return cls(**kwargs)
 
 
 @dataclass
-class ListPromptsRequestParamsParams(MCPBaseModel):
+class ListPromptsRequestParams(MCPBaseModel):
     cursor: "None | str" = field(default=None)
 
     @classmethod
@@ -1568,7 +1569,7 @@ class ListResourceTemplatesRequest(MCPBaseModel):
     method: "Literal['resources/templates/list']" = field(
         default="resources/templates/list"
     )
-    params: "None | ListResourceTemplatesRequestParamsParams" = field(default=None)
+    params: "None | ListResourceTemplatesRequestParams" = field(default=None)
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -1594,14 +1595,14 @@ class ListResourceTemplatesRequest(MCPBaseModel):
         # Process params
         value = data.get("params")
         if value is not None:
-            value = ListResourceTemplatesRequestParamsParams.from_dict(value)
+            value = ListResourceTemplatesRequestParams.from_dict(value)
         kwargs["params"] = value
 
         return cls(**kwargs)
 
 
 @dataclass
-class ListResourceTemplatesRequestParamsParams(MCPBaseModel):
+class ListResourceTemplatesRequestParams(MCPBaseModel):
     cursor: "None | str" = field(default=None)
 
     @classmethod
@@ -1668,7 +1669,7 @@ class ListResourcesRequest(MCPBaseModel):
     id: "RequestId"
     jsonrpc: "Literal['2.0']" = field(default="2.0")
     method: "Literal['resources/list']" = field(default="resources/list")
-    params: "None | ListResourcesRequestParamsParams" = field(default=None)
+    params: "None | ListResourcesRequestParams" = field(default=None)
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -1694,14 +1695,14 @@ class ListResourcesRequest(MCPBaseModel):
         # Process params
         value = data.get("params")
         if value is not None:
-            value = ListResourcesRequestParamsParams.from_dict(value)
+            value = ListResourcesRequestParams.from_dict(value)
         kwargs["params"] = value
 
         return cls(**kwargs)
 
 
 @dataclass
-class ListResourcesRequestParamsParams(MCPBaseModel):
+class ListResourcesRequestParams(MCPBaseModel):
     cursor: "None | str" = field(default=None)
 
     @classmethod
@@ -1775,7 +1776,7 @@ class ListRootsRequest(MCPBaseModel):
     id: "RequestId"
     jsonrpc: "Literal['2.0']" = field(default="2.0")
     method: "Literal['roots/list']" = field(default="roots/list")
-    params: "None | ListRootsRequestParamsParams" = field(default=None)
+    params: "None | ListRootsRequestParams" = field(default=None)
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -1801,15 +1802,15 @@ class ListRootsRequest(MCPBaseModel):
         # Process params
         value = data.get("params")
         if value is not None:
-            value = ListRootsRequestParamsParams.from_dict(value)
+            value = ListRootsRequestParams.from_dict(value)
         kwargs["params"] = value
 
         return cls(**kwargs)
 
 
 @dataclass
-class ListRootsRequestParamsParams(MCPBaseModel):
-    _meta: "None | ListRootsRequestParamsParams_metaParams" = field(default=None)
+class ListRootsRequestParams(MCPBaseModel):
+    _meta: "None | ListRootsRequestParams_meta" = field(default=None)
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -1823,14 +1824,14 @@ class ListRootsRequestParamsParams(MCPBaseModel):
         # Process _meta
         value = data.get("_meta")
         if value is not None:
-            value = ListRootsRequestParamsParams_metaParams.from_dict(value)
+            value = ListRootsRequestParams_meta.from_dict(value)
         kwargs["_meta"] = value
 
         return cls(**kwargs)
 
 
 @dataclass
-class ListRootsRequestParamsParams_metaParams(MCPBaseModel):
+class ListRootsRequestParams_meta(MCPBaseModel):
     progressToken: "None | ProgressToken" = field(default=None)
 
     @classmethod
@@ -1894,7 +1895,7 @@ class ListToolsRequest(MCPBaseModel):
     id: "RequestId"
     jsonrpc: "Literal['2.0']" = field(default="2.0")
     method: "Literal['tools/list']" = field(default="tools/list")
-    params: "None | ListToolsRequestParamsParams" = field(default=None)
+    params: "None | ListToolsRequestParams" = field(default=None)
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -1920,14 +1921,14 @@ class ListToolsRequest(MCPBaseModel):
         # Process params
         value = data.get("params")
         if value is not None:
-            value = ListToolsRequestParamsParams.from_dict(value)
+            value = ListToolsRequestParams.from_dict(value)
         kwargs["params"] = value
 
         return cls(**kwargs)
 
 
 @dataclass
-class ListToolsRequestParamsParams(MCPBaseModel):
+class ListToolsRequestParams(MCPBaseModel):
     cursor: "None | str" = field(default=None)
 
     @classmethod
@@ -1999,7 +2000,7 @@ class LoggingMessageNotification(MCPBaseModel):
     which messages to send automatically.
     """
 
-    params: "LoggingMessageNotificationParamsParams"
+    params: "LoggingMessageNotificationParams"
     method: "Literal['notifications/message']" = field(default="notifications/message")
 
     @classmethod
@@ -2018,14 +2019,14 @@ class LoggingMessageNotification(MCPBaseModel):
         # Process params
         value = data.get("params")
         if value is not None:
-            value = LoggingMessageNotificationParamsParams.from_dict(value)
+            value = LoggingMessageNotificationParams.from_dict(value)
         kwargs["params"] = value
 
         return cls(**kwargs)
 
 
 @dataclass
-class LoggingMessageNotificationParamsParams(MCPBaseModel):
+class LoggingMessageNotificationParams(MCPBaseModel):
     data: "str"
     level: "LoggingLevel"
     logger: "None | str" = field(default=None)
@@ -2136,7 +2137,7 @@ class ModelPreferences(MCPBaseModel):
 @dataclass
 class Notification(MCPBaseModel):
     method: "str"
-    params: "None | NotificationParamsParams" = field(default=None)
+    params: "None | NotificationParams" = field(default=None)
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -2154,14 +2155,14 @@ class Notification(MCPBaseModel):
         # Process params
         value = data.get("params")
         if value is not None:
-            value = NotificationParamsParams.from_dict(value)
+            value = NotificationParams.from_dict(value)
         kwargs["params"] = value
 
         return cls(**kwargs)
 
 
 @dataclass
-class NotificationParamsParams(MCPBaseModel):
+class NotificationParams(MCPBaseModel):
     _meta: "None | dict[str, Any]" = field(default=None)
 
     @classmethod
@@ -2185,7 +2186,7 @@ class PaginatedRequest(MCPBaseModel):
     id: "RequestId"
     method: "str"
     jsonrpc: "Literal['2.0']" = field(default="2.0")
-    params: "None | PaginatedRequestParamsParams" = field(default=None)
+    params: "None | PaginatedRequestParams" = field(default=None)
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -2211,14 +2212,14 @@ class PaginatedRequest(MCPBaseModel):
         # Process params
         value = data.get("params")
         if value is not None:
-            value = PaginatedRequestParamsParams.from_dict(value)
+            value = PaginatedRequestParams.from_dict(value)
         kwargs["params"] = value
 
         return cls(**kwargs)
 
 
 @dataclass
-class PaginatedRequestParamsParams(MCPBaseModel):
+class PaginatedRequestParams(MCPBaseModel):
     cursor: "None | str" = field(default=None)
 
     @classmethod
@@ -2272,7 +2273,7 @@ class PingRequest(MCPBaseModel):
     id: "RequestId"
     jsonrpc: "Literal['2.0']" = field(default="2.0")
     method: "Literal['ping']" = field(default="ping")
-    params: "None | PingRequestParamsParams" = field(default=None)
+    params: "None | PingRequestParams" = field(default=None)
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -2298,15 +2299,15 @@ class PingRequest(MCPBaseModel):
         # Process params
         value = data.get("params")
         if value is not None:
-            value = PingRequestParamsParams.from_dict(value)
+            value = PingRequestParams.from_dict(value)
         kwargs["params"] = value
 
         return cls(**kwargs)
 
 
 @dataclass
-class PingRequestParamsParams(MCPBaseModel):
-    _meta: "None | PingRequestParamsParams_metaParams" = field(default=None)
+class PingRequestParams(MCPBaseModel):
+    _meta: "None | PingRequestParams_meta" = field(default=None)
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -2320,14 +2321,14 @@ class PingRequestParamsParams(MCPBaseModel):
         # Process _meta
         value = data.get("_meta")
         if value is not None:
-            value = PingRequestParamsParams_metaParams.from_dict(value)
+            value = PingRequestParams_meta.from_dict(value)
         kwargs["_meta"] = value
 
         return cls(**kwargs)
 
 
 @dataclass
-class PingRequestParamsParams_metaParams(MCPBaseModel):
+class PingRequestParams_meta(MCPBaseModel):
     progressToken: "None | ProgressToken" = field(default=None)
 
     @classmethod
@@ -2353,7 +2354,7 @@ class ProgressNotification(MCPBaseModel):
     a long-running request.
     """
 
-    params: "ProgressNotificationParamsParams"
+    params: "ProgressNotificationParams"
     method: "Literal['notifications/progress']" = field(
         default="notifications/progress"
     )
@@ -2374,14 +2375,14 @@ class ProgressNotification(MCPBaseModel):
         # Process params
         value = data.get("params")
         if value is not None:
-            value = ProgressNotificationParamsParams.from_dict(value)
+            value = ProgressNotificationParams.from_dict(value)
         kwargs["params"] = value
 
         return cls(**kwargs)
 
 
 @dataclass
-class ProgressNotificationParamsParams(MCPBaseModel):
+class ProgressNotificationParams(MCPBaseModel):
     progress: "float"
     progressToken: "ProgressToken"
     message: "None | str" = field(default=None)
@@ -2503,7 +2504,7 @@ class PromptListChangedNotification(MCPBaseModel):
     method: "Literal['notifications/prompts/list_changed']" = field(
         default="notifications/prompts/list_changed"
     )
-    params: "None | PromptListChangedNotificationParamsParams" = field(default=None)
+    params: "None | PromptListChangedNotificationParams" = field(default=None)
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -2521,14 +2522,14 @@ class PromptListChangedNotification(MCPBaseModel):
         # Process params
         value = data.get("params")
         if value is not None:
-            value = PromptListChangedNotificationParamsParams.from_dict(value)
+            value = PromptListChangedNotificationParams.from_dict(value)
         kwargs["params"] = value
 
         return cls(**kwargs)
 
 
 @dataclass
-class PromptListChangedNotificationParamsParams(MCPBaseModel):
+class PromptListChangedNotificationParams(MCPBaseModel):
     _meta: "None | dict[str, Any]" = field(default=None)
 
     @classmethod
@@ -2647,7 +2648,7 @@ class ReadResourceRequest(MCPBaseModel):
     """Sent from the client to the server, to read a specific resource URI."""
 
     id: "RequestId"
-    params: "ReadResourceRequestParamsParams"
+    params: "ReadResourceRequestParams"
     jsonrpc: "Literal['2.0']" = field(default="2.0")
     method: "Literal['resources/read']" = field(default="resources/read")
 
@@ -2675,14 +2676,14 @@ class ReadResourceRequest(MCPBaseModel):
         # Process params
         value = data.get("params")
         if value is not None:
-            value = ReadResourceRequestParamsParams.from_dict(value)
+            value = ReadResourceRequestParams.from_dict(value)
         kwargs["params"] = value
 
         return cls(**kwargs)
 
 
 @dataclass
-class ReadResourceRequestParamsParams(MCPBaseModel):
+class ReadResourceRequestParams(MCPBaseModel):
     uri: "str"
 
     @classmethod
@@ -2778,7 +2779,7 @@ class Request(MCPBaseModel):
     id: "RequestId"
     method: "str"
     jsonrpc: "Literal['2.0']" = field(default="2.0")
-    params: "None | RequestParamsParams" = field(default=None)
+    params: "None | RequestParams" = field(default=None)
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -2804,15 +2805,15 @@ class Request(MCPBaseModel):
         # Process params
         value = data.get("params")
         if value is not None:
-            value = RequestParamsParams.from_dict(value)
+            value = RequestParams.from_dict(value)
         kwargs["params"] = value
 
         return cls(**kwargs)
 
 
 @dataclass
-class RequestParamsParams(MCPBaseModel):
-    _meta: "None | RequestParamsParams_metaParams" = field(default=None)
+class RequestParams(MCPBaseModel):
+    _meta: "None | RequestParams_meta" = field(default=None)
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -2826,14 +2827,14 @@ class RequestParamsParams(MCPBaseModel):
         # Process _meta
         value = data.get("_meta")
         if value is not None:
-            value = RequestParamsParams_metaParams.from_dict(value)
+            value = RequestParams_meta.from_dict(value)
         kwargs["_meta"] = value
 
         return cls(**kwargs)
 
 
 @dataclass
-class RequestParamsParams_metaParams(MCPBaseModel):
+class RequestParams_meta(MCPBaseModel):
     progressToken: "None | ProgressToken" = field(default=None)
 
     @classmethod
@@ -2943,7 +2944,7 @@ class ResourceListChangedNotification(MCPBaseModel):
     method: "Literal['notifications/resources/list_changed']" = field(
         default="notifications/resources/list_changed"
     )
-    params: "None | ResourceListChangedNotificationParamsParams" = field(default=None)
+    params: "None | ResourceListChangedNotificationParams" = field(default=None)
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -2961,14 +2962,14 @@ class ResourceListChangedNotification(MCPBaseModel):
         # Process params
         value = data.get("params")
         if value is not None:
-            value = ResourceListChangedNotificationParamsParams.from_dict(value)
+            value = ResourceListChangedNotificationParams.from_dict(value)
         kwargs["params"] = value
 
         return cls(**kwargs)
 
 
 @dataclass
-class ResourceListChangedNotificationParamsParams(MCPBaseModel):
+class ResourceListChangedNotificationParams(MCPBaseModel):
     _meta: "None | dict[str, Any]" = field(default=None)
 
     @classmethod
@@ -3066,7 +3067,7 @@ class ResourceUpdatedNotification(MCPBaseModel):
     previously sent a resources/subscribe request.
     """
 
-    params: "ResourceUpdatedNotificationParamsParams"
+    params: "ResourceUpdatedNotificationParams"
     method: "Literal['notifications/resources/updated']" = field(
         default="notifications/resources/updated"
     )
@@ -3087,14 +3088,14 @@ class ResourceUpdatedNotification(MCPBaseModel):
         # Process params
         value = data.get("params")
         if value is not None:
-            value = ResourceUpdatedNotificationParamsParams.from_dict(value)
+            value = ResourceUpdatedNotificationParams.from_dict(value)
         kwargs["params"] = value
 
         return cls(**kwargs)
 
 
 @dataclass
-class ResourceUpdatedNotificationParamsParams(MCPBaseModel):
+class ResourceUpdatedNotificationParams(MCPBaseModel):
     uri: "str"
 
     @classmethod
@@ -3156,7 +3157,7 @@ class RootsListChangedNotification(MCPBaseModel):
     method: "Literal['notifications/roots/list_changed']" = field(
         default="notifications/roots/list_changed"
     )
-    params: "None | RootsListChangedNotificationParamsParams" = field(default=None)
+    params: "None | RootsListChangedNotificationParams" = field(default=None)
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -3174,14 +3175,14 @@ class RootsListChangedNotification(MCPBaseModel):
         # Process params
         value = data.get("params")
         if value is not None:
-            value = RootsListChangedNotificationParamsParams.from_dict(value)
+            value = RootsListChangedNotificationParams.from_dict(value)
         kwargs["params"] = value
 
         return cls(**kwargs)
 
 
 @dataclass
-class RootsListChangedNotificationParamsParams(MCPBaseModel):
+class RootsListChangedNotificationParams(MCPBaseModel):
     _meta: "None | dict[str, Any]" = field(default=None)
 
     @classmethod
@@ -3396,7 +3397,7 @@ class SetLevelRequest(MCPBaseModel):
     """A request from the client to the server, to enable or adjust logging."""
 
     id: "RequestId"
-    params: "SetLevelRequestParamsParams"
+    params: "SetLevelRequestParams"
     jsonrpc: "Literal['2.0']" = field(default="2.0")
     method: "Literal['logging/setLevel']" = field(default="logging/setLevel")
 
@@ -3424,14 +3425,14 @@ class SetLevelRequest(MCPBaseModel):
         # Process params
         value = data.get("params")
         if value is not None:
-            value = SetLevelRequestParamsParams.from_dict(value)
+            value = SetLevelRequestParams.from_dict(value)
         kwargs["params"] = value
 
         return cls(**kwargs)
 
 
 @dataclass
-class SetLevelRequestParamsParams(MCPBaseModel):
+class SetLevelRequestParams(MCPBaseModel):
     level: "LoggingLevel"
 
     @classmethod
@@ -3458,7 +3459,7 @@ class SubscribeRequest(MCPBaseModel):
     """
 
     id: "RequestId"
-    params: "SubscribeRequestParamsParams"
+    params: "SubscribeRequestParams"
     jsonrpc: "Literal['2.0']" = field(default="2.0")
     method: "Literal['resources/subscribe']" = field(default="resources/subscribe")
 
@@ -3486,14 +3487,14 @@ class SubscribeRequest(MCPBaseModel):
         # Process params
         value = data.get("params")
         if value is not None:
-            value = SubscribeRequestParamsParams.from_dict(value)
+            value = SubscribeRequestParams.from_dict(value)
         kwargs["params"] = value
 
         return cls(**kwargs)
 
 
 @dataclass
-class SubscribeRequestParamsParams(MCPBaseModel):
+class SubscribeRequestParams(MCPBaseModel):
     uri: "str"
 
     @classmethod
@@ -3717,7 +3718,7 @@ class ToolListChangedNotification(MCPBaseModel):
     method: "Literal['notifications/tools/list_changed']" = field(
         default="notifications/tools/list_changed"
     )
-    params: "None | ToolListChangedNotificationParamsParams" = field(default=None)
+    params: "None | ToolListChangedNotificationParams" = field(default=None)
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -3735,14 +3736,14 @@ class ToolListChangedNotification(MCPBaseModel):
         # Process params
         value = data.get("params")
         if value is not None:
-            value = ToolListChangedNotificationParamsParams.from_dict(value)
+            value = ToolListChangedNotificationParams.from_dict(value)
         kwargs["params"] = value
 
         return cls(**kwargs)
 
 
 @dataclass
-class ToolListChangedNotificationParamsParams(MCPBaseModel):
+class ToolListChangedNotificationParams(MCPBaseModel):
     _meta: "None | dict[str, Any]" = field(default=None)
 
     @classmethod
@@ -3769,7 +3770,7 @@ class UnsubscribeRequest(MCPBaseModel):
     """
 
     id: "RequestId"
-    params: "UnsubscribeRequestParamsParams"
+    params: "UnsubscribeRequestParams"
     jsonrpc: "Literal['2.0']" = field(default="2.0")
     method: "Literal['resources/unsubscribe']" = field(default="resources/unsubscribe")
 
@@ -3797,14 +3798,14 @@ class UnsubscribeRequest(MCPBaseModel):
         # Process params
         value = data.get("params")
         if value is not None:
-            value = UnsubscribeRequestParamsParams.from_dict(value)
+            value = UnsubscribeRequestParams.from_dict(value)
         kwargs["params"] = value
 
         return cls(**kwargs)
 
 
 @dataclass
-class UnsubscribeRequestParamsParams(MCPBaseModel):
+class UnsubscribeRequestParams(MCPBaseModel):
     uri: "str"
 
     @classmethod

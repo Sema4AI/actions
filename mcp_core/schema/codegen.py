@@ -68,8 +68,12 @@ def create_python_type(
     schema: dict[str, Any],
     field_name: str = "",
     parent_name: str = "",
+    existing_names: set[str] | None = None,
 ) -> str:
     """Convert JSON schema type to Python type annotation."""
+    if existing_names is None:
+        existing_names = set()
+
     # Handle $ref first
     if "$ref" in schema:
         # Extract the type name from the ref (e.g., "#/definitions/Role" -> "Role")
@@ -89,6 +93,7 @@ def create_python_type(
                     sub_schema.get("type", "string"),
                     sub_schema,
                     parent_name=parent_name,
+                    existing_names=existing_names,
                 )
                 types.append(sub_type)
         return " | ".join(types)
@@ -130,7 +135,10 @@ def create_python_type(
         items = schema.get("items", {})
         if isinstance(items, dict):
             item_type = create_python_type(
-                items.get("type", "string"), items, parent_name=parent_name
+                items.get("type", "string"),
+                items,
+                parent_name=parent_name,
+                existing_names=existing_names,
             )
         else:
             item_type = "Any"
@@ -141,7 +149,9 @@ def create_python_type(
             return "dict[str, Any]"
         # For object types with properties, return a reference to the generated class name
         if parent_name and field_name and schema.get("properties"):
-            return f"{parent_name}{field_name.capitalize()}Params"
+            class_name = make_params_class_name(parent_name, field_name, existing_names)
+            existing_names.add(class_name)
+            return class_name
         return "dict[str, Any]"
     return "Any"
 
@@ -192,17 +202,62 @@ def wrap_docstring(text: str, indent: int = 4) -> str:
         return final_indenter.get_text()
 
 
+def make_params_class_name(
+    parent_name: str, field_name: str, existing_names: set[str]
+) -> str:
+    """Generate a class name for a params object, avoiding duplicates and double Params suffixes.
+
+    Args:
+        parent_name: The name of the parent class
+        field_name: The name of the field
+        existing_names: Set of already existing class names
+
+    Returns:
+        A unique class name for the params object
+    """
+    # First try the standard format
+    base_name = f"{parent_name}{field_name.capitalize()}"
+
+    # If the name already contains "Params", don't add it again
+    if "Params" in base_name:
+        return base_name
+
+    # Add "Params" suffix
+    params_name = f"{base_name}Params"
+
+    # # If this name already exists, try to make it unique
+    # if params_name in existing_names:
+    #     # Try adding a number suffix
+    #     counter = 1
+    #     while f"{params_name}{counter}" in existing_names:
+    #         counter += 1
+    #     return f"{params_name}{counter}"
+
+    return params_name
+
+
 def generate_class(
     name: str,
     schema: dict[str, Any],
     definitions: dict[str, Any],
     base_class: str = "MCPBaseModel",
+    existing_names: set[str] | None = None,
 ) -> tuple[str, list[str]]:
     """Generate a Python class from a JSON schema definition.
+
+    Args:
+        name: The name of the class to generate
+        schema: The JSON schema for the class
+        definitions: All available type definitions
+        base_class: The base class to inherit from
+        existing_names: Set of already existing class names
 
     Returns:
         tuple[str, list[str]]: The generated class definition and a list of nested class definitions
     """
+    if existing_names is None:
+        existing_names = set()
+
     # For Result class, ensure it has no properties
     if name == "Result":
         schema = {"type": "object", "properties": {}, "required": []}
@@ -222,9 +277,10 @@ def generate_class(
                 and not prop_schema.get("properties")
             )
         ):
-            nested_name = f"{name}{prop_name.capitalize()}Params"
+            nested_name = make_params_class_name(name, prop_name, existing_names)
+            existing_names.add(nested_name)
             nested_class, nested_nested = generate_class(
-                nested_name, prop_schema, definitions
+                nested_name, prop_schema, definitions, existing_names=existing_names
             )
             nested_classes.append(nested_class)
             nested_classes.extend(nested_nested)
@@ -559,6 +615,7 @@ T = TypeVar('T')
 
     # Generate classes
     method_to_class: dict[str, str] = {}
+    existing_names: set[str] = set()
 
     # First pass: collect all referenced types and their schemas
     referenced_types = {}
@@ -587,7 +644,9 @@ T = TypeVar('T')
     # First handle the Result class if it exists
     if "Result" in definitions:
         schema = definitions["Result"]
-        class_def, nested_classes = generate_class("Result", schema, definitions)
+        class_def, nested_classes = generate_class(
+            "Result", schema, definitions, existing_names=existing_names
+        )
         indenter.add_block(class_def)
         for nested_class in nested_classes:
             indenter.add_block(nested_class)
@@ -599,7 +658,9 @@ T = TypeVar('T')
 
         # Handle types defined with type arrays first (like ProgressToken)
         if "type" in schema and isinstance(schema["type"], list):
-            type_name = create_python_type(schema["type"], schema)
+            type_name = create_python_type(
+                schema["type"], schema, existing_names=existing_names
+            )
             indenter.add_line(f"# Type alias for {name.lower()}")
             indenter.add_line(f"{name} = {type_name}")
             indenter.add_line("")
@@ -621,7 +682,9 @@ T = TypeVar('T')
         if not schema.get("properties") and name in referenced_types:
             if "type" in schema:
                 # Handle basic types (like RequestId)
-                type_name = create_python_type(schema["type"], schema)
+                type_name = create_python_type(
+                    schema["type"], schema, existing_names=existing_names
+                )
                 if name in ["RequestId", "ProgressToken", "Role", "LoggingLevel"]:
                     # Special case for RequestId and ProgressToken - make them type aliases
                     indenter.add_line(f"# Type alias for {name.lower()}")
@@ -649,7 +712,9 @@ T = TypeVar('T')
                 indenter.dedent()
                 indenter.add_line("")
         else:
-            class_def, nested_classes = generate_class(name, schema, definitions)
+            class_def, nested_classes = generate_class(
+                name, schema, definitions, existing_names=existing_names
+            )
             indenter.add_block(class_def)
             for nested_class in nested_classes:
                 indenter.add_block(nested_class)
