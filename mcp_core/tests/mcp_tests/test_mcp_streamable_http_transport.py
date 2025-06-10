@@ -62,46 +62,11 @@ def mcp_server() -> Iterator[str]:
 @pytest.mark.asyncio
 async def test_mcp_initialize(mcp_server: str):
     """Test the MCP initialization request."""
-    from sema4ai.mcp_core.mcp_models import (
-        ClientCapabilities,
-        Implementation,
-        InitializeRequest,
-        InitializeRequestParamsParams,
-    )
+    from mcp_tests.mcp_client import MCPClient
 
-    async with httpx.AsyncClient() as client:
-        # Send initialize request
-        initialize_request = InitializeRequest(
-            params=InitializeRequestParamsParams(
-                clientInfo=Implementation(name="test-client", version="1.0.0"),
-                capabilities=ClientCapabilities(),
-                protocolVersion="1.0",
-            ),
-            id=1,
-        )
-
-        response = await client.post(
-            f"{mcp_server}/mcp",
-            headers={
-                "Accept": "application/json, text/event-stream",
-                "Content-Type": "application/json",
-            },
-            json=initialize_request.to_dict(),
-            timeout=None,
-        )
-
-        assert response.status_code == 200
-        try:
-            data = response.json()
-        except Exception:
-            raise Exception(f"Expected a json response, got {response.text}")
-        assert data["jsonrpc"] == "2.0"
-        assert data["id"] == 1
-        assert "result" in data
-
-        # Get session ID from headers
-        session_id = response.headers.get("Mcp-Session-Id")
-        assert session_id is not None
+    client = MCPClient(mcp_server)
+    async with client.create_session() as session:
+        assert session.session_id is not None
 
 
 @pytest.mark.asyncio
