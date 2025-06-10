@@ -30,7 +30,7 @@ class SampleMCPImplementation(IMCPHandler):
             mcp_models: The MCP models to handle (one or more).
 
         Returns:
-            A list of MCP models or an EventSourceResponse
+            One MCP model or an EventSourceResponse
         """
         from sema4ai.mcp_core.mcp_models import JSONRPCResponse
 
@@ -57,12 +57,10 @@ class SampleMCPImplementation(IMCPHandler):
     async def handle_notifications(self, mcp_models: list[MCPBaseModel]) -> None:
         """Handle MCP notifications."""
         # Sample implementation just ignores notifications
-        pass
 
     async def handle_responses(self, mcp_models: list[MCPBaseModel]) -> None:
         """Handle MCP responses."""
         # Sample implementation just ignores responses
-        pass
 
     async def handle_sse_stream(self, last_event_id: str | None) -> EventSourceResponse:
         """Handle SSE stream requests."""
