@@ -46,7 +46,7 @@ class SampleMCPImplementation(IMCPHandler):
                     id=model.id,
                     result=InitializeResult(
                         capabilities=ServerCapabilities(),
-                        protocolVersion="1.0",
+                        protocolVersion="2025-03-26",
                         serverInfo=Implementation(name="test-server", version="1.0.0"),
                     ),
                 )
@@ -81,9 +81,7 @@ class SampleMCPSessionHandler(IMCPSessionHandler):
     def __init__(self) -> None:
         self._handlers: dict[str, IMCPHandler] = {}
 
-    async def obtain_session_handler(
-        self, request: Request, session_id: str | None
-    ) -> IMCPHandler:
+    async def obtain_session_handler(self, request: Request, session_id: str | None) -> IMCPHandler:
         """Obtain an MCP session handler."""
         import uuid
 
@@ -92,9 +90,7 @@ class SampleMCPSessionHandler(IMCPSessionHandler):
         self._handlers[session_id] = SampleMCPImplementation(session_id)
         return self._handlers[session_id]
 
-    async def get_session_handler(
-        self, request: Request, session_id: str
-    ) -> IMCPHandler:
+    async def get_session_handler(self, request: Request, session_id: str) -> IMCPHandler:
         """Get an MCP session handler."""
         return self._handlers[session_id]
 

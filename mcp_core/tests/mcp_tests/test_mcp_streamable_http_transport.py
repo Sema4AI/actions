@@ -53,8 +53,7 @@ def mcp_server_base_url() -> Iterator[str]:
     if port is None:
         process.stop()
         raise RuntimeError(
-            "Could not determine MCP server port after 10 seconds. output: "
-            + "\n".join(lines)
+            "Could not determine MCP server port after 10 seconds. output: " + "\n".join(lines)
         )
 
     yield f"http://127.0.0.1:{port}"
@@ -76,7 +75,8 @@ async def test_mcp_session_initialization(mcp_server_base_url: str):
     mcp_client = MCPClient(mcp_server_base_url)
     async with mcp_client.create_session() as session:
         assert session.session_id is not None
-
+        assert session.initialize_result is not None
+        assert session.initialize_result.protocolVersion == "2025-03-26"
     # Test that the session is deleted after the context manager is exited
     async with httpx.AsyncClient() as client:
         response = await client.get(

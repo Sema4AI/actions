@@ -20,3 +20,16 @@ def create_mcp_model(data: dict[str, Any]) -> MCPBaseModel:
     if method not in _generated_mcp_models._class_map:
         raise ValueError(f"No MCP model class found for method: {method}")
     return _generated_mcp_models._class_map[method].from_dict(data)
+
+
+def build_result_model(request_model: MCPBaseModel, kwargs: dict) -> MCPBaseModel:
+    """Build the result model for a given request.
+
+    Args:
+        request_model: The request model
+        kwargs: The keyword arguments to pass to the result model constructor
+
+    Returns:
+        The result model
+    """
+    return _generated_mcp_models._request_to_result_map[type(request_model)].from_dict(kwargs)

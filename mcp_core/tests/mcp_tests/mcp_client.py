@@ -8,10 +8,17 @@ if TYPE_CHECKING:
 
 
 class MCPSession:
-    def __init__(self, url: str, session_id: str, client: "httpx.AsyncClient"):
+    def __init__(
+        self,
+        url: str,
+        session_id: str,
+        client: "httpx.AsyncClient",
+        initialize_result: InitializeResult,
+    ):
         self.url = url
         self.session_id = session_id
         self.client = client
+        self.initialize_result = initialize_result
 
 
 class MCPClient:
@@ -33,7 +40,9 @@ class MCPClient:
         self.client_name = client_name
         self.client_version = client_version
 
-    async def _initial_handshake(self, client: "httpx.AsyncClient") -> InitializeResult:
+    async def _initial_handshake(
+        self, client: "httpx.AsyncClient"
+    ) -> tuple[InitializeResult, "httpx.Response"]:
         import asyncio
 
         from sema4ai.mcp_core.mcp_models import (
@@ -43,16 +52,13 @@ class MCPClient:
             InitializedNotificationParams,
             InitializeRequest,
             InitializeRequestParams,
-            JSONRPCResponse,
-            create_mcp_model,
+            build_result_model,
         )
 
         initialize_request_id = self._next_id()
         initialize_request = InitializeRequest(
             params=InitializeRequestParams(
-                clientInfo=Implementation(
-                    name=self.client_name, version=self.client_version
-                ),
+                clientInfo=Implementation(name=self.client_name, version=self.client_version),
                 capabilities=ClientCapabilities(),
                 protocolVersion="2025-03-26",
             ),
@@ -83,6 +89,10 @@ class MCPClient:
         if data["jsonrpc"] != "2.0":
             raise Exception(f"Expected a jsonrpc 2.0 response, got {data['jsonrpc']}")
 
+        error = data.get("error")
+        if error is not None:
+            raise Exception(f"Expected no error in the response, got {error}")
+
         if data["id"] != initialize_request_id:
             raise Exception(
                 f"Expected the resulting id to match the initialization request id ({initialize_request_id}), got {data['id']}"
@@ -91,16 +101,9 @@ class MCPClient:
         if "result" not in data:
             raise Exception(f"Expected a result in the response, got {data}")
 
-        try:
-            JSONRPCResponse.from_dict(data)
-        except Exception:
-            raise Exception(f"Expected a JSONRPCResponse, got {data}")
-
-        result = response_model.result
+        result = build_result_model(initialize_request, data["result"])
         if not isinstance(result, InitializeResult):
-            raise Exception(
-                f"Expected an InitializeResult, got {type(result)} - {result}"
-            )
+            raise Exception(f"Expected an InitializeResult, got {type(result)} - {result}")
 
         # Ok, initialization request was successful, now, send a notification to the server
         # to let it know that we are ready to receive requests
@@ -118,7 +121,7 @@ class MCPClient:
                 json=notification_request.to_dict(),
             )
         )
-        return model
+        return result, response
 
     @asynccontextmanager
     async def create_session(
@@ -128,12 +131,12 @@ class MCPClient:
 
         async with httpx.AsyncClient() as client:
             # Send initialize request
-            response = await self._initial_handshake(client)
+            result, response = await self._initial_handshake(client)
 
             # Get session ID from headers
-            session_id = response.headers.get("Mcp-Session-Id")
+            session_id = response.headers.get("Mcp-Session-Id")  # type: ignore
             assert session_id is not None
-            session = MCPSession(self.url, session_id, client)
+            session = MCPSession(self.url, session_id, client, result)
             try:
                 yield session
             finally:
