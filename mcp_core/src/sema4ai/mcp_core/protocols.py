@@ -1,9 +1,24 @@
-from typing import Protocol
+from typing import Iterator, Protocol
 
 from sse_starlette.sse import EventSourceResponse
 from starlette.requests import Request
 
 from sema4ai.mcp_core.mcp_base_model import MCPBaseModel
+
+
+class IMessageHandler(Protocol):
+    """Protocol defining the interface for handling MCP messages."""
+
+    async def handle_message(self, message: MCPBaseModel) -> MCPBaseModel:
+        """Handle an MCP message."""
+
+
+class IMessagesGenerator(Protocol):
+    """Protocol defining the interface for generating MCP messages from the server
+    that are not related to a specific request."""
+
+    async def generate_messages(self) -> Iterator[MCPBaseModel]:
+        """Generate MCP messages from the server that are not related to a specific request."""
 
 
 class IStreamableHttpMCPSessionHandler(Protocol):
@@ -50,7 +65,7 @@ class IStreamableHttpMCPSessionHandler(Protocol):
 class IStreamableHttpMCPHandler(Protocol):
     """Low-level protocol defining the interface for handling MCP messages."""
 
-    session_id: str | None
+    session_id: str
 
     async def handle_sse_stream(self, last_event_id: str | None) -> EventSourceResponse:
         """Handle an SSE stream.

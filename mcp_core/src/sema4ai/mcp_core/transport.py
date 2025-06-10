@@ -22,8 +22,11 @@ log = logging.getLogger(__name__)
 _DONE: Literal["DONE"] = "DONE"
 
 
-class StreamableHttpMCPHandler(IStreamableHttpMCPHandler):
+class StreamableHttpMCPHandler:
     """Base MCP low-level implementation (base framework to handle MCP requests using streamable HTTP)."""
+
+    def __typecheckself__(self) -> None:
+        _: IStreamableHttpMCPHandler = self
 
     def __init__(self, session_id: str) -> None:
         self.session_id = session_id
@@ -141,8 +144,11 @@ class StreamableHttpMCPHandler(IStreamableHttpMCPHandler):
         return EventSourceResponse(event_generator())
 
 
-class StreamableHttpMCPSessionHandler(IStreamableHttpMCPSessionHandler):
+class StreamableHttpMCPSessionHandler:
     """Base MCP session handler that handles sessions."""
+
+    def __typecheckself__(self) -> None:
+        _: IStreamableHttpMCPSessionHandler = self
 
     def __init__(self) -> None:
         self._handlers: dict[str, IStreamableHttpMCPHandler] = {}
