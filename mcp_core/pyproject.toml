@@ -20,6 +20,7 @@ sema4ai-common = "^0.1.1"
 sema4ai-devutils = { path = "../devutils/", develop = true }
 pytest-asyncio = "^1.0.0"
 
+
 [tool.mypy]
 mypy_path = "src:tests"
 

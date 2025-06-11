@@ -1,16 +1,9 @@
 from dataclasses import dataclass
-from enum import Enum
 from typing import Any, Type, TypeVar
 
+from sema4ai.mcp_core.protocols import MessageType
+
 T = TypeVar("T")
-
-
-class MessageType(Enum):
-    REQUEST = "request"
-    NOTIFICATION = "notification"
-    RESPONSE = "response"
-    RESULT = "result"
-    OTHER = "other"
 
 
 @dataclass
@@ -37,8 +30,7 @@ class MCPBaseModel:
                 result[field_name] = value.to_dict()
             elif isinstance(value, list):
                 result[field_name] = [
-                    item.to_dict() if isinstance(item, MCPBaseModel) else item
-                    for item in value
+                    item.to_dict() if isinstance(item, MCPBaseModel) else item for item in value
                 ]
             else:
                 result[field_name] = value
@@ -48,9 +40,7 @@ class MCPBaseModel:
         import json
 
         try:
-            return (
-                f"{self.__class__.__name__} -- {json.dumps(self.to_dict(), indent=4)}"
-            )
+            return f"{self.__class__.__name__} -- {json.dumps(self.to_dict(), indent=4)}"
         except Exception:
             return f"{self.__class__.__name__} -- {self.__dict__}"
 

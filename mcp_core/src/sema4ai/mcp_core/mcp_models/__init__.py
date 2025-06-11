@@ -1,3 +1,5 @@
+from sema4ai.mcp_core.protocols import IMCPRequestModel
+
 from . import _generated_mcp_models
 from ._generated_mcp_models import *
 
@@ -33,6 +35,25 @@ def build_result_model(request_model: MCPBaseModel, kwargs: dict) -> MCPBaseMode
         The result model
     """
     return _generated_mcp_models._request_to_result_map[type(request_model)].from_dict(kwargs)
+
+
+def build_json_rpc_response_model(
+    request_model: IMCPRequestModel, result_model: Result
+) -> JSONRPCResponse:
+    """Build the response model for a given request.
+
+    Args:
+        request_model: The request model
+        result_model: The result model
+
+    Returns:
+        The response model
+    """
+    response = JSONRPCResponse(
+        id=request_model.id,
+        result=result_model,
+    )
+    return response
 
 
 ERROR_CODE_PARSE_ERROR = -32700  # Invalid JSON was received by the server.

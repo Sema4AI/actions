@@ -1,23 +1,52 @@
-from typing import Iterator, Protocol
+from enum import Enum
+from typing import TYPE_CHECKING, Any, Iterator, Protocol, Type, TypeVar
 
 from sse_starlette.sse import EventSourceResponse
 from starlette.requests import Request
 
-from sema4ai.mcp_core.mcp_base_model import MCPBaseModel
+if TYPE_CHECKING:
+    from sema4ai.mcp_core.mcp_base_model import MCPBaseModel
+
+T = TypeVar("T")
+
+
+class MessageType(Enum):
+    REQUEST = "request"
+    NOTIFICATION = "notification"
+    RESPONSE = "response"
+    RESULT = "result"
+    OTHER = "other"
+
+
+class IMCPRequestModel(Protocol):
+    """Protocol defining the interface for an MCP request model."""
+
+    id: str
+
+    @classmethod
+    def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
+        """Create an instance from a dictionary."""
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert the instance to a dictionary."""
+
+    @classmethod
+    def get_message_type(cls) -> MessageType:
+        """Get the type of message this class represents."""
 
 
 class IMessageHandler(Protocol):
     """Protocol defining the interface for handling MCP messages."""
 
-    async def handle_message(self, message: MCPBaseModel) -> MCPBaseModel:
-        """Handle an MCP message."""
+    async def handle_request(self, request: IMCPRequestModel) -> "MCPBaseModel":
+        """Handle an MCP request."""
 
 
 class IMessagesGenerator(Protocol):
     """Protocol defining the interface for generating MCP messages from the server
     that are not related to a specific request."""
 
-    async def generate_messages(self) -> Iterator[MCPBaseModel]:
+    async def generate_messages(self) -> Iterator["MCPBaseModel"]:
         """Generate MCP messages from the server that are not related to a specific request."""
 
 
@@ -78,8 +107,8 @@ class IStreamableHttpMCPHandler(Protocol):
         """
 
     async def handle_requests(
-        self, request: list[MCPBaseModel]
-    ) -> MCPBaseModel | EventSourceResponse:
+        self, request: list[IMCPRequestModel]
+    ) -> "MCPBaseModel | EventSourceResponse":
         """Handle an MCP request.
 
         Args:
@@ -89,14 +118,14 @@ class IStreamableHttpMCPHandler(Protocol):
             Either a response model or an EventSourceResponse for streaming responses
         """
 
-    async def handle_notifications(self, notifications: list[MCPBaseModel]) -> None:
+    async def handle_notifications(self, notifications: list["MCPBaseModel"]) -> None:
         """Handle an MCP notification.
 
         Args:
             notifications: The MCP notifications to handle
         """
 
-    async def handle_responses(self, responses: list[MCPBaseModel]) -> None:
+    async def handle_responses(self, responses: list["MCPBaseModel"]) -> None:
         """Handle an MCP response.
 
         Args:

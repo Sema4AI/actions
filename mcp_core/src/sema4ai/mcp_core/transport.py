@@ -7,6 +7,8 @@ from fastapi.responses import JSONResponse
 from sse_starlette.sse import EventSourceResponse
 from starlette.requests import Request
 
+from sema4ai.mcp_core.protocols import IMCPRequestModel, IMessageHandler
+
 from .mcp_models import (
     Implementation,
     InitializeRequest,
@@ -28,12 +30,17 @@ class StreamableHttpMCPHandler:
     def __typecheckself__(self) -> None:
         _: IStreamableHttpMCPHandler = self
 
-    def __init__(self, session_id: str) -> None:
+    def __init__(self, session_id: str, messages_handler: IMessageHandler | None = None) -> None:
+        from sema4ai.mcp_core.mcp_handler import DefaultMcpMessageHandler
+
         self.session_id = session_id
         self._initialized = False
+        self._messages_handler = (
+            messages_handler if messages_handler is not None else DefaultMcpMessageHandler()
+        )
 
     async def handle_requests(
-        self, mcp_models: list[MCPBaseModel]
+        self, mcp_models: list[IMCPRequestModel]
     ) -> MCPBaseModel | EventSourceResponse:
         """Handle an MCP request.
 
@@ -43,7 +50,7 @@ class StreamableHttpMCPHandler:
         Returns:
             One MCP model or an EventSourceResponse
         """
-        from sema4ai.mcp_core.mcp_models import JSONRPCResponse
+        from sema4ai.mcp_core.mcp_models import build_json_rpc_response_model
 
         single_model = len(mcp_models) == 1
 
@@ -60,9 +67,9 @@ class StreamableHttpMCPHandler:
                         )
                     self._initialized = True
 
-                    response = JSONRPCResponse(
-                        id=model.id,
-                        result=InitializeResult(
+                    response = build_json_rpc_response_model(
+                        model,
+                        InitializeResult(
                             capabilities=ServerCapabilities(),
                             protocolVersion="2025-03-26",
                             serverInfo=Implementation(name="test-server", version="1.0.0"),
@@ -75,16 +82,24 @@ class StreamableHttpMCPHandler:
     async def _process_mcp_requests(
         self,
         queue: asyncio.Queue[dict[str, str] | Literal["DONE"]],
-        mcp_models: list[MCPBaseModel],
+        mcp_models: list[IMCPRequestModel],
     ) -> None:
         """Process MCP requests and put results in the queue."""
-        from sema4ai.mcp_core.mcp_models import create_json_rpc_error
+        from sema4ai.mcp_core.mcp_models import (
+            build_json_rpc_response_model,
+            create_json_rpc_error,
+        )
 
         try:
             for model in mcp_models:
                 # Process each model and put results in queue
                 # For now, just echo the model as JSON
-                pass
+                try:
+                    result = await self._messages_handler.handle_request(model)
+                    response = build_json_rpc_response_model(model, result)
+                    await queue.put(response.to_dict())
+                except Exception as e:
+                    await queue.put(create_json_rpc_error(str(e)))
 
             # Signal completion
             await queue.put(_DONE)
@@ -116,7 +131,7 @@ class StreamableHttpMCPHandler:
                 queue.task_done()
 
     async def _handle_requests(
-        self, mcp_models: list[MCPBaseModel]
+        self, mcp_models: list[IMCPRequestModel]
     ) -> MCPBaseModel | EventSourceResponse:
         """Handle MCP requests using an async queue and EventSourceResponse."""
 
@@ -189,6 +204,8 @@ def create_streamable_http_router(
         accept: str = Header(...),
         mcp_session_id: Optional[str] = Header(None, alias="Mcp-Session-Id"),
     ):
+        import typing
+
         from sema4ai.mcp_core.mcp_base_model import MessageType
         from sema4ai.mcp_core.mcp_models import (
             ERROR_CODE_PARSE_ERROR,
@@ -233,12 +250,13 @@ def create_streamable_http_router(
             else:
                 raise ValueError(f"Invalid request body, expected dict or list, got {type(body)}")
 
-            requests = []
+            requests: list[IMCPRequestModel] = []
 
             for model in mcp_models:
                 message_type = model.get_message_type()
                 if message_type == MessageType.REQUEST:
-                    requests.append(model)  # Requests are handled last
+                    # Requests are handled last
+                    requests.append(typing.cast(IMCPRequestModel, model))
 
                 elif message_type == MessageType.NOTIFICATION:
                     await mcp_handler.handle_notifications([model])
@@ -255,12 +273,13 @@ def create_streamable_http_router(
                 # The HTTP response body MAY comprise a JSON-RPC error response that has no id.
                 return JSONResponse(content={}, status_code=202, headers=response_headers)
 
-            response = await mcp_handler.handle_requests(mcp_models)
+            response = await mcp_handler.handle_requests(requests)
 
             # Spec says: If the input contains any number of JSON-RPC requests, the server MUST either return Content-Type: text/event-stream,
             # to initiate an SSE stream, or Content-Type: application/json, to return one JSON object. The client MUST support both these cases.
 
             if isinstance(response, EventSourceResponse):
+                response.headers.update(response_headers)
                 return response
 
             if isinstance(response, MCPBaseModel):
