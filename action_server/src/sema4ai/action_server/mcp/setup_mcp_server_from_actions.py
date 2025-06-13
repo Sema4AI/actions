@@ -1,4 +1,5 @@
 import logging
+import re
 import typing
 from dataclasses import dataclass
 from typing import Any, Callable
@@ -31,16 +32,29 @@ class McpResponseHandler:
 class McpServerSetupHelper:
     def __init__(self) -> None:
         from mcp.server import Server
-        from mcp.types import EmbeddedResource, ImageContent, TextContent, Tool
+        from mcp.types import (
+            EmbeddedResource,
+            ImageContent,
+            Resource,
+            ResourceTemplate,
+            TextContent,
+            Tool,
+        )
 
         server: Server = Server("Action Server")
         self.server = server
         self._tools: list[Tool] = []
+        self._resources: list[Resource] = []
+        self._resource_templates: list[ResourceTemplate] = []
         self._action_name_to_action_info: dict[str, ActionInfo] = {}
 
         @server.list_tools()
         async def list_tools() -> list[Tool]:
             return self._tools
+
+        @server.list_resources()
+        async def list_resources() -> list[Resource]:
+            return self._resources
 
         @server.call_tool()
         async def call_tool(
@@ -67,6 +81,18 @@ class McpServerSetupHelper:
                 log.exception("Error calling tool %s", name)
                 raise e
 
+    def resource_template_matches(self, uri: str) -> dict[str, Any] | None:
+        """Check if URI matches template and extract parameters."""
+
+        # Same logic as https://github.com/modelcontextprotocol/python-sdk/blob/v1.9.4/src/mcp/server/fastmcp/resources/templates.py#L54
+
+        # Convert template to regex pattern
+        pattern = uri.replace("{", "(?P<").replace("}", ">[^/]+)")
+        match = re.match(f"^{pattern}$", uri)
+        if match:
+            return match.groupdict()
+        return None
+
     def register_action(
         self,
         func: Callable,
@@ -74,20 +100,55 @@ class McpServerSetupHelper:
         action: "Action",
         display_name: str,
         doc_desc: str,
-    ):
+    ) -> None:
         import json
 
-        from mcp.types import Tool
+        from mcp.types import Resource, ResourceTemplate, Tool
+        from pydantic.networks import AnyUrl
 
         use_name = action.name
 
-        self._tools.append(
-            Tool(
-                name=use_name,
-                description=doc_desc,
-                inputSchema=json.loads(action.input_schema),
+        options = json.loads(action.options)
+        kind = options.get("kind")
+
+        if kind == "resource":
+            # Resource may be regular or template resources depending on the uri.
+            # If the URI follows the RFC 6570 template syntax, it's a template resource.
+            uri = options.get("uri")
+            if not uri:
+                raise ValueError(f"Resource {use_name} has no URI")
+
+            if self.resource_template_matches(uri):
+                self._resource_templates.append(
+                    ResourceTemplate(
+                        uriTemplate=uri,
+                        name=use_name,
+                        description=doc_desc,
+                    )
+                )
+            else:
+                self._resources.append(
+                    Resource(
+                        uri=AnyUrl(uri),
+                        name=use_name,
+                        description=doc_desc,
+                        mimeType=options.get("mime_type"),
+                        size=options.get("size"),
+                    )
+                )
+
+        elif kind == "prompt":
+            pass
+
+        else:
+            self._tools.append(
+                Tool(
+                    name=use_name,
+                    description=doc_desc,
+                    inputSchema=json.loads(action.input_schema),
+                )
             )
-        )
+
         self._action_name_to_action_info[use_name] = ActionInfo(
             func=func, action=action, display_name=display_name, doc_desc=doc_desc
         )
@@ -95,3 +156,4 @@ class McpServerSetupHelper:
     def unregister_actions(self):
         self._tools = []
         self._action_name_to_action_info = {}
+        self._resources = []

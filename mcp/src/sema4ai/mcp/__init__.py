@@ -18,6 +18,7 @@ This approach enables:
    and inspect the details on the execution.
 """
 
+import re
 from typing import Callable, overload
 
 from .types import ToolAnnotations
@@ -81,17 +82,33 @@ def tool(*args, **kwargs):
     return action(*args, **kwargs)
 
 
+def __resource_template_matches(uri: str) -> dict[str, str | None] | None:
+    """Check if URI matches template and extract parameters."""
+
+    # Same logic as https://github.com/modelcontextprotocol/python-sdk/blob/v1.9.4/src/mcp/server/fastmcp/resources/templates.py#L54
+
+    # Convert template to regex pattern
+    pattern = uri.replace("{", "(?P<").replace("}", ">[^/]+)")
+    match = re.match(f"^{pattern}$", uri)
+    if match:
+        return match.groupdict()
+    return None
+
+
 def resource(
     uri: str,
     *,
     name: str | None = None,
     description: str | None = None,
-    mime_type: str | None = None,
+    mime_type: str = "text/plain",
+    size: int | None = None,
 ) -> Callable:
     """
     Decorator for resources which provide data to the LLM.
 
-    Resources may be simple or templates (with `{placeholder}` indications in the uri).
+    Resources may be simple or templates.
+        Templates are resources with `{placeholder}` indications in the uri,
+        according to RFC 6570.
 
     Example:
         ```python
@@ -116,16 +133,22 @@ def resource(
 
     python -m sema4ai.actions run actions.py -a get_ticket
 
-    Args:
-        func: A function which is a resource to `sema4ai.mcp`.
-        display_name: A name to be displayed for this action.
-            If given will be used as the openapi.json summary for this action.
-
     See: https://modelcontextprotocol.io/docs/concepts/resources
+
+    Args:
+        uri: The URI of the resource (may be a template or a simple resource).
+        name: A human-readable name for this resource.
+        description: A description of what this resource represents.
+        mime_type: The MIME type of the resource.
+        size: The size of the raw resource content, in bytes (i.e., before base64 encoding
+            or any tokenization), if known.
+            This can be used by Hosts to display file sizes and estimate context window usage.
     """
 
     def decorator(func):
         from sema4ai.actions import _hooks
+
+        template_matches = __resource_template_matches(uri)
 
         # When an action is found, register it in the framework as a target for execution.
         _hooks.on_action_func_found(
@@ -136,6 +159,7 @@ def resource(
                 "name": name,
                 "description": description,
                 "mime_type": mime_type,
+                "size": size,
             },
         )
 
