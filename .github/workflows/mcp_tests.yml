@@ -12,28 +12,30 @@
 # and rerun the script).
 
 
-name: Common Tests
+name: MCP Tests
 'on':
   push:
     branches:
     - master
     - wip
     paths:
-    - common/**
-    - .github/workflows/common_tests.yml
+    - mcp/**
+    - .github/workflows/mcp_tests.yml
     - devutils/**
+    - actions/**
     - sema4ai-http-helper/**
   pull_request:
     branches:
     - master
     paths:
-    - common/**
-    - .github/workflows/common_tests.yml
+    - mcp/**
+    - .github/workflows/mcp_tests.yml
     - devutils/**
+    - actions/**
     - sema4ai-http-helper/**
 defaults:
   run:
-    working-directory: ./common
+    working-directory: ./mcp
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -41,19 +43,19 @@ jobs:
       fail-fast: false
       matrix:
         name:
-        - ubuntu-py3.11-devmode
-        - windows-py3.11-devmode
-        - macos-py3.11-devmode
+        - ubuntu-py3.10-devmode
+        - windows-py3.10-devmode
+        - macos-py3.10-devmode
         include:
-        - name: ubuntu-py3.11-devmode
-          python: '3.11'
+        - name: ubuntu-py3.10-devmode
+          python: '3.10'
           os: ubuntu-22.04
-        - name: windows-py3.11-devmode
-          python: '3.11'
+        - name: windows-py3.10-devmode
+          python: '3.10'
           os: windows-2019
-        - name: macos-py3.11-devmode
+        - name: macos-py3.10-devmode
           os: macos-15
-          python: '3.11'
+          python: '3.10'
     steps:
     - name: Checkout repository and submodules
       uses: actions/checkout@v3
@@ -61,8 +63,8 @@ jobs:
       uses: astral-sh/setup-uv@v5
       with:
         enable-cache: true
-    - name: Install Python 3.11
-      run: uv python install 3.11
+    - name: Install Python 3.10
+      run: uv python install 3.10
     - name: Install devutils requirements
       run: uv run --no-project --python ${{ matrix.python }}  python -m pip install
         --break-system-packages -r ../devutils/requirements.txt

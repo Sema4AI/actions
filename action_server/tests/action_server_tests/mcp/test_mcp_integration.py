@@ -79,7 +79,13 @@ async def check_mcp_server(
 ):
     from mcp.client.sse import sse_client
     from mcp.client.streamable_http import streamablehttp_client
-    from mcp.types import CallToolResult, TextContent
+    from mcp.types import (
+        CallToolResult,
+        ReadResourceResult,
+        TextContent,
+        TextResourceContents,
+    )
+    from pydantic.networks import AnyUrl
 
     client_protocol: Any
     if connection_mode == "mcp":
@@ -138,16 +144,54 @@ async def check_mcp_server(
                 expected_mcp,
             )
 
+            # -- Test tool call.
+
             tool_result = await session.call_tool(
                 greet_tool.name, {"name": "John", "title": "Mr."}
             )
 
             assert isinstance(tool_result, CallToolResult)
-            content = tool_result.content[0]
-            assert isinstance(content, TextContent)
+            tool_content = tool_result.content[0]
+            assert isinstance(tool_content, TextContent)
             assert (
-                content.text == "Hello Mr. John."
-            ), f"Expected: Hello Mr. John., got: {content.text}"
+                tool_content.text == "Hello Mr. John."
+            ), f"Expected: Hello Mr. John., got: {tool_content.text}"
+
+            # -- Test resources (simple).
+
+            resources_list = await session.list_resources()
+            resources = resources_list.resources
+            uris = [str(resource.uri) for resource in resources]
+            assert ["custom://my/resource/simple"] == uris
+
+            # Read (simple) resource.
+            resource = await session.read_resource(resources[0].uri)
+            assert isinstance(resource, ReadResourceResult)
+            resource_content = resource.contents[0]
+            assert isinstance(resource_content, TextResourceContents)
+            assert (
+                resource_content.text == "This is a simple resource without a template."
+            )
+
+            # -- Test resources (template).
+
+            resource_templates_list = await session.list_resource_templates()
+            resource_templates = resource_templates_list.resourceTemplates
+            uris = [
+                str(resource_template.uriTemplate)
+                for resource_template in resource_templates
+            ]
+            assert ["custom://my/resource/{name}"] == uris
+
+            # Read (template) resource.
+            uri_template: str = resource_templates[0].uriTemplate
+            uri: AnyUrl = AnyUrl(uri_template.replace("{name}", "John"))
+            resource = await session.read_resource(uri)
+            assert isinstance(resource, ReadResourceResult)
+            resource_content = resource.contents[0]
+            assert isinstance(resource_content, TextResourceContents)
+            assert resource_content.text == "This is the built in resource for John."
+
             return "ok"
 
 
@@ -306,7 +350,6 @@ def test_mcp_integration_with_actions_and_api_key(
 
 
 @pytest.mark.integration_test
-@pytest.mark.skip(reason="The support for cancellation is not there in the python SDK")
 def test_mcp_tool_cancellation_with_actions(
     action_server_process: ActionServerProcess,
 ) -> None:
@@ -324,6 +367,8 @@ def test_mcp_tool_cancellation_with_actions(
     )
 
     async def check_cancellation() -> str:
+        import time
+
         from mcp.types import (
             CancelledNotification,
             CancelledNotificationParams,
@@ -358,6 +403,46 @@ def test_mcp_tool_cancellation_with_actions(
                 [tool_call, sleep_call], return_when=asyncio.FIRST_COMPLETED
             )
 
+            print("--------------------------------")
+            print("--------------------------------")
+            print("--------------------------------")
+            print("Cancelling the tool call")
+            print("--------------------------------")
+            print("--------------------------------")
+            print("--------------------------------")
+            # Cancel the tool call
+            await asyncio.create_task(
+                session.send_notification(
+                    ClientNotification(
+                        CancelledNotification(
+                            method="notifications/cancelled",
+                            params=CancelledNotificationParams(requestId=request_id),
+                        )
+                    )
+                )
+            )
+
+            time.sleep(1)
+
+            print("--------------------------------")
+            print("--------------------------------")
+            print("--------------------------------")
+            print("Tool call 2")
+            print("--------------------------------")
+            print("--------------------------------")
+            print("--------------------------------")
+            # Another tool call
+            coro = session.call_tool(long_running_tool.name, {"duration": 1})
+            _result = await asyncio.create_task(coro)
+            print(_result)
+
+            print("--------------------------------")
+            print("--------------------------------")
+            print("--------------------------------")
+            print("Cancelling the tool call")
+            print("--------------------------------")
+            print("--------------------------------")
+            print("--------------------------------")
             # Cancel the tool call
             await session.send_notification(
                 ClientNotification(
@@ -367,6 +452,8 @@ def test_mcp_tool_cancellation_with_actions(
                     )
                 )
             )
+
+            time.sleep(3)
 
             # Wait for the tool call to complete (should be cancelled)
             _result = await tool_call
