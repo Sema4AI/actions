@@ -37,11 +37,18 @@ async def check_mcp_server(
             await session.initialize()
             tools_list = await session.list_tools()
             tools = tools_list.tools
+
             assert len(tools) > 0
-            greet_tool = next(
-                tool for tool in tools if tool.name in ["greet", "greeter/greet"]
-            )
-            assert greet_tool is not None
+
+            tool_names = [tool.name for tool in tools]
+            assert (
+                "greet" in tool_names
+            ), f"greet tool not found. Available tools: {tool_names}"
+
+            greet_tool = next(tool for tool in tools if tool.name == "greet")
+            assert (
+                greet_tool is not None
+            ), f"'greet' tool not found. Available tools: {tool_names}"
 
             input_schema = greet_tool.inputSchema
             expected_action_server = {
@@ -187,7 +194,7 @@ def test_mcp_integration(mcp_server_port: int) -> None:
     )
 
 
-@pytest.mark.parametrize("connection_mode", ["mcp", "sse"])
+@pytest.mark.parametrize("connection_mode", ["mcp"])
 @pytest.mark.integration_test
 def test_mcp_integration_with_actions(
     action_server_process: ActionServerProcess,

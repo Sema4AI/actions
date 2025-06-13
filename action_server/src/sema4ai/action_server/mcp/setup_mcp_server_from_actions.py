@@ -79,7 +79,7 @@ class McpServerSetupHelper:
 
         from mcp.types import Tool
 
-        use_name = f"{action_package.name}/{action.name}"
+        use_name = action.name
 
         self._tools.append(
             Tool(

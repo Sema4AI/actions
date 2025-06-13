@@ -2,9 +2,12 @@
 
 ## Unreleased
 
+- Changed so that the MCP tools from actions are now called with just the name of the action (instead of `<action-package-name>/<action-name>`).
+  - This is a backward incompatible change (but as MCP in 2.11.0 was still provisional, a major version bump won't be done).
+
 ## 2.11.0 - 2025-06-05
 
-- The Action Server now supports the MCP protocol.
+- The Action Server now supports the MCP protocol (note: current support is provisional and may still change without major version bumps).
   - Registered actions are now available as tools.
     - The tool name is `<action-package-name>/<action-name>`.
   - Both `/mcp` and `/sse` endpoints are available.
