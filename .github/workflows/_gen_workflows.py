@@ -1123,6 +1123,12 @@ class CommonTests(BaseTests):
     project_name = "common"
 
 
+class MCPTests(BaseTests):
+    name = "MCP Tests"
+    target = "mcp_tests.yml"
+    project_name = "mcp"
+
+
 class HttpHelperTests(BaseTests):
     name = "HTTP Helper Tests"
     target = "http_helper_tests.yml"
@@ -1134,6 +1140,7 @@ TARGETS = [
     ActionsTests(),
     HttpHelperTests(),
     CommonTests(),
+    MCPTests(),
     ActionServerPyPiRelease(),
     ActionServerBinaryRelease(),
     ActionServerManylinuxRelease(),
