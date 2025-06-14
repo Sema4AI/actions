@@ -76,7 +76,7 @@ def collect_package_metadata(package_dir: Path, datadir: str) -> str | int:
         actions_list_result: list[ActionsListActionTypedDict],
         data_package_metadata: dict | None,
     ):
-        from sema4ai.action_server._server import build_url_api_run
+        from sema4ai.action_server._api_action_routes import build_url_api_run
         from sema4ai.action_server.vendored_deps.ls_protocols import _DiagnosticSeverity
         from sema4ai.action_server.vendored_deps.package_deps.analyzer import (
             PackageYamlAnalyzer,

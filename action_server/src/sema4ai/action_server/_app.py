@@ -1,5 +1,7 @@
 import logging
+from contextlib import AbstractAsyncContextManager, asynccontextmanager
 from functools import cache
+from typing import Callable, Never
 
 from fastapi import FastAPI
 from fastapi.exceptions import HTTPException, RequestValidationError
@@ -11,12 +13,39 @@ from ._settings import get_settings
 LOGGER = logging.getLogger(__name__)
 
 
+class _CustomLifespan:
+    def __init__(self) -> None:
+        self._registered_lifespans: list[
+            Callable[[FastAPI], AbstractAsyncContextManager[Never, bool | None]]
+        ] = []
+
+    def register(
+        self,
+        lifespan: Callable[[FastAPI], AbstractAsyncContextManager[Never, bool | None]],
+    ) -> None:
+        self._registered_lifespans.append(lifespan)
+
+    @asynccontextmanager
+    async def __call__(self, main_app: FastAPI):
+        from contextlib import AsyncExitStack
+
+        async with AsyncExitStack() as stack:
+            for lifespan in self._registered_lifespans:
+                await stack.enter_async_context(lifespan(main_app))
+            yield
+
+
 class _CustomFastAPI(FastAPI):
     mtime_uuid: str
 
     def __init__(self, *args, **kwargs) -> None:
+        custom_lifespan = _CustomLifespan()
+        assert "lifespan" not in kwargs
+        kwargs["lifespan"] = custom_lifespan
+
         super().__init__(*args, **kwargs)
         self.update_mtime_uuid()
+        self.custom_lifespan = custom_lifespan
 
     def update_mtime_uuid(self) -> None:
         import uuid
@@ -73,7 +102,12 @@ def get_app() -> _CustomFastAPI:
     settings = get_settings()
 
     server = {"url": settings.server_url}
-    app = _CustomFastAPI(title=settings.title, servers=[server], version=__version__)
+
+    app = _CustomFastAPI(
+        title=settings.title,
+        servers=[server],
+        version=__version__,
+    )
 
     app.add_middleware(
         CORSMiddleware,
