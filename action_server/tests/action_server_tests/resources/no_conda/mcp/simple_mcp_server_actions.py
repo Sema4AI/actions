@@ -1,5 +1,3 @@
-import sys
-
 from sema4ai import mcp
 
 

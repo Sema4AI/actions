@@ -202,7 +202,9 @@ class McpServerSetupHelper:
 
         options = json.loads(action.options)
         kind = options.get("kind")
-        use_name = options.get("display_name", action.name)
+        use_name = options.get("display_name")
+        if not use_name:
+            use_name = action.name
 
         if kind == "resource":
             # Resource may be regular or template resources depending on the uri.
