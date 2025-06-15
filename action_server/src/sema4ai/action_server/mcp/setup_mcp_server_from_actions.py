@@ -4,6 +4,8 @@ import typing
 from dataclasses import dataclass
 from typing import Any, Callable
 
+from pydantic.networks import AnyUrl
+
 if typing.TYPE_CHECKING:
     from sema4ai.action_server._models import Action, ActionPackage
 
@@ -31,7 +33,10 @@ class McpResponseHandler:
 
 class McpServerSetupHelper:
     def __init__(self) -> None:
+        from typing import Iterable
+
         from mcp.server import Server
+        from mcp.server.lowlevel.helper_types import ReadResourceContents
         from mcp.types import (
             EmbeddedResource,
             ImageContent,
@@ -44,9 +49,13 @@ class McpServerSetupHelper:
         server: Server = Server("Action Server")
         self.server = server
         self._tools: list[Tool] = []
-        self._resources: list[Resource] = []
+        self._tool_name_to_action_info: dict[str, ActionInfo] = {}
+
         self._resource_templates: list[ResourceTemplate] = []
-        self._action_name_to_action_info: dict[str, ActionInfo] = {}
+        self._resource_template_to_action_info: dict[str, ActionInfo] = {}
+
+        self._resources: list[Resource] = []
+        self._resource_to_action_info: dict[str, ActionInfo] = {}
 
         @server.list_tools()
         async def list_tools() -> list[Tool]:
@@ -65,7 +74,7 @@ class McpServerSetupHelper:
             try:
                 from sema4ai.action_server._actions_run import IInternalFuncAPI
 
-                action_info = self._action_name_to_action_info[name]
+                action_info = self._tool_name_to_action_info[name]
                 func: IInternalFuncAPI = action_info.func
                 result = await func(
                     response_handler=McpResponseHandler(),
@@ -80,6 +89,12 @@ class McpServerSetupHelper:
             except Exception as e:
                 log.exception("Error calling tool %s", name)
                 raise e
+
+        @server.read_resource()
+        async def read_resource(
+            uri: AnyUrl,
+        ) -> Iterable[ReadResourceContents]:
+            pass
 
     def _resource_template_matches(
         self, uri_template: str, uri: str
@@ -127,36 +142,18 @@ class McpServerSetupHelper:
             has_func_params = bool(params)
 
             if has_uri_params or has_func_params:
-                # If we have parameters, check if the URI parameters match the function parameter
-                # and create a resource template accordingly.
                 uri_params: set[str] = set(re.findall(r"{(\w+)}", uri))
-                func_params: set[str] = set(params.keys())
-
-                if uri_params != func_params:
-                    msg = (
-                        f"When collecting @resources, the parameters in the URI (found: {sorted(uri_params)}) "
-                        f"and the function parameters (found: {sorted(func_params)}) must match.\n"
-                        "Define URI parameters as '{param}' in the URI (example: https://example.com/resource/{param}).\n"
-                        "Define function parameters as arguments in the function (example: def func(a: int, b: int): ...).\n"
-                        f"File: {func.__code__.co_filename}:{func.__code__.co_firstlineno}: in {func.__code__.co_name}"
-                    )
-                    raise ValueError(msg)
-
-                # Check that all parameters are basic types (str, int, float, bool)
-                for param_name, param in params.items():
-                    param_type = param.annotation
-                    if param_type not in (str, int, float, bool):
-                        msg = (
-                            f"When collecting @resources, parameter '{param_name}' has type '{param_type.__name__}' "
-                            f"but only basic types (str, int, float, bool) are supported.\n"
-                            f"File: {func.__code__.co_filename}:{func.__code__.co_firstlineno}: in {func.__code__.co_name}"
-                        )
-                        raise ValueError(msg)
 
                 self._resource_templates.append(
                     ResourceTemplate(
                         uriTemplate=uri, name=use_name, description=doc_desc
                     )
+                )
+                self._resource_template_to_action_info[uri] = ActionInfo(
+                    func=func,
+                    action=action,
+                    display_name=display_name,
+                    doc_desc=doc_desc,
                 )
             else:
                 self._resources.append(
@@ -181,11 +178,11 @@ class McpServerSetupHelper:
                 )
             )
 
-        self._action_name_to_action_info[use_name] = ActionInfo(
-            func=func, action=action, display_name=display_name, doc_desc=doc_desc
-        )
+            self._tool_name_to_action_info[use_name] = ActionInfo(
+                func=func, action=action, display_name=display_name, doc_desc=doc_desc
+            )
 
     def unregister_actions(self):
         self._tools = []
-        self._action_name_to_action_info = {}
+        self._tool_name_to_action_info = {}
         self._resources = []

@@ -18,13 +18,36 @@ This approach enables:
    and inspect the details on the execution.
 """
 
-import re
 from typing import Callable, overload
+
+from sema4ai.actions._hooks import after_collect_actions as _after_collect_actions
+from sema4ai.actions._protocols import IAction
 
 from .types import ToolAnnotations
 
 __version__ = "0.0.1"
 version_info = [int(x) for x in __version__.split(".")]
+
+
+def _validate_collected_actions(actions: list[IAction]):
+    from sema4ai.actions._exceptions import ActionsCollectError
+
+    from sema4ai.mcp._validate_resource import _validate_resource
+
+    errors = []
+    for action in actions:
+        if action.options and action.options.get("kind") == "resource":
+            errors.extend(_validate_resource(action))
+
+    if errors:
+        if len(errors) == 1:
+            raise ActionsCollectError(errors[0])
+        raise ActionsCollectError(
+            f"Found {len(errors)} errors on collect:\n====\n" + "\n====\n".join(errors)
+        )
+
+
+_after_collect_actions.register(_validate_collected_actions)
 
 
 @overload
@@ -82,19 +105,6 @@ def tool(*args, **kwargs):
     return action(*args, **kwargs)
 
 
-def __resource_template_matches(uri: str) -> dict[str, str | None] | None:
-    """Check if URI matches template and extract parameters."""
-
-    # Same logic as https://github.com/modelcontextprotocol/python-sdk/blob/v1.9.4/src/mcp/server/fastmcp/resources/templates.py#L54
-
-    # Convert template to regex pattern
-    pattern = uri.replace("{", "(?P<").replace("}", ">[^/]+)")
-    match = re.match(f"^{pattern}$", uri)
-    if match:
-        return match.groupdict()
-    return None
-
-
 def resource(
     uri: str,
     *,
@@ -147,8 +157,6 @@ def resource(
 
     def decorator(func):
         from sema4ai.actions import _hooks
-
-        template_matches = __resource_template_matches(uri)
 
         # When an action is found, register it in the framework as a target for execution.
         _hooks.on_action_func_found(
