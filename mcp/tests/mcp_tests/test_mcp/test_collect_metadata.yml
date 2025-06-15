@@ -27,9 +27,10 @@ actions:
   managed_params_schema: {}
   name: create_ticket
   options:
-    display_name: null
-    is_consequential: null
+    annotations: null
+    description: null
     kind: tool
+    name: null
   output_schema:
     description: Dictionary containing the created ticket information
     properties:
