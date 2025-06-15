@@ -91,7 +91,9 @@ class McpServerSetupHelper:
         @server.read_resource()
         async def read_resource(
             uri: AnyUrl,
-        ) -> AsyncGenerator[ReadResourceContents, None]:
+        ):
+            from typing import Iterable
+
             # First check if it matches any resource templates
             # If no template match, check if it's a direct resource
             action_info = self._resource_to_action_info.get(str(uri))
@@ -113,22 +115,27 @@ class McpServerSetupHelper:
                     headers={},
                     cookies={},
                 )
-                if isinstance(result, (str, bytes)):
-                    mime_type = template.mimeType
-                    if not mime_type:
-                        if isinstance(result, str):
-                            mime_type = "text/plain"
-                        else:
-                            mime_type = "application/octet-stream"
-                    yield ReadResourceContents(content=result, mime_type=mime_type)
-                else:
-                    import json
 
-                    yield ReadResourceContents(
-                        content=json.dumps(result, indent=2),
-                        mime_type=template.mimeType or "application/json",
-                    )
-            return
+                def gen() -> Iterable[ReadResourceContents]:
+                    if isinstance(result, (str, bytes)):
+                        mime_type = template.mimeType
+                        if not mime_type:
+                            if isinstance(result, str):
+                                mime_type = "text/plain"
+                            else:
+                                mime_type = "application/octet-stream"
+
+                        yield ReadResourceContents(content=result, mime_type=mime_type)
+                    else:
+                        import json
+
+                        yield ReadResourceContents(
+                            content=json.dumps(result, indent=2),
+                            mime_type=template.mimeType or "application/json",
+                        )
+                        return
+
+                return gen()
 
             # If we get here, no matching resource was found
             raise ValueError(f"No resource found for URI: {uri}")
@@ -155,7 +162,6 @@ class McpServerSetupHelper:
         display_name: str,
         doc_desc: str,
     ) -> None:
-        import inspect
         import json
 
         from mcp.types import Resource, ResourceTemplate, Tool
@@ -172,11 +178,8 @@ class McpServerSetupHelper:
                 raise ValueError(f"Resource {use_name} has no URI")
 
             has_uri_params = "{" in uri and "}" in uri
-            signature = inspect.signature(func)
-            params = signature.parameters
-            has_func_params = bool(params)
 
-            if has_uri_params or has_func_params:
+            if has_uri_params:
                 self._resource_templates.append(
                     ResourceTemplate(
                         uriTemplate=uri,

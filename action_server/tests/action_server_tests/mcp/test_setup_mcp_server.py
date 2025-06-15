@@ -58,8 +58,11 @@ def test_collect_and_call_resource():
 
     setup = McpServerSetupHelper()
 
-    def run(*args, **kwargs):
-        pass
+    received_inputs = {}
+
+    async def run(*, inputs: dict, **kwargs):
+        received_inputs.update(inputs)
+        return "run result"
 
     setup.register_action(
         func=run,
@@ -75,14 +78,16 @@ def test_collect_and_call_resource():
         from mcp.types import ReadResourceRequest, ReadResourceRequestParams
 
         handler = setup.server.request_handlers[ReadResourceRequest]
-        return await handler(
-            ReadResourceRequest(
-                method="resources/read",
-                params=ReadResourceRequestParams(
-                    uri=AnyUrl("https://example.com/resource/123")
-                ),
-            )
+        request = ReadResourceRequest(
+            method="resources/read",
+            params=ReadResourceRequestParams(
+                uri=AnyUrl("https://example.com/resource/123")
+            ),
         )
+        result = await handler(request)
+        return result
 
     result = run_async_in_new_thread(call)
-    print(result)
+    assert received_inputs == {"a": "123"}
+    assert "run result" in str(result)
+    assert "text/plain" in str(result)
