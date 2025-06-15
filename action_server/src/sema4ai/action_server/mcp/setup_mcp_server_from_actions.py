@@ -2,7 +2,7 @@ import logging
 import re
 import typing
 from dataclasses import dataclass
-from typing import Any, Callable
+from typing import Any, AsyncGenerator, Callable
 
 from pydantic.networks import AnyUrl
 
@@ -33,8 +33,6 @@ class McpResponseHandler:
 
 class McpServerSetupHelper:
     def __init__(self) -> None:
-        from typing import Iterable
-
         from mcp.server import Server
         from mcp.server.lowlevel.helper_types import ReadResourceContents
         from mcp.types import (
@@ -93,8 +91,47 @@ class McpServerSetupHelper:
         @server.read_resource()
         async def read_resource(
             uri: AnyUrl,
-        ) -> Iterable[ReadResourceContents]:
-            pass
+        ) -> AsyncGenerator[ReadResourceContents, None]:
+            # First check if it matches any resource templates
+            # If no template match, check if it's a direct resource
+            action_info = self._resource_to_action_info.get(str(uri))
+            if not action_info:
+                for template in self._resource_templates:
+                    params = self._resource_template_matches(
+                        template.uriTemplate, str(uri)
+                    )
+                    if params:
+                        action_info = self._resource_template_to_action_info[
+                            template.uriTemplate
+                        ]
+
+            if action_info:
+                func = action_info.func
+                result = await func(
+                    response_handler=McpResponseHandler(),
+                    inputs=params,
+                    headers={},
+                    cookies={},
+                )
+                if isinstance(result, (str, bytes)):
+                    mime_type = template.mimeType
+                    if not mime_type:
+                        if isinstance(result, str):
+                            mime_type = "text/plain"
+                        else:
+                            mime_type = "application/octet-stream"
+                    yield ReadResourceContents(content=result, mime_type=mime_type)
+                else:
+                    import json
+
+                    yield ReadResourceContents(
+                        content=json.dumps(result, indent=2),
+                        mime_type=template.mimeType or "application/json",
+                    )
+            return
+
+            # If we get here, no matching resource was found
+            raise ValueError(f"No resource found for URI: {uri}")
 
     def _resource_template_matches(
         self, uri_template: str, uri: str
@@ -122,12 +159,10 @@ class McpServerSetupHelper:
         import json
 
         from mcp.types import Resource, ResourceTemplate, Tool
-        from pydantic.networks import AnyUrl
-
-        use_name = action.name
 
         options = json.loads(action.options)
         kind = options.get("kind")
+        use_name = options.get("display_name", action.name)
 
         if kind == "resource":
             # Resource may be regular or template resources depending on the uri.
@@ -142,11 +177,12 @@ class McpServerSetupHelper:
             has_func_params = bool(params)
 
             if has_uri_params or has_func_params:
-                uri_params: set[str] = set(re.findall(r"{(\w+)}", uri))
-
                 self._resource_templates.append(
                     ResourceTemplate(
-                        uriTemplate=uri, name=use_name, description=doc_desc
+                        uriTemplate=uri,
+                        name=use_name,
+                        description=doc_desc,
+                        mimeType=options.get("mime_type"),
                     )
                 )
                 self._resource_template_to_action_info[uri] = ActionInfo(
@@ -164,6 +200,12 @@ class McpServerSetupHelper:
                         mimeType=options.get("mime_type"),
                         size=options.get("size"),
                     )
+                )
+                self._resource_to_action_info[uri] = ActionInfo(
+                    func=func,
+                    action=action,
+                    display_name=display_name,
+                    doc_desc=doc_desc,
                 )
 
         elif kind == "prompt":

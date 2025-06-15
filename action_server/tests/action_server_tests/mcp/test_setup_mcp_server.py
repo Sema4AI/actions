@@ -25,8 +25,11 @@ def test_resource_template_matches():
     }
 
 
-def test_error_collecting_resources_with_missing_uri_params():
+def test_collect_and_call_resource():
     import json
+
+    from action_server_tests.fixtures import run_async_in_new_thread
+    from pydantic.networks import AnyUrl
 
     from sema4ai.action_server._models import Action
     from sema4ai.action_server.mcp.setup_mcp_server_from_actions import (
@@ -67,3 +70,19 @@ def test_error_collecting_resources_with_missing_uri_params():
     )
 
     assert len(setup._resource_templates) == 1
+
+    async def call():
+        from mcp.types import ReadResourceRequest, ReadResourceRequestParams
+
+        handler = setup.server.request_handlers[ReadResourceRequest]
+        return await handler(
+            ReadResourceRequest(
+                method="resources/read",
+                params=ReadResourceRequestParams(
+                    uri=AnyUrl("https://example.com/resource/123")
+                ),
+            )
+        )
+
+    result = run_async_in_new_thread(call)
+    print(result)
