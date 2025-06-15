@@ -105,3 +105,45 @@ def test_error_collecting_resources_param_not_basic_type():
             display_name=None,
             doc_desc=None,
         )
+
+    assert (
+        "When collecting @resources, parameter 'a' has type 'Foo' but only basic types (str, int, float, bool) are supported."
+        in str(e.value)
+    )
+
+
+def test_resources_work_with_unmanaged_params():
+    import json
+
+    from sema4ai.actions._action import Action
+    from sema4ai.actions._secret import Secret
+
+    from sema4ai.action_server.mcp.setup_mcp_server_from_actions import (
+        McpServerSetupHelper,
+    )
+
+    # Managed parameters (such as secrets) must be supported (without the user passing it in the URI).
+    def func(secret: Secret):
+        pass
+
+    action = Action(
+        pm=None,
+        module_name="test",
+        module_file="test.py",
+        method=func,
+        options=json.dumps(
+            {
+                "kind": "resource",
+                "uri": "https://example.com/resource",
+            }
+        ),
+    )
+
+    setup = McpServerSetupHelper()
+    setup.register_action(
+        func=func,
+        action_package=None,
+        action=action,
+        display_name=None,
+        doc_desc=None,
+    )

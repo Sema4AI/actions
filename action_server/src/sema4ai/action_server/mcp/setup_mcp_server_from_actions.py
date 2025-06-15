@@ -142,6 +142,17 @@ class McpServerSetupHelper:
                     )
                     raise ValueError(msg)
 
+                # Check that all parameters are basic types (str, int, float, bool)
+                for param_name, param in params.items():
+                    param_type = param.annotation
+                    if param_type not in (str, int, float, bool):
+                        msg = (
+                            f"When collecting @resources, parameter '{param_name}' has type '{param_type.__name__}' "
+                            f"but only basic types (str, int, float, bool) are supported.\n"
+                            f"File: {func.__code__.co_filename}:{func.__code__.co_firstlineno}: in {func.__code__.co_name}"
+                        )
+                        raise ValueError(msg)
+
                 self._resource_templates.append(
                     ResourceTemplate(
                         uriTemplate=uri, name=use_name, description=doc_desc
