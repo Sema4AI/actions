@@ -4,7 +4,104 @@ def test_resource_template_matches():
     )
 
     setup = McpServerSetupHelper()
-    assert setup.resource_template_matches("https://example.com/resource/{id}") == {
-        "id": "{id}"
+    assert setup._resource_template_matches(
+        "https://example.com/resource/{id}", "https://example.com/resource/123"
+    ) == {"id": "123"}
+
+    assert setup._resource_template_matches(
+        "https://example.com/resource/{id}", "https://example.com/resource/123"
+    ) == {"id": "123"}
+
+    assert (
+        setup._resource_template_matches(
+            "https://example.com/resource/{id}", "https://example.com/resource/123/foo"
+        )
+        is None
+    )
+
+    assert setup._resource_template_matches("https://{k}:{v}", "https://key:value") == {
+        "k": "key",
+        "v": "value",
     }
-    assert setup.resource_template_matches("https://example.com/resource/123") == {}
+
+
+def test_error_collecting_resources_with_missing_uri_params():
+    import json
+
+    import pytest
+    from sema4ai.actions._action import Action
+
+    from sema4ai.action_server.mcp.setup_mcp_server_from_actions import (
+        McpServerSetupHelper,
+    )
+
+    def func(a: int, b: int):
+        pass
+
+    action = Action(
+        pm=None,
+        module_name="test",
+        module_file="test.py",
+        method=func,
+        options=json.dumps(
+            {
+                "kind": "resource",
+                "uri": "https://example.com/resource/{a}",  # missing {b}
+            }
+        ),
+    )
+
+    setup = McpServerSetupHelper()
+    with pytest.raises(ValueError) as e:
+        setup.register_action(
+            func=func,
+            action_package=None,
+            action=action,
+            display_name=None,
+            doc_desc=None,
+        )
+
+    assert (
+        "When collecting @resources, the parameters in the URI (found: ['a']) and the function parameters (found: ['a', 'b']) must match."
+        in str(e.value)
+    )
+
+
+def test_error_collecting_resources_param_not_basic_type():
+    import json
+
+    import pytest
+    from sema4ai.actions._action import Action
+
+    from sema4ai.action_server.mcp.setup_mcp_server_from_actions import (
+        McpServerSetupHelper,
+    )
+
+    class Foo:
+        pass
+
+    def func(a: Foo):  # We can only accept str, int, float, bool in this case
+        pass
+
+    action = Action(
+        pm=None,
+        module_name="test",
+        module_file="test.py",
+        method=func,
+        options=json.dumps(
+            {
+                "kind": "resource",
+                "uri": "https://example.com/resource/{a}",
+            }
+        ),
+    )
+
+    setup = McpServerSetupHelper()
+    with pytest.raises(ValueError) as e:
+        setup.register_action(
+            func=func,
+            action_package=None,
+            action=action,
+            display_name=None,
+            doc_desc=None,
+        )
