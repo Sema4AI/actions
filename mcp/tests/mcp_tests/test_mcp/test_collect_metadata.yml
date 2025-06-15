@@ -85,8 +85,9 @@ actions:
   options:
     description: null
     kind: resource
-    mime_type: null
+    mime_type: text/plain
     name: null
+    size: null
     uri: tickets://{ticket_id}
   output_schema:
     description: Dictionary containing the ticket details

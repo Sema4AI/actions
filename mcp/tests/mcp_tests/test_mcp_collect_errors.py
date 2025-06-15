@@ -17,4 +17,4 @@ def test_errors(datadir):
         "When collecting @resources, parameter 'foo' has type 'list' but only basic types (str, int, float, bool) are supported."
         in errors
     ), f"errors: {errors}"
-    assert "Found 2 errors on collect:" in errors, f"errors: {errors}"
+    assert "Found 3 errors on collect:" in errors, f"errors: {errors}"

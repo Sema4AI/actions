@@ -32,12 +32,16 @@ version_info = [int(x) for x in __version__.split(".")]
 def _validate_collected_actions(actions: list[IAction]):
     from sema4ai.actions._exceptions import ActionsCollectError
 
+    from sema4ai.mcp._validate_prompt import _validate_prompt
     from sema4ai.mcp._validate_resource import _validate_resource
 
     errors = []
     for action in actions:
-        if action.options and action.options.get("kind") == "resource":
+        kind = (action.options and action.options.get("kind")) or "unknown"
+        if kind == "resource":
             errors.extend(_validate_resource(action))
+        elif kind == "prompt":
+            errors.extend(_validate_prompt(action))
 
     if errors:
         if len(errors) == 1:
