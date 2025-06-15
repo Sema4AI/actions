@@ -103,10 +103,49 @@ def tool(*args, **kwargs):
         display_name: A name to be displayed for this action.
             If given will be used as the openapi.json summary for this action.
     """
-    from sema4ai.actions import action
 
-    kwargs["kind"] = "tool"
-    return action(*args, **kwargs)
+    def decorator(func, **kwargs):
+        from sema4ai.actions import _hooks
+
+        name = kwargs.pop("name", None)
+        if name is not None:
+            if not isinstance(name, str):
+                raise ValueError("Expected 'name' argument to be a str.")
+
+        description = kwargs.pop("description", None)
+        if description is not None:
+            if not isinstance(description, str):
+                raise ValueError("Expected 'description' argument to be a str.")
+
+        annotations = kwargs.pop("annotations", None)
+        if annotations is not None:
+            if not isinstance(annotations, ToolAnnotations):
+                raise ValueError(
+                    "Expected 'annotations' argument to be a ToolAnnotations."
+                )
+
+        if kwargs:
+            raise ValueError(
+                f"Arguments accepted by @tool: ['name', 'description', 'annotations']. Received arguments: {list(kwargs.keys())}"
+            )
+
+        # When an action is found, register it in the framework as a target for execution.
+        _hooks.on_action_func_found(
+            func,
+            options={
+                "name": name,
+                "description": description,
+                "kind": "tool",
+                "annotations": annotations,
+            },
+        )
+
+        return func
+
+    if args and callable(args[0]):
+        return decorator(args[0], **kwargs)
+
+    return lambda func: decorator(func, **kwargs)
 
 
 def resource(
