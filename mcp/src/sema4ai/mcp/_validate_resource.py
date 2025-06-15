@@ -57,7 +57,7 @@ def _validate_resource(action: IAction) -> list[str]:
 
         if uri_params != func_params:
             msg = (
-                f"When collecting @resources, the parameters in the uri (found: {sorted(uri_params)}) "
+                f"When collecting @resource, the parameters in the uri (found: {sorted(uri_params)}) "
                 f"and the function parameters (found: {sorted(func_params)}) must match.\n"
                 "Define uri parameters as '{param}' in the uri (example: https://example.com/resource/{param}).\n"
                 "Define function parameters as arguments in the function (example: def func(a: int, b: int): ...)."
@@ -75,7 +75,7 @@ def _validate_resource(action: IAction) -> list[str]:
                 # empty means no type is specified (consider it as str)
                 if param_type not in (str, int, float, bool, inspect.Parameter.empty):
                     msg = (
-                        f"When collecting @resources, parameter '{param_name}' has type '{param_type.__name__}' "
+                        f"When collecting @resource, parameter '{param_name}' has type '{param_type.__name__}' "
                         f"but only basic types (str, int, float, bool) are supported."
                     )
                     errors.append(add_file_info(msg))
