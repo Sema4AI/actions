@@ -2,8 +2,20 @@ import logging
 import re
 import typing
 from dataclasses import dataclass
-from typing import Any, AsyncGenerator, Callable
+from typing import Any, Callable
 
+from mcp.types import (
+    EmbeddedResource,
+    GetPromptResult,
+    ImageContent,
+    Prompt,
+    PromptArgument,
+    PromptMessage,
+    Resource,
+    ResourceTemplate,
+    TextContent,
+    Tool,
+)
 from pydantic.networks import AnyUrl
 
 if typing.TYPE_CHECKING:
@@ -32,28 +44,22 @@ class McpResponseHandler:
 
 
 class McpServerSetupHelper:
+    _tools: list[Tool]
+    _tool_name_to_action_info: dict[str, ActionInfo]
+    _resources: list[Resource]
+    _resource_to_action_info: dict[str, ActionInfo]
+    _resource_templates: list[ResourceTemplate]
+    _resource_template_to_action_info: dict[str, ActionInfo]
+    _prompts: list[Prompt]
+    _prompt_name_to_action_info: dict[str, ActionInfo]
+
     def __init__(self) -> None:
         from mcp.server import Server
         from mcp.server.lowlevel.helper_types import ReadResourceContents
-        from mcp.types import (
-            EmbeddedResource,
-            ImageContent,
-            Resource,
-            ResourceTemplate,
-            TextContent,
-            Tool,
-        )
 
         server: Server = Server("Action Server")
         self.server = server
-        self._tools: list[Tool] = []
-        self._tool_name_to_action_info: dict[str, ActionInfo] = {}
-
-        self._resource_templates: list[ResourceTemplate] = []
-        self._resource_template_to_action_info: dict[str, ActionInfo] = {}
-
-        self._resources: list[Resource] = []
-        self._resource_to_action_info: dict[str, ActionInfo] = {}
+        self._init_state()
 
         @server.list_tools()
         async def list_tools() -> list[Tool]:
@@ -140,6 +146,36 @@ class McpServerSetupHelper:
             # If we get here, no matching resource was found
             raise ValueError(f"No resource found for URI: {uri}")
 
+        @server.get_prompt()
+        async def get_prompt(
+            name: str,
+            arguments: dict[str, Any] | None = None,
+        ) -> GetPromptResult:
+            try:
+                action_info = self._prompt_name_to_action_info[name]
+                func = action_info.func
+                result = await func(
+                    response_handler=McpResponseHandler(),
+                    inputs=arguments or {},
+                    headers={},
+                    cookies={},
+                )
+                return GetPromptResult(
+                    description=action_info.doc_desc,
+                    messages=[
+                        PromptMessage(
+                            role="user", content=TextContent(type="text", text=result)
+                        )
+                    ],
+                )
+            except Exception as e:
+                log.exception("Error getting prompt %s", name)
+                raise e
+
+        @server.list_prompts()
+        async def list_prompts() -> list[Prompt]:
+            return self._prompts
+
     def _resource_template_matches(
         self, uri_template: str, uri: str
     ) -> dict[str, Any] | None:
@@ -163,8 +199,6 @@ class McpServerSetupHelper:
         doc_desc: str,
     ) -> None:
         import json
-
-        from mcp.types import Resource, ResourceTemplate, Tool
 
         options = json.loads(action.options)
         kind = options.get("kind")
@@ -212,9 +246,32 @@ class McpServerSetupHelper:
                 )
 
         elif kind == "prompt":
-            pass
+            arguments = json.loads(action.input_schema).get("properties", {})
+            prompt_arguments = []
+            for name, prop in arguments.items():
+                prompt_arguments.append(
+                    PromptArgument(
+                        name=name,
+                        description=prop.get("description", ""),
+                        required=prop.get("required", False),
+                    )
+                )
+            self._prompts.append(
+                Prompt(
+                    name=use_name,
+                    description=doc_desc,
+                    arguments=prompt_arguments,
+                )
+            )
+            self._prompt_name_to_action_info[use_name] = ActionInfo(
+                func=func,
+                action=action,
+                display_name=display_name,
+                doc_desc=doc_desc,
+            )
 
         else:
+            # action, tool, query end up here!
             self._tools.append(
                 Tool(
                     name=use_name,
@@ -228,6 +285,17 @@ class McpServerSetupHelper:
             )
 
     def unregister_actions(self):
+        self._init_state()
+
+    def _init_state(self):
         self._tools = []
         self._tool_name_to_action_info = {}
+
         self._resources = []
+        self._resource_to_action_info = {}
+
+        self._resource_templates = []
+        self._resource_template_to_action_info = {}
+
+        self._prompts = []
+        self._prompt_name_to_action_info = {}
