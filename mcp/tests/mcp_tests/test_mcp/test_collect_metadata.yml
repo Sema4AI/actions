@@ -1,0 +1,150 @@
+actions:
+- docs: "\n    Create a new ticket in the system.\n\n    Args:\n        title: The\
+    \ title of the ticket\n        description: Detailed description of the ticket\n\
+    \        priority: Priority level (low, medium, high)\n\n    Returns:\n      \
+    \  Dictionary containing the created ticket information\n    "
+  file: sample_mcp_action.py
+  input_schema:
+    properties:
+      description:
+        description: Detailed description of the ticket
+        title: Description
+        type: string
+      priority:
+        default: medium
+        description: Priority level (low, medium, high)
+        title: Priority
+        type: string
+      title:
+        description: The title of the ticket
+        title: Title
+        type: string
+    required:
+    - title
+    - description
+    type: object
+  line: 42
+  managed_params_schema: {}
+  name: create_ticket
+  options:
+    annotations: null
+    description: null
+    kind: tool
+    name: null
+  output_schema:
+    description: Dictionary containing the created ticket information
+    properties:
+      assigned_to:
+        anyOf:
+        - type: string
+        - type: 'null'
+        title: Assigned To
+      created_at:
+        title: Created At
+        type: string
+      description:
+        title: Description
+        type: string
+      id:
+        title: Id
+        type: string
+      priority:
+        title: Priority
+        type: string
+      status:
+        title: Status
+        type: string
+      title:
+        title: Title
+        type: string
+    required:
+    - id
+    - title
+    - description
+    - priority
+    - status
+    - created_at
+    - assigned_to
+    title: Ticket
+    type: object
+- docs: "\n    Get detailed information about a specific ticket.\n\n    Args:\n  \
+    \      ticket_id: The ID of the ticket to retrieve\n\n    Returns:\n        Dictionary\
+    \ containing the ticket details\n    "
+  file: sample_mcp_action.py
+  input_schema:
+    properties:
+      ticket_id:
+        description: The ID of the ticket to retrieve
+        title: Ticket Id
+        type: string
+    required:
+    - ticket_id
+    type: object
+  line: 70
+  managed_params_schema: {}
+  name: get_ticket_details
+  options:
+    description: null
+    kind: resource
+    mime_type: text/plain
+    name: null
+    size: null
+    uri: tickets://{ticket_id}
+  output_schema:
+    description: Dictionary containing the ticket details
+    properties:
+      assigned_to:
+        anyOf:
+        - type: string
+        - type: 'null'
+        title: Assigned To
+      created_at:
+        title: Created At
+        type: string
+      description:
+        title: Description
+        type: string
+      id:
+        title: Id
+        type: string
+      priority:
+        title: Priority
+        type: string
+      status:
+        title: Status
+        type: string
+      title:
+        title: Title
+        type: string
+    required:
+    - id
+    - title
+    - description
+    - priority
+    - status
+    - created_at
+    - assigned_to
+    title: Ticket
+    type: object
+- docs: "\n    Generate a human-readable summary of a ticket.\n\n    Args:\n     \
+    \   ticket_id: The ID of the ticket to generate a summary for\n\n    Returns:\n\
+    \        A formatted string containing the ticket summary\n    "
+  file: sample_mcp_action.py
+  input_schema:
+    properties:
+      ticket_id:
+        description: The ID of the ticket to generate a summary for
+        title: Ticket Id
+        type: string
+    required:
+    - ticket_id
+    type: object
+  line: 88
+  managed_params_schema: {}
+  name: generate_ticket_summary
+  options:
+    kind: prompt
+  output_schema:
+    description: A formatted string containing the ticket summary
+    type: string
+actions_spec_version: v2

@@ -225,6 +225,7 @@ def collect_actions(
 
     from sema4ai.actions._action import Action
 
+    all_actions: List[IAction] = []
     for method, options in _methods_marked_as_actions_found:
         module_name = method.__module__
         module_file = method.__code__.co_filename
@@ -232,7 +233,10 @@ def collect_actions(
         action = Action(pm, module_name, module_file, method, options=options)
 
         if accept_action(action):
+            all_actions.append(action)
             yield action
+
+    _hooks.after_collect_actions(all_actions)
 
 
 def update_pythonpath(path: Path) -> None:

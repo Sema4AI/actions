@@ -200,7 +200,7 @@ class ResponseHandler:
 
 
 class IInternalFuncAPI(Protocol):
-    def __call__(
+    async def __call__(
         self,
         response_handler: IResponseHandler,
         inputs: dict,
