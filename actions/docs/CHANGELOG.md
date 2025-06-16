@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 1.3.12 - 2025-06-16
+
+- Add `list` and `dict` as supported types for `RowValue`.
+
 ## 1.3.11 - 2025-04-25
 
 - Expose `sema4ai.actions.chat.get_file` to the public interface.

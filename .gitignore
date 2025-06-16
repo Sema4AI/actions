@@ -14,6 +14,9 @@ __pycache__/
 .idea/
 /devutils/bin/rcc*
 
+# VS Code
+.vscode/settings.json
+
 # Eclipse / PyDev
 # Please keep these as they contain instructions for Eclipse/PyDev to
 # automatically recognize the project structure as well as settings for
