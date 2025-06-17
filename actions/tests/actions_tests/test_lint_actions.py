@@ -93,7 +93,7 @@ def my_action(param1) -> str:
 
 
 def test_lint_action_big_description(data_regression, monkeypatch):
-    from sema4ai.actions._lint_action import iter_lint_errors, MAX_DOCS_LENGTH
+    from sema4ai.actions._lint_action import iter_lint_errors
 
     monkeypatch.setattr("sema4ai.actions._lint_action.MAX_DOCS_LENGTH", 300)
 
