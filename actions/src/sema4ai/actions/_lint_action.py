@@ -288,7 +288,7 @@ def _check_docstring_contents(
         yield _make_error(
             node,
             f"Description has {doc_desc_len} chars. OpenAI just supports "
-            "{MAX_DOCS_LENGTH} chars in the description (note: this may not be a problem "
+            f"{MAX_DOCS_LENGTH} chars in the description (note: this may not be a problem "
             "in other integrations).",
             coldelta=4,
             severity=DiagnosticSeverity.Warning,
