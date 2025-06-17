@@ -6,7 +6,7 @@ dependencies:
     - python=3.10.12
     - pip=24
   pypi:
-    - sema4ai-actions=1.3.8
+    - sema4ai-actions=1.3.13
 
 external-endpoints:
   - name: 33

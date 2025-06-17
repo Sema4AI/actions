@@ -39,7 +39,7 @@ dependencies:
     # Note: sema4ai-actions is special case because the `Action Server`
     # has coupling with the library (so, a newer version of the `Action Server`
     # might require a newer version of `sema4ai-actions`).
-    - sema4ai-actions=1.0.1
+    - sema4ai-actions=1.3.13
     - robocorp=1.4.3
     - pytz=2023.3
 
