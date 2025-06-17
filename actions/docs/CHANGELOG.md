@@ -5,6 +5,7 @@
 ## 1.3.13 - 2025-06-17
 
 - Increased the maximum allowed docstring length from `300` to `1024` characters in the linting rules.
+- Updated pydantic dependency from `^2.0` to `^2.11.7`
 
 ## 1.3.12 - 2025-06-16
 
