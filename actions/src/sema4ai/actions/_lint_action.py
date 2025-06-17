@@ -7,6 +7,7 @@ from sema4ai.actions._customization._plugin_manager import PluginManager
 
 MAX_DOCS_LENGTH = 1024
 
+
 def _iter_nodes(
     node, internal_stack: Optional[List[Any]] = None, recursive=True
 ) -> Iterator[Tuple[List[Any], Any]]:
