@@ -81,9 +81,24 @@ def test_table(file_regression):
 
     from sema4ai.actions import Table
 
-    table = Table(columns=["a", "b"], rows=[["1", "2"], ["3", "4"], ["5 abc ", 6.66]])
+    table = Table(
+        columns=["a", "b"],
+        rows=[
+            ["1", "2"],
+            ["3", "4"],
+            ["5 abc ", 6.66],
+            [{"a": 1}, {"b": 2}],
+            [[10, 11], "4"],
+        ],
+    )
     assert table.columns == ["a", "b"]
-    assert table.rows == [["1", "2"], ["3", "4"], ["5 abc ", 6.66]]
+    assert table.rows == [
+        ["1", "2"],
+        ["3", "4"],
+        ["5 abc ", 6.66],
+        [{"a": 1}, {"b": 2}],
+        [[10, 11], "4"],
+    ]
     assert table[0] == ["1", "2"]
     assert table[1] == ["3", "4"]
 
