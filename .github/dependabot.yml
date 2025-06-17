@@ -29,6 +29,7 @@ updates:
   - build_common
   - common
   - devutils
+  - mcp
   - sema4ai-http-helper
   - templates/advanced
   schedule:

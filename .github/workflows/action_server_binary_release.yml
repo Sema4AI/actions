@@ -13,6 +13,8 @@
 
 
 name: Action Server BINARY Release
+permissions:
+  contents: read
 'on':
   push:
     tags:

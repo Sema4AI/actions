@@ -13,6 +13,8 @@
 
 
 name: Actions Tests
+permissions:
+  contents: read
 'on':
   push:
     branches:

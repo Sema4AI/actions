@@ -3,6 +3,8 @@
 ## Unreleased
 
 - Increased the maximum allowed docstring length from `300` to `1024` characters in the linting rules.
+- Internal changes to support the `sema4ai-mcp` library.
+- If an `async` method is marked with `@action`, `@tool`, etc, `asyncio.run` will be used to run it instead of failing.
 
 ## 1.3.12 - 2025-06-16
 

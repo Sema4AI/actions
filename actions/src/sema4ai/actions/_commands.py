@@ -636,6 +636,13 @@ def run(
 
                             result = action.run(**kwargs)
 
+                            if inspect.iscoroutine(result):
+                                # If the user created an `@tool/action/...` that's a
+                                # coroutine, let's support it.
+                                import asyncio
+
+                                result = asyncio.run(result)
+
                             action.result = result
                             action.status = Status.PASS
 

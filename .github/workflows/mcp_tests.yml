@@ -12,7 +12,7 @@
 # and rerun the script).
 
 
-name: HTTP Helper Tests
+name: MCP Tests
 permissions:
   contents: read
 'on':
@@ -21,19 +21,23 @@ permissions:
     - master
     - wip
     paths:
-    - sema4ai-http-helper/**
-    - .github/workflows/http_helper_tests.yml
+    - mcp/**
+    - .github/workflows/mcp_tests.yml
     - devutils/**
+    - actions/**
+    - sema4ai-http-helper/**
   pull_request:
     branches:
     - master
     paths:
-    - sema4ai-http-helper/**
-    - .github/workflows/http_helper_tests.yml
+    - mcp/**
+    - .github/workflows/mcp_tests.yml
     - devutils/**
+    - actions/**
+    - sema4ai-http-helper/**
 defaults:
   run:
-    working-directory: ./sema4ai-http-helper
+    working-directory: ./mcp
 jobs:
   build:
     runs-on: ${{ matrix.os }}

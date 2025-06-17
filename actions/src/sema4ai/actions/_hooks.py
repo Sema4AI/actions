@@ -5,6 +5,7 @@ from sema4ai.actions._callback import Callback
 from sema4ai.actions._protocols import (
     IAfterActionRunCallback,
     IAfterAllActionsRunCallback,
+    IAfterCollectActionsCallback,
     IBeforeActionRunCallback,
     IBeforeAllActionsRunCallback,
     IBeforeCollectActionsCallback,
@@ -49,11 +50,14 @@ class SessionCallback(Callback):
                     raise
 
 
-# Called as on_action_func_found(action: IAction)
+# Called as on_action_func_found(func: Callable, *args, **kwargs)
 on_action_func_found: IOnActionFuncFoundCallback = Callback(raise_exceptions=True)
 
 # Called as before_collect_actions(path: Path, action_names: Set[str])
 before_collect_actions: IBeforeCollectActionsCallback = Callback()
+
+# Called as after_collect_actions(actions: List[IAction])
+after_collect_actions: IAfterCollectActionsCallback = Callback(raise_exceptions=True)
 
 # Called as before_all_actions_run(actions: List[IAction])
 before_all_actions_run: IBeforeAllActionsRunCallback = SessionCallback(
