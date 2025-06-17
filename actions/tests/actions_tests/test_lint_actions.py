@@ -92,8 +92,10 @@ def my_action(param1) -> str:
     data_regression.check([x.to_lsp_diagnostic() for x in iter_lint_errors(contents)])
 
 
-def test_lint_action_big_description(data_regression):
-    from sema4ai.actions._lint_action import iter_lint_errors
+def test_lint_action_big_description(data_regression, monkeypatch):
+    from sema4ai.actions._lint_action import iter_lint_errors, MAX_DOCS_LENGTH
+
+    monkeypatch.setattr("sema4ai.actions._lint_action.MAX_DOCS_LENGTH", 300)
 
     contents = """
 @action

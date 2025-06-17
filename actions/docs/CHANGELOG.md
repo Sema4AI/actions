@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 1.3.13 - 2025-06-17
+
+- Increased the maximum allowed docstring length from `300` to `1024` characters in the linting rules.
+
 ## 1.3.12 - 2025-06-16
 
 - Add `list` and `dict` as supported types for `RowValue`.

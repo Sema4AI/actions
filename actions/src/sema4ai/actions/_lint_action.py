@@ -5,6 +5,7 @@ from typing import Any, Iterator, List, Optional, Tuple, TypedDict, Union, overl
 from sema4ai.actions._commands import _get_managed_param_type
 from sema4ai.actions._customization._plugin_manager import PluginManager
 
+MAX_DOCS_LENGTH = 1024
 
 def _iter_nodes(
     node, internal_stack: Optional[List[Any]] = None, recursive=True
@@ -282,11 +283,11 @@ def _check_docstring_contents(
         doc_desc = contents.long_description or contents.short_description or ""
 
     doc_desc_len = len(doc_desc)
-    if doc_desc_len > 300:
+    if doc_desc_len > MAX_DOCS_LENGTH:
         yield _make_error(
             node,
             f"Description has {doc_desc_len} chars. OpenAI just supports "
-            "300 chars in the description (note: this may not be a problem "
+            f"{MAX_DOCS_LENGTH} chars in the description (note: this may not be a problem "
             "in other integrations).",
             coldelta=4,
             severity=DiagnosticSeverity.Warning,
