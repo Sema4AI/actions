@@ -16,15 +16,11 @@ def my_action():
     data_regression.check([x.to_lsp_diagnostic() for x in iter_lint_errors(contents)])
 
 
-def test_lint_action_no_docstring_in_query_and_predict(data_regression):
+def test_lint_action_no_docstring_in_query(data_regression):
     from sema4ai.actions._lint_action import iter_lint_errors
 
     contents = """
 @query
-def my_action():
-    pass
-
-@predict
 def my_action():
     pass
 """
