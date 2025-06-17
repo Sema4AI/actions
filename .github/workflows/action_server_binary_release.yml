@@ -32,14 +32,14 @@ jobs:
       matrix:
         os:
         - ubuntu-22.04
-        - windows-2019
+        - windows-2022
         - macos-13
         - macos-15
         include:
         - os: ubuntu-22.04
           python: '3.12'
           asset_path: action_server/dist/final/action-server
-        - os: windows-2019
+        - os: windows-2022
           python: '3.12'
           asset_path: action_server/dist/final/action-server.exe
         - os: macos-15
@@ -166,10 +166,10 @@ jobs:
         echo "::set-output name=is_beta::$is_beta"
 
         '
-    - name: Download artifact windows-2019
+    - name: Download artifact windows-2022
       uses: actions/download-artifact@v4
       with:
-        name: action-server-windows-2019
+        name: action-server-windows-2022
         path: action_server/build/windows64/
     - name: Download artifact macos-13
       uses: actions/download-artifact@v4
@@ -293,7 +293,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - uses: actions/download-artifact@v4
       with:
-        name: action-server-windows-2019
+        name: action-server-windows-2022
         path: windows64/
     - uses: actions/download-artifact@v4
       with:
