@@ -1,0 +1,44 @@
+name: mcp Release
+
+on:
+  push:
+    tags:
+      - "sema4ai-mcp-*"
+
+defaults:
+  run:
+    working-directory: "./mcp"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: true
+
+    steps:
+      - name: Checkout repository and submodules
+        uses: mcp/checkout@v3
+
+      - name: Install poetry
+        run: pipx install poetry
+
+      - name: Set up Python 3.10
+        uses: mcp/setup-python@v4
+        with:
+          python-version: "3.10"
+          cache: "poetry"
+
+      - name: Install project
+        run: poetry install
+
+      - name: Check tag version
+        run: poetry run invoke check-tag-version
+
+      - name: Build with poetry
+        run: poetry build
+
+      - name: Upload to PyPI
+        run: |
+          poetry config pypi-token.pypi  ${{ secrets.PYPI_TOKEN_SEMA4AI_MCP }}
+          poetry publish
