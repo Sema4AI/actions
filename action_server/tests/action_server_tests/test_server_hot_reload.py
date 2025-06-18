@@ -40,7 +40,7 @@ def calculator_sum(v1: float, v2: float) -> float:
             tools_result = await mcp_session.list_tools()
             tools_list = tools_result.tools
             assert len(tools_list) == 1
-            assert tools_list[0].name == "calculator/calculator_sum", (
+            assert tools_list[0].name == "calculator_sum", (
                 "Expected calculator_sum. Found: " + str(tools_list[0].name)
             )
 
@@ -71,7 +71,7 @@ def calculator_subtract(v1: float, v2: float) -> float:
             tools_result = await mcp_session.list_tools()
             tools_list = tools_result.tools
             assert len(tools_list) == 1, "Expected 1 tool. Found: " + str(tools_list)
-            assert tools_list[0].name == "calculator/calculator_subtract", (
+            assert tools_list[0].name == "calculator_subtract", (
                 "Expected calculator_subtract. Found: " + str(tools_list[0].name)
             )
 

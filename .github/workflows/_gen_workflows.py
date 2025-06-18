@@ -126,6 +126,7 @@ class BaseWorkflow:
 
         self.full = {}
         self.full.update({"name": self.name})
+        self.full.update({"permissions": {"contents": "read"}})
         self.full.update(self.on_part(paths))
         self.full.update(self.defaults_part())
         self.full.update(self.jobs_part())
@@ -1123,6 +1124,12 @@ class CommonTests(BaseTests):
     project_name = "common"
 
 
+class MCPTests(BaseTests):
+    name = "MCP Tests"
+    target = "mcp_tests.yml"
+    project_name = "mcp"
+
+
 class HttpHelperTests(BaseTests):
     name = "HTTP Helper Tests"
     target = "http_helper_tests.yml"
@@ -1134,6 +1141,7 @@ TARGETS = [
     ActionsTests(),
     HttpHelperTests(),
     CommonTests(),
+    MCPTests(),
     ActionServerPyPiRelease(),
     ActionServerBinaryRelease(),
     ActionServerManylinuxRelease(),

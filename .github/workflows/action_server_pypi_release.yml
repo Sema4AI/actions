@@ -13,6 +13,8 @@
 
 
 name: Action Server PYPI Release
+permissions:
+  contents: read
 'on':
   push:
     tags:

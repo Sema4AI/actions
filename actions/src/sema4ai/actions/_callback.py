@@ -46,7 +46,11 @@ class Callback:
         for c in iter_in:
             try:
                 c(*args, **kwargs)
-            except Exception:
-                logger.exception(f"Error calling: {c}.")
+            except Exception as e:
+                from sema4ai.actions._exceptions import ActionsCollectError
+
+                if not isinstance(e, ActionsCollectError) or not self.raise_exceptions:
+                    logger.exception(f"Error calling: {c}.")
+
                 if self.raise_exceptions:
                     raise

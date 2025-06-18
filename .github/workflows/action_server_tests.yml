@@ -13,6 +13,8 @@
 
 
 name: Action Server Tests
+permissions:
+  contents: read
 'on':
   push:
     branches:
@@ -26,6 +28,7 @@ name: Action Server Tests
     - sema4ai-http-helper/**
     - common/**
     - build_common/**
+    - mcp/**
   pull_request:
     branches:
     - master
@@ -37,6 +40,7 @@ name: Action Server Tests
     - sema4ai-http-helper/**
     - common/**
     - build_common/**
+    - mcp/**
 defaults:
   run:
     working-directory: ./action_server
