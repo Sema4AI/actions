@@ -18,13 +18,13 @@ jobs:
 
     steps:
       - name: Checkout repository and submodules
-        uses: mcp/checkout@v3
+        uses: actions/checkout@v3
 
       - name: Install poetry
         run: pipx install poetry
 
       - name: Set up Python 3.10
-        uses: mcp/setup-python@v4
+        uses: actions/setup-python@v4
         with:
           python-version: "3.10"
           cache: "poetry"
