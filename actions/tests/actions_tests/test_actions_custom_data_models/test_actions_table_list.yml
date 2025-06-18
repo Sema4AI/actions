@@ -65,7 +65,8 @@ action_table_in_out:
                 - type: boolean
                 - items: {}
                   type: array
-                - type: object
+                - additionalProperties: true
+                  type: object
                 - type: 'null'
               type: array
             title: Rows
@@ -101,7 +102,8 @@ action_table_in_out:
             - type: boolean
             - items: {}
               type: array
-            - type: object
+            - additionalProperties: true
+              type: object
             - type: 'null'
           type: array
         title: Rows
@@ -148,7 +150,8 @@ action_table_response:
                   - type: boolean
                   - items: {}
                     type: array
-                  - type: object
+                  - additionalProperties: true
+                    type: object
                   - type: 'null'
                 type: array
               title: Rows
@@ -190,7 +193,8 @@ action_with_table_result:
             - type: boolean
             - items: {}
               type: array
-            - type: object
+            - additionalProperties: true
+              type: object
             - type: 'null'
           type: array
         title: Rows
