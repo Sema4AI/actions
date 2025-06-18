@@ -49,13 +49,13 @@ async def check_mcp_server(
 
             tool_names = [tool.name for tool in tools]
             assert (
-                "greet" in tool_names
-            ), f"greet tool not found. Available tools: {tool_names}"
+                "greet_mcp" in tool_names
+            ), f"greet_mcp tool not found. Available tools: {tool_names}"
 
-            greet_tool = next(tool for tool in tools if tool.name == "greet")
+            greet_tool = next(tool for tool in tools if tool.name == "greet_mcp")
             assert (
                 greet_tool is not None
-            ), f"'greet' tool not found. Available tools: {tool_names}"
+            ), f"'greet_mcp' tool not found. Available tools: {tool_names}"
 
             input_schema = greet_tool.inputSchema
             expected_action_server = {
@@ -82,7 +82,7 @@ async def check_mcp_server(
                     "title": {"default": "Mr.", "title": "title", "type": "string"},
                 },
                 "required": ["name"],
-                "title": "greetArguments",
+                "title": "greet_mcpArguments",
                 "type": "object",
             }
 

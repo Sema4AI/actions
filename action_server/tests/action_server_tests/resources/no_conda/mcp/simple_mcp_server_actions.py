@@ -2,7 +2,7 @@ from sema4ai import mcp
 
 
 @mcp.tool()
-def greet(name: str, title="Mr.") -> str:
+def greet_mcp(name: str, title="Mr.") -> str:
     """
     Provides a greeting for a person.
 

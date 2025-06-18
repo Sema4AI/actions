@@ -19,7 +19,7 @@ def run_mcp_server(port: int):
     mcp = FastMCP(name="EchoServer", stateless_http=True, port=port)
 
     @mcp.tool()
-    def greet(name: str, title="Mr.") -> str:
+    def greet_mcp(name: str, title="Mr.") -> str:
         """
         Provides a greeting for a person.
 
