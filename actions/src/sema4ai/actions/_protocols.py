@@ -206,6 +206,23 @@ class IBeforeCollectActionsCallback(ICallback, typing.Protocol):
         pass
 
 
+class IAfterCollectActionsCallback(ICallback, typing.Protocol):
+    """
+    Called after all actions have been collected.
+    """
+
+    def __call__(self, actions: List[IAction]):
+        pass
+
+    def register(
+        self, callback: Callable[[List[IAction]], Any]
+    ) -> IAutoUnregisterContextManager:
+        pass
+
+    def unregister(self, callback: Callable[[List[IAction]], Any]) -> None:
+        pass
+
+
 IActionCallback = Callable[[IAction], Any]
 IActionsCallback = Callable[[Sequence[IAction]], Any]
 

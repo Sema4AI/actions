@@ -13,6 +13,8 @@
 
 
 name: Action Server Tests
+permissions:
+  contents: read
 'on':
   push:
     branches:
@@ -26,6 +28,7 @@ name: Action Server Tests
     - sema4ai-http-helper/**
     - common/**
     - build_common/**
+    - mcp/**
   pull_request:
     branches:
     - master
@@ -37,6 +40,7 @@ name: Action Server Tests
     - sema4ai-http-helper/**
     - common/**
     - build_common/**
+    - mcp/**
 defaults:
   run:
     working-directory: ./action_server
@@ -56,7 +60,7 @@ jobs:
           os: ubuntu-22.04
         - name: windows-py3.12-devmode
           python: '3.12'
-          os: windows-2019
+          os: windows-2022
         - name: macos-py3.12-devmode
           os: macos-15
           python: '3.12'

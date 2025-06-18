@@ -13,6 +13,8 @@
 
 
 name: HTTP Helper Tests
+permissions:
+  contents: read
 'on':
   push:
     branches:
@@ -48,7 +50,7 @@ jobs:
           os: ubuntu-22.04
         - name: windows-py3.10-devmode
           python: '3.10'
-          os: windows-2019
+          os: windows-2022
         - name: macos-py3.10-devmode
           os: macos-15
           python: '3.10'
