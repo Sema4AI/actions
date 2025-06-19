@@ -10,6 +10,7 @@
     - Directories or files which match the `packaging/exclude` rules from `package.yaml` will be ignored.
   - It's still possible to pass a `--glob` argument, which (if given) will be used as a whitelist to accept a file.
   - **Note**: the previous heuristics was: all folders were checked recursively and for any file which matched `"*action*.py|*query*.py|*queries*.py|*predict*.py|*datasource*.py|*data_source*.py"` was loaded for actions by default.
+- No longer calling `truststore.inject_into_ssl()` automatically (`sema4ai-http` should be used instead or clients that need it can do it explicitly) -- **Backward Incompatible change**.
 
 ## 1.3.13 - 2025-06-17
 
