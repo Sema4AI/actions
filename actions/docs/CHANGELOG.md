@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- No longer calling `truststore.inject_into_ssl()` automatically (`sema4ai-http` should be used instead or 
+  clients that need it can do it explicitly).
+
 ## 1.3.13 - 2025-06-17
 
 - Increased the maximum allowed docstring length from `300` to `1024` characters in the linting rules.
