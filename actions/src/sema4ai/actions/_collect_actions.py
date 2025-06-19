@@ -1,3 +1,4 @@
+import fnmatch
 import itertools
 import os
 import sys
@@ -10,6 +11,149 @@ from robocorp import log
 
 from sema4ai.actions._customization._plugin_manager import PluginManager
 from sema4ai.actions._protocols import IAction
+
+
+class FindActionPaths:
+    """
+    Iterator class that finds Python files matching glob patterns (just based on the basename,
+    not full path) while avoiding library roots and common directories that should be skipped.
+    """
+
+    # Common directories that should be skipped during iteration
+    SKIP_DIRS = {
+        "__pycache__",
+        ".git",
+        ".svn",
+        ".hg",
+        ".bzr",
+        "node_modules",
+        ".venv",
+        "venv",
+        "env",
+        "build",
+        "dist",
+        ".pytest_cache",
+        ".tox",
+        "site-packages",
+        "pip-global",
+    }
+
+    def __init__(self, path: Path, glob_patterns: List[str], library_roots: List[str]):
+        """
+        Initialize the path finder.
+
+        Args:
+            path: The root path to search in
+            glob_patterns: List of glob patterns to match against
+            library_roots: List of library root paths to avoid
+        """
+        self.path = Path(os.path.normcase(os.path.normpath(path))).absolute()
+        self.glob_patterns = glob_patterns
+
+        self.library_roots = set(
+            Path(os.path.normcase(os.path.normpath(root))).absolute()
+            for root in library_roots
+        )
+
+    def _matches_glob_patterns(self, path: Path) -> bool:
+        """Check if a path matches any of the glob patterns."""
+        for pattern in self.glob_patterns:
+            # Simple glob pattern matching (just based on the name, not full path -- it's an 'rglob' by default)
+            if fnmatch.fnmatch(path.name, pattern):
+                return True
+        return False
+
+    def _iterate_paths_recursive(
+        self, current_path: Path, depth: int = 0
+    ) -> Iterator[Path]:
+        """Recursively iterate through paths, avoiding library roots and skip directories."""
+        if not current_path.exists():
+            return
+
+        if current_path.is_file():
+            if current_path.suffix == ".py" and self._matches_glob_patterns(
+                current_path
+            ):
+                yield current_path
+            return
+
+        elif current_path.is_dir():
+            # Skip if this directory is in a library root
+            if current_path in self.library_roots:
+                return
+
+            # Skip common directories
+            if current_path.name in self.SKIP_DIRS:
+                return
+
+            try:
+                for item in current_path.iterdir():
+                    if item.is_file():
+                        # Check files at current depth
+                        if item.suffix == ".py" and self._matches_glob_patterns(item):
+                            yield item
+                    elif item.is_dir():
+                        # Only recurse into directories if we haven't reached the depth limit
+                        if depth < 3:
+                            yield from self._iterate_paths_recursive(item, depth + 1)
+            except (PermissionError, OSError):
+                # Skip directories we can't access
+                pass
+
+    def __iter__(self) -> Iterator[Path]:
+        """Iterate over all matching Python files."""
+        yield from self._iterate_paths_recursive(self.path)
+
+
+def _get_default_library_roots() -> list[str]:
+    import site
+    import threading
+
+    roots = []
+
+    try:
+        import sysconfig  # Python 2.7 onwards only.
+    except ImportError:
+        pass
+    else:
+        for path_name in set(("stdlib", "platstdlib", "purelib", "platlib")) & set(
+            sysconfig.get_path_names()
+        ):
+            roots.append(sysconfig.get_path(path_name))
+
+    # Make sure we always get at least the standard library location (based on the `os` and
+    # `threading` modules -- it's a bit weird that it may be different on the ci, but it happens).
+    roots.append(os.path.dirname(os.__file__))
+    roots.append(os.path.dirname(threading.__file__))
+
+    if hasattr(site, "getusersitepackages"):
+        site_paths = site.getusersitepackages()
+        if isinstance(site_paths, (list, tuple)):
+            for site_path in site_paths:
+                roots.append(site_path)
+        else:
+            roots.append(site_paths)
+
+    if hasattr(site, "getsitepackages"):
+        site_paths2 = site.getsitepackages()
+        if isinstance(site_paths2, (list, tuple)):
+            for site_path in site_paths2:
+                roots.append(site_path)
+        else:
+            roots.append(site_paths2)
+
+    for path in sys.path:
+        if os.path.exists(path) and os.path.basename(path) in (
+            "site-packages",
+            "pip-global",
+        ):
+            roots.append(path)
+
+    # On WASM some of the roots may not exist, filter those out.
+    roots = [path for path in roots if path is not None]
+    roots.extend([os.path.realpath(path) for path in roots])
+
+    return sorted(set(roots))
 
 
 def module_name_from_path(path: Path, root: Path) -> str:
@@ -150,6 +294,8 @@ def collect_actions(
 
     Raises: ActionsCollectError
     """
+    import re
+
     from sema4ai.actions import _constants, _hooks
 
     path = path.absolute()
@@ -195,17 +341,29 @@ def collect_actions(
                 # We want to accept '|' in glob.
                 globs = use_glob.split("|")
 
-                # Use predictable order when loading modules.
-                found_globs = []
-                for g in globs:
-                    for p in path.rglob(g):
-                        found_globs.append(p)
+                # Use the new FindActionPaths class to find files
+                library_roots = _get_default_library_roots()
+                finder = FindActionPaths(path, globs, library_roots)
+                found_globs = list(finder)
                 found_globs = sorted(found_globs, key=lambda x: x.as_posix())
+
+                compiled_re = re.compile(_constants.REGEXP_TO_LOAD_FOR_DEFINITIONS)
 
                 for path_with_action in itertools.chain(lst, found_globs):
                     if path_with_action.is_dir() or not path_with_action.name.endswith(
                         ".py"
                     ):
+                        continue
+
+                    try:
+                        with open(path_with_action, "r", encoding="utf-8") as f:
+                            content = f.read()
+                            if not compiled_re.search(content):
+                                continue
+                    except Exception:
+                        log.exception(
+                            f"Error when trying to read file: {path_with_action}"
+                        )
                         continue
 
                     import_path(path_with_action, root=root)

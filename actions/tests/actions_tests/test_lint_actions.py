@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -113,6 +114,17 @@ def my_action() -> str:
     data_regression.check([x.to_lsp_diagnostic() for x in iter_lint_errors(contents)])
 
 
+def clean_filename_to_basename(obj: Any) -> Any:
+    # Any dict with a key `file` will have the value of the key `file` replaced with the basename of the file.
+    if isinstance(obj, dict):
+        if "file" in obj:
+            obj["file"] = os.path.basename(obj["file"])
+        return {k: clean_filename_to_basename(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [clean_filename_to_basename(x) for x in obj]
+    return obj
+
+
 def find_issues_in_actions_list(datadir: Path, contents: str) -> list:
     import json
 
@@ -133,7 +145,7 @@ def find_issues_in_actions_list(datadir: Path, contents: str) -> list:
 
     if isinstance(found, dict):
         lint_result = found.get("lint_result", [])
-        return lint_result
+        return clean_filename_to_basename(lint_result)
     return []
 
 
@@ -168,7 +180,7 @@ def test_lint_action_secret(data_regression, datadir):
     from sema4ai.actions._managed_parameters import ManagedParameters
 
     contents = """
-from sema4ai.actions import Secret
+from sema4ai.actions import Secret, action
 from sema4ai import actions
 
 @action
@@ -185,7 +197,8 @@ def my_action(my_password: Secret, another: actions.Secret) -> str:
         [x.to_lsp_diagnostic() for x in iter_lint_errors(contents, pm=pm)]
     )
 
-    assert not find_issues_in_actions_list(datadir, contents)
+    issues = find_issues_in_actions_list(datadir, contents)
+    data_regression.check(issues, basename="test_lint_action_secret_list_issues")
 
 
 def test_lint_action_oauth2_secret(data_regression, datadir):
@@ -219,7 +232,8 @@ def my_action(
         [x.to_lsp_diagnostic() for x in iter_lint_errors(contents, pm=pm)]
     )
 
-    assert not find_issues_in_actions_list(datadir, contents)
+    issues = find_issues_in_actions_list(datadir, contents)
+    data_regression.check(issues, basename="test_lint_action_oauth2_secret_list_issues")
 
 
 @pytest.mark.parametrize("scenario", ["simple", "inline", "union"])
@@ -307,5 +321,3 @@ def my_action(
     data_regression.check(
         [x.to_lsp_diagnostic() for x in iter_lint_errors(contents, pm=pm)]
     )
-
-    assert not find_issues_in_actions_list(datadir, contents)

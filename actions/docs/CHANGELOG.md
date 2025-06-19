@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- The heuristics for finding actions/tools/etc. have been changed.
+  - The new heuristics are:
+    - Any python file will now be considered for having an action defined in it.
+    - Any python file which contains text such as `@action`, `@query`, `@tool`, `@resource`, `@prompt`, `DataSourceSpec` will be loaded for definitions.
+    - Directories that are considered to be "python library" directories will be ignored (for instance, `site-packages`, `lib/python`, etc).
+    - Directories which match: `__pycache__`, `.git`, `.svn`, `.hg`, `.bzr`, `node_modules`, `.venv`, `venv`, `env`, `build`, `dist`, `.pytest_cache`, `.tox`, `site-packages`, `pip-global` will be ignored.
+  - It's still possible to pass a `--glob` argument, which (if given) will be used as a whitelist to accept a file or not based on its basename.
+  - **Note**: the previous heuristics was: all folders were checked recursively and for any file which matched `"*action*.py|*query*.py|*queries*.py|*predict*.py|*datasource*.py|*data_source*.py"` was loaded for actions by default.
+
 ## 1.3.13 - 2025-06-17
 
 - Increased the maximum allowed docstring length from `300` to `1024` characters in the linting rules.
