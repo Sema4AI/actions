@@ -787,7 +787,7 @@ while true; do
            -H "Authorization: token ${{ secrets.GH_PAT_GHA_TO_ANOTHER_REPO }}" \
            -H "Accept: application/vnd.github.v3+json" \
            https://api.github.com/repos/sema4ai/homebrew-tools/actions/workflows/publish.yml/dispatches \
-           -d '{"ref":"main","inputs":{"version":"${{ needs.sign-macos.outputs.version }}"}}'""",
+           -d '{"ref":"main","inputs":{"version":"${{ needs.build.outputs.version }}"}}'""",
                     },
                 ],
             },
