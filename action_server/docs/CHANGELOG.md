@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Properly marking `mcp` as a dependency of the Action Server (the PyPi version was failing to start due to the missing dependency).
+
 ## 2.12.0 - 2025-06-18
 
 - Changed so that the MCP tools from actions are now called with just the name of the action (instead of `<action-package-name>/<action-name>`).
