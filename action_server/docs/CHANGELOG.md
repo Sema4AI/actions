@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2.12.1 - 2025-06-19
+
 - Properly marking `mcp` as a dependency of the Action Server (the PyPi version was failing to start due to the missing dependency).
 
 ## 2.12.0 - 2025-06-18
