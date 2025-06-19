@@ -9,18 +9,6 @@ if typing.TYPE_CHECKING:
     )
 
 
-def _inject_truststore():
-    # Use certificates from the native storage.
-    try:
-        import truststore  # type: ignore
-    except ModuleNotFoundError:
-        pass
-    else:
-        truststore.inject_into_ssl()
-
-
-_inject_truststore()
-
 if sys.platform == "win32":
     # Apply workaround where `asyncio` would halt forever when windows UIAutomation.dll
     # is used with comtypes.
