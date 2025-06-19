@@ -18,147 +18,6 @@ if typing.TYPE_CHECKING:
 log = logging.getLogger(__name__)
 
 
-def _name_as_summary(name: str) -> str:
-    return name.replace("_", " ").title()
-
-
-def _name_to_url(name: str) -> str:
-    from sema4ai.action_server._slugify import slugify
-
-    return slugify(name.replace("_", "-"))
-
-
-def build_url_api_run(action_package_name: str, action_name: str) -> str:
-    return f"/api/actions/{_name_to_url(action_package_name)}/{_name_to_url(action_name)}/run"
-
-
-def get_action_description_from_docs(docs: str) -> str:
-    import docstring_parser
-
-    doc_desc: str
-    try:
-        parsed = docstring_parser.parse(docs)
-        if parsed.short_description and parsed.long_description:
-            doc_desc = f"{parsed.short_description}\n{parsed.long_description}"
-        else:
-            doc_desc = parsed.long_description or parsed.short_description or ""
-    except Exception:
-        log.exception("Error parsing docstring: %s", docs)
-        doc_desc = str(docs or "")
-    return doc_desc
-
-
-class _ActionRoutes:
-    def __init__(self, whitelist: str | None, endpoint_dependencies: list):
-        from sema4ai.action_server._models import Action, ActionPackage
-
-        self.whitelist = whitelist
-        self.endpoint_dependencies = endpoint_dependencies
-        self.action_package_id_to_action_package: dict[str, ActionPackage] = {}
-        self.actions: list[Action] = []
-        self.registered_route_names: set[str] = set()
-
-    def register_actions(self) -> None:
-        import json
-
-        from . import _actions_run
-        from ._app import get_app
-        from ._models import Action, ActionPackage, get_db
-
-        db = get_db()
-        app = get_app()
-        action: Action
-        action_package_id_to_action_package: dict[str, ActionPackage] = dict(
-            (action_package.id, action_package)
-            for action_package in db.all(ActionPackage)
-        )
-
-        actions = db.all(Action)
-        registered_route_names: set[str] = set()
-        for action in actions:
-            if not action.enabled:
-                # Disabled actions should not be registered.
-                continue
-
-            doc_desc: Optional[str] = ""
-            if action.docs:
-                doc_desc = get_action_description_from_docs(action.docs)
-
-            if not doc_desc:
-                doc_desc = ""
-
-            action_package = action_package_id_to_action_package.get(
-                action.action_package_id
-            )
-            if not action_package:
-                log.critical(
-                    "Unable to find action package: %s", action.action_package_id
-                )
-                continue
-
-            if self.whitelist:
-                from ._whitelist import accept_action
-
-                if not accept_action(self.whitelist, action_package.name, action.name):
-                    log.info(
-                        "Skipping action %s / %s (not in whitelist)",
-                        action_package.name,
-                        action.name,
-                    )
-                    continue
-            display_name = _name_as_summary(action.name)
-            options = action.options
-            action_kind = "action"
-            if options:
-                options_as_dict = json.loads(options)
-                if options_as_dict:
-                    display_name_in_options = options_as_dict.get("display_name")
-                    if display_name_in_options:
-                        display_name = display_name_in_options
-
-                    action_kind = options_as_dict.get("kind", "action")
-
-            func, openapi_extra = _actions_run.generate_func_from_action(
-                action_package, action, display_name
-            )
-            if action.is_consequential is not None:
-                openapi_extra["x-openai-isConsequential"] = action.is_consequential
-            openapi_extra["x-operation-kind"] = action_kind
-
-            route_name = build_url_api_run(action_package.name, action.name)
-            assert (
-                route_name not in registered_route_names
-            ), f"Route: {route_name} already registered."
-            app.add_api_route(
-                route_name,
-                func,
-                name=action.name,
-                summary=display_name,
-                description=doc_desc,
-                operation_id=action.name,
-                methods=["POST"],
-                dependencies=self.endpoint_dependencies,
-                openapi_extra=openapi_extra,
-            )
-            registered_route_names.add(route_name)
-
-        self.action_package_id_to_action_package = action_package_id_to_action_package
-        self.actions = actions
-        self.registered_route_names = registered_route_names
-
-    def unregister_actions(self):
-        from sema4ai.action_server._app import get_app
-
-        # We need to iterate backwards to remove with indexes.
-        app = get_app()
-        i = len(app.router.routes)
-        for route in reversed(app.router.routes):
-            i -= 1
-            if route.path_format in self.registered_route_names:
-                log.debug("Unregistering route: %s", route.path_format)
-                del app.router.routes[i]
-
-
 class _LoopHolder:
     loop: Optional["AbstractEventLoop"] = None
 
@@ -176,7 +35,7 @@ def start_server(
     from typing import Any
 
     import uvicorn
-    from fastapi import Depends, HTTPException, Security
+    from fastapi import Depends, HTTPException, Security, params
     from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
     from fastapi.staticfiles import StaticFiles
     from starlette.requests import Request
@@ -184,6 +43,7 @@ def start_server(
 
     from . import _actions_process_pool
     from ._api_action_package import action_package_api_router
+    from ._api_action_routes import _ActionRoutes
     from ._api_oauth2 import oauth2_api_router
     from ._api_run import run_api_router
     from ._api_secrets import secrets_api_router
@@ -225,12 +85,13 @@ def start_server(
         else:
             return token
 
-    endpoint_dependencies = []
+    endpoint_dependencies: list[params.Depends] = []
 
     if api_key:
         endpoint_dependencies.append(Depends(verify_api_key))
 
     action_routes = _ActionRoutes(whitelist, endpoint_dependencies)
+    action_routes.setup_mcp_server(api_key)
     action_routes.register_actions()
 
     if os.getenv("RC_ADD_SHUTDOWN_API", "").lower() in ("1", "true"):

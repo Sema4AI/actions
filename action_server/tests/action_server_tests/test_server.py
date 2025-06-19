@@ -7,6 +7,8 @@ from pathlib import Path
 import pytest
 from action_server_tests.fixtures import ActionServerClient, ActionServerProcess
 
+from sema4ai.action_server._settings import HEADER_ACTION_SERVER_RUN_ID
+
 
 @pytest.mark.integration_test
 def test_action_server_starts(action_server_process: ActionServerProcess, tmpdir):
@@ -97,7 +99,7 @@ def test_run_id_in_response_header(
     )
     assert result.status_code == 200
     assert json.loads(result.text) == 3.0
-    run_id = result.headers["X-Action-Server-Run-Id"]
+    run_id = result.headers[HEADER_ACTION_SERVER_RUN_ID]
 
     result = requests.get(
         client.build_full_url(f"api/runs/{run_id}"),
@@ -571,7 +573,7 @@ def test_full_run_with_env_build(
     )
     found = response.text
     assert found == '"Hello Mr. Foo."', f"{found} != '\"Hello Mr. Foo.\"'"
-    run_id = response.headers["x-action-server-run-id"]
+    run_id = response.headers[HEADER_ACTION_SERVER_RUN_ID]
 
     # Check that the contents of the log.html have what we expect.
     log_html_contents = client.get_str(

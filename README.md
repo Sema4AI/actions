@@ -116,7 +116,7 @@ dependencies:
     - python=3.11.11
     - uv=0.6.11
   pypi:
-    - sema4ai-actions=1.3.8
+    - sema4ai-actions=1.3.13
     - pytz=2024.1
 ```
 

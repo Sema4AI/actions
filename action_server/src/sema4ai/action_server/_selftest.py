@@ -11,10 +11,12 @@ import sys
 import time
 import typing
 from concurrent.futures import TimeoutError
-from contextlib import contextmanager
+from contextlib import asynccontextmanager, contextmanager
 from pathlib import Path
 from subprocess import CompletedProcess
-from typing import Dict, Iterator, Literal, Optional, Tuple, Union
+from typing import Any, AsyncGenerator, Dict, Iterator, Literal, Optional, Tuple, Union
+
+from mcp import ClientSession
 
 if typing.TYPE_CHECKING:
     from sema4ai.action_server._robo_utils.process import Process
@@ -223,6 +225,41 @@ class ActionServerProcess:
 
     def get_stderr(self):
         return self._stderr.getvalue()
+
+    @asynccontextmanager
+    async def mcp_client(
+        self, connection_mode: Literal["mcp", "sse"], headers: Optional[dict] = None
+    ) -> AsyncGenerator[ClientSession, None]:
+        """
+        Returns a client that can be used to interact with the MCP server.
+
+        Example:
+        ```python
+        async with client.mcp_client("mcp") as session:
+            tools_list = await session.list_tools()
+            print(tools_list)
+        ```
+        """
+
+        from mcp.client.sse import sse_client
+        from mcp.client.streamable_http import streamablehttp_client
+
+        client_protocol: Any
+        if connection_mode == "mcp":
+            client_protocol = streamablehttp_client
+        else:
+            assert connection_mode == "sse"
+            client_protocol = sse_client
+
+        port = self.port
+
+        async with client_protocol(
+            f"http://localhost:{port}/{connection_mode}", headers=(headers or {})
+        ) as connection_info:
+            read_stream, write_stream = connection_info[:2]
+            async with ClientSession(read_stream, write_stream) as session:
+                await session.initialize()
+                yield session
 
 
 class ActionServerClient:

@@ -14,7 +14,7 @@ packages = [{include = "devutils", from="src"}]
 python = "^3.8"
 ruff = "^0.1.14"
 mypy = "^1.1.1"
-pytest = "^7.2.2"
+pytest = "^8.0"
 pytest-xdist = "^3.2.1"
 pytest-regressions = "1.0.6"
 pydocstyle = { git = "https://github.com/robocorp/pydocstyle" }

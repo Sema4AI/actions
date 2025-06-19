@@ -553,7 +553,10 @@ It's meant to be used to represent the result of a table-like operation.
 [**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/_table.py#L19)
 
 ```python
-__init__(columns: list[str], rows: list[list[str | int | float | bool | None]])
+__init__(
+    columns: list[str],
+    rows: list[list[str | int | float | bool | list | dict | None]]
+)
 ```
 
 ## Properties
@@ -590,7 +593,9 @@ The row at the given index as a dictionary.
 [**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/_table.py#L82)
 
 ```python
-get_row_as_dict(index: int) → dict[str, str | int | float | bool | None]
+get_row_as_dict(
+    index: int
+) → dict[str, str | int | float | bool | list | dict | None]
 ```
 
 ______________________________________________________________________
@@ -605,7 +610,7 @@ An iterator over the rows of the table as dictionaries.
 [**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/_table.py#L51)
 
 ```python
-iter_as_dicts() → Iterator[dict[str, str | int | float | bool | None]]
+iter_as_dicts() → Iterator[dict[str, str | int | float | bool | list | dict | None]]
 ```
 
 # Exceptions

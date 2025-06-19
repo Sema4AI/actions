@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sema4ai-action-server"
-version = "2.10.0"
+version = "2.12.0"
 description = """Sema4AI Action Server"""
 authors = ["Fabio Z. <fabio@robocorp.com>"]
 readme = "README.md"
@@ -31,7 +31,7 @@ pydantic = "^2.9.2"
 pyyaml = "^6"
 python = ">=3.12,<3.14"
 requests = "^2"
-sema4ai-actions = "^1.3.8"
+sema4ai-actions = "^1.3.11"
 termcolor = "^2.4.0"
 uvicorn = "^0.34.0"
 websockets = "^13.1"
@@ -53,6 +53,8 @@ types-jsonschema = "^4.22.0"
 sema4ai-data = "^0.0.5"
 pyinstaller = "6.12.0" # Upgrading to 6.13.0 broke the build on Mac (it seemed to complete but the build didn't finish).
 pyinstaller-hooks-contrib = "2025.2"
+mcp = "^1.9.2"
+sema4ai-mcp = { path = "../mcp/", develop = true }
 
 [tool.mypy]
 mypy_path = "src:tests"

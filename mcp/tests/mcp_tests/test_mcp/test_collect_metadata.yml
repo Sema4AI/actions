@@ -1,0 +1,279 @@
+actions:
+- docs: "\n    Create a new ticket in the system.\n\n    Args:\n        title: The\
+    \ title of the ticket\n        description: Detailed description of the ticket\n\
+    \        priority: Priority level (low, medium, high)\n\n    Returns:\n      \
+    \  Dictionary containing the created ticket information\n    "
+  file: sample_mcp_action.py
+  input_schema:
+    properties:
+      description:
+        description: Detailed description of the ticket
+        title: Description
+        type: string
+      priority:
+        default: medium
+        description: Priority level (low, medium, high)
+        title: Priority
+        type: string
+      title:
+        description: The title of the ticket
+        title: Title
+        type: string
+    required:
+    - title
+    - description
+    type: object
+  line: 42
+  managed_params_schema: {}
+  name: create_ticket
+  options:
+    destructive_hint: false
+    idempotent_hint: false
+    kind: tool
+    open_world_hint: true
+    read_only_hint: true
+    title: null
+  output_schema:
+    description: Dictionary containing the created ticket information
+    properties:
+      assigned_to:
+        anyOf:
+        - type: string
+        - type: 'null'
+        title: Assigned To
+      created_at:
+        title: Created At
+        type: string
+      description:
+        title: Description
+        type: string
+      id:
+        title: Id
+        type: string
+      priority:
+        title: Priority
+        type: string
+      status:
+        title: Status
+        type: string
+      title:
+        title: Title
+        type: string
+    required:
+    - id
+    - title
+    - description
+    - priority
+    - status
+    - created_at
+    - assigned_to
+    title: Ticket
+    type: object
+- docs: "\n    Get detailed information about a specific ticket.\n\n    Args:\n  \
+    \      ticket_id: The ID of the ticket to retrieve\n\n    Returns:\n        Dictionary\
+    \ containing the ticket details\n    "
+  file: sample_mcp_action.py
+  input_schema:
+    properties:
+      ticket_id:
+        description: The ID of the ticket to retrieve
+        title: Ticket Id
+        type: string
+    required:
+    - ticket_id
+    type: object
+  line: 70
+  managed_params_schema: {}
+  name: get_ticket_details
+  options:
+    kind: resource
+    mime_type: null
+    size: null
+    uri: tickets://{ticket_id}
+  output_schema:
+    description: Dictionary containing the ticket details
+    properties:
+      assigned_to:
+        anyOf:
+        - type: string
+        - type: 'null'
+        title: Assigned To
+      created_at:
+        title: Created At
+        type: string
+      description:
+        title: Description
+        type: string
+      id:
+        title: Id
+        type: string
+      priority:
+        title: Priority
+        type: string
+      status:
+        title: Status
+        type: string
+      title:
+        title: Title
+        type: string
+    required:
+    - id
+    - title
+    - description
+    - priority
+    - status
+    - created_at
+    - assigned_to
+    title: Ticket
+    type: object
+- docs: "\n    Get the status of a ticket.\n\n    Args:\n        ticket_id: The ID\
+    \ of the ticket to retrieve\n\n    Returns:\n        The status of the ticket\n\
+    \    "
+  file: sample_mcp_action.py
+  input_schema:
+    properties:
+      ticket_id:
+        description: The ID of the ticket to retrieve
+        title: Ticket Id
+        type: string
+    required:
+    - ticket_id
+    type: object
+  line: 88
+  managed_params_schema: {}
+  name: get_ticket_status
+  options:
+    kind: resource
+    mime_type: null
+    size: null
+    uri: resource://read/get_ticket_status/{ticket_id}
+  output_schema:
+    description: The status of the ticket
+    type: string
+- docs: "\n    Get the number of tickets in the system.\n    "
+  file: sample_mcp_action.py
+  input_schema:
+    properties: {}
+    type: object
+  line: 102
+  managed_params_schema: {}
+  name: get_number_of_tickets
+  options:
+    kind: resource
+    mime_type: null
+    size: null
+    uri: resource://read/get_number_of_tickets
+  output_schema:
+    description: ''
+    type: integer
+- docs: "\n    Generate a human-readable summary of a ticket.\n\n    Args:\n     \
+    \   ticket_id: The ID of the ticket to generate a summary for\n\n    Returns:\n\
+    \        A formatted string containing the ticket summary\n    "
+  file: sample_mcp_action.py
+  input_schema:
+    properties:
+      ticket_id:
+        description: The ID of the ticket to generate a summary for
+        title: Ticket Id
+        type: string
+    required:
+    - ticket_id
+    type: object
+  line: 110
+  managed_params_schema: {}
+  name: generate_ticket_summary
+  options:
+    kind: prompt
+  output_schema:
+    description: A formatted string containing the ticket summary
+    type: string
+- docs: "\n    Generate a human-readable summary of a ticket.\n\n    Args:\n     \
+    \   description: The description of the ticket to find next\n        steps for.\
+    \ If not provided, the next ticket will be\n        found based on the current\
+    \ priorities.\n\n    Returns:\n        A formatted string containing the ticket\
+    \ summary\n    "
+  file: sample_mcp_action.py
+  input_schema:
+    properties:
+      description:
+        anyOf:
+        - type: string
+        - type: 'null'
+        default: null
+        title: Description
+    type: object
+  line: 139
+  managed_params_schema: {}
+  name: find_next_ticket_to_work_on
+  options:
+    kind: prompt
+  output_schema:
+    description: ''
+    type: string
+- docs: "\n    Update the status of an existing ticket.\n\n    Args:\n        ticket_id:\
+    \ The ID of the ticket to update\n        new_status: The new status to set (e.g.,\
+    \ 'open', 'in_progress', 'closed')\n\n    Returns:\n        The updated ticket\
+    \ information\n\n    Raises:\n        ValueError: If the ticket is not found\n\
+    \    "
+  file: sample_mcp_action.py
+  input_schema:
+    properties:
+      new_status:
+        description: The new status to set (e.g., 'open', 'in_progress', 'closed')
+        title: New Status
+        type: string
+      ticket_id:
+        description: The ID of the ticket to update
+        title: Ticket Id
+        type: string
+    required:
+    - ticket_id
+    - new_status
+    type: object
+  line: 159
+  managed_params_schema: {}
+  name: update_ticket_status
+  options:
+    destructive_hint: true
+    idempotent_hint: false
+    kind: tool
+    open_world_hint: true
+    read_only_hint: false
+    title: Update ticket status.
+  output_schema:
+    description: The updated ticket information
+    properties:
+      assigned_to:
+        anyOf:
+        - type: string
+        - type: 'null'
+        title: Assigned To
+      created_at:
+        title: Created At
+        type: string
+      description:
+        title: Description
+        type: string
+      id:
+        title: Id
+        type: string
+      priority:
+        title: Priority
+        type: string
+      status:
+        title: Status
+        type: string
+      title:
+        title: Title
+        type: string
+    required:
+    - id
+    - title
+    - description
+    - priority
+    - status
+    - created_at
+    - assigned_to
+    title: Ticket
+    type: object
+actions_spec_version: v2

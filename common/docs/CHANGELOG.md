@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+## 0.1.1 - 2025-06-02
+
+- Fix issue when killing subprocesses on MacOS (apparently in MacOS we could
+  end in a state where killing subprocesses could end up killing parent processes --
+  i.e.: PyCharm was killed when a subprocess was killed using `kill_process_and_subprocesses`
+  -- it's not entirely clear why that happened, but the new code using psutil doesn't
+  seem to suffer from the issue, and shouldn't be an issue since we already
+  rely on psutil anyways in this library).
+
 ## 0.1.0 - 2025-04-01
 
 - Update sema4ai-http-helper to 2.0.0 version

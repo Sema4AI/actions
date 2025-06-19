@@ -3,6 +3,13 @@ from pathlib import Path
 import pytest
 
 from sema4ai.action_server._selftest import ActionServerClient, ActionServerProcess
+from sema4ai.action_server._settings import (
+    HEADER_ACTION_ASYNC_COMPLETION,
+    HEADER_ACTION_SERVER_RUN_ID,
+    HEADER_ACTIONS_ASYNC_CALLBACK,
+    HEADER_ACTIONS_ASYNC_TIMEOUT,
+    HEADER_ACTIONS_REQUEST_ID,
+)
 
 
 @pytest.mark.integration_test
@@ -32,9 +39,9 @@ def test_server_async_api_requests_while_waiting_for_action_to_complete(
         "api/actions/test-server-async/sleep-action/run",
         {"time_to_sleep": 20},  # Sleep for a long time.
         {
-            "x-actions-async-timeout": "0.2",  # Return after 0.2 seconds
-            "x-actions-async-callback": callback_url,
-            "x-actions-request-id": "123",  # Can be used to cancel the action, get status, get the result, ...
+            HEADER_ACTIONS_ASYNC_TIMEOUT: "0.2",  # Return after 0.2 seconds
+            HEADER_ACTIONS_ASYNC_CALLBACK: callback_url,
+            HEADER_ACTIONS_REQUEST_ID: "123",  # Can be used to cancel the action, get status, get the result, ...
         },
     )
     response.raise_for_status()
@@ -44,8 +51,8 @@ def test_server_async_api_requests_while_waiting_for_action_to_complete(
 
     # Check for the message we received saying it's an async compute.
     assert (
-        headers.get("x-action-async-completion") == "1"
-    ), f"Failed to get x-action-async-completion. Headers: {headers}"
+        headers.get(HEADER_ACTION_ASYNC_COMPLETION) == "1"
+    ), f"Failed to get {HEADER_ACTION_ASYNC_COMPLETION}. Headers: {headers}"
 
     def run_id_from_request_id_available():
         response = client.get_get_response(
@@ -123,9 +130,9 @@ def test_server_async_api(
         "api/actions/greeter/greet/run",
         {"name": "Foo"},
         {
-            "x-actions-async-timeout": "0",  # Return immediately
-            "x-actions-async-callback": callback_url,
-            "x-actions-request-id": "123",  # Can be used to cancel the action, get status, get the result, ...
+            HEADER_ACTIONS_ASYNC_TIMEOUT: "0",  # Return immediately
+            HEADER_ACTIONS_ASYNC_CALLBACK: callback_url,
+            HEADER_ACTIONS_REQUEST_ID: "123",  # Can be used to cancel the action, get status, get the result, ...
         },
     )
     response.raise_for_status()
@@ -136,11 +143,11 @@ def test_server_async_api(
 
     # Check for the message we received saying it's an async compute.
     assert (
-        headers.get("x-action-async-completion") == "1"
-    ), f"Failed to get x-action-async-completion. Headers: {headers}"
+        headers.get(HEADER_ACTION_ASYNC_COMPLETION) == "1"
+    ), f"Failed to get {HEADER_ACTION_ASYNC_COMPLETION}. Headers: {headers}"
     assert (
-        headers.get("x-action-server-run-id") is not None
-    ), f"Failed to get x-action-server-run-id. Headers: {headers}"
+        headers.get(HEADER_ACTION_SERVER_RUN_ID) is not None
+    ), f"Failed to get {HEADER_ACTION_SERVER_RUN_ID}. Headers: {headers}"
 
     assert found == '"async-return"', f"{found} != '\"async-return\"'"
 
@@ -150,10 +157,10 @@ def test_server_async_api(
     headers = result["headers"]
     assert headers
     assert (
-        headers.get("x-actions-request-id") == "123"
-    ), f"Failed to get x-actions-request-id. Headers: {headers}"
+        headers.get(HEADER_ACTIONS_REQUEST_ID) == "123"
+    ), f"Failed to get {HEADER_ACTIONS_REQUEST_ID}. Headers: {headers}"
 
-    run_id = headers.get("x-action-server-run-id")
+    run_id = headers.get(HEADER_ACTION_SERVER_RUN_ID)
     assert run_id
 
     response = client.post_get_response(f"api/runs/{run_id}/cancel", data={})
@@ -172,8 +179,8 @@ def do_run(
 ):
     if async_run:
         headers = {
-            "x-actions-async-timeout": "0",  # Return immediately
-            "x-actions-request-id": request_id,  # Can be used to cancel the action, get status, get the result, ...
+            HEADER_ACTIONS_ASYNC_TIMEOUT: "0",  # Return immediately
+            HEADER_ACTIONS_REQUEST_ID: request_id,  # Can be used to cancel the action, get status, get the result, ...
         }
     else:
         headers = {}
@@ -190,7 +197,7 @@ def do_run(
 
     headers = response.headers
     assert headers
-    run_id = headers.get("x-action-server-run-id")
+    run_id = headers.get(HEADER_ACTION_SERVER_RUN_ID)
     assert run_id
     return run_id
 

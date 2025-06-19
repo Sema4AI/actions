@@ -126,6 +126,7 @@ class BaseWorkflow:
 
         self.full = {}
         self.full.update({"name": self.name})
+        self.full.update({"permissions": {"contents": "read"}})
         self.full.update(self.on_part(paths))
         self.full.update(self.defaults_part())
         self.full.update(self.jobs_part())
@@ -168,7 +169,7 @@ class BaseWorkflow:
                 {
                     "name": f"windows-py{pyversion}-devmode",
                     "python": pyversion,
-                    "os": "windows-2019",
+                    "os": "windows-2022",
                 },
                 {
                     "name": f"macos-py{pyversion}-devmode",
@@ -184,7 +185,7 @@ class BaseWorkflow:
             # Important: Changing os requires updating the related references in this yml.
             "os": [
                 UBUNTU_VERSION,
-                "windows-2019",
+                "windows-2022",
                 "macos-13",  # used for the x86_64 binary
                 "macos-15",  # used for the arm64 binary
             ],
@@ -195,7 +196,7 @@ class BaseWorkflow:
                     "asset_path": "action_server/dist/final/action-server",
                 },
                 {
-                    "os": "windows-2019",
+                    "os": "windows-2022",
                     "python": pyversion,
                     "asset_path": "action_server/dist/final/action-server.exe",
                 },
@@ -217,7 +218,7 @@ class BaseWorkflow:
             # Important: Changing os requires updating the related references in this yml.
             "os": [
                 UBUNTU_VERSION,
-                "windows-2019",
+                "windows-2022",
                 # "macos-13",  skipped (cibuildwheel is having some issue with it).
                 "macos-15",  # used for the arm64 binary
             ],
@@ -227,7 +228,7 @@ class BaseWorkflow:
                     "python": pyversion,
                 },
                 {
-                    "os": "windows-2019",
+                    "os": "windows-2022",
                     "python": pyversion,
                 },
                 {
@@ -815,7 +816,7 @@ while true; do
                     {
                         "uses": "actions/download-artifact@v4",
                         "with": {
-                            "name": "action-server-windows-2019",
+                            "name": "action-server-windows-2022",
                             "path": "windows64/",
                         },
                     },
@@ -927,12 +928,12 @@ while true; do
         # It'll generate something as (for all the OSes we require):
         #   - uses: actions/download-artifact@v4
         #     with:
-        #       name: action-server-windows-2019
+        #       name: action-server-windows-2022
         #       path: action_server/build/windows64/
 
         ret = []
         for os, path in [
-            ("windows-2019", "windows64"),
+            ("windows-2022", "windows64"),
             ("macos-13", "macos64"),
             ("macos-15", "macos-arm64"),
             (UBUNTU_VERSION, "linux64"),
@@ -1123,6 +1124,12 @@ class CommonTests(BaseTests):
     project_name = "common"
 
 
+class MCPTests(BaseTests):
+    name = "MCP Tests"
+    target = "mcp_tests.yml"
+    project_name = "mcp"
+
+
 class HttpHelperTests(BaseTests):
     name = "HTTP Helper Tests"
     target = "http_helper_tests.yml"
@@ -1134,6 +1141,7 @@ TARGETS = [
     ActionsTests(),
     HttpHelperTests(),
     CommonTests(),
+    MCPTests(),
     ActionServerPyPiRelease(),
     ActionServerBinaryRelease(),
     ActionServerManylinuxRelease(),

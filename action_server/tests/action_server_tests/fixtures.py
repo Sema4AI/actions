@@ -2,7 +2,7 @@ import os
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterator
+from typing import Any, Iterator
 
 import pytest
 
@@ -13,6 +13,23 @@ from sema4ai.action_server._selftest import (
 )
 
 BUILD_ENV_IN_TESTS_TIMEOUT = 600
+
+
+@pytest.fixture(autouse=True)
+def setup_logging():
+    import logging
+
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
+    handler = logging.StreamHandler()
+    handler.setLevel(logging.DEBUG)
+    formatter = logging.Formatter(
+        "TEST PROCESS: %(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    )
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    yield
+    logger.removeHandler(handler)
 
 
 def _fix_file_info(info_json):
@@ -135,6 +152,9 @@ def get_in_resources(*parts) -> Path:
     curr = CURDIR / "resources"
     for part in parts:
         curr = curr / part
+
+    if not curr.exists():
+        raise FileNotFoundError(f"Resource directory not found: {curr}")
     return curr
 
 
@@ -378,3 +398,15 @@ CREATE UNIQUE INDEX counter_id_index ON counter(id);
             )
 
     return db_path
+
+
+def run_async_in_new_thread(async_func: Any) -> Any:
+    import asyncio
+
+    from sema4ai.common.run_in_thread import run_in_thread
+
+    def func_in_thread():
+        return asyncio.run(async_func())
+
+    fut = run_in_thread(func_in_thread)
+    return fut.result()

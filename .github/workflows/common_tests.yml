@@ -11,25 +11,28 @@
 # script to match the changes you made here
 # and rerun the script).
 
+
 name: Common Tests
-"on":
+permissions:
+  contents: read
+'on':
   push:
     branches:
-      - master
-      - wip
+    - master
+    - wip
     paths:
-      - common/**
-      - .github/workflows/common_tests.yml
-      - devutils/**
-      - sema4ai-http-helper/**
+    - common/**
+    - .github/workflows/common_tests.yml
+    - devutils/**
+    - sema4ai-http-helper/**
   pull_request:
     branches:
-      - master
+    - master
     paths:
-      - common/**
-      - .github/workflows/common_tests.yml
-      - devutils/**
-      - sema4ai-http-helper/**
+    - common/**
+    - .github/workflows/common_tests.yml
+    - devutils/**
+    - sema4ai-http-helper/**
 defaults:
   run:
     working-directory: ./common
@@ -40,57 +43,57 @@ jobs:
       fail-fast: false
       matrix:
         name:
-          - ubuntu-py3.11-devmode
-          - windows-py3.11-devmode
-          - macos-py3.11-devmode
+        - ubuntu-py3.11-devmode
+        - windows-py3.11-devmode
+        - macos-py3.11-devmode
         include:
-          - name: ubuntu-py3.11-devmode
-            python: "3.11"
-            os: ubuntu-22.04
-          - name: windows-py3.11-devmode
-            python: "3.11"
-            os: windows-2019
-          - name: macos-py3.11-devmode
-            os: macos-15
-            python: "3.11"
+        - name: ubuntu-py3.11-devmode
+          python: '3.11'
+          os: ubuntu-22.04
+        - name: windows-py3.11-devmode
+          python: '3.11'
+          os: windows-2022
+        - name: macos-py3.11-devmode
+          os: macos-15
+          python: '3.11'
     steps:
-      - name: Checkout repository and submodules
-        uses: actions/checkout@v3
-      - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@v5
-        with:
-          enable-cache: true
-      - name: Install Python 3.11
-        run: uv python install 3.11
-      - name: Install devutils requirements
-        run:
-          uv run --no-project --python ${{ matrix.python }}  python -m pip install
-          --break-system-packages -r ../devutils/requirements.txt
-      - name: Install project (not dev)
-        if: contains(matrix.name, '-devmode') == false
-        run: uv run --no-project --python ${{ matrix.python }} inv install
-      - name: Install project (dev)
-        if: contains(matrix.name, '-devmode')
-        run: uv run --no-project --python ${{ matrix.python }} inv devinstall
-      - name: Test
-        env:
-          GITHUB_ACTIONS_MATRIX_NAME: ${{ matrix.name }}
-          CI_CREDENTIALS: ${{ secrets.CI_CREDENTIALS }}
-          CI_ENDPOINT: ${{ secrets.CI_ENDPOINT }}
-          ACTION_SERVER_TEST_ACCESS_CREDENTIALS:
-            ${{ secrets.ACTION_SERVER_TEST_ACCESS_CREDENTIALS
-            }}
-          ACTION_SERVER_TEST_HOSTNAME: ${{ secrets.ACTION_SERVER_TEST_HOSTNAME }}
-        run: uv run --no-project --python ${{ matrix.python }} inv test
-      - name: "`inv lint`, potentially fixed with `inv pretty`"
-        if: always()
-        run: uv run --no-project --python ${{ matrix.python }} inv lint
-      - name: "`inv typecheck`"
-        if: always()
-        run: uv run --no-project --python ${{ matrix.python }} inv typecheck
-      - name: "`inv docs` with checking on files changed"
-        if: always()
-        run: uv run --no-project --python ${{ matrix.python }} inv docs --check
+    - name: Checkout repository and submodules
+      uses: actions/checkout@v3
+    - name: Install the latest version of uv
+      uses: astral-sh/setup-uv@v5
+      with:
+        enable-cache: true
+    - name: Install Python 3.11
+      run: uv python install 3.11
+    - name: Install devutils requirements
+      run: uv run --no-project --python ${{ matrix.python }}  python -m pip install
+        --break-system-packages -r ../devutils/requirements.txt
+    - name: Install project (not dev)
+      if: contains(matrix.name, '-devmode') == false
+      run: uv run --no-project --python ${{ matrix.python }} inv install
+    - name: Install project (dev)
+      if: contains(matrix.name, '-devmode')
+      run: uv run --no-project --python ${{ matrix.python }} inv devinstall
+    - name: Test
+      env:
+        GITHUB_ACTIONS_MATRIX_NAME: ${{ matrix.name }}
+        CI_CREDENTIALS: ${{ secrets.CI_CREDENTIALS }}
+        CI_ENDPOINT: ${{ secrets.CI_ENDPOINT }}
+        ACTION_SERVER_TEST_ACCESS_CREDENTIALS: ${{ secrets.ACTION_SERVER_TEST_ACCESS_CREDENTIALS
+          }}
+        ACTION_SERVER_TEST_HOSTNAME: ${{ secrets.ACTION_SERVER_TEST_HOSTNAME }}
+      run: uv run --no-project --python ${{ matrix.python }} inv test
+    - name: '`inv lint`, potentially fixed with `inv pretty`'
+      if: always()
+      run: uv run --no-project --python ${{ matrix.python }} inv lint
+    - name: '`inv typecheck`'
+      if: always()
+      run: uv run --no-project --python ${{ matrix.python }} inv typecheck
+    - name: '`inv docs` with checking on files changed'
+      if: always()
+      run: uv run --no-project --python ${{ matrix.python }} inv docs --check
+
+
 # Important!!
 # This file is auto-generated by running:
 #

@@ -3,11 +3,20 @@ import json
 import logging
 import time
 import typing
-from typing import Any, Callable, Dict, Tuple
+from typing import Any, Callable, Dict, Protocol, Tuple
 
 from fastapi import HTTPException, Request, Response
 from fastapi.exceptions import RequestValidationError
 from starlette.concurrency import run_in_threadpool
+
+from ._settings import (
+    HEADER_ACTION_ASYNC_COMPLETION,
+    HEADER_ACTION_INVOCATION_CONTEXT,
+    HEADER_ACTION_SERVER_RUN_ID,
+    HEADER_ACTIONS_ASYNC_CALLBACK,
+    HEADER_ACTIONS_ASYNC_TIMEOUT,
+    HEADER_ACTIONS_REQUEST_ID,
+)
 
 if typing.TYPE_CHECKING:
     from ._models import Action, ActionPackage, Run
@@ -171,6 +180,36 @@ def _set_run_as_running(run: "Run", initial_time: float) -> int:
     return RunStatus.RUNNING
 
 
+class IResponseHandler(Protocol):
+    def set_run_id(self, run_id: str):
+        pass
+
+    def set_async_completion(self):
+        pass
+
+
+class ResponseHandler:
+    def __init__(self, response: Response):
+        self.response = response
+
+    def set_run_id(self, run_id: str):
+        self.response.headers[HEADER_ACTION_SERVER_RUN_ID] = run_id
+
+    def set_async_completion(self):
+        self.response.headers[HEADER_ACTION_ASYNC_COMPLETION] = "1"
+
+
+class IInternalFuncAPI(Protocol):
+    async def __call__(
+        self,
+        response_handler: IResponseHandler,
+        inputs: dict,
+        headers: dict,
+        cookies: dict,
+    ) -> Any:
+        ...
+
+
 class _ActionsRunner:
     """
     This is where the user actually runs something.
@@ -190,7 +229,7 @@ class _ActionsRunner:
         input_validator: Callable[[dict], None],
         output_validator: Callable[[dict], None],
         inputs: dict,
-        response: Response,
+        response_handler: IResponseHandler,
         headers: dict,
         cookies: dict,
     ) -> None:
@@ -210,17 +249,19 @@ class _ActionsRunner:
         self.input_validator = input_validator
         self.output_validator = output_validator
         self.inputs = inputs
-        self.response = response
+        self.response_handler = response_handler
         self.headers = headers
         self.cookies = cookies
 
-        timeout = headers.get("x-actions-async-timeout", None)
+        timeout = headers.get(HEADER_ACTIONS_ASYNC_TIMEOUT, None)
         if timeout is not None:
             timeout = float(timeout)
 
-        self.request_id: str = headers.get("x-actions-request-id", "")
+        self.request_id: str = headers.get(HEADER_ACTIONS_REQUEST_ID, "")
         self.timeout: Optional[float] = timeout
-        self.callback_url: Optional[str] = headers.get("x-actions-async-callback", None)
+        self.callback_url: Optional[str] = headers.get(
+            HEADER_ACTIONS_ASYNC_CALLBACK, None
+        )
         self._future: Optional[Future] = None
         self._run_id = gen_uuid("run")
         self._returning_async_result = False
@@ -262,7 +303,7 @@ class _ActionsRunner:
 
         from sema4ai.action_server._robo_utils import run_in_thread
 
-        self.response.headers["X-Action-Server-Run-Id"] = self._run_id
+        self.response_handler.set_run_id(self._run_id)
 
         fut = run_in_thread.run_in_thread(self._run_action)
         self._future = fut
@@ -282,7 +323,7 @@ class _ActionsRunner:
 
     def _async_result(self) -> Any:
         self._returning_async_result = True
-        self.response.headers["x-action-async-completion"] = "1"
+        self.response_handler.set_async_completion()
         return "async-return"
 
     def _run_action(self) -> Any:
@@ -316,11 +357,11 @@ class _ActionsRunner:
                     import sema4ai_http
 
                     headers: dict[str, str] = {
-                        "x-action-server-run-id": self._run_id,
+                        HEADER_ACTION_SERVER_RUN_ID: self._run_id,
                     }
 
                     if self.request_id:
-                        headers["x-actions-request-id"] = self.request_id
+                        headers[HEADER_ACTIONS_REQUEST_ID] = self.request_id
 
                     for _i in range(3):  # Try up to 3 times before giving up.
                         post_result = sema4ai_http.post(
@@ -522,7 +563,11 @@ def _name_as_class_name(name):
 
 def generate_func_from_action(
     action_package: "ActionPackage", action: "Action", display_name: str
-) -> Tuple[Callable[[Response, Request], Any], dict[str, object]]:
+) -> Tuple[
+    Callable[[Response, Request], Any],
+    IInternalFuncAPI,
+    dict[str, object],
+]:
     """
     This method generates the function which should be called from FastAPI.
 
@@ -586,7 +631,7 @@ def generate_func_from_action(
 
     # The returned function must be async because we have to request the `body`
 
-    async def func(response: Response, request: Request):
+    async def func_fast_api(response: Response, request: Request):
         body = await request.body()
         try:
             inputs = json.loads(body)
@@ -596,10 +641,26 @@ def generate_func_from_action(
                     f"The received input arguments (sent in the body) cannot be interpreted as json. Details: {e}"
                 ]
             )
-
         headers = dict((x[0].lower(), x[1]) for x in request.headers.items())
         cookies = dict(request.cookies)
+        response_handler = ResponseHandler(response)
+        return await func_internal(response_handler, inputs, headers, cookies)
 
+    async def func_internal(
+        response_handler: IResponseHandler, inputs: Any, headers: dict, cookies: dict
+    ) -> Any:
+        """
+        This is an internal function that actually runs an action (in the threadpool) based on the user's inputs.
+
+        Args:
+            response_handler: The response handler to use (where we can set the run id and whether an async completion was done).
+            inputs: The inputs to the action (gotten from the request based on the agent input).
+            headers: The headers to the action (gotten from the request).
+            cookies: The cookies to the action (gotten from the request).
+
+        Returns:
+            The result of the action.
+        """
         # i.e.: if the `x-action-invocation-context` header is present, we
         # expect it to contain a data envelope (`base64(encrypted_data(JSON.stringify(content)))` or
         # `base64(JSON.stringify(content))`) with the invocation context.
@@ -611,7 +672,7 @@ def generate_func_from_action(
         # This is done because headers have a size restriction and we don't want to
         # hit it (so, we enable passing things that are conceptually headers, such as
         # `x-action-context` and `x-data-context`, in the body of the request)
-        invocation_context = request.headers.get("x-action-invocation-context")
+        invocation_context = headers.get(HEADER_ACTION_INVOCATION_CONTEXT)
         if invocation_context:  # Anything there means we expect the body to contain the additional contexts.
             if isinstance(inputs, dict):
                 if "body" not in inputs:
@@ -632,13 +693,13 @@ def generate_func_from_action(
             input_validator,
             output_validator,
             inputs,
-            response,
+            response_handler,
             headers,
             cookies,
         )
         return await run_in_threadpool(runner.run_in_thread)
 
-    return func, openapi_extra
+    return func_fast_api, func_internal, openapi_extra
 
 
 def _iter_jsonschema_specifications():

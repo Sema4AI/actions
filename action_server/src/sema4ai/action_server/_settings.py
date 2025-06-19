@@ -14,6 +14,33 @@ from sema4ai.action_server.vendored_deps.termcolors import bold_red
 
 from ._protocols import ArgumentsNamespaceRequiringDatadir
 
+# Header constants
+
+# Something as "0.2" to set time after which the action server will unblock the request and return that completion will be asynchronous.
+HEADER_ACTIONS_ASYNC_TIMEOUT = "x-actions-async-timeout"
+
+# A request id that can be converted to a run id later on to cancel the action, get the status, result, etc.
+HEADER_ACTIONS_REQUEST_ID = "x-actions-request-id"
+
+# Can be set to a callback url that will be called when the action is completed.
+HEADER_ACTIONS_ASYNC_CALLBACK = "x-actions-async-callback"
+
+# The run id to cancel the action, get the status, result, etc (set as a header in the response).
+HEADER_ACTION_SERVER_RUN_ID = "x-action-server-run-id"
+
+# Set to "1" in the response if the action will finish asynchronously.
+HEADER_ACTION_ASYNC_COMPLETION = "x-action-async-completion"
+
+# A context that will be passed to the action with information on the request (agent id, thread id, etc).
+HEADER_ACTION_INVOCATION_CONTEXT = "x-action-invocation-context"
+
+# boolean (true if the action is consequential -- i.e.: it'll change the state of the world, false means it's an action that shouldn't change anything).
+# Set in the openapi spec.
+OPENAPI_SPEC_IS_CONSEQUENTIAL = "x-openai-isConsequential"
+
+# 'action' or 'query' (set in the openapi spec).
+OPENAPI_SPEC_OPERATION_KIND = "x-operation-kind"
+
 log = logging.getLogger(__name__)
 
 

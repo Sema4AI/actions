@@ -13,6 +13,8 @@
 
 
 name: Action Server MANYLINUX Release
+permissions:
+  contents: read
 'on':
   push:
     tags:
@@ -30,12 +32,12 @@ jobs:
       matrix:
         os:
         - ubuntu-22.04
-        - windows-2019
+        - windows-2022
         - macos-15
         include:
         - os: ubuntu-22.04
           python: '3.12'
-        - os: windows-2019
+        - os: windows-2022
           python: '3.12'
         - os: macos-15
           python: '3.12'

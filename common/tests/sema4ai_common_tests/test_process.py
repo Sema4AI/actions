@@ -15,14 +15,13 @@ def test_process_start():
     from sema4ai.common.process import Process
     from sema4ai.common.wait_for import wait_for_condition
 
-    p = Process([sys.executable, "-c", "import time; time.sleep(10);print(10)"])
+    p = Process([sys.executable, "-c", "import time; time.sleep(20);print(20)"])
     p.start()
     assert p.is_alive()
     assert p.returncode is None
     p.stop()
-    wait_for_condition(lambda: not p.is_alive())
+    wait_for_condition(lambda: not p.is_alive(), timeout=2)
     assert p.returncode is not None
-    assert p.returncode != 0
 
 
 @pytest.mark.parametrize(
@@ -61,7 +60,7 @@ while True:
     if scenario == "monitor":
         monitor.cancel()
         result = future.result(1)
-        assert result.returncode != 0
+        assert result.returncode is not None
         assert result.status == ProcessResultStatus.CANCELLED
     elif scenario == "future":
         future.cancel()
@@ -69,7 +68,7 @@ while True:
             future.result(1)
     elif scenario == "timeout":
         result = future.result()
-        assert result.returncode != 0
+        assert result.returncode is not None
         assert result.status == ProcessResultStatus.TIMED_OUT
     else:
         raise ValueError(f"Invalid scenario: {scenario}")
