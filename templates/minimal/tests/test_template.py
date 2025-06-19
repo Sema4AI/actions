@@ -1,4 +1,4 @@
 def test_actions() -> None:
-    from actions import greet  # noqa
+    from actions import greet
 
-    assert 1 == 1, "TODO: Add your tests here"
+    assert greet() == "Hello world!\n"
