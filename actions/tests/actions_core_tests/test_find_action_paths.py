@@ -18,8 +18,16 @@ def create_test_structure(tmpdir):
     subdir.mkdir()
     (subdir / "test3.py").write_text("# test file 3")
 
-    # Create skip directories
-    for skip_dir in ["__pycache__", ".git", "node_modules", ".venv"]:
+    # Create directories that might be excluded by package.yaml
+    for skip_dir in [
+        "__pycache__",
+        ".git",
+        "node_modules",
+        ".venv",
+        "venv",
+        "output",
+        "devdata",
+    ]:
         skip_path = temp_dir / skip_dir
         skip_path.mkdir()
         (skip_path / "should_not_find.py").write_text("# should not be found")
@@ -30,6 +38,44 @@ def create_test_structure(tmpdir):
     (nested / "test4.py").write_text("# test file 4")
 
     return ["test1.py", "test2.py", "subdir/test3.py", "nested/deep/test4.py"]
+
+
+def create_package_yaml(tmpdir, exclude_patterns=None):
+    """Create a package.yaml file with exclusion patterns."""
+    temp_dir = Path(tmpdir)
+    package_yaml = temp_dir / "package.yaml"
+
+    if exclude_patterns is None:
+        exclude_patterns = [
+            "./.git/**",
+            "./.vscode/**",
+            "./devdata/**",
+            "./output/**",
+            "./venv/**",
+            "./.venv/**",
+            "./.DS_store/**",
+            "./**/*.pyc",
+            "./**/*.zip",
+            "./**/.env",
+            "./**/__pycache__",
+            "./**/.git",
+            "./**/node_modules",
+            "./**/.venv",
+            "./**/venv",
+            "./**/output",
+            "./**/devdata",
+        ]
+
+    package_content = f"""name: test-package
+version: 1.0.0
+packaging:
+  exclude:
+"""
+    for pattern in exclude_patterns:
+        package_content += f"    - {pattern}\n"
+
+    package_yaml.write_text(package_content)
+    return package_yaml
 
 
 @pytest.fixture
@@ -49,9 +95,7 @@ def test_finds_all_python_files_with_default_pattern(tmpdir, library_roots):
     finder = FindActionPaths(temp_dir, ["*"], library_roots)
     found_files = [str(f.relative_to(temp_dir)).replace("\\", "/") for f in finder]
 
-    assert len(found_files) == 4
-    for expected in expected_files:
-        assert expected in found_files
+    assert set(found_files) == set(expected_files)
 
 
 def test_respects_glob_patterns(tmpdir, library_roots):
@@ -77,16 +121,86 @@ def test_handles_multiple_glob_patterns(tmpdir, library_roots):
     assert found_files == ["test1.py", "test2.py"]
 
 
-def test_skips_common_directories(tmpdir, library_roots):
-    """Test that FindActionPaths skips common directories."""
+def test_skips_directories_with_package_yaml_exclusions(tmpdir, library_roots):
+    """Test that FindActionPaths skips directories based on package.yaml exclusions."""
     temp_dir = Path(tmpdir)
     create_test_structure(tmpdir)
 
+    # Create package.yaml with exclusion patterns
+    create_package_yaml(
+        tmpdir,
+        [
+            "./.git/**",
+            "./.venv/**",
+            "./venv/**",
+            "./output/**",
+            "./devdata/**",
+            "./node_modules/**",
+            "./__pycache__/**",
+        ],
+    )
+
     finder = FindActionPaths(temp_dir, ["*"], library_roots)
+    found_files = [f.parent.name + "/" + f.name for f in finder]
+
+    # Should not find files in excluded directories
+    assert "should_not_find.py" not in str(found_files), f"Found files: {found_files}"
+    # Should still find the regular test files
+    assert "test1.py" in str(found_files), f"Found files: {found_files}"
+    assert "test2.py" in str(found_files), f"Found files: {found_files}"
+
+
+def test_respects_package_yaml_exclusion_patterns(tmpdir, library_roots):
+    """Test that FindActionPaths respects specific exclusion patterns from package.yaml."""
+    temp_dir = Path(tmpdir)
+
+    # Create test structure
+    (temp_dir / "test1.py").write_text("# test file 1")
+    (temp_dir / "test2.py").write_text("# test file 2")
+    (temp_dir / "excluded_dir").mkdir()
+    (temp_dir / "excluded_dir" / "test3.py").write_text("# should be excluded")
+    (temp_dir / "included_dir").mkdir()
+    (temp_dir / "included_dir" / "test4.py").write_text("# should be included")
+
+    # Create package.yaml with specific exclusion
+    create_package_yaml(tmpdir, ["./excluded_dir/**"])
+
+    finder = FindActionPaths(temp_dir, ["*.py"], library_roots)
     found_files = [f.name for f in finder]
 
-    # Should not find files in skip directories
-    assert "should_not_find.py" not in found_files
+    # Should find included files
+    assert "test1.py" in found_files
+    assert "test2.py" in found_files
+    assert "test4.py" in found_files
+    # Should not find excluded files
+    assert "test3.py" not in found_files
+
+
+def test_handles_complex_exclusion_patterns(tmpdir, library_roots):
+    """Test that FindActionPaths handles complex glob patterns from package.yaml."""
+    temp_dir = Path(tmpdir)
+    (temp_dir / "nested").mkdir()
+
+    # Create test structure
+    (temp_dir / "test1.py").write_text("# test file 1")
+    (temp_dir / "test2.pyc").write_text("# compiled python file")
+    (temp_dir / "test3.zip").write_text("# zip file")
+    (temp_dir / "nested" / "test4.py").write_text("# nested python file")
+    (temp_dir / "nested" / "test5.pyc").write_text("# nested compiled file")
+
+    # Create package.yaml with complex patterns
+    create_package_yaml(tmpdir, ["./**/*.pyc", "./**/*.zip"])
+
+    finder = FindActionPaths(temp_dir, ["*.py"], library_roots)
+    found_files = [f.name for f in finder]
+
+    # Should find Python files
+    assert "test1.py" in found_files
+    assert "test4.py" in found_files
+    # Should not find compiled or zip files
+    assert "test2.pyc" not in found_files
+    assert "test3.zip" not in found_files
+    assert "test5.pyc" not in found_files
 
 
 def test_avoids_library_roots(tmpdir, library_roots):
