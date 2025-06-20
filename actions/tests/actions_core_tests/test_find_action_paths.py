@@ -66,7 +66,7 @@ def create_package_yaml(tmpdir, exclude_patterns=None):
             "./**/devdata",
         ]
 
-    package_content = f"""name: test-package
+    package_content = """name: test-package
 version: 1.0.0
 packaging:
   exclude:
