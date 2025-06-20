@@ -62,9 +62,9 @@ python -m sema4ai.actions run actions.py -a enter_user
 
 **Args:**
 
-- <b>`func`</b>:  A function which is an action to `sema4ai.actions`.
-- <b>`is_consequential`</b>:  Whether the action is consequential or not. This will add `x-openai-isConsequential: true` to the action metadata and shown in OpenApi spec.
-- <b>`display_name`</b>:  A name to be displayed for this action. If given will be used as the openapi.json summary for this action.
+- <b>`func`</b>: A function which is an action to `sema4ai.actions`.
+- <b>`is_consequential`</b>: Whether the action is consequential or not. This will add `x-openai-isConsequential: true` to the action metadata and shown in OpenApi spec.
+- <b>`display_name`</b>: A name to be displayed for this action. If given will be used as the openapi.json summary for this action.
 
 [**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/__init__.py#L61)
 
@@ -84,7 +84,7 @@ The function may be either a generator with a single yield (so, the first yielde
 
 **Args:**
 
-- <b>`func`</b>:  wrapped function.
+- <b>`func`</b>: wrapped function.
 
 [**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/__init__.py#L157)
 
@@ -128,7 +128,7 @@ The function may be either a generator with a single yield (so, the first yielde
 
 **Args:**
 
-- <b>`func`</b>:  wrapped function.
+- <b>`func`</b>: wrapped function.
 
 [**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/__init__.py#L135)
 
@@ -377,9 +377,9 @@ Creates an OAuth2 Secret given the action context (which may be encrypted in mem
 
 **Args:**
 
-- <b>`action_context`</b>:  The action context which has the secret.
+- <b>`action_context`</b>: The action context which has the secret.
 
-- <b>`path`</b>:  The path inside of the action context for the secret datarequested (Example: 'secrets/my_secret_name').
+- <b>`path`</b>: The path inside of the action context for the secret datarequested (Example: 'secrets/my_secret_name').
 
 Return: An OAuth2Secret instance collected from the passed action context.
 
@@ -397,7 +397,7 @@ Creates an OAuth2 Secret given a dict with the information (expected when the us
 
 **Args:**
 
-- <b>`value`</b>:  The dict containing the information to build the OAuth2 Secret.
+- <b>`value`</b>: The dict containing the information to build the OAuth2 Secret.
 
 Return: An OAuth2Secret instance with the given value.
 
@@ -503,9 +503,9 @@ Creates a secret given the action context (which may be encrypted in memory unti
 
 **Args:**
 
-- <b>`action_context`</b>:  The action context which has the secret.
+- <b>`action_context`</b>: The action context which has the secret.
 
-- <b>`path`</b>:  The path inside of the action context for the secret datarequested (Example: 'secrets/my_secret_name').
+- <b>`path`</b>: The path inside of the action context for the secret datarequested (Example: 'secrets/my_secret_name').
 
 Return: A Secret instance collected from the passed action context.
 
@@ -523,7 +523,7 @@ Creates a secret given a string (expected when the user is passing the arguments
 
 **Args:**
 
-- <b>`value`</b>:  The raw-text value to be used in the secret.
+- <b>`value`</b>: The raw-text value to be used in the secret.
 
 Return: A Secret instance with the given value.
 
@@ -547,8 +547,8 @@ It's meant to be used to represent the result of a table-like operation.
 
 **Args:**
 
-- <b>`columns`</b>:  The columns of the table.
-- <b>`rows`</b>:  The rows of the table.
+- <b>`columns`</b>: The columns of the table.
+- <b>`rows`</b>: The rows of the table.
 
 [**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/_table.py#L19)
 
@@ -585,7 +585,7 @@ Get a row from the table as a dictionary.
 
 **Args:**
 
-- <b>`index`</b>:  The index of the row to get.
+- <b>`index`</b>: The index of the row to get.
 
 **Returns:**
 The row at the given index as a dictionary.

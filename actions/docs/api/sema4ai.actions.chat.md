@@ -16,9 +16,9 @@ Set the content of a file to be used in the current chat.
 
 **Arguments:**
 
-- <b>`name`</b>:  Name of the file (must be a valid name to be used to save files in the filesystem).
-- <b>`data`</b>:  Raw content of the file.
-- <b>`content_type`</b>:  Content type (or mimetype) of the file.
+- <b>`name`</b>: Name of the file (must be a valid name to be used to save files in the filesystem).
+- <b>`data`</b>: Raw content of the file.
+- <b>`content_type`</b>: Content type (or mimetype) of the file.
 
 **Note:**
 
@@ -42,14 +42,14 @@ Get the content of a file in the current action chat.
 
 **Arguments:**
 
-- <b>`name`</b>:  Name of file.
+- <b>`name`</b>: Name of file.
 
 **Returns:**
 Raw content of the file
 
 **Raises:**
 
-- <b>`Exception`</b>:  If the file does not exist (or if it was not possible to retrieve it).
+- <b>`Exception`</b>: If the file does not exist (or if it was not possible to retrieve it).
 
 [**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/chat/__init__.py#L202)
 
@@ -65,9 +65,9 @@ Attaches a file to the current chat.
 
 **Arguments:**
 
-- <b>`path`</b>:  Path to the file which should be attached.
-- <b>`content_type`</b>:  Content type (or mimetype) of the file.
-- <b>`name`</b>:  Name of file (if not given the original name of the file will be used).
+- <b>`path`</b>: Path to the file which should be attached.
+- <b>`content_type`</b>: Content type (or mimetype) of the file.
+- <b>`name`</b>: Name of file (if not given the original name of the file will be used).
 
 **Note:**
 
@@ -91,8 +91,8 @@ Attach a file with JSON content to the current chat.
 
 **Arguments:**
 
-- <b>`name`</b>:  Name of the JSON file.
-- <b>`contents`</b>:  JSON-serializable content.
+- <b>`name`</b>: Name of the JSON file.
+- <b>`contents`</b>: JSON-serializable content.
 
 **Note:**
 
@@ -115,7 +115,7 @@ Get the JSON content of a file in the current action chat.
 
 **Arguments:**
 
-- <b>`name`</b>:  Name of the file with the JSON content to retrieve.
+- <b>`name`</b>: Name of the file with the JSON content to retrieve.
 
 **Returns:**
 Deserialized JSON content.
@@ -126,7 +126,7 @@ Deserialized JSON content.
 
 **Raises:**
 
-- <b>`Exception`</b>:  If the file does not exist (or if it was not possible to retrieve itor if the content is not valid JSON).
+- <b>`Exception`</b>: If the file does not exist (or if it was not possible to retrieve itor if the content is not valid JSON).
 
 [**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/chat/__init__.py#L301)
 
@@ -144,8 +144,8 @@ Attach a file with text content to the current chat.
 
 **Arguments:**
 
-- <b>`name`</b>:  Name of the text file.
-- <b>`contents`</b>:  Text content.
+- <b>`name`</b>: Name of the text file.
+- <b>`contents`</b>: Text content.
 
 **Note:**
 
@@ -165,14 +165,14 @@ Get the text content of a file in the current action chat.
 
 **Arguments:**
 
-- <b>`name`</b>:  Name of the file with the text content to retrieve.
+- <b>`name`</b>: Name of the file with the text content to retrieve.
 
 **Returns:**
 Text content of the file.
 
 **Raises:**
 
-- <b>`Exception`</b>:  If the file does not exist (or if it was not possible to retrieve itor if the content is not valid UTF-8).
+- <b>`Exception`</b>: If the file does not exist (or if it was not possible to retrieve itor if the content is not valid UTF-8).
 
 [**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/chat/__init__.py#L344)
 
@@ -188,14 +188,14 @@ Get the content of a file in the current action chat, saves it to a temporary fi
 
 **Arguments:**
 
-- <b>`name`</b>:  Name of the file to retrieve.
+- <b>`name`</b>: Name of the file to retrieve.
 
 **Returns:**
 Raw content of the file
 
 **Raises:**
 
-- <b>`Exception`</b>:  If the file does not exist.
+- <b>`Exception`</b>: If the file does not exist.
 
 [**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/chat/__init__.py#L258)
 

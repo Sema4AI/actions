@@ -8,10 +8,10 @@ def test_colect_tasks(datadir) -> None:
     from sema4ai.actions._collect_actions import collect_actions
     from sema4ai.actions._customization._plugin_manager import PluginManager
 
-    tasks = tuple(collect_actions(PluginManager(), datadir, "main"))
+    tasks = tuple(collect_actions(PluginManager(), datadir, "main", glob="*action*.py"))
     assert len(tasks) == 1, f"Found: {tasks}"
 
-    tasks = tuple(collect_actions(PluginManager(), datadir, ""))
+    tasks = tuple(collect_actions(PluginManager(), datadir, "", glob="*action*.py"))
     assert len(tasks) == 4
     assert {t.name for t in tasks} == {"main", "sub", "main_errors", "task_with_args"}
     name_to_action = dict((t.name, f"{t.module_name}.{t.name}") for t in tasks)
@@ -22,7 +22,9 @@ def test_colect_tasks(datadir) -> None:
         "task_with_args": "actions.task_with_args",
     }, f"Found: {name_to_action}"
 
-    tasks = tuple(collect_actions(PluginManager(), datadir, "not_there"))
+    tasks = tuple(
+        collect_actions(PluginManager(), datadir, "not_there", glob="*action*.py")
+    )
     assert len(tasks) == 0
 
 
@@ -30,7 +32,9 @@ def test_colect_tasks_from_package(datadir) -> None:
     from sema4ai.actions._collect_actions import collect_actions
     from sema4ai.actions._customization._plugin_manager import PluginManager
 
-    tasks = tuple(collect_actions(PluginManager(), datadir / "in_init"))
+    tasks = tuple(
+        collect_actions(PluginManager(), datadir / "in_init", glob="*action*.py")
+    )
     assert len(tasks) == 1, f"Found: {tasks}"
 
 
@@ -48,7 +52,9 @@ def test_collect_tasks_integrated(datadir) -> None:
     from robocorp.log import verify_log_messages_from_log_html
 
     result = sema4ai_actions_run(
-        ["run", str(datadir), "-a", "main"], returncode=0, cwd=datadir
+        ["run", str(datadir), "-a", "main", "--glob", "*action*.py"],
+        returncode=0,
+        cwd=datadir,
     )
 
     assert not result.stderr, f"Error with command line: {result.args}: {result.stderr.decode('utf-8', 'replace')}"
@@ -80,12 +86,16 @@ def test_list_tasks_api(datadir, tmpdir, data_regression) -> None:
 
     # List with the dir as a target
     result = sema4ai_actions_run(
-        ["list", str(datadir), "--skip-lint"], returncode=0, cwd=str(tmpdir)
+        ["list", str(datadir), "--skip-lint", "--glob", "*action*.py"],
+        returncode=0,
+        cwd=str(tmpdir),
     )
     check(result)
 
     # List without the dir as a target (must have the same output).
-    result = sema4ai_actions_run(["list", "--skip-lint"], returncode=0, cwd=datadir)
+    result = sema4ai_actions_run(
+        ["list", "--skip-lint", "--glob", "*action*.py"], returncode=0, cwd=datadir
+    )
     check(result)
 
 
@@ -93,7 +103,15 @@ def test_provide_output_in_stdout(datadir, tmpdir) -> None:
     from robocorp.log import verify_log_messages_from_decoded_str
 
     result = sema4ai_actions_run(
-        ["run", "-a=main", str(datadir), "--output", str(tmpdir)],
+        [
+            "run",
+            "-a=main",
+            str(datadir),
+            "--output",
+            str(tmpdir),
+            "--glob",
+            "*action*.py",
+        ],
         returncode=0,
         additional_env={"RC_LOG_OUTPUT_STDOUT": "1"},
     )
@@ -114,7 +132,15 @@ def test_error_in_stdout(datadir, tmpdir) -> None:
     from robocorp.log import verify_log_messages_from_decoded_str
 
     result = sema4ai_actions_run(
-        ["run", "-a=main_errors", str(datadir), "--output", str(tmpdir)],
+        [
+            "run",
+            "-a=main_errors",
+            str(datadir),
+            "--output",
+            str(tmpdir),
+            "--glob",
+            "*action*.py",
+        ],
         returncode=1,
         additional_env={"RC_LOG_OUTPUT_STDOUT": "1"},
     )
