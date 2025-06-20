@@ -466,12 +466,12 @@ def collect_actions(
                 # Use the new FindActionPaths class to find files
                 library_roots = _get_default_library_roots()
                 finder = FindActionPaths(path, globs, library_roots)
-                found_globs = list(finder)
-                found_globs = sorted(found_globs, key=lambda x: x.as_posix())
+                found_paths: list[Path] = list(finder)
+                found_paths = sorted(found_paths, key=lambda x: x.as_posix())
 
                 compiled_re = re.compile(_constants.REGEXP_TO_LOAD_FOR_DEFINITIONS)
 
-                for path_with_action in itertools.chain(lst, found_globs):
+                for path_with_action in itertools.chain(lst, found_paths):
                     if path_with_action.is_dir() or not path_with_action.name.endswith(
                         ".py"
                     ):
