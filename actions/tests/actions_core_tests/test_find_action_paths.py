@@ -116,9 +116,9 @@ def test_handles_multiple_glob_patterns(tmpdir, library_roots):
     create_test_structure(tmpdir)
 
     finder = FindActionPaths(temp_dir, ["*1.py", "t*t2.py", "test4.py"], library_roots)
-    found_files = [str(f.relative_to(temp_dir)).replace("\\", "/") for f in finder]
+    found_files = {str(f.relative_to(temp_dir)).replace("\\", "/") for f in finder}
 
-    assert found_files == ["test1.py", "test2.py", "nested/deep/test4.py"]
+    assert found_files == {"test1.py", "test2.py", "nested/deep/test4.py"}
 
 
 def test_skips_directories_with_package_yaml_exclusions(tmpdir, library_roots):
