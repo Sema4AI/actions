@@ -174,6 +174,8 @@ class FindActionPaths:
         for pattern in self.exclusion_patterns:
             if pattern.endswith("/**"):
                 pattern = pattern[:-3]
+            elif pattern.endswith("/*"):
+                pattern = pattern[:-2]
 
             if _glob_matches_path(relative_path_str, pattern):
                 return True

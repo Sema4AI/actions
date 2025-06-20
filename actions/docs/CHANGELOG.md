@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- The heuristics for finding actions/tools/etc. have been changed.
+- The heuristics for finding actions/tools/etc. have been changed (**Backward Incompatible change**).
   - The new heuristics are:
     - Any python file will now be considered for having an action defined in it.
     - Any python file which contains text such as `@action`, `@query`, `@tool`, `@resource`, `@prompt`, `DataSourceSpec` will be loaded for definitions.
