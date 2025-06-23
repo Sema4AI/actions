@@ -1,7 +1,6 @@
 # Changelog
 
 ## 2.0.0 - 2025-06-23
-
 - The heuristics for finding actions/tools/etc. have been changed (**Backward Incompatible change**).
   - The new heuristics are:
     - Any python file will now be considered for having an action defined in it.
