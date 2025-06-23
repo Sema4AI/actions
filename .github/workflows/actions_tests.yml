@@ -85,8 +85,7 @@ jobs:
         GITHUB_ACTIONS_MATRIX_NAME: ${{ matrix.name }}
         CI_CREDENTIALS: ${{ secrets.CI_CREDENTIALS }}
         CI_ENDPOINT: ${{ secrets.CI_ENDPOINT }}
-        ACTION_SERVER_TEST_ACCESS_CREDENTIALS: ${{ secrets.ACTION_SERVER_TEST_ACCESS_CREDENTIALS
-          }}
+        ACTION_SERVER_TEST_ACCESS_CREDENTIALS: ${{ secrets.ACTION_SERVER_TEST_ACCESS_CREDENTIALS }}
         ACTION_SERVER_TEST_HOSTNAME: ${{ secrets.ACTION_SERVER_TEST_HOSTNAME }}
       run: uv run --no-project --python ${{ matrix.python }} inv test
     - name: '`inv lint`, potentially fixed with `inv pretty`'
@@ -112,4 +111,3 @@ jobs:
 # make sure that you update the `_gen_workflows.py`
 # script to match the changes you made here
 # and rerun the script).
-
