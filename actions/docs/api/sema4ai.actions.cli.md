@@ -21,7 +21,7 @@ Entry point for running actions from sema4ai-actions.
 **Returns:**
 The exit code for the process.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/cli.py#L32)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/cli.py#L20)
 
 ```python
 main(
