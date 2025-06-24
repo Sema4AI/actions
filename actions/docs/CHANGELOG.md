@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+## 1.3.14 - 2025-06-23
+
+- Added the following functions to interact with agents:
+  - `get_all_agents()`: Fetch all available agents
+  - `get_agent_by_name()`: Find agents by their name
+  - `get_conversations()`: Retrieve all conversations for a specific agent
+  - `get_conversation()`: Get conversations by agent name and conversation name
+  - `get_conversation_messages()`: Fetch all messages from a specific conversation
+  - `create_conversation()`: Create new conversations for agent communication
+  - `send_message()`: Send messages to agents and receive the response
+
 ## 1.3.13 - 2025-06-17
 
 - Increased the maximum allowed docstring length from `300` to `1024` characters in the linting rules.
