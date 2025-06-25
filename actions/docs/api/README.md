@@ -5,6 +5,7 @@
 ## Modules
 
 - [`sema4ai.actions`](./sema4ai.actions.md#module-sema4aiactions): Sema4.ai Actions enables running your AI actions in the Sema4.ai Action Server.
+- [`sema4ai.actions.agent`](./sema4ai.actions.agent.md#module-sema4aiactionsagent)
 - [`sema4ai.actions.api`](./sema4ai.actions.api.md#module-sema4aiactionsapi): This module contains the public API for the actions.
 - [`sema4ai.actions.chat`](./sema4ai.actions.chat.md#module-sema4aiactionschat)
 - [`sema4ai.actions.cli`](./sema4ai.actions.cli.md#module-sema4aiactionscli)
@@ -20,6 +21,9 @@
 - [`_secret.Secret`](./sema4ai.actions._secret.md#class-secret): This class should be used to receive secrets.
 - [`_protocols.Status`](./sema4ai.actions._protocols.md#class-status): Action state
 - [`_table.Table`](./sema4ai.actions._table.md#class-table): Table is a simple data structure that represents a table with columns and rows.
+- [`agent.Agent`](./sema4ai.actions.agent.md#class-agent)
+- [`agent.AgentApiClientException`](./sema4ai.actions.agent.md#class-agentapiclientexception): Exception raised when the Agent API client encounters an error.
+- [`agent.Conversation`](./sema4ai.actions.agent.md#class-conversation)
 - [`api.DiagnosticsTypedDict`](./sema4ai.actions.api.md#class-diagnosticstypeddict)
 - [`api.PositionTypedDict`](./sema4ai.actions.api.md#class-positiontypeddict)
 - [`api.RangeTypedDict`](./sema4ai.actions.api.md#class-rangetypeddict)
@@ -33,6 +37,13 @@
 - [`actions.session_cache`](./sema4ai.actions.md#function-session_cache): Provides decorator which caches return and clears automatically when all
 - [`_fixtures.setup`](./sema4ai.actions._fixtures.md#function-setup): Run code before any actions start, or before each separate action.
 - [`_fixtures.teardown`](./sema4ai.actions._fixtures.md#function-teardown): Run code after actions have been run, or after each separate action.
+- [`agent.create_conversation`](./sema4ai.actions.agent.md#function-create_conversation): Creates a new conversation for communication with an agent.
+- [`agent.get_agent_by_name`](./sema4ai.actions.agent.md#function-get_agent_by_name): Fetches agents by name.
+- [`agent.get_all_agents`](./sema4ai.actions.agent.md#function-get_all_agents): Fetches a list of all available agents with their IDs and names.
+- [`agent.get_conversation`](./sema4ai.actions.agent.md#function-get_conversation): Fetches the conversation with the given name for an agent.
+- [`agent.get_conversation_messages`](./sema4ai.actions.agent.md#function-get_conversation_messages): Fetches all messages from a specific conversation.
+- [`agent.get_conversations`](./sema4ai.actions.agent.md#function-get_conversations): Fetches all conversations for an agent.
+- [`agent.send_message`](./sema4ai.actions.agent.md#function-send_message): Sends a message within a conversation and retrieves the agent's response.
 - [`api.collect_lint_errors`](./sema4ai.actions.api.md#function-collect_lint_errors): Provides lint errors from the contents of a file containing the `@action`s.
 - [`chat.attach_file`](./sema4ai.actions.chat.md#function-attach_file): Attaches a file to the current chat.
 - [`chat.attach_file_content`](./sema4ai.actions.chat.md#function-attach_file_content): Set the content of a file to be used in the current chat.

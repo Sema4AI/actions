@@ -17,7 +17,7 @@ class _AgentAPIClient:
     PID_FILE_NAME = "agent-server.pid"
     CONNECTION_TIMEOUT = 1
 
-    def __init__(self, api_key: str = None):
+    def __init__(self, api_key: str | None = None):
         """Initialize the AgentServerClient."""
         self.api_url = self._get_api_url()
         self.api_key = api_key
@@ -141,7 +141,11 @@ class _AgentAPIClient:
             )
 
     def request(
-        self, path: str, method="GET", json_data: dict = None, headers: dict = None
+        self,
+        path: str,
+        method="GET",
+        json_data: dict | None = None,
+        headers: dict | None = None,
     ) -> sema4ai_http.ResponseWrapper:
         """Make an API request with common error handling.
 
