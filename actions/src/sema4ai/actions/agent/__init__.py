@@ -24,7 +24,6 @@ class Conversation(BaseModel):
     id: str
     name: str
     agent_id: str
-    messages: list[dict] | None = None
 
 
 class _PaginatedResponse(BaseModel):
@@ -292,4 +291,7 @@ __all__ = [
     "get_conversation_messages",
     "create_conversation",
     "send_message",
+    "Agent",
+    "Conversation",
+    "AgentApiClientException",
 ]
