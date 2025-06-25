@@ -12,16 +12,16 @@ Entry point for running actions from sema4ai-actions.
 
 **Args:**
 
-- <b>`args`</b>:  The command line arguments.
+- <b>`args`</b>: The command line arguments.
 
-- <b>`exit`</b>:  Determines if the process should exit right after executing the command.
+- <b>`exit`</b>: Determines if the process should exit right after executing the command.
 
-- <b>`plugin_manager`</b>:  Provides a way to customize internal functionality (should not be used by external clients in general).
+- <b>`plugin_manager`</b>: Provides a way to customize internal functionality (should not be used by external clients in general).
 
 **Returns:**
 The exit code for the process.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/cli.py#L32)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/cli.py#L20)
 
 ```python
 main(

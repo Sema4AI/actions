@@ -12,6 +12,15 @@
   - `get_conversation_messages()`: Fetch all messages from a specific conversation
   - `create_conversation()`: Create new conversations for agent communication
   - `send_message()`: Send messages to agents and receive the response
+- The heuristics for finding actions/tools/etc. have been changed (**Backward Incompatible change**).
+  - The new heuristics are:
+    - Any python file will now be considered for having an action defined in it.
+    - Any python file which contains text such as `@action`, `@query`, `@tool`, `@resource`, `@prompt`, `DataSourceSpec` will be loaded for definitions.
+    - Directories that are considered to be "python library" directories will be ignored (for instance, `site-packages`, `lib/python`, etc).
+    - Directories or files which match the `packaging/exclude` rules from `package.yaml` will be ignored.
+  - It's still possible to pass a `--glob` argument, which (if given) will be used as a whitelist to accept a file.
+  - **Note**: the previous heuristics was: all folders were checked recursively and for any file which matched `"*action*.py|*query*.py|*queries*.py|*predict*.py|*datasource*.py|*data_source*.py"` was loaded for actions by default.
+- No longer calling `truststore.inject_into_ssl()` automatically (`sema4ai-http` should be used instead or clients that need it can do it explicitly) -- **Backward Incompatible change**.
 
 ## 1.3.13 - 2025-06-17
 

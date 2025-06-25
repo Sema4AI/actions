@@ -15,9 +15,6 @@ from sema4ai_http.types import NetworkConfigType, ProfileType
 
 _DEFAULT_LOGGER = logging.getLogger(__name__)
 
-if typing.TYPE_CHECKING:
-    import ssl
-
 
 _TYPE_BODY = typing.Union[bytes, typing.IO[typing.Any], typing.Iterable[bytes], str]
 

@@ -14,7 +14,6 @@ def _fix_file(entry):
         None,
         "my_module*.py",
         "*.py",
-        "**/*.py",  # ** is accepted, but not really required (it's always an rglob).
         "another_module.py",
         "my_action.py|another_module.py",
     ],
