@@ -19,7 +19,7 @@ Creates a new conversation for communication with an agent.
 **Returns:**
 The created conversation.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L186)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L173)
 
 ```python
 create_conversation(
@@ -42,7 +42,7 @@ Fetches a list of all available agents with their IDs and names.
 **Returns:**
 The list of all agents.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L71)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L64)
 
 ```python
 get_all_agents(sema4_api_key: str | None = None) → list[Agent]
@@ -62,7 +62,7 @@ Fetches the agent that matches the name.
 **Returns:**
 The agent that matches the given name.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L86)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L79)
 
 ```python
 get_agent_by_name(name: str, sema4_api_key: str | None = None) → Agent | None
@@ -82,7 +82,7 @@ Fetches all conversations for an agent.
 **Returns:**
 The list of conversations for the agent.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L104)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L97)
 
 ```python
 get_conversations(
@@ -106,7 +106,7 @@ Fetches the conversation with the given name for an agent.
 **Returns:**
 The conversation with the given name.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L125)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L118)
 
 ```python
 get_conversation(
@@ -131,7 +131,7 @@ Fetches all messages from a specific conversation.
 **Returns:**
 The list of messages in the conversation.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L158)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L151)
 
 ```python
 get_conversation_messages(
@@ -157,7 +157,7 @@ Sends a message within a conversation and retrieves the agent's response.
 **Returns:**
 Response containing either the agent's response or an error message
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L215)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L202)
 
 ```python
 send_message(

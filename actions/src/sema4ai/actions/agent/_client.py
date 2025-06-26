@@ -117,10 +117,15 @@ class _AgentAPIClient:
         # Determine OS-specific path
         if platform.system() == "Windows":
             # Windows path: C:\Users\<username>\AppData\Local\sema4ai\sema4ai-studio\agent-server.pid
+            local_app_data = os.environ.get("LOCALAPPDATA")
+            if not local_app_data:
+                # Fallback to default Windows AppData path
+                local_app_data = os.path.join(
+                    os.path.expanduser("~"), "AppData", "Local"
+                )
+
             return os.path.join(
-                os.environ.get("LOCALAPPDATA"),
-                "AppData",
-                "Local",
+                local_app_data,
                 "sema4ai",
                 "sema4ai-studio",
                 self.PID_FILE_NAME,
