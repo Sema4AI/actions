@@ -6,7 +6,7 @@
 
 - Added the following functions to interact with agents:
   - `get_all_agents()`: Fetch all available agents
-  - `get_agent_by_name()`: Find agents by their name
+  - `get_agent_by_name()`: Find the agent that matches the given name
   - `get_conversations()`: Retrieve all conversations for a specific agent
   - `get_conversation()`: Get conversations by agent name and conversation name
   - `get_conversation_messages()`: Fetch all messages from a specific conversation

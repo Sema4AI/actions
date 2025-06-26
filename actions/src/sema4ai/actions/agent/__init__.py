@@ -1,17 +1,12 @@
 import json
 import logging
+from urllib.parse import urljoin
 
 from pydantic import BaseModel
 
-from sema4ai.actions.agent._client import _AgentAPIClient
+from sema4ai.actions.agent._client import AgentApiClientException, _AgentAPIClient
 
 log = logging.getLogger(__name__)
-
-
-class AgentApiClientException(Exception):
-    """Exception raised when the Agent API client encounters an error."""
-
-    pass
 
 
 class Agent(BaseModel):
@@ -27,12 +22,6 @@ class Conversation(BaseModel):
     agent_id: str
 
 
-class _PaginatedResponse(BaseModel):
-    data: list
-    next: str | None = None
-    has_more: bool = False
-
-
 def _get_all_pages(client: _AgentAPIClient, endpoint: str) -> list:
     all_data = []
     next_token = None
@@ -40,24 +29,22 @@ def _get_all_pages(client: _AgentAPIClient, endpoint: str) -> list:
     while True:
         paginated_endpoint = endpoint
         if next_token:
-            paginated_endpoint = f"{endpoint}&next={next_token}"
+            paginated_endpoint = f"{endpoint}?next={next_token}"
 
         response = client.request(paginated_endpoint)
         response_json = response.json()
 
-        paginated_response = _PaginatedResponse.model_validate(response_json)
-
-        all_data.extend(paginated_response.data)
-        if not paginated_response.next or not paginated_response.has_more:
+        all_data.extend(response_json.get("data", response_json.get("messages", [])))
+        if not response_json.get("next"):
             break
 
-        next_token = paginated_response.next
+        next_token = response_json.get("next")
 
     return all_data
 
 
 def _get_conversations(client: _AgentAPIClient, endpoint: str) -> list[Conversation]:
-    full_url = f"{client.api_url}/{endpoint}"
+    full_url = urljoin(client.api_url, endpoint)
     log.info(f"Agent Server API Call URL: {full_url}")
 
     return [
@@ -67,7 +54,7 @@ def _get_conversations(client: _AgentAPIClient, endpoint: str) -> list[Conversat
 
 
 def _get_agents(client: _AgentAPIClient, endpoint: str) -> list[Agent]:
-    full_url = f"{client.api_url}/{endpoint}"
+    full_url = urljoin(client.api_url, endpoint)
     log.info(f"Agent Server API Call URL: {full_url}")
 
     all_agents = _get_all_pages(client, endpoint)
@@ -89,20 +76,22 @@ def get_all_agents(sema4_api_key: str | None = None) -> list[Agent]:
     return _get_agents(client, "agents")
 
 
-def get_agent_by_name(name: str, sema4_api_key: str | None = None) -> list[Agent]:
-    """Fetches agents by name.
+def get_agent_by_name(name: str, sema4_api_key: str | None = None) -> Agent | None:
+    """Fetches the agent that matches the name.
 
     Args:
         name: The name of the agent
         sema4_api_key: The API key for the Sema4 API if running in cloud. Leave empty if in Studio or SDK!
 
     Returns:
-        The list of agents that matches the given name.
+        The agent that matches the given name.
     """
     # Initialize client with API key if provided
     client = _AgentAPIClient(api_key=sema4_api_key)
 
-    return _get_agents(client, f"agents/?name={name}")
+    agents = _get_agents(client, "agents")
+
+    return next((agent for agent in agents if agent.name == name), None)
 
 
 def get_conversations(
@@ -120,14 +109,15 @@ def get_conversations(
     client = _AgentAPIClient(api_key=sema4_api_key)
 
     endpoint = f"agents/{agent_id}/conversations"
-    log.info(f"Agent Server API Call URL: {endpoint}")
+    full_url = urljoin(client.api_url, endpoint)
+    log.info(f"Agent Server API Call URL: {full_url}")
 
     return _get_conversations(client, endpoint)
 
 
 def get_conversation(
     agent_name: str, conversation_name: str, sema4_api_key: str | None = None
-) -> list[Conversation]:
+) -> Conversation | None:
     """Fetches the conversation with the given name for an agent.
 
     Args:
@@ -136,7 +126,7 @@ def get_conversation(
         sema4_api_key: The API key for the Sema4 API if running in cloud. Leave empty if in Studio or SDK!
 
     Returns:
-        The list of conversations with the given name.
+        The conversation with the given name.
     """
     client = _AgentAPIClient(api_key=sema4_api_key)
 
@@ -144,16 +134,18 @@ def get_conversation(
     if not agent_result:
         raise AgentApiClientException(f"No agent found with name '{agent_name}'")
 
-    if len(agent_result) > 1:
-        raise AgentApiClientException(
-            f"Multiple agents found with name '{agent_name}': {','.join([agent.name for agent in agent_result])}"
-        )
-
-    agent_id = agent_result[0].id
-    endpoint = f"agents/{agent_id}/conversations?name={conversation_name}"
+    agent_id = agent_result.id
+    endpoint = f"agents/{agent_id}/conversations"
     conversations = _get_conversations(client, endpoint)
 
-    return conversations
+    return next(
+        (
+            conversation
+            for conversation in conversations
+            if conversation_name == conversation.name
+        ),
+        None,
+    )
 
 
 def get_conversation_messages(
@@ -172,13 +164,10 @@ def get_conversation_messages(
     client = _AgentAPIClient(api_key=sema4_api_key)
 
     endpoint = f"agents/{agent_id}/conversations/{conversation_id}/messages"
-    full_url = f"{client.api_url}/{endpoint}"
+    full_url = urljoin(client.api_url, endpoint)
     log.info(f"Agent Server API Call URL: {full_url}")
 
-    response = client.request(endpoint)
-    response_json = response.json()
-
-    return response_json.get("messages", [])
+    return _get_all_pages(client, endpoint)
 
 
 def create_conversation(
@@ -197,7 +186,7 @@ def create_conversation(
     client = _AgentAPIClient(api_key=sema4_api_key)
 
     endpoint = f"agents/{agent_id}/conversations"
-    full_url = f"{client.api_url}/{endpoint}"
+    full_url = urljoin(client.api_url, endpoint)
     log.info(f"Agent Server API Call URL: {full_url}")
 
     response = client.request(
@@ -251,9 +240,8 @@ def send_message(
     # Construct the endpoint with the provided agent_id and extracted conversation_id
     endpoint = f"agents/{agent_id}/conversations/{conversation_id_only}/messages"
 
-    full_url = f"{client.api_url}/{endpoint}"
+    full_url = urljoin(client.api_url, endpoint)
     log.info(f"Agent Server API Call URL: {full_url}")
-
     response = client.request(
         endpoint,
         method="POST",
@@ -263,7 +251,7 @@ def send_message(
     response_json = response.json()
     log.info(f"Response from send_message: {response_json}")
 
-    messages = response_json.get("messages", [])
+    messages = response_json.get("data", response_json.get("messages", []))
     if messages:
         for msg in reversed(messages):
             if msg.get("role") == "agent":

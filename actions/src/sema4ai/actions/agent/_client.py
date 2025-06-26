@@ -10,28 +10,20 @@ import sema4ai_http
 log = logging.getLogger(__name__)
 
 
+class AgentApiClientException(Exception):
+    """Exception raised when the Agent API client encounters an error."""
+
+
 class _AgentAPIClient:
-    API_ENDPOINT_VERSIONS = ["v1", "v2"]
-    API_PATH_PREFIX = "api/public"
-    ENV_VAR_NAME = "SEMA4AI_AGENTS_SERVICE_URL"
     PID_FILE_NAME = "agent-server.pid"
-    CONNECTION_TIMEOUT = 1
 
     def __init__(self, api_key: str | None = None):
         """Initialize the AgentServerClient."""
-        self.api_url = self._get_api_url()
         self.api_key = api_key
+        self.api_url = self._get_api_url()
+        self.is_v2 = "v2" in self.api_url
+
         log.info(f"API URL: {self.api_url}")
-
-        # Determine if we're running in cloud environment
-        self.is_cloud = self._is_cloud_environment()
-
-        if self.is_cloud:
-            log.info("Running in cloud environment - will use Bearer authentication")
-        else:
-            log.info("Running in local environment - no authentication required")
-
-        self._check_health()
 
     def _get_api_url(self) -> str:
         """Determine the correct API URL by checking environment variable or agent-server.pid file
@@ -57,7 +49,7 @@ class _AgentAPIClient:
         raise ValueError("Could not connect to agent server")
 
     def _try_get_url_from_environment(self) -> str | None:
-        env_url = os.getenv(self.ENV_VAR_NAME)
+        env_url = os.getenv("SEMA4AI_API_V1_URL")
         if not env_url:
             return None
 
@@ -91,9 +83,14 @@ class _AgentAPIClient:
         Returns:
             str | None: Working API URL if found, None otherwise
         """
-        for version in self.API_ENDPOINT_VERSIONS:
-            endpoint_url = f"{base_url}/{self.API_PATH_PREFIX}/{version}"
-            if self._is_url_accessible(endpoint_url):
+        for version in ["v1", "v2"]:
+            endpoint_url = f"{base_url}/api/public/{version}"
+
+            test_endpoint = f"{endpoint_url}/agents"
+            if version == "v2":
+                test_endpoint += "/"
+
+            if self._is_url_accessible(test_endpoint):
                 return endpoint_url
         return None
 
@@ -103,7 +100,10 @@ class _AgentAPIClient:
             if parsed_url.scheme not in ("http", "https"):
                 return False
 
-            sema4ai_http.get(url, timeout=self.CONNECTION_TIMEOUT)
+            headers = (
+                {"Authorization": f"Bearer {self.api_key}"} if self.api_key else None
+            )
+            sema4ai_http.get(url, headers=headers, timeout=1).raise_for_status()
             return True
         except Exception:
             return False
@@ -114,13 +114,11 @@ class _AgentAPIClient:
         Returns:
             str: Path to the PID file
         """
-        home_dir = os.path.expanduser("~")
-
         # Determine OS-specific path
         if platform.system() == "Windows":
             # Windows path: C:\Users\<username>\AppData\Local\sema4ai\sema4ai-studio\agent-server.pid
             return os.path.join(
-                home_dir,
+                os.environ.get("LOCALAPPDATA"),
                 "AppData",
                 "Local",
                 "sema4ai",
@@ -130,14 +128,10 @@ class _AgentAPIClient:
         else:
             # macOS/Linux path: ~/.sema4ai/sema4ai-studio/agent-server.pid
             return os.path.join(
-                home_dir, ".sema4ai", "sema4ai-studio", self.PID_FILE_NAME
-            )
-
-    def _check_health(self) -> None:
-        response = self.request(path="ok", method="GET")
-        if response.status_code != 200:
-            raise ValueError(
-                f"Failed to connect to the Sema4 Agent API: {response.status_code} {response.text}"
+                os.path.expanduser("~"),
+                ".sema4ai",
+                "sema4ai-studio",
+                self.PID_FILE_NAME,
             )
 
     def request(
@@ -159,15 +153,21 @@ class _AgentAPIClient:
             sema4ai_http.ResponseWrapper object
 
         Raises:
-           urllib3.exceptions.ConnectionError: If the request fails or returns an error status
+           ValueError: for unsupported HTTP methods
+           AgentApiClientException: for HTTP errors
+           ConnectionError: If the request fails
         """
         url = urljoin(self.api_url + "/", path)
 
-        # Initialize headers
+        # NOTE: We only do this for backwards compatibility with the old API (only for local endpoint).
+        # The new endpoint is actually V1.
+        parsed_url = urlparse(self.api_url)
+        if self.is_v2 and parsed_url.scheme == "http" and not url.endswith("/"):
+            url += "/"
+
         request_headers = copy(headers) if headers else {}
 
-        # Add Bearer token for cloud environments if API key is provided
-        if self.is_cloud and self.api_key:
+        if self.api_key:
             request_headers["Authorization"] = f"Bearer {self.api_key}"
 
         if method == "GET":
@@ -179,18 +179,13 @@ class _AgentAPIClient:
         else:
             raise ValueError(f"Unsupported HTTP method: {method}")
 
-        response.raise_for_status()
+        if response.status_code not in (200, 201):
+            error_msg = f"HTTP {response.status_code}"
+            if response.text:
+                error_msg += f": {response.text}"
+            else:
+                error_msg += f": {response.reason or 'Unknown error'}"
+
+            raise AgentApiClientException(error_msg)
 
         return response
-
-    def _is_cloud_environment(self) -> bool:
-        """Determine if we're running in a cloud environment based on URL patterns.
-
-        Returns:
-            bool: True if running in cloud, False otherwise
-        """
-        if not self.api_url:
-            raise ValueError("No API URL detected - cannot determine environment")
-
-        parsed_url = urlparse(self.api_url)
-        return parsed_url.scheme == "https" or "router.ten" in parsed_url.netloc

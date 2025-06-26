@@ -22,7 +22,7 @@
 - [`_protocols.Status`](./sema4ai.actions._protocols.md#class-status): Action state
 - [`_table.Table`](./sema4ai.actions._table.md#class-table): Table is a simple data structure that represents a table with columns and rows.
 - [`agent.Agent`](./sema4ai.actions.agent.md#class-agent)
-- [`agent.AgentApiClientException`](./sema4ai.actions.agent.md#class-agentapiclientexception): Exception raised when the Agent API client encounters an error.
+- [`_client.AgentApiClientException`](./sema4ai.actions.agent._client.md#class-agentapiclientexception): Exception raised when the Agent API client encounters an error.
 - [`agent.Conversation`](./sema4ai.actions.agent.md#class-conversation)
 - [`api.DiagnosticsTypedDict`](./sema4ai.actions.api.md#class-diagnosticstypeddict)
 - [`api.PositionTypedDict`](./sema4ai.actions.api.md#class-positiontypeddict)
@@ -38,7 +38,7 @@
 - [`_fixtures.setup`](./sema4ai.actions._fixtures.md#function-setup): Run code before any actions start, or before each separate action.
 - [`_fixtures.teardown`](./sema4ai.actions._fixtures.md#function-teardown): Run code after actions have been run, or after each separate action.
 - [`agent.create_conversation`](./sema4ai.actions.agent.md#function-create_conversation): Creates a new conversation for communication with an agent.
-- [`agent.get_agent_by_name`](./sema4ai.actions.agent.md#function-get_agent_by_name): Fetches agents by name.
+- [`agent.get_agent_by_name`](./sema4ai.actions.agent.md#function-get_agent_by_name): Fetches the agent that matches the name.
 - [`agent.get_all_agents`](./sema4ai.actions.agent.md#function-get_all_agents): Fetches a list of all available agents with their IDs and names.
 - [`agent.get_conversation`](./sema4ai.actions.agent.md#function-get_conversation): Fetches the conversation with the given name for an agent.
 - [`agent.get_conversation_messages`](./sema4ai.actions.agent.md#function-get_conversation_messages): Fetches all messages from a specific conversation.
