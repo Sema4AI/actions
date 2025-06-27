@@ -3,6 +3,7 @@ import logging
 from urllib.parse import urljoin
 
 from pydantic import BaseModel
+
 from sema4ai.actions.agent._client import AgentApiClientException, _AgentAPIClient
 
 log = logging.getLogger(__name__)
