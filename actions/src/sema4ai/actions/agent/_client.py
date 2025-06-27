@@ -7,6 +7,8 @@ from urllib.parse import urljoin, urlparse
 
 import sema4ai_http
 
+from sema4ai.actions._action import get_x_action_invocation_context
+
 log = logging.getLogger(__name__)
 
 
@@ -17,9 +19,8 @@ class AgentApiClientException(Exception):
 class _AgentAPIClient:
     PID_FILE_NAME = "agent-server.pid"
 
-    def __init__(self, api_key: str | None = None):
+    def __init__(self):
         """Initialize the AgentServerClient."""
-        self.api_key = api_key
         self.api_url = self._get_api_url()
         self.is_v2 = "v2" in self.api_url
 
@@ -100,9 +101,7 @@ class _AgentAPIClient:
             if parsed_url.scheme not in ("http", "https"):
                 return False
 
-            headers = (
-                {"Authorization": f"Bearer {self.api_key}"} if self.api_key else None
-            )
+            headers = {"x-action-invocation-context": get_x_action_invocation_context()}
             sema4ai_http.get(url, headers=headers, timeout=1).raise_for_status()
             return True
         except Exception:
@@ -162,7 +161,10 @@ class _AgentAPIClient:
            AgentApiClientException: for HTTP errors
            ConnectionError: If the request fails
         """
-        url = urljoin(self.api_url + "/", path)
+        url = self.api_url
+        if not url.endswith("/"):
+            url += "/"
+        url = urljoin(url, path)
 
         # NOTE: We only do this for backwards compatibility with the old API (only for local endpoint).
         # The new endpoint is actually V1.
@@ -172,8 +174,9 @@ class _AgentAPIClient:
 
         request_headers = copy(headers) if headers else {}
 
-        if self.api_key:
-            request_headers["Authorization"] = f"Bearer {self.api_key}"
+        request_headers[
+            "x-action-invocation-context"
+        ] = get_x_action_invocation_context()
 
         if method == "GET":
             response = sema4ai_http.get(url, json=json_data, headers=request_headers)

@@ -44,15 +44,6 @@ files will be stored to or accessed from."""
     def is_local_mode(self) -> bool:
         return self._is_local_mode
 
-    def get_x_action_invocation_context(self) -> str:
-        from sema4ai.actions._action import get_current_requests_contexts
-
-        request_contexts = get_current_requests_contexts()
-        if request_contexts is None or request_contexts.invocation_context is None:
-            return "{}"  # The value is the x-action-invocation-context to be used in the header
-
-        return request_contexts.invocation_context.initial_data
-
     def get_bytes(self, filename: str, thread_id: str) -> bytes:
         import os.path
         from pathlib import Path
@@ -81,11 +72,12 @@ files will be stored to or accessed from."""
             import urllib
 
             import sema4ai_http
+            from sema4ai.actions._action import get_x_action_invocation_context
 
             url = f"{self._url}/threads/{thread_id}/file-by-ref"
             headers = {
                 "Content-Type": "application/json",
-                "x-action-invocation-context": self.get_x_action_invocation_context(),
+                "x-action-invocation-context": get_x_action_invocation_context(),
             }
 
             # Send the initial request
@@ -169,11 +161,12 @@ files will be stored to or accessed from."""
             import urllib
 
             import sema4ai_http
+            from sema4ai.actions._action import get_x_action_invocation_context
 
             url = f"{self._url}/threads/{thread_id}/files/request-upload"
             headers = {
                 "Content-Type": "application/json",
-                "x-action-invocation-context": self.get_x_action_invocation_context(),
+                "x-action-invocation-context": get_x_action_invocation_context(),
             }
             data = json.dumps(
                 {"file_name": filename, "file_size": len(content)}
@@ -229,7 +222,7 @@ files will be stored to or accessed from."""
             url = f"{self._url}/threads/{thread_id}/files/confirm-upload"
             headers = {
                 "Content-Type": "application/json",
-                "x-action-invocation-context": self.get_x_action_invocation_context(),
+                "x-action-invocation-context": get_x_action_invocation_context(),
             }
             data = json.dumps({"file_ref": file_ref, "file_id": file_id}).encode(
                 "utf-8"

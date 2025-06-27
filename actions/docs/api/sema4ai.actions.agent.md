@@ -14,19 +14,14 @@ Creates a new conversation for communication with an agent.
 
 - <b>`agent_id`</b>: The id of the agent to create conversation with
 - <b>`conversation_name`</b>: The name of the conversation to be created
-- <b>`sema4_api_key`</b>: The API key for the Sema4 API if running in cloud. Use LOCAL if in Studio or SDK!
 
 **Returns:**
 The created conversation.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L173)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L157)
 
 ```python
-create_conversation(
-    agent_id: str,
-    conversation_name: str,
-    sema4_api_key: str | None = None
-) → Conversation
+create_conversation(agent_id: str, conversation_name: str) → Conversation
 ```
 
 ______________________________________________________________________
@@ -35,17 +30,13 @@ ______________________________________________________________________
 
 Fetches a list of all available agents with their IDs and names.
 
-**Args:**
-
-- <b>`sema4_api_key`</b>: The API key for the Sema4 API if running in cloud. Leave empty if in Studio or SDK!
-
 **Returns:**
 The list of all agents.
 
 [**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L64)
 
 ```python
-get_all_agents(sema4_api_key: str | None = None) → list[Agent]
+get_all_agents() → list[Agent]
 ```
 
 ______________________________________________________________________
@@ -57,15 +48,14 @@ Fetches the agent that matches the name.
 **Args:**
 
 - <b>`name`</b>: The name of the agent
-- <b>`sema4_api_key`</b>: The API key for the Sema4 API if running in cloud. Leave empty if in Studio or SDK!
 
 **Returns:**
 The agent that matches the given name.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L79)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L75)
 
 ```python
-get_agent_by_name(name: str, sema4_api_key: str | None = None) → Agent | None
+get_agent_by_name(name: str) → Agent | None
 ```
 
 ______________________________________________________________________
@@ -77,18 +67,14 @@ Fetches all conversations for an agent.
 **Args:**
 
 - <b>`agent_id`</b>: The ID of the agent
-- <b>`sema4_api_key`</b>: The API key for the Sema4 API if running in cloud. Leave empty if in Studio or SDK!
 
 **Returns:**
 The list of conversations for the agent.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L97)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L90)
 
 ```python
-get_conversations(
-    agent_id: str,
-    sema4_api_key: str | None = None
-) → list[Conversation]
+get_conversations(agent_id: str) → list[Conversation]
 ```
 
 ______________________________________________________________________
@@ -101,19 +87,14 @@ Fetches the conversation with the given name for an agent.
 
 - <b>`agent_name`</b>: The name of the agent
 - <b>`conversation_name`</b>: The name of the conversation
-- <b>`sema4_api_key`</b>: The API key for the Sema4 API if running in cloud. Leave empty if in Studio or SDK!
 
 **Returns:**
 The conversation with the given name.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L118)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L108)
 
 ```python
-get_conversation(
-    agent_name: str,
-    conversation_name: str,
-    sema4_api_key: str | None = None
-) → Conversation | None
+get_conversation(agent_name: str, conversation_name: str) → Conversation | None
 ```
 
 ______________________________________________________________________
@@ -126,19 +107,14 @@ Fetches all messages from a specific conversation.
 
 - <b>`agent_id`</b>: The ID of the agent
 - <b>`conversation_id`</b>: The ID of the conversation
-- <b>`sema4_api_key`</b>: The API key for the Sema4 API if running in cloud. Use LOCAL if in Studio or SDK!
 
 **Returns:**
 The list of messages in the conversation.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L151)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L138)
 
 ```python
-get_conversation_messages(
-    agent_id: str,
-    conversation_id: str,
-    sema4_api_key: str | None = None
-) → list[dict]
+get_conversation_messages(agent_id: str, conversation_id: str) → list[dict]
 ```
 
 ______________________________________________________________________
@@ -152,20 +128,14 @@ Sends a message within a conversation and retrieves the agent's response.
 - <b>`conversation_id`</b>: The ID of the conversation
 - <b>`agent_id`</b>: The ID of the agent to send message to
 - <b>`message`</b>: The message content to send
-- <b>`sema4_api_key`</b>: The API key for the Sema4 API if running in cloud. Use LOCAL if in Studio or SDK!
 
 **Returns:**
 Response containing either the agent's response or an error message
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L202)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L182)
 
 ```python
-send_message(
-    conversation_id: str,
-    agent_id: str,
-    message: str,
-    sema4_api_key: str | None = None
-) → str
+send_message(conversation_id: str, agent_id: str, message: str) → str
 ```
 
 ______________________________________________________________________
