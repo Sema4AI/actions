@@ -16,7 +16,7 @@ Creates a new conversation for communication with an agent.
 - <b>`conversation_name`</b>: The name of the conversation to be created
 
 **Returns:**
-The created conversation.
+The created conversation object.
 
 [**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L157)
 

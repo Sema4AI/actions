@@ -162,7 +162,7 @@ def create_conversation(agent_id: str, conversation_name: str) -> Conversation:
         conversation_name: The name of the conversation to be created
 
     Returns:
-        The created conversation.
+        The created conversation object.
     """
     client = _AgentAPIClient()
 

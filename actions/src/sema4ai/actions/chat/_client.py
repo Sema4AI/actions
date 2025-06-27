@@ -72,6 +72,7 @@ files will be stored to or accessed from."""
             import urllib
 
             import sema4ai_http
+
             from sema4ai.actions._action import get_x_action_invocation_context
 
             url = f"{self._url}/threads/{thread_id}/file-by-ref"
@@ -161,6 +162,7 @@ files will be stored to or accessed from."""
             import urllib
 
             import sema4ai_http
+
             from sema4ai.actions._action import get_x_action_invocation_context
 
             url = f"{self._url}/threads/{thread_id}/files/request-upload"

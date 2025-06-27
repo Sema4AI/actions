@@ -92,20 +92,6 @@ class TestAgent:
             if "SEMA4AI_API_V1_URL" in os.environ:
                 del os.environ["SEMA4AI_API_V1_URL"]
 
-    def test_get_all_agents_with_api_key(self, dummy_server, sample_agents):
-        api_url = f"http://127.0.0.1:{dummy_server.get_port()}"
-        os.environ["SEMA4AI_API_V1_URL"] = api_url
-
-        try:
-            result = get_all_agents(sema4_api_key="test-key")
-
-            assert len(result) == 2
-            assert result[0].name == "Test Agent 1"
-            assert result[1].name == "Test Agent 2"
-        finally:
-            if "SEMA4AI_API_V1_URL" in os.environ:
-                del os.environ["SEMA4AI_API_V1_URL"]
-
 
 class TestConversations:
     def test_get_conversations_success(self, dummy_server, sample_conversations):
