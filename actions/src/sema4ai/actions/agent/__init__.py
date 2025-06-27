@@ -3,7 +3,6 @@ import logging
 from urllib.parse import urljoin
 
 from pydantic import BaseModel
-
 from sema4ai.actions.agent._client import AgentApiClientException, _AgentAPIClient
 
 log = logging.getLogger(__name__)
@@ -228,7 +227,24 @@ def send_message(conversation_id: str, agent_id: str, message: str) -> str:
     response_json = response.json()
     log.info(f"Response from send_message: {response_json}")
 
-    messages = response_json.get("data", response_json.get("messages", []))
+    # Handle different response formats:
+    # 1. Wrapped in 'data' field: {"data": [...messages...]}
+    # 2. Direct list of messages: [...messages...]
+    # 3. Single message response: {"id": "...", "content": "..."}
+    # 4. Full conversation object: {"id": "...", "messages": [...messages...]}
+    messages = []
+    if isinstance(response_json, dict):
+        if "data" in response_json:
+            messages = response_json["data"]
+        elif "messages" in response_json:
+            # This is a full conversation object with messages
+            messages = response_json["messages"]
+        elif "content" in response_json:
+            # Single message response
+            return response_json.get("content", "")
+    elif isinstance(response_json, list):
+        messages = response_json
+
     if messages:
         for msg in reversed(messages):
             if msg.get("role") == "agent":
