@@ -445,6 +445,35 @@ class ClientCapabilitiesRootsParams(MCPBaseModel):
         return cls(**kwargs)
 
 
+# Type alias for clientnotification
+ClientNotification = (
+    CancelledNotification
+    | InitializedNotification
+    | ProgressNotification
+    | RootsListChangedNotification
+)
+
+# Type alias for clientrequest
+ClientRequest = (
+    InitializeRequest
+    | PingRequest
+    | ListResourcesRequest
+    | ListResourceTemplatesRequest
+    | ReadResourceRequest
+    | SubscribeRequest
+    | UnsubscribeRequest
+    | ListPromptsRequest
+    | GetPromptRequest
+    | ListToolsRequest
+    | CallToolRequest
+    | SetLevelRequest
+    | CompleteRequest
+)
+
+# Type alias for clientresult
+ClientResult = Result | CreateMessageResult | ListRootsResult | ElicitResult
+
+
 @dataclass
 class CompleteRequest(MCPBaseModel):
     """A request from the client to the server, to ask for completion options."""
@@ -668,9 +697,10 @@ class CompleteResultCompletionParams(MCPBaseModel):
         return cls(**kwargs)
 
 
-@dataclass
-class ContentBlock(MCPBaseModel):
-    value: Any = field(default=None)
+# Type alias for contentblock
+ContentBlock = (
+    TextContent | ImageContent | AudioContent | ResourceLink | EmbeddedResource
+)
 
 
 @dataclass
@@ -1583,6 +1613,10 @@ class JSONRPCErrorErrorParams(MCPBaseModel):
         kwargs["message"] = value
 
         return cls(**kwargs)
+
+
+# Type alias for jsonrpcmessage
+JSONRPCMessage = JSONRPCRequest | JSONRPCNotification | JSONRPCResponse | JSONRPCError
 
 
 @dataclass
@@ -2697,6 +2731,10 @@ class PingRequestParams_meta(MCPBaseModel):
         kwargs["progressToken"] = value
 
         return cls(**kwargs)
+
+
+# Type alias for primitiveschemadefinition
+PrimitiveSchemaDefinition = StringSchema | NumberSchema | BooleanSchema | EnumSchema
 
 
 @dataclass
@@ -3830,6 +3868,35 @@ class ServerCapabilitiesToolsParams(MCPBaseModel):
         kwargs["listChanged"] = value
 
         return cls(**kwargs)
+
+
+# Type alias for servernotification
+ServerNotification = (
+    CancelledNotification
+    | ProgressNotification
+    | ResourceListChangedNotification
+    | ResourceUpdatedNotification
+    | PromptListChangedNotification
+    | ToolListChangedNotification
+    | LoggingMessageNotification
+)
+
+# Type alias for serverrequest
+ServerRequest = PingRequest | CreateMessageRequest | ListRootsRequest | ElicitRequest
+
+# Type alias for serverresult
+ServerResult = (
+    Result
+    | InitializeResult
+    | ListResourcesResult
+    | ListResourceTemplatesResult
+    | ReadResourceResult
+    | ListPromptsResult
+    | GetPromptResult
+    | ListToolsResult
+    | CallToolResult
+    | CompleteResult
+)
 
 
 @dataclass

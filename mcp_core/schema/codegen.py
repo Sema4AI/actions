@@ -612,6 +612,14 @@ T = TypeVar('T')
             indenter.add_line("")
             continue
 
+        # Handle anyOf types as union types (like ContentBlock)
+        if "anyOf" in schema and not schema.get("properties"):
+            union_type = create_python_type("", schema)
+            indenter.add_line(f"# Type alias for {name.lower()}")
+            indenter.add_line(f"{name} = {union_type}")
+            indenter.add_line("")
+            continue
+
         # Skip empty classes that aren't referenced
         if not schema.get("properties") and name not in referenced_types:
             continue
