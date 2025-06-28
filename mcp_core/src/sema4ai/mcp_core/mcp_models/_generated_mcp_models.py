@@ -309,8 +309,8 @@ class CallToolResult(Result):
                 converted_item = None
                 # Try to disambiguate using const fields
                 type_value = item.get("type")
-                type_to_class = {}
-                required_props_map = {}
+                type_to_class: dict[str, Type[MCPBaseModel]] = {}
+                required_props_map: dict[Type[MCPBaseModel], list[str]] = {}
                 type_to_class["text"] = TextContent
                 type_to_class["image"] = ImageContent
                 type_to_class["audio"] = AudioContent
@@ -558,8 +558,8 @@ class CompleteRequestParams(MCPBaseModel):
             if isinstance(value, dict):
                 # Try to disambiguate using const fields
                 type_value = value.get("type")
-                type_to_class = {}
-                required_props_map = {}
+                type_to_class: dict[str, Type[MCPBaseModel]] = {}
+                required_props_map: dict[Type[MCPBaseModel], list[str]] = {}
                 type_to_class["ref/prompt"] = PromptReference
                 type_to_class["ref/resource"] = ResourceTemplateReference
                 if type_value is not None and type_value in type_to_class:
@@ -866,8 +866,8 @@ class CreateMessageResult(Result):
             if isinstance(value, dict):
                 # Try to disambiguate using const fields
                 type_value = value.get("type")
-                type_to_class = {}
-                required_props_map = {}
+                type_to_class: dict[str, Type[MCPBaseModel]] = {}
+                required_props_map: dict[Type[MCPBaseModel], list[str]] = {}
                 type_to_class["text"] = TextContent
                 type_to_class["image"] = ImageContent
                 type_to_class["audio"] = AudioContent
@@ -1098,8 +1098,8 @@ class EmbeddedResource(MCPBaseModel):
             if isinstance(value, dict):
                 # Try to disambiguate using const fields
                 type_value = value.get("type")
-                type_to_class = {}
-                required_props_map = {}
+                type_to_class: dict[str, Type[MCPBaseModel]] = {}
+                required_props_map: dict[Type[MCPBaseModel], list[str]] = {}
                 required_props_map[TextResourceContents] = ["text", "uri"]
                 required_props_map[BlobResourceContents] = ["blob", "uri"]
                 if type_value is not None and type_value in type_to_class:
@@ -2967,8 +2967,8 @@ class PromptMessage(MCPBaseModel):
             if isinstance(value, dict):
                 # Try to disambiguate using const fields
                 type_value = value.get("type")
-                type_to_class = {}
-                required_props_map = {}
+                type_to_class: dict[str, Type[MCPBaseModel]] = {}
+                required_props_map: dict[Type[MCPBaseModel], list[str]] = {}
                 type_to_class["text"] = TextContent
                 type_to_class["image"] = ImageContent
                 type_to_class["audio"] = AudioContent
@@ -3137,8 +3137,8 @@ class ReadResourceResult(Result):
                 converted_item = None
                 # Try to disambiguate using const fields
                 type_value = item.get("type")
-                type_to_class = {}
-                required_props_map = {}
+                type_to_class: dict[str, Type[MCPBaseModel]] = {}
+                required_props_map: dict[Type[MCPBaseModel], list[str]] = {}
                 required_props_map[TextResourceContents] = ["text", "uri"]
                 required_props_map[BlobResourceContents] = ["blob", "uri"]
                 if type_value is not None and type_value in type_to_class:
@@ -3719,8 +3719,8 @@ class SamplingMessage(MCPBaseModel):
             if isinstance(value, dict):
                 # Try to disambiguate using const fields
                 type_value = value.get("type")
-                type_to_class = {}
-                required_props_map = {}
+                type_to_class: dict[str, Type[MCPBaseModel]] = {}
+                required_props_map: dict[Type[MCPBaseModel], list[str]] = {}
                 type_to_class["text"] = TextContent
                 type_to_class["image"] = ImageContent
                 type_to_class["audio"] = AudioContent

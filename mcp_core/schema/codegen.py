@@ -239,8 +239,8 @@ def generate_union_type_disambiguation(
 
     indenter.add_line("# Try to disambiguate using const fields", extra_indent)
     indenter.add_line(f"type_value = {data_variable}.get('type')", extra_indent)
-    indenter.add_line("type_to_class = {}", extra_indent)
-    indenter.add_line("required_props_map = {}", extra_indent)
+    indenter.add_line("type_to_class: dict[str, Type[MCPBaseModel]] = {}", extra_indent)
+    indenter.add_line("required_props_map: dict[Type[MCPBaseModel], list[str]] = {}", extra_indent)
 
     for t in types:
         if t != "None":
