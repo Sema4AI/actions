@@ -27,6 +27,7 @@ class Annotations(MCPBaseModel):
     """
 
     audience: "None | list[Role]" = field(default=None)
+    lastModified: "None | str" = field(default=None)
     priority: "None | float" = field(default=None)
 
     @classmethod
@@ -42,12 +43,18 @@ class Annotations(MCPBaseModel):
         value = data.get("audience")
         if value is not None:
             if not isinstance(value, list):
-                raise ValueError(f"Expected a list for field audience, got {type(value)}")
+                raise ValueError(
+                    f"Expected a list for field audience, got {type(value)}"
+                )
             converted_items = []
             for item in value:
                 converted_items.append(item)
             value = converted_items
         kwargs["audience"] = value
+
+        # Process lastModified
+        value = data.get("lastModified")
+        kwargs["lastModified"] = value
 
         # Process priority
         value = data.get("priority")
@@ -63,6 +70,7 @@ class AudioContent(MCPBaseModel):
     data: "str"
     mimeType: "str"
     type: "Literal['audio']" = field(default="audio")
+    _meta: "None | dict[str, Any]" = field(default=None)
     annotations: "None | Annotations" = field(default=None)
 
     @classmethod
@@ -73,6 +81,10 @@ class AudioContent(MCPBaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
+        # Process _meta
+        value = data.get("_meta")
+        kwargs["_meta"] = value
 
         # Process annotations
         value = data.get("annotations")
@@ -96,9 +108,40 @@ class AudioContent(MCPBaseModel):
 
 
 @dataclass
+class BaseMetadata(MCPBaseModel):
+    """
+    Base interface for metadata with name (identifier) and title (display name)
+    properties.
+    """
+
+    name: "str"
+    title: "None | str" = field(default=None)
+
+    @classmethod
+    def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
+        """Create an instance from a dictionary."""
+        if not isinstance(data, dict):
+            raise ValueError(
+                f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
+            )
+        kwargs = {}
+
+        # Process name
+        value = data.get("name")
+        kwargs["name"] = value
+
+        # Process title
+        value = data.get("title")
+        kwargs["title"] = value
+
+        return cls(**kwargs)
+
+
+@dataclass
 class BlobResourceContents(MCPBaseModel):
     blob: "str"
     uri: "str"
+    _meta: "None | dict[str, Any]" = field(default=None)
     mimeType: "None | str" = field(default=None)
 
     @classmethod
@@ -109,6 +152,10 @@ class BlobResourceContents(MCPBaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
+        # Process _meta
+        value = data.get("_meta")
+        kwargs["_meta"] = value
 
         # Process blob
         value = data.get("blob")
@@ -121,6 +168,41 @@ class BlobResourceContents(MCPBaseModel):
         # Process uri
         value = data.get("uri")
         kwargs["uri"] = value
+
+        return cls(**kwargs)
+
+
+@dataclass
+class BooleanSchema(MCPBaseModel):
+    type: "Literal['boolean']" = field(default="boolean")
+    default: "None | bool" = field(default=None)
+    description: "None | str" = field(default=None)
+    title: "None | str" = field(default=None)
+
+    @classmethod
+    def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
+        """Create an instance from a dictionary."""
+        if not isinstance(data, dict):
+            raise ValueError(
+                f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
+            )
+        kwargs = {}
+
+        # Process default
+        value = data.get("default")
+        kwargs["default"] = value
+
+        # Process description
+        value = data.get("description")
+        kwargs["description"] = value
+
+        # Process title
+        value = data.get("title")
+        kwargs["title"] = value
+
+        # Process type
+        value = data.get("type")
+        kwargs["type"] = value
 
         return cls(**kwargs)
 
@@ -191,18 +273,12 @@ class CallToolRequestParams(MCPBaseModel):
 
 @dataclass
 class CallToolResult(Result):
-    """
-    The server's response to a tool call. Any errors that originate from the tool
-    SHOULD be reported inside the result object, with `isError` set to true, _not_ as
-    an MCP protocol-level error response. Otherwise, the LLM would not be able to see
-    that an error occurred and self-correct. However, any errors in _finding_ the
-    tool, an error indicating that the server does not support tool calls, or any
-    other exceptional conditions, should be reported as an MCP error response.
-    """
+    """The server's response to a tool call."""
 
-    content: "list[TextContent | ImageContent | AudioContent | EmbeddedResource]"
+    content: "list[ContentBlock]"
     _meta: "None | dict[str, Any]" = field(default=None)
     isError: "None | bool" = field(default=None)
+    structuredContent: "None | dict[str, Any]" = field(default=None)
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -221,54 +297,22 @@ class CallToolResult(Result):
         value = data.get("content")
         if value is not None:
             if not isinstance(value, list):
-                raise ValueError(f"Expected a list for field content, got {type(value)}")
+                raise ValueError(
+                    f"Expected a list for field content, got {type(value)}"
+                )
             converted_items = []
             for item in value:
-                # Try to disambiguate using const fields
-                if not isinstance(item, dict):
-                    raise ValueError(
-                        f"Expected a dict for union type TextContent | ImageContent | AudioContent | EmbeddedResource, got {type(item)}"
-                    )
-                type_value = item.get("type")
-                type_to_class = {}
-                required_props_map = {}
-                type_to_class["text"] = TextContent
-                type_to_class["image"] = ImageContent
-                type_to_class["audio"] = AudioContent
-                type_to_class["resource"] = EmbeddedResource
-                if type_value is not None and type_value in type_to_class:
-                    converted_items.append(type_to_class[type_value].from_dict(item))
-                else:
-                    # Try to disambiguate by required properties
-                    matches = []
-                    for type_name, reqs in required_props_map.items():
-                        if all(r in item for r in reqs):
-                            matches.append(type_name)
-                    if len(matches) == 1:
-                        converted_items.append(matches[0].from_dict(item))
-                    elif len(matches) > 1:
-                        match_details = [
-                            f"{name} (requires any of {required_props_map[name]})"
-                            for name in matches
-                        ]
-                        raise ValueError(
-                            f"Ambiguous match for union type. Multiple types match: {'; '.join(match_details)}"
-                        )
-                    else:
-                        available_fields = list(item.keys())
-                        type_details = [
-                            f"{name} (requires any of {required_props_map[name]})"
-                            for name in required_props_map
-                        ]
-                        raise ValueError(
-                            f"No match for union type. Available fields: {available_fields}. Expected one of: {'; '.join(type_details)}"
-                        )
+                converted_items.append(ContentBlock.from_dict(item))
             value = converted_items
         kwargs["content"] = value
 
         # Process isError
         value = data.get("isError")
         kwargs["isError"] = value
+
+        # Process structuredContent
+        value = data.get("structuredContent")
+        kwargs["structuredContent"] = value
 
         return cls(**kwargs)
 
@@ -285,7 +329,9 @@ class CancelledNotification(MCPBaseModel):
     """
 
     params: "CancelledNotificationParams"
-    method: "Literal['notifications/cancelled']" = field(default="notifications/cancelled")
+    method: "Literal['notifications/cancelled']" = field(
+        default="notifications/cancelled"
+    )
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -342,6 +388,7 @@ class ClientCapabilities(MCPBaseModel):
     capabilities.
     """
 
+    elicitation: "None | dict[str, Any]" = field(default=None)
     experimental: "None | dict[str, Any]" = field(default=None)
     roots: "None | ClientCapabilitiesRootsParams" = field(default=None)
     sampling: "None | dict[str, Any]" = field(default=None)
@@ -354,6 +401,10 @@ class ClientCapabilities(MCPBaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
+        # Process elicitation
+        value = data.get("elicitation")
+        kwargs["elicitation"] = value
 
         # Process experimental
         value = data.get("experimental")
@@ -436,7 +487,8 @@ class CompleteRequest(MCPBaseModel):
 @dataclass
 class CompleteRequestParams(MCPBaseModel):
     argument: "CompleteRequestParamsArgument"
-    ref: "PromptReference | ResourceReference"
+    ref: "PromptReference | ResourceTemplateReference"
+    context: "None | CompleteRequestParamsContext" = field(default=None)
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -453,6 +505,12 @@ class CompleteRequestParams(MCPBaseModel):
             value = CompleteRequestParamsArgument.from_dict(value)
         kwargs["argument"] = value
 
+        # Process context
+        value = data.get("context")
+        if value is not None:
+            value = CompleteRequestParamsContext.from_dict(value)
+        kwargs["context"] = value
+
         # Process ref
         value = data.get("ref")
         if value is not None:
@@ -462,7 +520,7 @@ class CompleteRequestParams(MCPBaseModel):
                 type_to_class = {}
                 required_props_map = {}
                 type_to_class["ref/prompt"] = PromptReference
-                type_to_class["ref/resource"] = ResourceReference
+                type_to_class["ref/resource"] = ResourceTemplateReference
                 if type_value is not None and type_value in type_to_class:
                     value = type_to_class[type_value].from_dict(value)
                 else:
@@ -518,6 +576,28 @@ class CompleteRequestParamsArgument(MCPBaseModel):
         # Process value
         value = data.get("value")
         kwargs["value"] = value
+
+        return cls(**kwargs)
+
+
+@dataclass
+class CompleteRequestParamsContext(MCPBaseModel):
+    """Additional, optional context for completions"""
+
+    arguments: "None | dict[str, Any]" = field(default=None)
+
+    @classmethod
+    def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
+        """Create an instance from a dictionary."""
+        if not isinstance(data, dict):
+            raise ValueError(
+                f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
+            )
+        kwargs = {}
+
+        # Process arguments
+        value = data.get("arguments")
+        kwargs["arguments"] = value
 
         return cls(**kwargs)
 
@@ -589,6 +669,11 @@ class CompleteResultCompletionParams(MCPBaseModel):
 
 
 @dataclass
+class ContentBlock(MCPBaseModel):
+    value: Any = field(default=None)
+
+
+@dataclass
 class CreateMessageRequest(MCPBaseModel):
     """
     A request from the server to sample an LLM via the client. The client has full
@@ -600,7 +685,9 @@ class CreateMessageRequest(MCPBaseModel):
     id: "RequestId"
     params: "CreateMessageRequestParams"
     jsonrpc: "Literal['2.0']" = field(default="2.0")
-    method: "Literal['sampling/createMessage']" = field(default="sampling/createMessage")
+    method: "Literal['sampling/createMessage']" = field(
+        default="sampling/createMessage"
+    )
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -636,7 +723,9 @@ class CreateMessageRequest(MCPBaseModel):
 class CreateMessageRequestParams(MCPBaseModel):
     maxTokens: "int"
     messages: "list[SamplingMessage]"
-    includeContext: "None | Literal['allServers', 'none', 'thisServer']" = field(default=None)
+    includeContext: "None | Literal['allServers', 'none', 'thisServer']" = field(
+        default=None
+    )
     metadata: "None | dict[str, Any]" = field(default=None)
     modelPreferences: "None | ModelPreferences" = field(default=None)
     stopSequences: "None | list[str]" = field(default=None)
@@ -664,7 +753,9 @@ class CreateMessageRequestParams(MCPBaseModel):
         value = data.get("messages")
         if value is not None:
             if not isinstance(value, list):
-                raise ValueError(f"Expected a list for field messages, got {type(value)}")
+                raise ValueError(
+                    f"Expected a list for field messages, got {type(value)}"
+                )
             converted_items = []
             for item in value:
                 converted_items.append(SamplingMessage.from_dict(item))
@@ -685,7 +776,9 @@ class CreateMessageRequestParams(MCPBaseModel):
         value = data.get("stopSequences")
         if value is not None:
             if not isinstance(value, list):
-                raise ValueError(f"Expected a list for field stopSequences, got {type(value)}")
+                raise ValueError(
+                    f"Expected a list for field stopSequences, got {type(value)}"
+                )
             converted_items = []
             for item in value:
                 converted_items.append(item)
@@ -787,6 +880,151 @@ class CreateMessageResult(Result):
 
 
 @dataclass
+class ElicitRequest(MCPBaseModel):
+    """
+    A request from the server to elicit additional information from the user via the
+    client.
+    """
+
+    id: "RequestId"
+    params: "ElicitRequestParams"
+    jsonrpc: "Literal['2.0']" = field(default="2.0")
+    method: "Literal['elicitation/create']" = field(default="elicitation/create")
+
+    @classmethod
+    def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
+        """Create an instance from a dictionary."""
+        if not isinstance(data, dict):
+            raise ValueError(
+                f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
+            )
+        kwargs = {}
+
+        # Process jsonrpc
+        value = data.get("jsonrpc")
+        kwargs["jsonrpc"] = value
+
+        # Process id
+        value = data.get("id")
+        kwargs["id"] = value
+
+        # Process method
+        value = data.get("method")
+        kwargs["method"] = value
+
+        # Process params
+        value = data.get("params")
+        if value is not None:
+            value = ElicitRequestParams.from_dict(value)
+        kwargs["params"] = value
+
+        return cls(**kwargs)
+
+
+@dataclass
+class ElicitRequestParams(MCPBaseModel):
+    message: "str"
+    requestedSchema: "ElicitRequestParamsRequestedschema"
+
+    @classmethod
+    def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
+        """Create an instance from a dictionary."""
+        if not isinstance(data, dict):
+            raise ValueError(
+                f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
+            )
+        kwargs = {}
+
+        # Process message
+        value = data.get("message")
+        kwargs["message"] = value
+
+        # Process requestedSchema
+        value = data.get("requestedSchema")
+        if value is not None:
+            value = ElicitRequestParamsRequestedschema.from_dict(value)
+        kwargs["requestedSchema"] = value
+
+        return cls(**kwargs)
+
+
+@dataclass
+class ElicitRequestParamsRequestedschema(MCPBaseModel):
+    """
+    A restricted subset of JSON Schema. Only top-level properties are allowed,
+    without nesting.
+    """
+
+    properties: "dict[str, Any]"
+    type: "Literal['object']" = field(default="object")
+    required: "None | list[str]" = field(default=None)
+
+    @classmethod
+    def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
+        """Create an instance from a dictionary."""
+        if not isinstance(data, dict):
+            raise ValueError(
+                f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
+            )
+        kwargs = {}
+
+        # Process properties
+        value = data.get("properties")
+        kwargs["properties"] = value
+
+        # Process required
+        value = data.get("required")
+        if value is not None:
+            if not isinstance(value, list):
+                raise ValueError(
+                    f"Expected a list for field required, got {type(value)}"
+                )
+            converted_items = []
+            for item in value:
+                converted_items.append(item)
+            value = converted_items
+        kwargs["required"] = value
+
+        # Process type
+        value = data.get("type")
+        kwargs["type"] = value
+
+        return cls(**kwargs)
+
+
+@dataclass
+class ElicitResult(Result):
+    """The client's response to an elicitation request."""
+
+    action: "Literal['accept', 'cancel', 'decline']"
+    _meta: "None | dict[str, Any]" = field(default=None)
+    content: "None | dict[str, Any]" = field(default=None)
+
+    @classmethod
+    def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
+        """Create an instance from a dictionary."""
+        if not isinstance(data, dict):
+            raise ValueError(
+                f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
+            )
+        kwargs = {}
+
+        # Process _meta
+        value = data.get("_meta")
+        kwargs["_meta"] = value
+
+        # Process action
+        value = data.get("action")
+        kwargs["action"] = value
+
+        # Process content
+        value = data.get("content")
+        kwargs["content"] = value
+
+        return cls(**kwargs)
+
+
+@dataclass
 class EmbeddedResource(MCPBaseModel):
     """
     The contents of a resource, embedded into a prompt or tool call result. It is up
@@ -796,6 +1034,7 @@ class EmbeddedResource(MCPBaseModel):
 
     resource: "TextResourceContents | BlobResourceContents"
     type: "Literal['resource']" = field(default="resource")
+    _meta: "None | dict[str, Any]" = field(default=None)
     annotations: "None | Annotations" = field(default=None)
 
     @classmethod
@@ -806,6 +1045,10 @@ class EmbeddedResource(MCPBaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
+        # Process _meta
+        value = data.get("_meta")
+        kwargs["_meta"] = value
 
         # Process annotations
         value = data.get("annotations")
@@ -851,6 +1094,62 @@ class EmbeddedResource(MCPBaseModel):
                             f"No match for union type. Available fields: {available_fields}. Expected one of: {'; '.join(type_details)}"
                         )
         kwargs["resource"] = value
+
+        # Process type
+        value = data.get("type")
+        kwargs["type"] = value
+
+        return cls(**kwargs)
+
+
+@dataclass
+class EnumSchema(MCPBaseModel):
+    enum: "list[str]"
+    type: "Literal['string']" = field(default="string")
+    description: "None | str" = field(default=None)
+    enumNames: "None | list[str]" = field(default=None)
+    title: "None | str" = field(default=None)
+
+    @classmethod
+    def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
+        """Create an instance from a dictionary."""
+        if not isinstance(data, dict):
+            raise ValueError(
+                f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
+            )
+        kwargs = {}
+
+        # Process description
+        value = data.get("description")
+        kwargs["description"] = value
+
+        # Process enum
+        value = data.get("enum")
+        if value is not None:
+            if not isinstance(value, list):
+                raise ValueError(f"Expected a list for field enum, got {type(value)}")
+            converted_items = []
+            for item in value:
+                converted_items.append(item)
+            value = converted_items
+        kwargs["enum"] = value
+
+        # Process enumNames
+        value = data.get("enumNames")
+        if value is not None:
+            if not isinstance(value, list):
+                raise ValueError(
+                    f"Expected a list for field enumNames, got {type(value)}"
+                )
+            converted_items = []
+            for item in value:
+                converted_items.append(item)
+            value = converted_items
+        kwargs["enumNames"] = value
+
+        # Process title
+        value = data.get("title")
+        kwargs["title"] = value
 
         # Process type
         value = data.get("type")
@@ -952,7 +1251,9 @@ class GetPromptResult(Result):
         value = data.get("messages")
         if value is not None:
             if not isinstance(value, list):
-                raise ValueError(f"Expected a list for field messages, got {type(value)}")
+                raise ValueError(
+                    f"Expected a list for field messages, got {type(value)}"
+                )
             converted_items = []
             for item in value:
                 converted_items.append(PromptMessage.from_dict(item))
@@ -969,6 +1270,7 @@ class ImageContent(MCPBaseModel):
     data: "str"
     mimeType: "str"
     type: "Literal['image']" = field(default="image")
+    _meta: "None | dict[str, Any]" = field(default=None)
     annotations: "None | Annotations" = field(default=None)
 
     @classmethod
@@ -979,6 +1281,10 @@ class ImageContent(MCPBaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
+        # Process _meta
+        value = data.get("_meta")
+        kwargs["_meta"] = value
 
         # Process annotations
         value = data.get("annotations")
@@ -1003,10 +1309,14 @@ class ImageContent(MCPBaseModel):
 
 @dataclass
 class Implementation(MCPBaseModel):
-    """Describes the name and version of an MCP implementation."""
+    """
+    Describes the name and version of an MCP implementation, with an optional title
+    for UI representation.
+    """
 
     name: "str"
     version: "str"
+    title: "None | str" = field(default=None)
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -1020,6 +1330,10 @@ class Implementation(MCPBaseModel):
         # Process name
         value = data.get("name")
         kwargs["name"] = value
+
+        # Process title
+        value = data.get("title")
+        kwargs["title"] = value
 
         # Process version
         value = data.get("version")
@@ -1160,7 +1474,9 @@ class InitializedNotification(MCPBaseModel):
     finished.
     """
 
-    method: "Literal['notifications/initialized']" = field(default="notifications/initialized")
+    method: "Literal['notifications/initialized']" = field(
+        default="notifications/initialized"
+    )
     params: "None | InitializedNotificationParams" = field(default=None)
 
     @classmethod
@@ -1386,6 +1702,11 @@ class JSONRPCRequestParams(MCPBaseModel):
 
 @dataclass
 class JSONRPCRequestParams_meta(MCPBaseModel):
+    """
+    See [specification/2025-06-18/basic/index#general-fields] for notes on _meta
+    usage.
+    """
+
     progressToken: "None | ProgressToken" = field(default=None)
 
     @classmethod
@@ -1529,7 +1850,9 @@ class ListPromptsResult(Result):
         value = data.get("prompts")
         if value is not None:
             if not isinstance(value, list):
-                raise ValueError(f"Expected a list for field prompts, got {type(value)}")
+                raise ValueError(
+                    f"Expected a list for field prompts, got {type(value)}"
+                )
             converted_items = []
             for item in value:
                 converted_items.append(Prompt.from_dict(item))
@@ -1545,7 +1868,9 @@ class ListResourceTemplatesRequest(MCPBaseModel):
 
     id: "RequestId"
     jsonrpc: "Literal['2.0']" = field(default="2.0")
-    method: "Literal['resources/templates/list']" = field(default="resources/templates/list")
+    method: "Literal['resources/templates/list']" = field(
+        default="resources/templates/list"
+    )
     params: "None | ListResourceTemplatesRequestParams" = field(default=None)
 
     @classmethod
@@ -1627,7 +1952,9 @@ class ListResourceTemplatesResult(Result):
         value = data.get("resourceTemplates")
         if value is not None:
             if not isinstance(value, list):
-                raise ValueError(f"Expected a list for field resourceTemplates, got {type(value)}")
+                raise ValueError(
+                    f"Expected a list for field resourceTemplates, got {type(value)}"
+                )
             converted_items = []
             for item in value:
                 converted_items.append(ResourceTemplate.from_dict(item))
@@ -1725,7 +2052,9 @@ class ListResourcesResult(Result):
         value = data.get("resources")
         if value is not None:
             if not isinstance(value, list):
-                raise ValueError(f"Expected a list for field resources, got {type(value)}")
+                raise ValueError(
+                    f"Expected a list for field resources, got {type(value)}"
+                )
             converted_items = []
             for item in value:
                 converted_items.append(Resource.from_dict(item))
@@ -1805,6 +2134,11 @@ class ListRootsRequestParams(MCPBaseModel):
 
 @dataclass
 class ListRootsRequestParams_meta(MCPBaseModel):
+    """
+    See [specification/2025-06-18/basic/index#general-fields] for notes on _meta
+    usage.
+    """
+
     progressToken: "None | ProgressToken" = field(default=None)
 
     @classmethod
@@ -2155,6 +2489,46 @@ class NotificationParams(MCPBaseModel):
 
 
 @dataclass
+class NumberSchema(MCPBaseModel):
+    type: "Literal['integer', 'number']"
+    description: "None | str" = field(default=None)
+    maximum: "None | int" = field(default=None)
+    minimum: "None | int" = field(default=None)
+    title: "None | str" = field(default=None)
+
+    @classmethod
+    def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
+        """Create an instance from a dictionary."""
+        if not isinstance(data, dict):
+            raise ValueError(
+                f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
+            )
+        kwargs = {}
+
+        # Process description
+        value = data.get("description")
+        kwargs["description"] = value
+
+        # Process maximum
+        value = data.get("maximum")
+        kwargs["maximum"] = value
+
+        # Process minimum
+        value = data.get("minimum")
+        kwargs["minimum"] = value
+
+        # Process title
+        value = data.get("title")
+        kwargs["title"] = value
+
+        # Process type
+        value = data.get("type")
+        kwargs["type"] = value
+
+        return cls(**kwargs)
+
+
+@dataclass
 class PaginatedRequest(MCPBaseModel):
     id: "RequestId"
     method: "str"
@@ -2302,6 +2676,11 @@ class PingRequestParams(MCPBaseModel):
 
 @dataclass
 class PingRequestParams_meta(MCPBaseModel):
+    """
+    See [specification/2025-06-18/basic/index#general-fields] for notes on _meta
+    usage.
+    """
+
     progressToken: "None | ProgressToken" = field(default=None)
 
     @classmethod
@@ -2328,7 +2707,9 @@ class ProgressNotification(MCPBaseModel):
     """
 
     params: "ProgressNotificationParams"
-    method: "Literal['notifications/progress']" = field(default="notifications/progress")
+    method: "Literal['notifications/progress']" = field(
+        default="notifications/progress"
+    )
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -2396,8 +2777,10 @@ class Prompt(MCPBaseModel):
     """A prompt or prompt template that the server offers."""
 
     name: "str"
+    _meta: "None | dict[str, Any]" = field(default=None)
     arguments: "None | list[PromptArgument]" = field(default=None)
     description: "None | str" = field(default=None)
+    title: "None | str" = field(default=None)
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -2408,11 +2791,17 @@ class Prompt(MCPBaseModel):
             )
         kwargs = {}
 
+        # Process _meta
+        value = data.get("_meta")
+        kwargs["_meta"] = value
+
         # Process arguments
         value = data.get("arguments")
         if value is not None:
             if not isinstance(value, list):
-                raise ValueError(f"Expected a list for field arguments, got {type(value)}")
+                raise ValueError(
+                    f"Expected a list for field arguments, got {type(value)}"
+                )
             converted_items = []
             for item in value:
                 converted_items.append(PromptArgument.from_dict(item))
@@ -2427,6 +2816,10 @@ class Prompt(MCPBaseModel):
         value = data.get("name")
         kwargs["name"] = value
 
+        # Process title
+        value = data.get("title")
+        kwargs["title"] = value
+
         return cls(**kwargs)
 
 
@@ -2437,6 +2830,7 @@ class PromptArgument(MCPBaseModel):
     name: "str"
     description: "None | str" = field(default=None)
     required: "None | bool" = field(default=None)
+    title: "None | str" = field(default=None)
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -2458,6 +2852,10 @@ class PromptArgument(MCPBaseModel):
         # Process required
         value = data.get("required")
         kwargs["required"] = value
+
+        # Process title
+        value = data.get("title")
+        kwargs["title"] = value
 
         return cls(**kwargs)
 
@@ -2525,7 +2923,7 @@ class PromptMessage(MCPBaseModel):
     server.
     """
 
-    content: "TextContent | ImageContent | AudioContent | EmbeddedResource"
+    content: "ContentBlock"
     role: "Role"
 
     @classmethod
@@ -2540,42 +2938,7 @@ class PromptMessage(MCPBaseModel):
         # Process content
         value = data.get("content")
         if value is not None:
-            if isinstance(value, dict):
-                # Try to disambiguate using const fields
-                type_value = value.get("type")
-                type_to_class = {}
-                required_props_map = {}
-                type_to_class["text"] = TextContent
-                type_to_class["image"] = ImageContent
-                type_to_class["audio"] = AudioContent
-                type_to_class["resource"] = EmbeddedResource
-                if type_value is not None and type_value in type_to_class:
-                    value = type_to_class[type_value].from_dict(value)
-                else:
-                    # Try to disambiguate by required properties
-                    matches = []
-                    for type_name, reqs in required_props_map.items():
-                        if all(r in value for r in reqs):
-                            matches.append(type_name)
-                    if len(matches) == 1:
-                        value = matches[0].from_dict(value)
-                    elif len(matches) > 1:
-                        match_details = [
-                            f"{name} (requires any of {required_props_map[name]})"
-                            for name in matches
-                        ]
-                        raise ValueError(
-                            f"Ambiguous match for union type. Multiple types match: {'; '.join(match_details)}"
-                        )
-                    else:
-                        available_fields = list(value.keys())
-                        type_details = [
-                            f"{name} (requires any of {required_props_map[name]})"
-                            for name in required_props_map
-                        ]
-                        raise ValueError(
-                            f"No match for union type. Available fields: {available_fields}. Expected one of: {'; '.join(type_details)}"
-                        )
+            value = ContentBlock.from_dict(value)
         kwargs["content"] = value
 
         # Process role
@@ -2591,6 +2954,7 @@ class PromptReference(MCPBaseModel):
 
     name: "str"
     type: "Literal['ref/prompt']" = field(default="ref/prompt")
+    title: "None | str" = field(default=None)
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -2604,6 +2968,10 @@ class PromptReference(MCPBaseModel):
         # Process name
         value = data.get("name")
         kwargs["name"] = value
+
+        # Process title
+        value = data.get("title")
+        kwargs["title"] = value
 
         # Process type
         value = data.get("type")
@@ -2695,7 +3063,9 @@ class ReadResourceResult(Result):
         value = data.get("contents")
         if value is not None:
             if not isinstance(value, list):
-                raise ValueError(f"Expected a list for field contents, got {type(value)}")
+                raise ValueError(
+                    f"Expected a list for field contents, got {type(value)}"
+                )
             converted_items = []
             for item in value:
                 # Try to disambiguate using const fields
@@ -2802,6 +3172,11 @@ class RequestParams(MCPBaseModel):
 
 @dataclass
 class RequestParams_meta(MCPBaseModel):
+    """
+    See [specification/2025-06-18/basic/index#general-fields] for notes on _meta
+    usage.
+    """
+
     progressToken: "None | ProgressToken" = field(default=None)
 
     @classmethod
@@ -2830,10 +3205,12 @@ class Resource(MCPBaseModel):
 
     name: "str"
     uri: "str"
+    _meta: "None | dict[str, Any]" = field(default=None)
     annotations: "None | Annotations" = field(default=None)
     description: "None | str" = field(default=None)
     mimeType: "None | str" = field(default=None)
     size: "None | int" = field(default=None)
+    title: "None | str" = field(default=None)
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -2843,6 +3220,10 @@ class Resource(MCPBaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
+        # Process _meta
+        value = data.get("_meta")
+        kwargs["_meta"] = value
 
         # Process annotations
         value = data.get("annotations")
@@ -2866,6 +3247,10 @@ class Resource(MCPBaseModel):
         value = data.get("size")
         kwargs["size"] = value
 
+        # Process title
+        value = data.get("title")
+        kwargs["title"] = value
+
         # Process uri
         value = data.get("uri")
         kwargs["uri"] = value
@@ -2878,6 +3263,7 @@ class ResourceContents(MCPBaseModel):
     """The contents of a specific resource or sub-resource."""
 
     uri: "str"
+    _meta: "None | dict[str, Any]" = field(default=None)
     mimeType: "None | str" = field(default=None)
 
     @classmethod
@@ -2889,9 +3275,81 @@ class ResourceContents(MCPBaseModel):
             )
         kwargs = {}
 
+        # Process _meta
+        value = data.get("_meta")
+        kwargs["_meta"] = value
+
         # Process mimeType
         value = data.get("mimeType")
         kwargs["mimeType"] = value
+
+        # Process uri
+        value = data.get("uri")
+        kwargs["uri"] = value
+
+        return cls(**kwargs)
+
+
+@dataclass
+class ResourceLink(MCPBaseModel):
+    """
+    A resource that the server is capable of reading, included in a prompt or tool
+    call result. Note: resource links returned by tools are not guaranteed to appear
+    in the results of `resources/list` requests.
+    """
+
+    name: "str"
+    uri: "str"
+    type: "Literal['resource_link']" = field(default="resource_link")
+    _meta: "None | dict[str, Any]" = field(default=None)
+    annotations: "None | Annotations" = field(default=None)
+    description: "None | str" = field(default=None)
+    mimeType: "None | str" = field(default=None)
+    size: "None | int" = field(default=None)
+    title: "None | str" = field(default=None)
+
+    @classmethod
+    def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
+        """Create an instance from a dictionary."""
+        if not isinstance(data, dict):
+            raise ValueError(
+                f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
+            )
+        kwargs = {}
+
+        # Process _meta
+        value = data.get("_meta")
+        kwargs["_meta"] = value
+
+        # Process annotations
+        value = data.get("annotations")
+        if value is not None:
+            value = Annotations.from_dict(value)
+        kwargs["annotations"] = value
+
+        # Process description
+        value = data.get("description")
+        kwargs["description"] = value
+
+        # Process mimeType
+        value = data.get("mimeType")
+        kwargs["mimeType"] = value
+
+        # Process name
+        value = data.get("name")
+        kwargs["name"] = value
+
+        # Process size
+        value = data.get("size")
+        kwargs["size"] = value
+
+        # Process title
+        value = data.get("title")
+        kwargs["title"] = value
+
+        # Process type
+        value = data.get("type")
+        kwargs["type"] = value
 
         # Process uri
         value = data.get("uri")
@@ -2956,7 +3414,61 @@ class ResourceListChangedNotificationParams(MCPBaseModel):
 
 
 @dataclass
-class ResourceReference(MCPBaseModel):
+class ResourceTemplate(MCPBaseModel):
+    """A template description for resources available on the server."""
+
+    name: "str"
+    uriTemplate: "str"
+    _meta: "None | dict[str, Any]" = field(default=None)
+    annotations: "None | Annotations" = field(default=None)
+    description: "None | str" = field(default=None)
+    mimeType: "None | str" = field(default=None)
+    title: "None | str" = field(default=None)
+
+    @classmethod
+    def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
+        """Create an instance from a dictionary."""
+        if not isinstance(data, dict):
+            raise ValueError(
+                f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
+            )
+        kwargs = {}
+
+        # Process _meta
+        value = data.get("_meta")
+        kwargs["_meta"] = value
+
+        # Process annotations
+        value = data.get("annotations")
+        if value is not None:
+            value = Annotations.from_dict(value)
+        kwargs["annotations"] = value
+
+        # Process description
+        value = data.get("description")
+        kwargs["description"] = value
+
+        # Process mimeType
+        value = data.get("mimeType")
+        kwargs["mimeType"] = value
+
+        # Process name
+        value = data.get("name")
+        kwargs["name"] = value
+
+        # Process title
+        value = data.get("title")
+        kwargs["title"] = value
+
+        # Process uriTemplate
+        value = data.get("uriTemplate")
+        kwargs["uriTemplate"] = value
+
+        return cls(**kwargs)
+
+
+@dataclass
+class ResourceTemplateReference(MCPBaseModel):
     """A reference to a resource or resource template definition."""
 
     uri: "str"
@@ -2978,50 +3490,6 @@ class ResourceReference(MCPBaseModel):
         # Process uri
         value = data.get("uri")
         kwargs["uri"] = value
-
-        return cls(**kwargs)
-
-
-@dataclass
-class ResourceTemplate(MCPBaseModel):
-    """A template description for resources available on the server."""
-
-    name: "str"
-    uriTemplate: "str"
-    annotations: "None | Annotations" = field(default=None)
-    description: "None | str" = field(default=None)
-    mimeType: "None | str" = field(default=None)
-
-    @classmethod
-    def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
-        """Create an instance from a dictionary."""
-        if not isinstance(data, dict):
-            raise ValueError(
-                f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
-            )
-        kwargs = {}
-
-        # Process annotations
-        value = data.get("annotations")
-        if value is not None:
-            value = Annotations.from_dict(value)
-        kwargs["annotations"] = value
-
-        # Process description
-        value = data.get("description")
-        kwargs["description"] = value
-
-        # Process mimeType
-        value = data.get("mimeType")
-        kwargs["mimeType"] = value
-
-        # Process name
-        value = data.get("name")
-        kwargs["name"] = value
-
-        # Process uriTemplate
-        value = data.get("uriTemplate")
-        kwargs["uriTemplate"] = value
 
         return cls(**kwargs)
 
@@ -3090,6 +3558,7 @@ class Root(MCPBaseModel):
     """Represents a root directory or file that the server can operate on."""
 
     uri: "str"
+    _meta: "None | dict[str, Any]" = field(default=None)
     name: "None | str" = field(default=None)
 
     @classmethod
@@ -3100,6 +3569,10 @@ class Root(MCPBaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
+        # Process _meta
+        value = data.get("_meta")
+        kwargs["_meta"] = value
 
         # Process name
         value = data.get("name")
@@ -3419,6 +3892,51 @@ class SetLevelRequestParams(MCPBaseModel):
 
 
 @dataclass
+class StringSchema(MCPBaseModel):
+    type: "Literal['string']" = field(default="string")
+    description: "None | str" = field(default=None)
+    format: "None | Literal['date', 'date-time', 'email', 'uri']" = field(default=None)
+    maxLength: "None | int" = field(default=None)
+    minLength: "None | int" = field(default=None)
+    title: "None | str" = field(default=None)
+
+    @classmethod
+    def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
+        """Create an instance from a dictionary."""
+        if not isinstance(data, dict):
+            raise ValueError(
+                f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
+            )
+        kwargs = {}
+
+        # Process description
+        value = data.get("description")
+        kwargs["description"] = value
+
+        # Process format
+        value = data.get("format")
+        kwargs["format"] = value
+
+        # Process maxLength
+        value = data.get("maxLength")
+        kwargs["maxLength"] = value
+
+        # Process minLength
+        value = data.get("minLength")
+        kwargs["minLength"] = value
+
+        # Process title
+        value = data.get("title")
+        kwargs["title"] = value
+
+        # Process type
+        value = data.get("type")
+        kwargs["type"] = value
+
+        return cls(**kwargs)
+
+
+@dataclass
 class SubscribeRequest(MCPBaseModel):
     """
     Sent from the client to request resources/updated notifications from the server
@@ -3486,6 +4004,7 @@ class TextContent(MCPBaseModel):
 
     text: "str"
     type: "Literal['text']" = field(default="text")
+    _meta: "None | dict[str, Any]" = field(default=None)
     annotations: "None | Annotations" = field(default=None)
 
     @classmethod
@@ -3496,6 +4015,10 @@ class TextContent(MCPBaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
+        # Process _meta
+        value = data.get("_meta")
+        kwargs["_meta"] = value
 
         # Process annotations
         value = data.get("annotations")
@@ -3518,6 +4041,7 @@ class TextContent(MCPBaseModel):
 class TextResourceContents(MCPBaseModel):
     text: "str"
     uri: "str"
+    _meta: "None | dict[str, Any]" = field(default=None)
     mimeType: "None | str" = field(default=None)
 
     @classmethod
@@ -3528,6 +4052,10 @@ class TextResourceContents(MCPBaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
+        # Process _meta
+        value = data.get("_meta")
+        kwargs["_meta"] = value
 
         # Process mimeType
         value = data.get("mimeType")
@@ -3550,8 +4078,11 @@ class Tool(MCPBaseModel):
 
     inputSchema: "ToolInputschemaParams"
     name: "str"
+    _meta: "None | dict[str, Any]" = field(default=None)
     annotations: "None | ToolAnnotations" = field(default=None)
     description: "None | str" = field(default=None)
+    outputSchema: "None | ToolOutputschemaParams" = field(default=None)
+    title: "None | str" = field(default=None)
 
     @classmethod
     def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
@@ -3561,6 +4092,10 @@ class Tool(MCPBaseModel):
                 f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
             )
         kwargs = {}
+
+        # Process _meta
+        value = data.get("_meta")
+        kwargs["_meta"] = value
 
         # Process annotations
         value = data.get("annotations")
@@ -3581,6 +4116,16 @@ class Tool(MCPBaseModel):
         # Process name
         value = data.get("name")
         kwargs["name"] = value
+
+        # Process outputSchema
+        value = data.get("outputSchema")
+        if value is not None:
+            value = ToolOutputschemaParams.from_dict(value)
+        kwargs["outputSchema"] = value
+
+        # Process title
+        value = data.get("title")
+        kwargs["title"] = value
 
         return cls(**kwargs)
 
@@ -3610,7 +4155,53 @@ class ToolInputschemaParams(MCPBaseModel):
         value = data.get("required")
         if value is not None:
             if not isinstance(value, list):
-                raise ValueError(f"Expected a list for field required, got {type(value)}")
+                raise ValueError(
+                    f"Expected a list for field required, got {type(value)}"
+                )
+            converted_items = []
+            for item in value:
+                converted_items.append(item)
+            value = converted_items
+        kwargs["required"] = value
+
+        # Process type
+        value = data.get("type")
+        kwargs["type"] = value
+
+        return cls(**kwargs)
+
+
+@dataclass
+class ToolOutputschemaParams(MCPBaseModel):
+    """
+    An optional JSON Schema object defining the structure of the tool's output
+    returned in the structuredContent field of a CallToolResult.
+    """
+
+    type: "Literal['object']" = field(default="object")
+    properties: "None | dict[str, Any]" = field(default=None)
+    required: "None | list[str]" = field(default=None)
+
+    @classmethod
+    def from_dict(cls: Type[T], data: dict[str, Any]) -> T:
+        """Create an instance from a dictionary."""
+        if not isinstance(data, dict):
+            raise ValueError(
+                f"Expected a dict instead of: {type(data)} to create type {cls.__name__}. Data: {data}"
+            )
+        kwargs = {}
+
+        # Process properties
+        value = data.get("properties")
+        kwargs["properties"] = value
+
+        # Process required
+        value = data.get("required")
+        if value is not None:
+            if not isinstance(value, list):
+                raise ValueError(
+                    f"Expected a list for field required, got {type(value)}"
+                )
             converted_items = []
             for item in value:
                 converted_items.append(item)
@@ -3794,6 +4385,7 @@ _class_map: dict[str, Type[MCPBaseModel]] = {
     "notifications/cancelled": CancelledNotification,
     "completion/complete": CompleteRequest,
     "sampling/createMessage": CreateMessageRequest,
+    "elicitation/create": ElicitRequest,
     "prompts/get": GetPromptRequest,
     "initialize": InitializeRequest,
     "notifications/initialized": InitializedNotification,
@@ -3820,6 +4412,7 @@ _request_to_result_map: dict[Type[MCPBaseModel], Type[MCPBaseModel]] = {
     CallToolRequest: CallToolResult,
     CompleteRequest: CompleteResult,
     CreateMessageRequest: CreateMessageResult,
+    ElicitRequest: ElicitResult,
     GetPromptRequest: GetPromptResult,
     InitializeRequest: InitializeResult,
     ListPromptsRequest: ListPromptsResult,

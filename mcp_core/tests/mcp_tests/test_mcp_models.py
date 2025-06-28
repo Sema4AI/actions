@@ -4,7 +4,7 @@ from sema4ai.mcp_core.mcp_models import (
     Annotations,
     BlobResourceContents,
     CallToolRequest,
-    CallToolRequestParamsParams,
+    CallToolRequestParams,
     CallToolResult,
     EmbeddedResource,
     InitializeRequest,
@@ -40,13 +40,13 @@ def test_initialize_request_model() -> None:
     from sema4ai.mcp_core.mcp_models import (
         ClientCapabilities,
         Implementation,
-        InitializeRequestParamsParams,
+        InitializeRequestParams,
     )
 
     initialize_request = InitializeRequest(
         id=1,
         method="initialize",
-        params=InitializeRequestParamsParams(
+        params=InitializeRequestParams(
             clientInfo=Implementation(name="test-client", version="1.0.0"),
             capabilities=ClientCapabilities(),
             protocolVersion="1.0",
@@ -155,7 +155,7 @@ def test_nested_object_conversion():
 
     # Verify the nested objects are properly converted
     assert isinstance(request, CallToolRequest)
-    assert isinstance(request.params, CallToolRequestParamsParams)
+    assert isinstance(request.params, CallToolRequestParams)
     assert request.params.name == "test_tool"
     assert isinstance(request.params.arguments, dict)
     assert request.params.arguments["param1"] == "value1"
