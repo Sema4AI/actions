@@ -302,11 +302,12 @@ class CallToolResult(Result):
                 )
             converted_items = []
             for item in value:
-                # Try to disambiguate using const fields
                 if not isinstance(item, dict):
                     raise ValueError(
                         f"Expected a dict for union type ContentBlock, got {type(item)}"
                     )
+                converted_item = None
+                # Try to disambiguate using const fields
                 type_value = item.get("type")
                 type_to_class = {}
                 required_props_map = {}
@@ -316,7 +317,7 @@ class CallToolResult(Result):
                 type_to_class["resource_link"] = ResourceLink
                 type_to_class["resource"] = EmbeddedResource
                 if type_value is not None and type_value in type_to_class:
-                    converted_items.append(type_to_class[type_value].from_dict(item))
+                    converted_item = type_to_class[type_value].from_dict(item)
                 else:
                     # Try to disambiguate by required properties
                     matches = []
@@ -324,7 +325,7 @@ class CallToolResult(Result):
                         if all(r in item for r in reqs):
                             matches.append(type_name)
                     if len(matches) == 1:
-                        converted_items.append(matches[0].from_dict(item))
+                        converted_item = matches[0].from_dict(item)
                     elif len(matches) > 1:
                         match_details = [
                             f"{name} (requires any of {required_props_map[name]})"
@@ -342,6 +343,7 @@ class CallToolResult(Result):
                         raise ValueError(
                             f"No match for union type. Available fields: {available_fields}. Expected one of: {'; '.join(type_details)}"
                         )
+                converted_items.append(converted_item)
             value = converted_items
         kwargs["content"] = value
 
@@ -3128,18 +3130,19 @@ class ReadResourceResult(Result):
                 )
             converted_items = []
             for item in value:
-                # Try to disambiguate using const fields
                 if not isinstance(item, dict):
                     raise ValueError(
                         f"Expected a dict for union type TextResourceContents | BlobResourceContents, got {type(item)}"
                     )
+                converted_item = None
+                # Try to disambiguate using const fields
                 type_value = item.get("type")
                 type_to_class = {}
                 required_props_map = {}
                 required_props_map[TextResourceContents] = ["text", "uri"]
                 required_props_map[BlobResourceContents] = ["blob", "uri"]
                 if type_value is not None and type_value in type_to_class:
-                    converted_items.append(type_to_class[type_value].from_dict(item))
+                    converted_item = type_to_class[type_value].from_dict(item)
                 else:
                     # Try to disambiguate by required properties
                     matches = []
@@ -3147,7 +3150,7 @@ class ReadResourceResult(Result):
                         if all(r in item for r in reqs):
                             matches.append(type_name)
                     if len(matches) == 1:
-                        converted_items.append(matches[0].from_dict(item))
+                        converted_item = matches[0].from_dict(item)
                     elif len(matches) > 1:
                         match_details = [
                             f"{name} (requires any of {required_props_map[name]})"
@@ -3165,6 +3168,7 @@ class ReadResourceResult(Result):
                         raise ValueError(
                             f"No match for union type. Available fields: {available_fields}. Expected one of: {'; '.join(type_details)}"
                         )
+                converted_items.append(converted_item)
             value = converted_items
         kwargs["contents"] = value
 

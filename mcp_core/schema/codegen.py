@@ -212,6 +212,89 @@ def make_params_class_name(parent_name: str, field_name: str) -> str:
     return f"{base_name}Params"
 
 
+def generate_union_type_disambiguation(
+    indenter: TextIndenter,
+    union_type: str,
+    union_type_map: dict[str, list[str]],
+    definitions: dict[str, Any],
+    variable_name: str,
+    data_variable: str = "value",
+    extra_indent: int = 0,
+) -> None:
+    """Generate code to disambiguate union types.
+
+    Args:
+        indenter: The text indenter to use
+        union_type: The union type string (e.g., "A | B" or "ContentBlock")
+        union_type_map: Maps union type names to their component types
+        definitions: All available type definitions
+        variable_name: The variable name to assign the result to (e.g., "value" or "converted_items.append(item)")
+        data_variable: The variable containing the data to process (e.g., "value" or "item")
+        extra_indent: Extra indentation level
+    """
+    try:
+        types = union_type_map[union_type]
+    except KeyError:
+        types = [t.strip() for t in union_type.split("|")]
+
+    indenter.add_line("# Try to disambiguate using const fields", extra_indent)
+    indenter.add_line(f"type_value = {data_variable}.get('type')", extra_indent)
+    indenter.add_line("type_to_class = {}", extra_indent)
+    indenter.add_line("required_props_map = {}", extra_indent)
+
+    for t in types:
+        if t != "None":
+            type_schema = definitions.get(t, {})
+            properties_ = type_schema.get("properties", {})
+            required_ = type_schema.get("required", [])
+            found_const = False
+            for prop_name_, prop_schema_ in properties_.items():
+                if "const" in prop_schema_:
+                    const_value = prop_schema_["const"]
+                    indenter.add_line(
+                        f"type_to_class[{repr(const_value)}] = {t}",
+                        extra_indent,
+                    )
+                    found_const = True
+            if not found_const and required_:
+                indenter.add_line(f"required_props_map[{t}] = {required_}", extra_indent)
+
+    indenter.add_line(
+        "if type_value is not None and type_value in type_to_class:",
+        extra_indent,
+    )
+    indenter.add_line(
+        f"{variable_name} = type_to_class[type_value].from_dict({data_variable})", extra_indent + 1
+    )
+    indenter.add_line("else:", extra_indent)
+    indenter.add_line("# Try to disambiguate by required properties", extra_indent + 1)
+    indenter.add_line("matches = []", extra_indent + 1)
+    indenter.add_line("for type_name, reqs in required_props_map.items():", extra_indent + 1)
+    indenter.add_line(f"if all(r in {data_variable} for r in reqs):", extra_indent + 2)
+    indenter.add_line("matches.append(type_name)", extra_indent + 3)
+    indenter.add_line("if len(matches) == 1:", extra_indent + 1)
+    indenter.add_line(f"{variable_name} = matches[0].from_dict({data_variable})", extra_indent + 2)
+    indenter.add_line("elif len(matches) > 1:", extra_indent + 1)
+    indenter.add_line(
+        "match_details = [f'{name} (requires any of {required_props_map[name]})' for name in matches]",
+        extra_indent + 2,
+    )
+    indenter.add_line(
+        "raise ValueError(f\"Ambiguous match for union type. Multiple types match: {'; '.join(match_details)}\")",
+        extra_indent + 2,
+    )
+    indenter.add_line("else:", extra_indent + 1)
+    indenter.add_line(f"available_fields = list({data_variable}.keys())", extra_indent + 2)
+    indenter.add_line(
+        "type_details = [f'{name} (requires any of {required_props_map[name]})' for name in required_props_map]",
+        extra_indent + 2,
+    )
+    indenter.add_line(
+        "raise ValueError(f\"No match for union type. Available fields: {available_fields}. Expected one of: {'; '.join(type_details)}\")",
+        extra_indent + 2,
+    )
+
+
 def generate_class(
     name: str,
     schema: dict[str, Any],
@@ -341,9 +424,6 @@ def generate_class(
     indenter.add_line("kwargs = {}", extra_indent=1)
     indenter.add_line("", extra_indent=0)
 
-    if name == "CallToolResult":
-        print("here")
-
     # Add field processing for each field
     for field_name, field_type in field_types.items():
         indenter.add_line(f"# Process {field_name}", extra_indent=1)
@@ -363,80 +443,17 @@ def generate_class(
             indenter.add_line("for item in value:", extra_indent=2)
             # Check if the item type is a union
             if "|" in item_type or (item_type in union_type_map):
-                try:
-                    types = union_type_map[item_type]
-                except KeyError:
-                    types = [t.strip() for t in item_type.split("|")]
-
-                indenter.add_line("# Try to disambiguate using const fields", extra_indent=3)
                 indenter.add_line("if not isinstance(item, dict):", extra_indent=3)
                 indenter.add_line(
                     f'raise ValueError(f"Expected a dict for union type {item_type}, got {{type(item)}}")',
                     extra_indent=4,
                 )
-                indenter.add_line("type_value = item.get('type')", extra_indent=3)
-                indenter.add_line("type_to_class = {}", extra_indent=3)
-                indenter.add_line("required_props_map = {}", extra_indent=3)
-                for t in types:
-                    if t != "None":
-                        type_schema = definitions.get(t, {})
-                        properties_ = type_schema.get("properties", {})
-                        required_ = type_schema.get("required", [])
-                        found_const = False
-                        for prop_name_, prop_schema_ in properties_.items():
-                            if "const" in prop_schema_:
-                                const_value = prop_schema_["const"]
-                                indenter.add_line(
-                                    f"type_to_class[{repr(const_value)}] = {t}",
-                                    extra_indent=3,
-                                )
-                                found_const = True
-                        if not found_const and required_:
-                            indenter.add_line(
-                                f"required_props_map[{t}] = {required_}",
-                                extra_indent=3,
-                            )
-                indenter.add_line(
-                    "if type_value is not None and type_value in type_to_class:",
-                    extra_indent=3,
+                # For list items, we need to append to converted_items
+                indenter.add_line("converted_item = None", extra_indent=3)
+                generate_union_type_disambiguation(
+                    indenter, item_type, union_type_map, definitions, "converted_item", "item", 3
                 )
-                indenter.add_line(
-                    "converted_items.append(type_to_class[type_value].from_dict(item))",
-                    extra_indent=4,
-                )
-                indenter.add_line("else:", extra_indent=3)
-                indenter.add_line("# Try to disambiguate by required properties", extra_indent=4)
-                indenter.add_line("matches = []", extra_indent=4)
-                indenter.add_line(
-                    "for type_name, reqs in required_props_map.items():",
-                    extra_indent=4,
-                )
-                indenter.add_line("if all(r in item for r in reqs):", extra_indent=5)
-                indenter.add_line("matches.append(type_name)", extra_indent=6)
-                indenter.add_line("if len(matches) == 1:", extra_indent=4)
-                indenter.add_line(
-                    "converted_items.append(matches[0].from_dict(item))",
-                    extra_indent=5,
-                )
-                indenter.add_line("elif len(matches) > 1:", extra_indent=4)
-                indenter.add_line(
-                    "match_details = [f'{name} (requires any of {required_props_map[name]})' for name in matches]",
-                    extra_indent=5,
-                )
-                indenter.add_line(
-                    "raise ValueError(f\"Ambiguous match for union type. Multiple types match: {'; '.join(match_details)}\")",
-                    extra_indent=5,
-                )
-                indenter.add_line("else:", extra_indent=4)
-                indenter.add_line("available_fields = list(item.keys())", extra_indent=5)
-                indenter.add_line(
-                    "type_details = [f'{name} (requires any of {required_props_map[name]})' for name in required_props_map]",
-                    extra_indent=5,
-                )
-                indenter.add_line(
-                    "raise ValueError(f\"No match for union type. Available fields: {available_fields}. Expected one of: {'; '.join(type_details)}\")",
-                    extra_indent=5,
-                )
+                indenter.add_line("converted_items.append(converted_item)", extra_indent=3)
             else:
                 if (
                     item_type
@@ -469,63 +486,8 @@ def generate_class(
             # Handle union types using the discovered union type map
             indenter.add_line("if value is not None:", extra_indent=1)
             indenter.add_line("if isinstance(value, dict):", extra_indent=2)
-            indenter.add_line("# Try to disambiguate using const fields", extra_indent=3)
-            indenter.add_line("type_value = value.get('type')", extra_indent=3)
-            indenter.add_line("type_to_class = {}", extra_indent=3)
-            indenter.add_line("required_props_map = {}", extra_indent=3)
-
-            try:
-                types = union_type_map[field_type]
-            except KeyError:
-                types = [t.strip() for t in field_type.split("|")]
-
-            for t in types:
-                if t != "None":
-                    type_schema = definitions.get(t, {})
-                    properties_ = type_schema.get("properties", {})
-                    required_ = type_schema.get("required", [])
-                    found_const = False
-                    for prop_name_, prop_schema_ in properties_.items():
-                        if "const" in prop_schema_:
-                            const_value = prop_schema_["const"]
-                            indenter.add_line(
-                                f"type_to_class[{repr(const_value)}] = {t}",
-                                extra_indent=3,
-                            )
-                            found_const = True
-                    if not found_const and required_:
-                        indenter.add_line(f"required_props_map[{t}] = {required_}", extra_indent=3)
-            indenter.add_line(
-                "if type_value is not None and type_value in type_to_class:",
-                extra_indent=3,
-            )
-            indenter.add_line("value = type_to_class[type_value].from_dict(value)", extra_indent=4)
-            indenter.add_line("else:", extra_indent=3)
-            indenter.add_line("# Try to disambiguate by required properties", extra_indent=4)
-            indenter.add_line("matches = []", extra_indent=4)
-            indenter.add_line("for type_name, reqs in required_props_map.items():", extra_indent=4)
-            indenter.add_line("if all(r in value for r in reqs):", extra_indent=5)
-            indenter.add_line("matches.append(type_name)", extra_indent=6)
-            indenter.add_line("if len(matches) == 1:", extra_indent=4)
-            indenter.add_line("value = matches[0].from_dict(value)", extra_indent=5)
-            indenter.add_line("elif len(matches) > 1:", extra_indent=4)
-            indenter.add_line(
-                "match_details = [f'{name} (requires any of {required_props_map[name]})' for name in matches]",
-                extra_indent=5,
-            )
-            indenter.add_line(
-                "raise ValueError(f\"Ambiguous match for union type. Multiple types match: {'; '.join(match_details)}\")",
-                extra_indent=5,
-            )
-            indenter.add_line("else:", extra_indent=4)
-            indenter.add_line("available_fields = list(value.keys())", extra_indent=5)
-            indenter.add_line(
-                "type_details = [f'{name} (requires any of {required_props_map[name]})' for name in required_props_map]",
-                extra_indent=5,
-            )
-            indenter.add_line(
-                "raise ValueError(f\"No match for union type. Available fields: {available_fields}. Expected one of: {'; '.join(type_details)}\")",
-                extra_indent=5,
+            generate_union_type_disambiguation(
+                indenter, field_type, union_type_map, definitions, "value", "value", 3
             )
         elif field_type == "dict[str, Any]":
             pass
@@ -546,7 +508,6 @@ def generate_class(
             ):
                 pass
             else:
-                print(name, field_type)
                 indenter.add_line(f"value = {field_type}.from_dict(value)", extra_indent=2)
 
         indenter.add_line(f"kwargs[{repr(field_name)}] = value", extra_indent=1)
