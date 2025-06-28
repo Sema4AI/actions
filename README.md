@@ -14,7 +14,7 @@
 
 Sema4.ai is the easiest way to extend the capabilities of AI agents, assistants and copilots with custom actions, written in Python. Create and deploy tools, skills, loaders and plugins that securely connect any AI Assistant platform to your data and applications.
 
-Sema4.ai Action Server makes your Python scripts compatible with e.g. OpenAI's [custom GPTs](https://chat.openai.com/gpts/editor), [LangChain](https://python.langchain.com/docs/integrations/toolkits/robocorp/) and [OpenGPTs](https://github.com/langchain-ai/opengpts) by automatically creating and exposing an API based on function declaration, type hints and docstrings. Just add `@action` and start!
+Sema4.ai Action Server makes your Python scripts compatible with e.g. OpenAI's [custom GPTs](https://chat.openai.com/gpts/editor), [LangChain](https://python.langchain.com/docs/integrations/tools/robocorp/) and [OpenGPTs](https://github.com/langchain-ai/opengpts) by automatically creating and exposing an API based on function declaration, type hints and docstrings. Just add `@action` and start!
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="./docs/include/sema4ai-flow-dark_1x.webp">
@@ -66,14 +66,11 @@ sudo mv action-server /usr/local/bin/
 </details>
 
 <details>
-<summary><b>Robocorp Code extension for VS Code</b></summary>
+<summary><b>Sema4.ai SDK extension for VS Code</b></summary>
 
-> **NOTE:**
-> Robocorp VS Code extension is in the process to be renamed to Sema4.ai extension.
+After installing [Sema4.ai SDK extension from the VS Code Markeplace](https://marketplace.visualstudio.com/items?itemName=sema4ai.sema4ai), open the Command Palette (`Command-Shift-P` or `Ctrl-Shift-P`) and select `Sema4.ai: Create Action Package`. This will bootstrap a new project. You can then run/debug indvidual Actions from the Extension's sidebar, or start the Action Server.
 
-After installing [Robocorp Code extension from the VS Code Markeplace](https://marketplace.visualstudio.com/items?itemName=robocorp.robocorp-code), open the Command Palette (`Command-Shift-P` or `Ctrl-Shift-P`) and select `Robocorp: Create Action Package`. This will bootstrap a new project. You can then run/debug indvidual Actions from the Extension's sidebar, or start the Action Server.
-
-![github-extension](https://github.com/robocorp/robocorp/assets/40179958/d53000bf-558e-48a7-bb30-4610b9bf24c5)
+![github-extension](./docs/include/create-action-package.png)
 
 </details>
 
@@ -257,11 +254,9 @@ Sema4.ai stack is hands down the easiest way to give AI agents more capabilities
 
 Check out these example projects for inspiration.
 
-- 🐣 [Simplest possible AI Action](https://github.com/Sema4AI/cookbook/tree/main/actions/simple-greeter)
-- 🤡 [Get a random joke or jokes per theme. Showcases how easy it is to work with APIs.](https://github.com/Sema4AI/cookbook/tree/main/actions/api-jokes)
-- 🕸️ [Open a local Playwright browser and make some Google searches.](https://github.com/Sema4AI/cookbook/tree/main/actions/browser-google)
-- 🖥️ [Securely fetch contents of `.txt` and `.pdf` files from your local machine's folder in real time.](https://github.com/Sema4AI/cookbook/tree/main/actions/desktop-files)
-- 📝 [Read and write with local Excel file.](https://github.com/Sema4AI/cookbook/tree/main/actions/excel-local)
+- 🐣 [Simplest possible AI Action](https://github.com/Sema4AI/cookbook/tree/master/actions/simple-greeter)
+- 🤡 [Get a random joke or jokes per theme. Showcases how easy it is to work with APIs.](https://github.com/Sema4AI/cookbook/tree/master/actions/api-jokes)
+- 📝 [Add files to agent conversation](https://github.com/Sema4AI/cookbook/tree/master/actions/chat-files)
 
 Build more `@actions` and be awesome! We'd love to hear and see what have you built. Join our [Slack community](https://sema4ai-users.slack.com/) to share your work.
 
