@@ -445,35 +445,6 @@ class ClientCapabilitiesRootsParams(MCPBaseModel):
         return cls(**kwargs)
 
 
-# Type alias for clientnotification
-ClientNotification = (
-    CancelledNotification
-    | InitializedNotification
-    | ProgressNotification
-    | RootsListChangedNotification
-)
-
-# Type alias for clientrequest
-ClientRequest = (
-    InitializeRequest
-    | PingRequest
-    | ListResourcesRequest
-    | ListResourceTemplatesRequest
-    | ReadResourceRequest
-    | SubscribeRequest
-    | UnsubscribeRequest
-    | ListPromptsRequest
-    | GetPromptRequest
-    | ListToolsRequest
-    | CallToolRequest
-    | SetLevelRequest
-    | CompleteRequest
-)
-
-# Type alias for clientresult
-ClientResult = Result | CreateMessageResult | ListRootsResult | ElicitResult
-
-
 @dataclass
 class CompleteRequest(MCPBaseModel):
     """A request from the client to the server, to ask for completion options."""
@@ -695,12 +666,6 @@ class CompleteResultCompletionParams(MCPBaseModel):
         kwargs["values"] = value
 
         return cls(**kwargs)
-
-
-# Type alias for contentblock
-ContentBlock = (
-    TextContent | ImageContent | AudioContent | ResourceLink | EmbeddedResource
-)
 
 
 @dataclass
@@ -1615,10 +1580,6 @@ class JSONRPCErrorErrorParams(MCPBaseModel):
         return cls(**kwargs)
 
 
-# Type alias for jsonrpcmessage
-JSONRPCMessage = JSONRPCRequest | JSONRPCNotification | JSONRPCResponse | JSONRPCError
-
-
 @dataclass
 class JSONRPCNotification(MCPBaseModel):
     """A notification which does not expect a response."""
@@ -2327,12 +2288,6 @@ class ListToolsResult(Result):
         return cls(**kwargs)
 
 
-# Type alias for logginglevel
-LoggingLevel = Literal[
-    "alert", "critical", "debug", "emergency", "error", "info", "notice", "warning"
-]
-
-
 @dataclass
 class LoggingMessageNotification(MCPBaseModel):
     """
@@ -2733,10 +2688,6 @@ class PingRequestParams_meta(MCPBaseModel):
         return cls(**kwargs)
 
 
-# Type alias for primitiveschemadefinition
-PrimitiveSchemaDefinition = StringSchema | NumberSchema | BooleanSchema | EnumSchema
-
-
 @dataclass
 class ProgressNotification(MCPBaseModel):
     """
@@ -2804,10 +2755,6 @@ class ProgressNotificationParams(MCPBaseModel):
         kwargs["total"] = value
 
         return cls(**kwargs)
-
-
-# Type alias for progresstoken
-ProgressToken = str | int
 
 
 @dataclass
@@ -3233,10 +3180,6 @@ class RequestParams_meta(MCPBaseModel):
         return cls(**kwargs)
 
 
-# Type alias for requestid
-RequestId = str | int
-
-
 @dataclass
 class Resource(MCPBaseModel):
     """A known resource that the server is capable of reading."""
@@ -3587,10 +3530,6 @@ class ResourceUpdatedNotificationParams(MCPBaseModel):
         return cls(**kwargs)
 
 
-# Type alias for role
-Role = Literal["assistant", "user"]
-
-
 @dataclass
 class Root(MCPBaseModel):
     """Represents a root directory or file that the server can operate on."""
@@ -3868,35 +3807,6 @@ class ServerCapabilitiesToolsParams(MCPBaseModel):
         kwargs["listChanged"] = value
 
         return cls(**kwargs)
-
-
-# Type alias for servernotification
-ServerNotification = (
-    CancelledNotification
-    | ProgressNotification
-    | ResourceListChangedNotification
-    | ResourceUpdatedNotification
-    | PromptListChangedNotification
-    | ToolListChangedNotification
-    | LoggingMessageNotification
-)
-
-# Type alias for serverrequest
-ServerRequest = PingRequest | CreateMessageRequest | ListRootsRequest | ElicitRequest
-
-# Type alias for serverresult
-ServerResult = (
-    Result
-    | InitializeResult
-    | ListResourcesResult
-    | ListResourceTemplatesResult
-    | ReadResourceResult
-    | ListPromptsResult
-    | GetPromptResult
-    | ListToolsResult
-    | CallToolResult
-    | CompleteResult
-)
 
 
 @dataclass
@@ -4489,3 +4399,86 @@ _request_to_result_map: dict[Type[MCPBaseModel], Type[MCPBaseModel]] = {
     ListToolsRequest: ListToolsResult,
     ReadResourceRequest: ReadResourceResult,
 }
+
+# Type aliases and unions
+
+# Type alias for clientnotification
+ClientNotification = (
+    CancelledNotification
+    | InitializedNotification
+    | ProgressNotification
+    | RootsListChangedNotification
+)
+
+# Type alias for clientrequest
+ClientRequest = (
+    InitializeRequest
+    | PingRequest
+    | ListResourcesRequest
+    | ListResourceTemplatesRequest
+    | ReadResourceRequest
+    | SubscribeRequest
+    | UnsubscribeRequest
+    | ListPromptsRequest
+    | GetPromptRequest
+    | ListToolsRequest
+    | CallToolRequest
+    | SetLevelRequest
+    | CompleteRequest
+)
+
+# Type alias for clientresult
+ClientResult = Result | CreateMessageResult | ListRootsResult | ElicitResult
+
+# Type alias for contentblock
+ContentBlock = (
+    TextContent | ImageContent | AudioContent | ResourceLink | EmbeddedResource
+)
+
+# Type alias for jsonrpcmessage
+JSONRPCMessage = JSONRPCRequest | JSONRPCNotification | JSONRPCResponse | JSONRPCError
+
+# Type alias for logginglevel
+LoggingLevel = Literal[
+    "alert", "critical", "debug", "emergency", "error", "info", "notice", "warning"
+]
+
+# Type alias for primitiveschemadefinition
+PrimitiveSchemaDefinition = StringSchema | NumberSchema | BooleanSchema | EnumSchema
+
+# Type alias for progresstoken
+ProgressToken = str | int
+
+# Type alias for requestid
+RequestId = str | int
+
+# Type alias for role
+Role = Literal["assistant", "user"]
+
+# Type alias for servernotification
+ServerNotification = (
+    CancelledNotification
+    | ProgressNotification
+    | ResourceListChangedNotification
+    | ResourceUpdatedNotification
+    | PromptListChangedNotification
+    | ToolListChangedNotification
+    | LoggingMessageNotification
+)
+
+# Type alias for serverrequest
+ServerRequest = PingRequest | CreateMessageRequest | ListRootsRequest | ElicitRequest
+
+# Type alias for serverresult
+ServerResult = (
+    Result
+    | InitializeResult
+    | ListResourcesResult
+    | ListResourceTemplatesResult
+    | ReadResourceResult
+    | ListPromptsResult
+    | GetPromptResult
+    | ListToolsResult
+    | CallToolResult
+    | CompleteResult
+)
