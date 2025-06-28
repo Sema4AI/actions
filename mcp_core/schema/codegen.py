@@ -690,7 +690,7 @@ def code_format(code: str) -> str:
 
     try:
         result = subprocess.run(
-            ["ruff", "format", "-"],
+            [sys.executable, "-m", "ruff", "format", "-"],
             input=code.encode("utf-8"),
             stdout=subprocess.PIPE,
             check=True,
@@ -703,7 +703,7 @@ def code_format(code: str) -> str:
 
 def main():
     """Main function to generate Python classes from schema."""
-    schema_path = os.path.join(os.path.dirname(__file__), "2025-03-26-schema.json")
+    schema_path = os.path.join(os.path.dirname(__file__), "2025-06-18-schema.json")
 
     # Read schema file
     with open(schema_path, "r", encoding="utf-8") as f:
@@ -732,4 +732,7 @@ def main():
 
 
 if __name__ == "__main__":
+    import sys
+
+    print("Using Python: ", sys.executable)
     main()
