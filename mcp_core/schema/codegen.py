@@ -561,6 +561,9 @@ T = TypeVar('T')
     # Generate classes
     method_to_class: dict[str, str] = {}
 
+    # Collect union types to place at the end
+    union_types = []
+
     # First pass: collect all referenced types and their schemas
     referenced_types = {}
     for name, schema in definitions.items():
@@ -599,25 +602,21 @@ T = TypeVar('T')
         # Handle types defined with type arrays first (like ProgressToken)
         if "type" in schema and isinstance(schema["type"], list):
             type_name = create_python_type(schema["type"], schema)
-            indenter.add_line(f"# Type alias for {name.lower()}")
-            indenter.add_line(f"{name} = {type_name}")
-            indenter.add_line("")
+            union_types.append((name, type_name, f"Type alias for {name.lower()}"))
             continue
 
         # Handle string enums as Literal types
         if "enum" in schema and schema.get("type") == "string":
             enum_values = [repr(x) for x in schema["enum"]]
-            indenter.add_line(f"# Type alias for {name.lower()}")
-            indenter.add_line(f"{name} = Literal[{', '.join(enum_values)}]")
-            indenter.add_line("")
+            union_types.append(
+                (name, f"Literal[{', '.join(enum_values)}]", f"Type alias for {name.lower()}")
+            )
             continue
 
         # Handle anyOf types as union types (like ContentBlock)
         if "anyOf" in schema and not schema.get("properties"):
             union_type = create_python_type("", schema)
-            indenter.add_line(f"# Type alias for {name.lower()}")
-            indenter.add_line(f"{name} = {union_type}")
-            indenter.add_line("")
+            union_types.append((name, union_type, f"Type alias for {name.lower()}"))
             continue
 
         # Skip empty classes that aren't referenced
@@ -631,9 +630,7 @@ T = TypeVar('T')
                 type_name = create_python_type(schema["type"], schema)
                 if name in ["RequestId", "ProgressToken", "Role", "LoggingLevel"]:
                     # Special case for RequestId and ProgressToken - make them type aliases
-                    indenter.add_line(f"# Type alias for {name.lower()}")
-                    indenter.add_line(f"{name} = {type_name}")
-                    indenter.add_line("")
+                    union_types.append((name, type_name, f"Type alias for {name.lower()}"))
                 else:
                     indenter.add_line(f"@dataclass")
                     indenter.add_line(f"class {name}(MCPBaseModel):")
@@ -688,6 +685,15 @@ T = TypeVar('T')
     indenter.dedent()
     indenter.add_line("}")
     indenter.add_line("")
+
+    # Add union types at the end
+    if union_types:
+        indenter.add_line("# Type aliases and unions")
+        indenter.add_line("")
+        for name, type_def, comment in union_types:
+            indenter.add_line(f"# {comment}")
+            indenter.add_line(f"{name} = {type_def}")
+            indenter.add_line("")
 
     return indenter.get_text()
 
