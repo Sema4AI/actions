@@ -302,7 +302,46 @@ class CallToolResult(Result):
                 )
             converted_items = []
             for item in value:
-                converted_items.append(ContentBlock.from_dict(item))
+                # Try to disambiguate using const fields
+                if not isinstance(item, dict):
+                    raise ValueError(
+                        f"Expected a dict for union type ContentBlock, got {type(item)}"
+                    )
+                type_value = item.get("type")
+                type_to_class = {}
+                required_props_map = {}
+                type_to_class["text"] = TextContent
+                type_to_class["image"] = ImageContent
+                type_to_class["audio"] = AudioContent
+                type_to_class["resource_link"] = ResourceLink
+                type_to_class["resource"] = EmbeddedResource
+                if type_value is not None and type_value in type_to_class:
+                    converted_items.append(type_to_class[type_value].from_dict(item))
+                else:
+                    # Try to disambiguate by required properties
+                    matches = []
+                    for type_name, reqs in required_props_map.items():
+                        if all(r in item for r in reqs):
+                            matches.append(type_name)
+                    if len(matches) == 1:
+                        converted_items.append(matches[0].from_dict(item))
+                    elif len(matches) > 1:
+                        match_details = [
+                            f"{name} (requires any of {required_props_map[name]})"
+                            for name in matches
+                        ]
+                        raise ValueError(
+                            f"Ambiguous match for union type. Multiple types match: {'; '.join(match_details)}"
+                        )
+                    else:
+                        available_fields = list(item.keys())
+                        type_details = [
+                            f"{name} (requires any of {required_props_map[name]})"
+                            for name in required_props_map
+                        ]
+                        raise ValueError(
+                            f"No match for union type. Available fields: {available_fields}. Expected one of: {'; '.join(type_details)}"
+                        )
             value = converted_items
         kwargs["content"] = value
 
@@ -2923,7 +2962,43 @@ class PromptMessage(MCPBaseModel):
         # Process content
         value = data.get("content")
         if value is not None:
-            value = ContentBlock.from_dict(value)
+            if isinstance(value, dict):
+                # Try to disambiguate using const fields
+                type_value = value.get("type")
+                type_to_class = {}
+                required_props_map = {}
+                type_to_class["text"] = TextContent
+                type_to_class["image"] = ImageContent
+                type_to_class["audio"] = AudioContent
+                type_to_class["resource_link"] = ResourceLink
+                type_to_class["resource"] = EmbeddedResource
+                if type_value is not None and type_value in type_to_class:
+                    value = type_to_class[type_value].from_dict(value)
+                else:
+                    # Try to disambiguate by required properties
+                    matches = []
+                    for type_name, reqs in required_props_map.items():
+                        if all(r in value for r in reqs):
+                            matches.append(type_name)
+                    if len(matches) == 1:
+                        value = matches[0].from_dict(value)
+                    elif len(matches) > 1:
+                        match_details = [
+                            f"{name} (requires any of {required_props_map[name]})"
+                            for name in matches
+                        ]
+                        raise ValueError(
+                            f"Ambiguous match for union type. Multiple types match: {'; '.join(match_details)}"
+                        )
+                    else:
+                        available_fields = list(value.keys())
+                        type_details = [
+                            f"{name} (requires any of {required_props_map[name]})"
+                            for name in required_props_map
+                        ]
+                        raise ValueError(
+                            f"No match for union type. Available fields: {available_fields}. Expected one of: {'; '.join(type_details)}"
+                        )
         kwargs["content"] = value
 
         # Process role

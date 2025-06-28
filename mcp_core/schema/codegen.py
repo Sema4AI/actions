@@ -216,6 +216,7 @@ def generate_class(
     name: str,
     schema: dict[str, Any],
     definitions: dict[str, Any],
+    union_type_map: dict[str, list[str]],
     base_class: str = "MCPBaseModel",
 ) -> tuple[str, list[str]]:
     """Generate a Python class from a JSON schema definition.
@@ -224,6 +225,7 @@ def generate_class(
         name: The name of the class to generate
         schema: The JSON schema for the class
         definitions: All available type definitions
+        union_type_map: Maps union type names to their component types
         base_class: The base class to inherit from
 
     Returns:
@@ -246,7 +248,9 @@ def generate_class(
             and not (prop_schema.get("additionalProperties") and not prop_schema.get("properties"))
         ):
             nested_name = make_params_class_name(name, prop_name)
-            nested_class, nested_nested = generate_class(nested_name, prop_schema, definitions)
+            nested_class, nested_nested = generate_class(
+                nested_name, prop_schema, definitions, union_type_map
+            )
             nested_classes.append(nested_class)
             nested_classes.extend(nested_nested)
 
@@ -337,6 +341,9 @@ def generate_class(
     indenter.add_line("kwargs = {}", extra_indent=1)
     indenter.add_line("", extra_indent=0)
 
+    if name == "CallToolResult":
+        print("here")
+
     # Add field processing for each field
     for field_name, field_type in field_types.items():
         indenter.add_line(f"# Process {field_name}", extra_indent=1)
@@ -355,8 +362,12 @@ def generate_class(
             indenter.add_line("converted_items = []", extra_indent=2)
             indenter.add_line("for item in value:", extra_indent=2)
             # Check if the item type is a union
-            if "|" in item_type:
-                types = [t.strip() for t in item_type.split("|")]
+            if "|" in item_type or (item_type in union_type_map):
+                try:
+                    types = union_type_map[item_type]
+                except KeyError:
+                    types = [t.strip() for t in item_type.split("|")]
+
                 indenter.add_line("# Try to disambiguate using const fields", extra_indent=3)
                 indenter.add_line("if not isinstance(item, dict):", extra_indent=3)
                 indenter.add_line(
@@ -454,14 +465,20 @@ def generate_class(
             pass
         elif field_type in ["ProgressToken", "RequestId", "Role", "LoggingLevel"]:
             pass
-        elif "|" in field_type:
+        elif "|" in field_type or (field_type in union_type_map):
+            # Handle union types using the discovered union type map
             indenter.add_line("if value is not None:", extra_indent=1)
             indenter.add_line("if isinstance(value, dict):", extra_indent=2)
             indenter.add_line("# Try to disambiguate using const fields", extra_indent=3)
             indenter.add_line("type_value = value.get('type')", extra_indent=3)
             indenter.add_line("type_to_class = {}", extra_indent=3)
             indenter.add_line("required_props_map = {}", extra_indent=3)
-            types = [t.strip() for t in field_type.split("|")]
+
+            try:
+                types = union_type_map[field_type]
+            except KeyError:
+                types = [t.strip() for t in field_type.split("|")]
+
             for t in types:
                 if t != "None":
                     type_schema = definitions.get(t, {})
@@ -529,6 +546,7 @@ def generate_class(
             ):
                 pass
             else:
+                print(name, field_type)
                 indenter.add_line(f"value = {field_type}.from_dict(value)", extra_indent=2)
 
         indenter.add_line(f"kwargs[{repr(field_name)}] = value", extra_indent=1)
@@ -564,6 +582,20 @@ T = TypeVar('T')
     # Collect union types to place at the end
     union_types = []
 
+    # First pass: discover all union types
+    union_type_map = {}  # Maps union type names to their component types
+    for name, schema in definitions.items():
+        # Handle anyOf types as union types (like ContentBlock)
+        if "anyOf" in schema and not schema.get("properties"):
+            # Extract the component types from the union
+            if "anyOf" in schema:
+                component_types = []
+                for sub_schema in schema["anyOf"]:
+                    if "$ref" in sub_schema:
+                        ref_type = sub_schema["$ref"].split("/")[-1]
+                        component_types.append(ref_type)
+                union_type_map[name] = component_types
+
     # First pass: collect all referenced types and their schemas
     referenced_types = {}
     for name, schema in definitions.items():
@@ -589,7 +621,7 @@ T = TypeVar('T')
     # First handle the Result class if it exists
     if "Result" in definitions:
         schema = definitions["Result"]
-        class_def, nested_classes = generate_class("Result", schema, definitions)
+        class_def, nested_classes = generate_class("Result", schema, definitions, union_type_map)
         indenter.add_block(class_def)
         for nested_class in nested_classes:
             indenter.add_block(nested_class)
@@ -651,7 +683,7 @@ T = TypeVar('T')
                 indenter.dedent()
                 indenter.add_line("")
         else:
-            class_def, nested_classes = generate_class(name, schema, definitions)
+            class_def, nested_classes = generate_class(name, schema, definitions, union_type_map)
             indenter.add_block(class_def)
             for nested_class in nested_classes:
                 indenter.add_block(nested_class)
