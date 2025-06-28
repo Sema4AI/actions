@@ -1,0 +1,43 @@
+[tool.poetry]
+name = "sema4ai-mcp-core"
+version = "0.0.1"
+description = "Sema4AI Model Context Protocol (MCP)"
+authors = ["Sema4.ai Engineering <engineering@sema4.ai>"]
+readme = "README.md"
+repository = "https://github.com/Sema4AI/actions/"
+license = "Apache-2.0"
+packages = [{ include = "sema4ai/mcp_core", from = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi-slim = "^0.115.11"
+httpx = "^0.28.1"
+uvicorn = "^0.34.0"
+sse-starlette = "^2.3.6"
+sema4ai-common = "^0.1.1"
+
+[tool.poetry.group.dev.dependencies]
+sema4ai-devutils = { path = "../devutils/", develop = true }
+pytest-asyncio = "^1.0.0"
+
+
+[tool.mypy]
+mypy_path = "src:tests"
+
+[tool.black]
+skip-string-normalization = false
+skip-magic-trailing-comma = false
+
+[tool.isort]
+profile = "black"
+
+[tool.pytest.ini_options]
+addopts = "-s"
+
+[tool.ruff]
+ignore = ["F403", "F405"]
+line-length = 100
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
