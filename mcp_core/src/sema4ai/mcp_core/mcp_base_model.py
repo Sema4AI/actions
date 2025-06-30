@@ -46,6 +46,15 @@ class MCPBaseModel:
 
     __repr__ = __str__
 
+    def __eq__(self, other: Any) -> bool:
+        """Check if two instances are equal."""
+        if not isinstance(other, MCPBaseModel):
+            return False
+        return self.to_dict() == other.to_dict()
+
+    def __hash__(self) -> int:
+        raise NotImplementedError("Hashing is not supported for MCPBaseModel (it's mutable)")
+
     @classmethod
     def get_message_type(cls) -> MessageType:
         """Get the type of message this class represents."""
