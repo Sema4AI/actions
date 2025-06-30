@@ -6,6 +6,26 @@ import pytest
 import pytest_asyncio
 from mcp_tests.mcp_client import MCPClient, MCPSession
 
+DEFAULT_TIMEOUT: float | None = 10.0
+
+
+def is_debugger_active() -> bool:
+    import sys
+
+    if "pydevd" not in sys.modules:
+        return False
+
+    try:
+        import pydevd  # type:ignore
+    except ImportError:
+        return False
+
+    return bool(pydevd.get_global_debugger())
+
+
+if is_debugger_active():
+    DEFAULT_TIMEOUT = None
+
 
 @pytest.fixture()
 def mcp_server_base_url() -> Iterator[str]:
@@ -76,7 +96,7 @@ async def test_mcp_session_initialization(mcp_server_base_url: str):
     async with mcp_client.create_session() as session:
         assert session.session_id is not None
         assert session.initialize_result is not None
-        assert session.initialize_result.protocolVersion == "2025-03-26"
+        assert session.initialize_result.protocolVersion == "2025-06-18"
     # Test that the session is deleted after the context manager is exited
     async with httpx.AsyncClient() as client:
         response = await client.get(
@@ -155,9 +175,18 @@ async def test_mcp_tool_call(mcp_session: MCPSession):
         json=ListToolsRequest(
             id=mcp_session.next_id(),
         ).to_dict(),
+        timeout=DEFAULT_TIMEOUT,
     )
     assert response.status_code == 200
-    print(response.text)
+    response_json = response.json()
+    assert response_json["jsonrpc"] == "2.0"
+    assert response_json["result"]["tools"] == [
+        {
+            "name": "test",
+            "description": "Test tool",
+            "inputSchema": {"type": "object", "properties": {}},
+        }
+    ]
 
     response = await mcp_session.client.post(
         mcp_session.url,
@@ -175,6 +204,9 @@ async def test_mcp_tool_call(mcp_session: MCPSession):
         ).to_dict(),
     )
     assert response.status_code == 200
+    response_json = response.json()
+    assert response_json["jsonrpc"] == "2.0"
+    assert response_json["result"]["content"] == [{"type": "text", "text": "Test tool response"}]
 
 
 # @pytest.mark.asyncio

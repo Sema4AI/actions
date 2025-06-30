@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import Literal, Optional
+from typing import AsyncIterator, Callable, Literal, Optional
 
 from fastapi import APIRouter, Header, HTTPException
 from fastapi.responses import JSONResponse
@@ -27,9 +27,6 @@ _DONE: Literal["DONE"] = "DONE"
 class StreamableHttpMCPHandler:
     """Base MCP low-level implementation (base framework to handle MCP requests using streamable HTTP)."""
 
-    def __typecheckself__(self) -> None:
-        _: IStreamableHttpMCPHandler = self
-
     def __init__(self, session_id: str, messages_handler: IMessageHandler | None = None) -> None:
         from sema4ai.mcp_core.mcp_handler import DefaultMcpMessageHandler
 
@@ -38,6 +35,9 @@ class StreamableHttpMCPHandler:
         self._messages_handler = (
             messages_handler if messages_handler is not None else DefaultMcpMessageHandler()
         )
+
+    def __typecheckself__(self) -> None:
+        _: IStreamableHttpMCPHandler = self
 
     async def handle_requests(
         self, mcp_models: list[IMCPRequestModel]
@@ -71,7 +71,7 @@ class StreamableHttpMCPHandler:
                         model,
                         InitializeResult(
                             capabilities=ServerCapabilities(),
-                            protocolVersion="2025-03-26",
+                            protocolVersion="2025-06-18",
                             serverInfo=Implementation(name="test-server", version="1.0.0"),
                         ),
                     )
@@ -108,8 +108,12 @@ class StreamableHttpMCPHandler:
             await queue.put(create_json_rpc_error(str(e)))
             await queue.put(_DONE)
 
-    async def event_generator(self, queue: asyncio.Queue[dict[str, str] | Literal["DONE"]]):
+    async def event_generator(
+        self, queue: asyncio.Queue[dict[str, str] | Literal["DONE"]]
+    ) -> AsyncIterator[bytes]:
         """Generate SSE events from the queue."""
+        import json
+
         from sema4ai.mcp_core.mcp_models import create_json_rpc_error
 
         while True:
@@ -121,11 +125,13 @@ class StreamableHttpMCPHandler:
                 if item == _DONE:
                     break
 
-                yield item
+                as_text = json.dumps(item)
+                yield as_text.encode("utf-8")
 
             except Exception as e:
                 log.exception(e)
-                yield create_json_rpc_error(str(e))
+                error_dict = create_json_rpc_error(str(e))
+                yield json.dumps(error_dict).encode("utf-8")
                 break
             finally:
                 queue.task_done()
@@ -162,21 +168,32 @@ class StreamableHttpMCPHandler:
 class StreamableHttpMCPSessionHandler:
     """Base MCP session handler that handles sessions."""
 
+    def __init__(self, create_messages_handler_for_session: Callable[[], IMessageHandler]) -> None:
+        """
+        Args:
+            create_messages_handler_for_session: A function that creates the messages handler for a session.
+                Note that each session will have its own messages handler (note: usually the class itself
+                should be passed to use its constructor).
+        """
+        self._handlers: dict[str, IStreamableHttpMCPHandler] = {}
+        self._create_messages_handler_for_session = create_messages_handler_for_session
+
     def __typecheckself__(self) -> None:
         _: IStreamableHttpMCPSessionHandler = self
-
-    def __init__(self) -> None:
-        self._handlers: dict[str, IStreamableHttpMCPHandler] = {}
 
     async def obtain_session_handler(
         self, request: Request, session_id: str | None
     ) -> IStreamableHttpMCPHandler:
-        """Obtain an MCP session handler."""
+        """Obtain an MCP session handler (creates a new session if session_id is None,
+        otherwise returns an existing one based on the given session_id or raises a KeyError
+        if that session_id does not exist)."""
         import uuid
 
         if session_id is None:
             session_id = str(uuid.uuid4())
-        self._handlers[session_id] = StreamableHttpMCPHandler(session_id)
+            self._handlers[session_id] = StreamableHttpMCPHandler(
+                session_id, self._create_messages_handler_for_session()
+            )
         return self._handlers[session_id]
 
     async def get_session_handler(
@@ -288,7 +305,7 @@ def create_streamable_http_router(
                 return JSONResponse(content=msg_as_dict, headers=response_headers)
 
             raise ValueError(
-                f"Internal error in IMCPImplementation.handle_requests: Invalid response type: {type(response)} -- {response}"
+                f"Internal error in {mcp_handler} handle_requests: Invalid response type: {type(response)} -- {response}"
             )
 
         except Exception as e:
