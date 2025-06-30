@@ -2,12 +2,35 @@ from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING, AsyncIterator, Callable
 
 from sema4ai.mcp_core.mcp_models import InitializeResult
+from sema4ai.mcp_core.mcp_models._generated_mcp_models import Tool
 
 if TYPE_CHECKING:
     import httpx
 
+DEFAULT_TIMEOUT: float | None = 10.0
+
+
+def is_debugger_active() -> bool:
+    import sys
+
+    if "pydevd" not in sys.modules:
+        return False
+
+    try:
+        import pydevd  # type:ignore
+    except ImportError:
+        return False
+
+    return bool(pydevd.get_global_debugger())
+
+
+if is_debugger_active():
+    DEFAULT_TIMEOUT = None
+
 
 class MCPSession:
+    timeout: float | None = DEFAULT_TIMEOUT
+
     def __init__(
         self,
         url: str,
@@ -24,6 +47,46 @@ class MCPSession:
 
     def next_id(self) -> int | str:
         return self._next_id()
+
+    async def list_tools(self) -> list[Tool]:
+        from sema4ai.mcp_core.mcp_models import build_result_model
+        from sema4ai.mcp_core.mcp_models._generated_mcp_models import (
+            ListToolsRequest,
+            ListToolsResult,
+        )
+
+        if self.initialize_result.capabilities.tools is None:
+            return []  # Tools aren't supported by this server
+
+        request = ListToolsRequest(
+            id=self.next_id(),
+        )
+        response = await self.client.post(
+            self.url,
+            headers={
+                "Accept": "application/json, text/event-stream",
+                "Content-Type": "application/json",
+                "Mcp-Session-Id": self.session_id,
+            },
+            json=request.to_dict(),
+            timeout=self.timeout,
+        )
+        assert response.status_code == 200
+        try:
+            data = response.json()
+        except Exception:
+            raise Exception(f"Expected a json response, got {response.text}")
+
+        if data["jsonrpc"] != "2.0":
+            raise Exception(f"Expected a jsonrpc 2.0 response, got {data['jsonrpc']}")
+
+        if "result" not in data:
+            raise Exception(f"Expected a result in the response, got {data}")
+
+        result = build_result_model(request, data["result"])
+        if not isinstance(result, ListToolsResult):
+            raise Exception(f"Expected a ListToolsResult, got {type(result)} - {result}")
+        return result.tools
 
 
 class MCPClient:

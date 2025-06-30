@@ -4,27 +4,7 @@ from typing import AsyncIterator, Iterator
 import httpx
 import pytest
 import pytest_asyncio
-from mcp_tests.mcp_client import MCPClient, MCPSession
-
-DEFAULT_TIMEOUT: float | None = 10.0
-
-
-def is_debugger_active() -> bool:
-    import sys
-
-    if "pydevd" not in sys.modules:
-        return False
-
-    try:
-        import pydevd  # type:ignore
-    except ImportError:
-        return False
-
-    return bool(pydevd.get_global_debugger())
-
-
-if is_debugger_active():
-    DEFAULT_TIMEOUT = None
+from mcp_tests.mcp_client import DEFAULT_TIMEOUT, MCPClient, MCPSession
 
 
 @pytest.fixture()
@@ -155,6 +135,23 @@ async def test_mcp_notification(mcp_session: MCPSession):
         )
 
         assert response.status_code == 202
+
+
+@pytest.mark.asyncio
+async def test_mcp_tool_call_client_apis(mcp_session: MCPSession):
+    from sema4ai.mcp_core.mcp_models._generated_mcp_models import (
+        Tool,
+        ToolInputschemaParams,
+    )
+
+    tools = await mcp_session.list_tools()
+    assert tools == [
+        Tool(
+            name="test",
+            description="Test tool",
+            inputSchema=ToolInputschemaParams(type="object", properties={}),
+        )
+    ]
 
 
 @pytest.mark.asyncio
