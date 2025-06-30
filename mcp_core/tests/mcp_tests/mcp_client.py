@@ -1,8 +1,8 @@
 from contextlib import asynccontextmanager
-from typing import TYPE_CHECKING, AsyncIterator, Callable
+from typing import TYPE_CHECKING, Any, AsyncIterator, Callable
 
 from sema4ai.mcp_core.mcp_models import InitializeResult
-from sema4ai.mcp_core.mcp_models._generated_mcp_models import Tool
+from sema4ai.mcp_core.mcp_models._generated_mcp_models import CallToolResult, Tool
 
 if TYPE_CHECKING:
     import httpx
@@ -87,6 +87,47 @@ class MCPSession:
         if not isinstance(result, ListToolsResult):
             raise Exception(f"Expected a ListToolsResult, got {type(result)} - {result}")
         return result.tools
+
+    async def call_tool(
+        self, tool_name: str, arguments: dict[str, Any] | None = None
+    ) -> CallToolResult:
+        from sema4ai.mcp_core.mcp_models import build_result_model
+        from sema4ai.mcp_core.mcp_models._generated_mcp_models import (
+            CallToolRequest,
+            CallToolRequestParams,
+        )
+
+        request = CallToolRequest(
+            params=CallToolRequestParams(name=tool_name, arguments=arguments),
+            id=self.next_id(),
+        )
+
+        response = await self.client.post(
+            self.url,
+            headers={
+                "Accept": "application/json, text/event-stream",
+                "Content-Type": "application/json",
+                "Mcp-Session-Id": self.session_id,
+            },
+            json=request.to_dict(),
+            timeout=self.timeout,
+        )
+        assert response.status_code == 200
+        try:
+            data = response.json()
+        except Exception:
+            raise Exception(f"Expected a json response, got {response.text}")
+
+        if data["jsonrpc"] != "2.0":
+            raise Exception(f"Expected a jsonrpc 2.0 response, got {data['jsonrpc']}")
+
+        if "result" not in data:
+            raise Exception(f"Expected a result in the response, got {data}")
+
+        result = build_result_model(request, data["result"])
+        if not isinstance(result, CallToolResult):
+            raise Exception(f"Expected a CallToolResult, got {type(result)} - {result}")
+        return result
 
 
 class MCPClient:
