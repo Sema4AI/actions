@@ -65,7 +65,7 @@ class MCPClient:
             params=InitializeRequestParams(
                 clientInfo=Implementation(name=self.client_name, version=self.client_version),
                 capabilities=ClientCapabilities(),
-                protocolVersion="2025-03-26",
+                protocolVersion="2025-06-18",
             ),
             id=initialize_request_id,
         )

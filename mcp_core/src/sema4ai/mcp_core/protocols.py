@@ -5,7 +5,7 @@ from sse_starlette.sse import EventSourceResponse
 from starlette.requests import Request
 
 if TYPE_CHECKING:
-    from sema4ai.mcp_core.mcp_base_model import MCPBaseModel
+    from sema4ai.mcp_core.mcp_models._generated_mcp_models import MCPBaseModel, Result
 
 T = TypeVar("T")
 
@@ -38,7 +38,7 @@ class IMCPRequestModel(Protocol):
 class IMessageHandler(Protocol):
     """Protocol defining the interface for handling MCP messages."""
 
-    async def handle_request(self, request: IMCPRequestModel) -> "MCPBaseModel":
+    async def handle_request(self, request: IMCPRequestModel) -> "Result":
         """Handle an MCP request."""
 
 
@@ -60,8 +60,9 @@ class IStreamableHttpMCPSessionHandler(Protocol):
     async def obtain_session_handler(
         self, request: Request, session_id: str | None
     ) -> "IStreamableHttpMCPHandler":
-        """Obtain an MCP session (i.e.: creates a new session if session_id is None
-        or returns the existing session handler if session_id is provided).
+        """Obtain an MCP session handler (creates a new session if session_id is None,
+        otherwise returns an existing one based on the given session_id or raises a KeyError
+        if that session_id does not exist).
 
         Args:
             session_id: The ID of the session or none if not specified.
