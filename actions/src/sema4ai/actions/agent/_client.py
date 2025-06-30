@@ -6,7 +6,6 @@ from copy import copy
 from urllib.parse import urljoin, urlparse
 
 import sema4ai_http
-
 from sema4ai.actions._action import get_x_action_invocation_context
 
 log = logging.getLogger(__name__)
@@ -68,7 +67,9 @@ class _AgentAPIClient:
                 server_info = json.loads(f.read())
                 base_url = server_info.get("base_url")
                 if base_url:
-                    return self._test_api_endpoints(base_url)
+                    for version in ["v1", "v2"]:
+                        endpoint_url = f"{base_url}/api/public/{version}"
+                        return self._test_api_endpoints(endpoint_url)
                 else:
                     return None
         except Exception as e:
@@ -84,15 +85,12 @@ class _AgentAPIClient:
         Returns:
             str | None: Working API URL if found, None otherwise
         """
-        for version in ["v1", "v2"]:
-            endpoint_url = f"{base_url}/api/public/{version}"
+        test_endpoint = f"{base_url}/agents"
+        if "v2" in base_url:
+            test_endpoint += "/"
 
-            test_endpoint = f"{endpoint_url}/agents"
-            if version == "v2":
-                test_endpoint += "/"
-
-            if self._is_url_accessible(test_endpoint):
-                return endpoint_url
+        if self._is_url_accessible(test_endpoint):
+            return base_url
         return None
 
     def _is_url_accessible(self, url: str) -> bool:
