@@ -4,9 +4,12 @@ from typing import Any, Callable, Coroutine
 from sema4ai.mcp_core.mcp_models._generated_mcp_models import (
     CallToolRequest,
     CallToolResult,
+    InitializeRequest,
+    InitializeResult,
     ListToolsRequest,
     ListToolsResult,
     Result,
+    ServerCapabilities,
     Tool,
 )
 from sema4ai.mcp_core.protocols import IMCPRequestModel, IMessageHandler
@@ -22,11 +25,24 @@ def convert_from_camel_to_underscores(text: str) -> str:
 class DefaultMcpMessageHandler(IMessageHandler):
     """Default implementation of the IMessageHandler protocol."""
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        server_name: str = "sema4ai-mcp-core",
+        server_version: str = "1.0.0",
+        server_capabilities: ServerCapabilities | None = None,
+    ) -> None:
         self._tools: list[Tool] = []
         self._tool_handlers: dict[
             str, Callable[[CallToolRequest], Coroutine[Any, Any, Result]]
         ] = {}
+        self.server_name = server_name
+        self.server_version = server_version
+        self.server_capabilities = server_capabilities or ServerCapabilities()
+
+    @property
+    def protocol_version(self) -> str:
+        """Get the protocol version that this server implements."""
+        return "2025-06-18"
 
     def register_tool(
         self,
@@ -34,11 +50,19 @@ class DefaultMcpMessageHandler(IMessageHandler):
         handler: Callable[[CallToolRequest], Coroutine[Any, Any, Result]],
     ) -> None:
         """Register a tool and its handler."""
+        from sema4ai.mcp_core.mcp_models._generated_mcp_models import (
+            ServerCapabilitiesToolsParams,
+        )
+
         if tool.name in self._tool_handlers:
             raise ValueError(f"Tool {tool.name} is already registered")
 
         self._tools.append(tool)
         self._tool_handlers[tool.name] = handler
+        if self.server_capabilities.tools is None:
+            self.server_capabilities.tools = ServerCapabilitiesToolsParams(
+                listChanged=True,
+            )
 
     async def handle_request(self, request: IMCPRequestModel) -> Result:
         """Handle an MCP message."""
@@ -59,6 +83,22 @@ class DefaultMcpMessageHandler(IMessageHandler):
             raise ValueError(f"Expected Result, got {type(result)}")
 
         return result
+
+    async def on_initialize_request(self, request: InitializeRequest) -> InitializeResult:
+        """Handle an initialize request (MCP message handling)."""
+        from sema4ai.mcp_core.mcp_models._generated_mcp_models import (
+            Implementation,
+            ServerCapabilities,
+        )
+
+        if not isinstance(request, InitializeRequest):
+            raise ValueError(f"Expected InitializeRequest, got {type(request)}")
+
+        return InitializeResult(
+            capabilities=self.server_capabilities,
+            protocolVersion=self.protocol_version,
+            serverInfo=Implementation(name=self.server_name, version=self.server_version),
+        )
 
     async def on_list_tools_request(self, request: ListToolsRequest) -> ListToolsResult:
         """Handle a list tools request (MCP message handling)."""

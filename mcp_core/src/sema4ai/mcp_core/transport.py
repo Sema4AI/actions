@@ -67,14 +67,8 @@ class StreamableHttpMCPHandler:
                         )
                     self._initialized = True
 
-                    response = build_json_rpc_response_model(
-                        model,
-                        InitializeResult(
-                            capabilities=ServerCapabilities(),
-                            protocolVersion="2025-06-18",
-                            serverInfo=Implementation(name="test-server", version="1.0.0"),
-                        ),
-                    )
+                    result = await self._messages_handler.handle_request(model)
+                    response = build_json_rpc_response_model(model, result)
                     return response
 
         return await self._handle_requests(mcp_models)

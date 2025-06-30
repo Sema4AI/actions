@@ -164,6 +164,12 @@ async def test_mcp_tool_call(mcp_session: MCPSession):
 
     session_id = mcp_session.session_id
 
+    capabilities = mcp_session.initialize_result.capabilities
+    assert capabilities is not None
+    assert capabilities.tools is not None
+    assert capabilities.tools.listChanged is not None
+    assert capabilities.tools.listChanged is True
+
     # First, list the tools
     response = await mcp_session.client.post(
         mcp_session.url,
