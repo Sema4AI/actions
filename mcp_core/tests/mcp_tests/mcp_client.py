@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
-from typing import TYPE_CHECKING, Any, AsyncIterator, Callable
+from typing import TYPE_CHECKING, Any, AsyncIterator, Callable, TypeVar
 
+from sema4ai.mcp_core.mcp_base_model import MCPBaseModel
 from sema4ai.mcp_core.mcp_models import InitializeResult
 from sema4ai.mcp_core.mcp_models._generated_mcp_models import CallToolResult, Tool
 
@@ -27,6 +28,8 @@ def is_debugger_active() -> bool:
 if is_debugger_active():
     DEFAULT_TIMEOUT = None
 
+Y = TypeVar("Y", bound=MCPBaseModel)
+
 
 class MCPSession:
     timeout: float | None = DEFAULT_TIMEOUT
@@ -48,8 +51,51 @@ class MCPSession:
     def next_id(self) -> int | str:
         return self._next_id()
 
-    async def list_tools(self) -> list[Tool]:
+    async def _make_request(self, request: MCPBaseModel, expected_result_type: type[Y]) -> Y:
+        """Make an MCP request and handle the response.
+
+        Args:
+            request: The MCP request object
+            expected_result_type: The expected result type for validation
+
+        Returns:
+            The parsed result object
+        """
         from sema4ai.mcp_core.mcp_models import build_result_model
+
+        response = await self.client.post(
+            self.url,
+            headers={
+                "Accept": "application/json, text/event-stream",
+                "Content-Type": "application/json",
+                "Mcp-Session-Id": self.session_id,
+            },
+            json=request.to_dict(),
+            timeout=self.timeout,
+        )
+        assert response.status_code == 200
+        try:
+            data = response.json()
+        except Exception:
+            raise Exception(f"Expected a json response, got {response.text}")
+
+        if data["jsonrpc"] != "2.0":
+            raise Exception(f"Expected a jsonrpc 2.0 response, got {data['jsonrpc']}")
+
+        if "result" not in data:
+            raise Exception(f"Expected a result in the response, got {data}")
+
+        result = build_result_model(request, data["result"])
+        if not isinstance(result, expected_result_type):
+            raise Exception(
+                f"Expected a {expected_result_type.__name__}, got {type(result)} - {result}"
+            )
+        return result
+
+    async def list_tools(self) -> list[Tool]:
+        """
+        List the tools available on the server.
+        """
         from sema4ai.mcp_core.mcp_models._generated_mcp_models import (
             ListToolsRequest,
             ListToolsResult,
@@ -61,37 +107,15 @@ class MCPSession:
         request = ListToolsRequest(
             id=self.next_id(),
         )
-        response = await self.client.post(
-            self.url,
-            headers={
-                "Accept": "application/json, text/event-stream",
-                "Content-Type": "application/json",
-                "Mcp-Session-Id": self.session_id,
-            },
-            json=request.to_dict(),
-            timeout=self.timeout,
-        )
-        assert response.status_code == 200
-        try:
-            data = response.json()
-        except Exception:
-            raise Exception(f"Expected a json response, got {response.text}")
-
-        if data["jsonrpc"] != "2.0":
-            raise Exception(f"Expected a jsonrpc 2.0 response, got {data['jsonrpc']}")
-
-        if "result" not in data:
-            raise Exception(f"Expected a result in the response, got {data}")
-
-        result = build_result_model(request, data["result"])
-        if not isinstance(result, ListToolsResult):
-            raise Exception(f"Expected a ListToolsResult, got {type(result)} - {result}")
+        result = await self._make_request(request, ListToolsResult)
         return result.tools
 
     async def call_tool(
         self, tool_name: str, arguments: dict[str, Any] | None = None
     ) -> CallToolResult:
-        from sema4ai.mcp_core.mcp_models import build_result_model
+        """
+        Call a tool on the server.
+        """
         from sema4ai.mcp_core.mcp_models._generated_mcp_models import (
             CallToolRequest,
             CallToolRequestParams,
@@ -102,32 +126,7 @@ class MCPSession:
             id=self.next_id(),
         )
 
-        response = await self.client.post(
-            self.url,
-            headers={
-                "Accept": "application/json, text/event-stream",
-                "Content-Type": "application/json",
-                "Mcp-Session-Id": self.session_id,
-            },
-            json=request.to_dict(),
-            timeout=self.timeout,
-        )
-        assert response.status_code == 200
-        try:
-            data = response.json()
-        except Exception:
-            raise Exception(f"Expected a json response, got {response.text}")
-
-        if data["jsonrpc"] != "2.0":
-            raise Exception(f"Expected a jsonrpc 2.0 response, got {data['jsonrpc']}")
-
-        if "result" not in data:
-            raise Exception(f"Expected a result in the response, got {data}")
-
-        result = build_result_model(request, data["result"])
-        if not isinstance(result, CallToolResult):
-            raise Exception(f"Expected a CallToolResult, got {type(result)} - {result}")
-        return result
+        return await self._make_request(request, CallToolResult)
 
 
 class MCPClient:
