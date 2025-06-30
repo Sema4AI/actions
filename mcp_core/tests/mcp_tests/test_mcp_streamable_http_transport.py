@@ -140,6 +140,7 @@ async def test_mcp_notification(mcp_session: MCPSession):
 @pytest.mark.asyncio
 async def test_mcp_tool_call_client_apis(mcp_session: MCPSession):
     from sema4ai.mcp_core.mcp_models._generated_mcp_models import (
+        TextContent,
         Tool,
         ToolInputschemaParams,
     )
@@ -152,6 +153,10 @@ async def test_mcp_tool_call_client_apis(mcp_session: MCPSession):
             inputSchema=ToolInputschemaParams(type="object", properties={}),
         )
     ]
+
+    # Call the tool
+    result = await mcp_session.call_tool("test", {"message": "test"})
+    assert result.content == [TextContent(text="Test tool response")]
 
 
 @pytest.mark.asyncio
