@@ -1,3 +1,5 @@
+spec-version: v2
+
 # Required: A short name for the action package
 name: Data Access Queries Template
 
