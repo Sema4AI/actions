@@ -86,10 +86,7 @@ class DefaultMcpMessageHandler(IMessageHandler):
 
     async def on_initialize_request(self, request: InitializeRequest) -> InitializeResult:
         """Handle an initialize request (MCP message handling)."""
-        from sema4ai.mcp_core.mcp_models._generated_mcp_models import (
-            Implementation,
-            ServerCapabilities,
-        )
+        from sema4ai.mcp_core.mcp_models._generated_mcp_models import Implementation
 
         if not isinstance(request, InitializeRequest):
             raise ValueError(f"Expected InitializeRequest, got {type(request)}")
@@ -115,7 +112,7 @@ class DefaultMcpMessageHandler(IMessageHandler):
             raise ValueError(f"Expected CallToolRequest, got {type(request)}")
 
         if request.params.name not in self._tool_handlers:
-            raise ValueError(f"Tool {request.params.name} not registered")
+            raise ValueError(f"Unknown tool: {request.params.name}")
 
         handler = self._tool_handlers[request.params.name]
         result = await handler(request)
