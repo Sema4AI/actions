@@ -79,8 +79,10 @@ class MCPSession:
         except Exception:
             raise Exception(f"Expected a json response, got {response.text}")
 
-        if data["jsonrpc"] != "2.0":
-            raise Exception(f"Expected a jsonrpc 2.0 response, got {data['jsonrpc']}")
+        if data.get("jsonrpc") != "2.0":
+            raise Exception(
+                f"Expected a jsonrpc 2.0 response, got {data} (expected 'jsonrpc = 2.0' in the message)"
+            )
 
         if "result" not in data:
             raise Exception(f"Expected a result in the response, got {data}")

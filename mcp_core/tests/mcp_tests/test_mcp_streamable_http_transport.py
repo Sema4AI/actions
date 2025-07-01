@@ -155,8 +155,12 @@ async def test_mcp_tool_call_client_apis(mcp_session: MCPSession):
     ]
 
     # Call the tool
-    result = await mcp_session.call_tool("test", {"message": "test"})
+    result = await mcp_session.call_tool("test", {})
     assert result.content == [TextContent(text="Test tool response")]
+
+    # Call tool that does not exist
+    result = await mcp_session.call_tool("not-there", {})
+    print(result)
 
 
 @pytest.mark.asyncio
