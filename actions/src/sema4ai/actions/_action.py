@@ -6,7 +6,6 @@ from typing import Any, Dict, List, Literal, Optional, Tuple, get_type_hints
 
 from robocorp.log import ConsoleMessageKind, console_message
 from robocorp.log.protocols import OptExcInfo
-
 from sema4ai.actions._constants import SUPPORTED_TYPES_IN_SCHEMA
 from sema4ai.actions._customization._plugin_manager import PluginManager
 from sema4ai.actions._protocols import IAction, IContext, Status
@@ -32,13 +31,13 @@ def get_provider_and_scope_from_annotation_args(
     error_message = f"""
 Invalid OAuth2Secret annotation found.
 
-The OAuth2Secret must be parametrized with 2 arguments, 
-the first being a Literal with the provider name 
-(i.e.: `Literal["google"]`) 
+The OAuth2Secret must be parametrized with 2 arguments,
+the first being a Literal with the provider name
+(i.e.: `Literal["google"]`)
 and the second a list with one Literal with the (multiple) scopes that are required
 (i.e.: `list[Literal["scope1", "scope2", ...]])
 
-Full Example for a parameter named `google_secret` requiring google sheets 
+Full Example for a parameter named `google_secret` requiring google sheets
 and google drive scopes:
 
 google_secret: OAuth2Secret[
@@ -377,6 +376,14 @@ def set_current_requests_contexts(requests_contexts: Optional["RequestContexts"]
 
 def get_current_requests_contexts() -> Optional["RequestContexts"]:
     return _ActionContext._current_requests_contexts
+
+
+def get_x_action_invocation_context() -> str:
+    request_contexts = get_current_requests_contexts()
+    if request_contexts is None or request_contexts.invocation_context is None:
+        return "{}"  # The value is the x-action-invocation-context to be used in the header
+
+    return request_contexts.invocation_context.initial_data
 
 
 class Context:
