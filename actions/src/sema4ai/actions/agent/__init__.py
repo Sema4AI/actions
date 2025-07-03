@@ -3,7 +3,15 @@ import logging
 # from pydantic import BaseModel
 from pydantic import validate_call
 from sema4ai.actions.agent._client import _AgentAPIClient
-from sema4ai.actions.agent._models import Prompt
+from sema4ai.actions.agent._models import (
+    Prompt,
+    PromptAudioContent,
+    PromptDocumentContent,
+    PromptImageContent,
+    PromptTextContent,
+    PromptToolResultContent,
+    PromptToolUseContent,
+)
 from sema4ai.actions.agent._platforms import (
     AnyPlatformParameters,
     AzureOpenAIPlatformParameters,
@@ -161,12 +169,20 @@ __all__ = [
     "get_agent_id",
     "prompt_generate",
     "Prompt",
+    "PromptTextContent",
+    "PromptImageContent",
+    "PromptAudioContent",
+    "PromptDocumentContent",
+    "PromptToolResultContent",
+    "PromptToolUseContent",
+    "PromptAgentMessage",
+    "PromptUserMessage",
     "AnyPlatformParameters",
-    "AzureOpenAIPlatformParameters",
     "BedrockPlatformParameters",
     "CortexPlatformParameters",
+    "OpenAIPlatformParameters",
+    "AzureOpenAIPlatformParameters",
     "GooglePlatformParameters",
     "GroqPlatformParameters",
-    "OpenAIPlatformParameters",
     "ReductoPlatformParameters",
 ]
