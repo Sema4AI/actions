@@ -1,21 +1,14 @@
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any, Literal, Union
 
 from pydantic import BaseModel, Field
 
 PromptImageMimeType = Literal["image/jpeg", "image/png", "image/gif", "image/webp"]
-PROMPT_IMAGE_MIME_TYPES = {
-    "image/jpeg",
-    "image/png",
-    "image/gif",
-    "image/webp",
-}
-# TODO: Remove this once the files module is implemented
-UploadedFile = Any
-
 ToolCategory = Literal[
     "client-exec-tool",
     "client-info-tool",
 ]
+# TODO: Remove this once the files module is implemented
+UploadedFile = Any
 
 
 class PromptTextContent(BaseModel):
@@ -194,10 +187,15 @@ class PromptToolResultContent(BaseModel):
 
     content: Annotated[
         list[
-            PromptTextContent
-            | PromptImageContent
-            | PromptAudioContent
-            | PromptDocumentContent
+            Annotated[
+                Union[
+                    PromptTextContent,
+                    PromptImageContent,
+                    PromptAudioContent,
+                    PromptDocumentContent,
+                ],
+                Field(discriminator="kind"),
+            ]
         ],
         Field(
             description="List of content items produced by the tool execution",
@@ -264,7 +262,12 @@ class PromptAgentMessage(BaseModel):
     """Represents an agent message in the prompt."""
 
     content: Annotated[
-        list[PromptTextContent | PromptToolUseContent],
+        list[
+            Annotated[
+                Union[PromptTextContent, PromptToolUseContent],
+                Field(discriminator="kind"),
+            ]
+        ],
         Field(description="The contents of the prompt message"),
     ]
 
@@ -282,11 +285,16 @@ class PromptUserMessage(BaseModel):
 
     content: Annotated[
         list[
-            PromptTextContent
-            | PromptImageContent
-            | PromptAudioContent
-            | PromptToolResultContent
-            | PromptDocumentContent
+            Annotated[
+                Union[
+                    PromptTextContent,
+                    PromptImageContent,
+                    PromptAudioContent,
+                    PromptToolResultContent,
+                    PromptDocumentContent,
+                ],
+                Field(discriminator="kind"),
+            ],
         ],
         Field(description="The contents of the prompt message"),
     ]
@@ -298,34 +306,6 @@ class PromptUserMessage(BaseModel):
             description="The role of the message sender",
         ),
     ] = "user"
-
-
-class SpecialPromptMessage(BaseModel):
-    """Base class for special messages in a prompt.
-
-    Special messages are messages that are "abstract" in the sense that
-    they will eventually be _translated_ to "normal/converte" PromptMessages
-    with the help of data provided by the kernel.
-
-    Mostly, special messages are an affordance used for writing prompt
-    templates for our agents, allowing us to capture concepts without
-    putting a large burden on agent architectures to re-implement code
-    for familiar patterns like "include the last N messages from the
-    conversation history" or "get relevant memories from the agent's
-    memory store".
-    """
-
-    role: Annotated[
-        Literal[
-            "$conversation-history",
-            "$documents",
-            "$memories",
-        ],
-        Field(
-            description="The role of the message sender. Special messages are always "
-            "prefixed with a `$` to make them easy to spot in a prompt.",
-        ),
-    ]
 
 
 class ConversationHistoryParams(BaseModel):
@@ -348,8 +328,12 @@ class ConversationHistoryParams(BaseModel):
     ] = 0.50
 
 
-class ConversationHistorySpecialMessage(SpecialPromptMessage):
+class ConversationHistorySpecialMessage(BaseModel):
     """Special message for including the conversation history in a prompt."""
+
+    role: Annotated[
+        Literal["$conversation-history"], Field(default="$conversation-history")
+    ] = "$conversation-history"
 
     params: Annotated[
         ConversationHistoryParams,
@@ -377,8 +361,10 @@ class DocumentsParams(BaseModel):
     ] = 0.50
 
 
-class DocumentsSpecialMessage(SpecialPromptMessage):
+class DocumentsSpecialMessage(BaseModel):
     """Special message for including the documents in a prompt."""
+
+    role: Annotated[Literal["$documents"], Field(default="$documents")] = "$documents"
 
     params: Annotated[
         DocumentsParams,
@@ -406,8 +392,10 @@ class MemoriesParams(BaseModel):
     ] = 0.50
 
 
-class MemoriesSpecialMessage(SpecialPromptMessage):
+class MemoriesSpecialMessage(BaseModel):
     """Special message for including the memories in a prompt."""
+
+    role: Annotated[Literal["$memories"], Field(default="$memories")] = "$memories"
 
     params: Annotated[
         MemoriesParams,
@@ -462,11 +450,16 @@ class Prompt(BaseModel):
 
     messages: Annotated[
         list[
-            PromptUserMessage
-            | PromptAgentMessage
-            | ConversationHistorySpecialMessage
-            | DocumentsSpecialMessage
-            | MemoriesSpecialMessage
+            Annotated[
+                Union[
+                    PromptUserMessage,
+                    PromptAgentMessage,
+                    ConversationHistorySpecialMessage,
+                    DocumentsSpecialMessage,
+                    MemoriesSpecialMessage,
+                ],
+                Field(discriminator="role"),
+            ]
         ],
         Field(
             default_factory=list,
@@ -536,34 +529,3 @@ class Prompt(BaseModel):
             description="The maximum cumulative probability of tokens to consider when sampling. Optional.",
         ),
     ] = None
-
-    def model_post_init(self, __context: Any) -> None:
-        """Validates the prompt structure after initialization.
-
-        Ensures:
-        1. Temperature is within valid range [0.0, 1.0].
-        2. If messages is provided, it starts with a user message.
-        3. Tool choice is valid.
-
-        Raises:
-            ValueError: If temperature is out of range or first
-                message is not from user.
-        """
-        # Validate temperature
-        if self.temperature is not None:
-            if not 0.0 <= self.temperature <= 1.0:
-                raise ValueError(
-                    f"Temperature must be between 0.0 and 1.0, got {self.temperature}",
-                )
-
-        # Validate message sequence starts with user
-        if self.messages and not isinstance(self.messages[0], PromptUserMessage):
-            raise ValueError("Message sequence must start with a user message")
-
-        # Validate tool choice is valid
-        if self.tool_choice not in ["auto", "any", *[tool.name for tool in self.tools]]:
-            raise ValueError(
-                f"Invalid tool choice: {self.tool_choice}. "
-                f"Must be 'auto', 'any', or the name of a provided "
-                f"tool.{' Available tools: ' + ', '.join(tool.name for tool in self.tools)}",
-            )

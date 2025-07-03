@@ -1,6 +1,7 @@
 import logging
 
 # from pydantic import BaseModel
+from pydantic import validate_call
 from sema4ai.actions.agent._client import _AgentAPIClient
 from sema4ai.actions.agent._models import Prompt
 from sema4ai.actions.agent._platforms import (
@@ -106,6 +107,7 @@ def get_agent_id() -> str:
     return _get_id_generic("agent_id", "x-invoked_for_agent_id")
 
 
+@validate_call
 def prompt_generate(
     prompt: Prompt,
     platform_config: AnyPlatformParameters | None = None,
@@ -133,7 +135,12 @@ def prompt_generate(
 
     client = _AgentAPIClient()
 
-    payload = {"prompt": prompt, "platform_config_raw": platform_config}
+    payload = {
+        "prompt": prompt.model_dump(),
+        "platform_config_raw": platform_config.model_dump()
+        if platform_config
+        else None,
+    }
     query_params = {}
     if thread_id:
         query_params["thread_id"] = thread_id

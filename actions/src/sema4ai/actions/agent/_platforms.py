@@ -1,30 +1,21 @@
-from typing import Literal
+from typing import Annotated, Literal, Union
 
-from pydantic import BaseModel, Field
-
-
-class PlatformParameters(BaseModel):
-    """Base class for platform parameters.
-
-    This is an abstract base class that all platform-specific parameter
-    classes should inherit from.
-    """
-
-    kind: str = Field(description="The kind of platform parameters.")
+from pydantic import BaseModel, ConfigDict, Field
 
 
-class OpenAIPlatformParameters(PlatformParameters):
+class OpenAIPlatformParameters(BaseModel):
     """Parameters for the OpenAI platform.
 
     This class encapsulates all configuration parameters for OpenAI client
     initialization.
     """
 
+    model_config = ConfigDict(extra="forbid")
+
     kind: Literal["openai"] = Field(
         default="openai",
         description="The kind of platform parameters.",
     )
-    """The kind of platform parameters."""
 
     openai_api_key: str | None = Field(
         default=None,
@@ -33,7 +24,7 @@ class OpenAIPlatformParameters(PlatformParameters):
     )
 
 
-class BedrockPlatformParameters(PlatformParameters):
+class BedrockPlatformParameters(BaseModel):
     """Parameters for the Bedrock platform.
 
     This class encapsulates all configuration parameters for AWS Bedrock
@@ -96,11 +87,12 @@ class BedrockPlatformParameters(PlatformParameters):
         ```
     """
 
+    model_config = ConfigDict(extra="forbid")
+
     kind: Literal["bedrock"] = Field(
         default="bedrock",
         description="The kind of platform parameters.",
     )
-    """The kind of platform parameters."""
 
     # Direct client parameters
     region_name: str | None = Field(
@@ -178,92 +170,82 @@ class BedrockPlatformParameters(PlatformParameters):
     )
 
 
-class CortexPlatformParameters(PlatformParameters):
+class CortexPlatformParameters(BaseModel):
     """Parameters for the Snowflake Cortex platform.
 
     This class encapsulates all configuration parameters for Snowflake Cortex
     client initialization.
     """
 
+    model_config = ConfigDict(extra="forbid")
+
     kind: Literal["cortex"] = Field(
         default="cortex",
         description="The kind of platform parameters.",
     )
-    """The kind of platform parameters."""
 
     snowflake_username: str | None = Field(
         default=None,
         description="The Snowflake username. Optional, as token-based auth is preferred.",
     )
-    """The Snowflake username. Optional, as token-based auth is preferred."""
 
     snowflake_password: str | None = Field(
         default=None,
         description="The Snowflake password. Optional, as token-based auth is preferred.",
     )
-    """The Snowflake password. Optional, as token-based auth is preferred."""
 
     snowflake_account: str | None = Field(
         default=None,
         description="The Snowflake account. If not provided, it will be"
         "inferred from the environment.",
     )
-    """The Snowflake account. If not provided,
-    it will be inferred from the environment."""
 
     snowflake_host: str | None = Field(
         default=None,
         description="The Snowflake host. If not provided, it will be"
         "inferred from the environment (built from account name).",
     )
-    """The Snowflake host. If not provided,
-    it will be inferred from the environment (built from account name)."""
 
     snowflake_warehouse: str | None = Field(
         default=None,
         description="The Snowflake warehouse. Optional.",
     )
-    """The Snowflake warehouse. Optional."""
 
     snowflake_database: str | None = Field(
         default=None,
         description="The Snowflake database. Optional.",
     )
-    """The Snowflake database. Optional."""
 
     snowflake_schema: str | None = Field(
         default=None,
         description="The Snowflake schema. Optional.",
     )
-    """The Snowflake schema. Optional."""
 
     snowflake_role: str | None = Field(
         default=None,
         description="The Snowflake role. Optional.",
     )
-    """The Snowflake role. Optional."""
 
 
-class AzureOpenAIPlatformParameters(PlatformParameters):
+class AzureOpenAIPlatformParameters(BaseModel):
     """Parameters for the Azure OpenAI platform.
 
     This class encapsulates all configuration parameters for Azure OpenAI client
     initialization.
     """
 
+    model_config = ConfigDict(extra="forbid")
+
     kind: Literal["azure"] = Field(
         default="azure",
         description="The kind of platform parameters.",
     )
-    """The kind of platform parameters."""
 
     azure_api_key: str | None = Field(
         default=None,
         description="The Azure OpenAI API key. If not provided, it will be "
         "attempted to be inferred from the environment.",
     )
-    """The Azure OpenAI API key. If not provided, it will be attempted to be inferred
-    from the environment."""
 
     azure_endpoint_url: str | None = Field(
         default=None,
@@ -304,97 +286,94 @@ class AzureOpenAIPlatformParameters(PlatformParameters):
     )
 
 
-class GooglePlatformParameters(PlatformParameters):
+class GooglePlatformParameters(BaseModel):
     """Parameters for the Google platform.
 
     This class encapsulates all configuration parameters for Google client
     initialization.
     """
 
+    model_config = ConfigDict(extra="forbid")
+
     kind: Literal["google"] = Field(
         default="google",
         description="The kind of platform parameters.",
     )
-    """The kind of platform parameters."""
 
     google_api_key: str | None = Field(
         default=None,
         description="The Google API key. If not provided, it will be "
         "attempted to be inferred from the environment.",
     )
-    """The Google API key. If not provided, it will be attempted to be inferred
-    from the environment."""
 
 
-class GroqPlatformParameters(PlatformParameters):
+class GroqPlatformParameters(BaseModel):
     """Parameters for the Groq platform.
 
     This class encapsulates all configuration parameters for Groq client
     initialization.
     """
 
+    model_config = ConfigDict(extra="forbid")
+
     kind: Literal["groq"] = Field(
         default="groq",
         description="The kind of platform parameters.",
     )
-    """The kind of platform parameters."""
 
     groq_api_key: str | None = Field(
         default=None,
         description="The Groq API key. If not provided, it will be "
         "attempted to be inferred from the environment.",
     )
-    """The Groq API key. If not provided, it will be attempted to be inferred
-    from the environment."""
 
 
-class ReductoPlatformParameters(PlatformParameters):
+class ReductoPlatformParameters(BaseModel):
     """Parameters for the Reducto platform.
 
     This class encapsulates all configuration parameters for Reducto client
     initialization.
     """
 
+    model_config = ConfigDict(extra="forbid")
+
     kind: Literal["reducto"] = Field(
         default="reducto",
         description="The kind of platform parameters.",
     )
-    """The kind of platform parameters."""
 
     reducto_api_url: str = Field(
         default="https://backend.sema4ai.dev/reducto",
         description="The Reducto API URL.",
     )
-    """The Reducto API URL."""
 
     reducto_api_key: str | None = Field(
         default=None,
         description="The Reducto API key. If not provided, it will be "
         "attempted to be inferred from the environment.",
     )
-    """The Reducto API key. If not provided, it will be attempted to be inferred
-    from the environment."""
 
     delegate_kind: str | None = Field(
         default=None,
         description="The kind of the delegate platform client.",
     )
-    """The kind of the delegate platform client."""
 
     delegate_api_key: str | None = Field(
         default=None,
         description="The API key for the delegate platform client. If not "
         "provided, it will be attempted to be inferred from the environment.",
     )
-    """The API key for the delegate platform client."""
 
 
-AnyPlatformParameters = (
-    BedrockPlatformParameters
-    | CortexPlatformParameters
-    | OpenAIPlatformParameters
-    | AzureOpenAIPlatformParameters
-    | GooglePlatformParameters
-    | GroqPlatformParameters
-    | ReductoPlatformParameters
-)
+AnyPlatformParameters = Annotated[
+    Union[
+        BedrockPlatformParameters,
+        CortexPlatformParameters,
+        OpenAIPlatformParameters,
+        AzureOpenAIPlatformParameters,
+        GooglePlatformParameters,
+        GroqPlatformParameters,
+        ReductoPlatformParameters,
+    ],
+    Field(discriminator="kind"),
+]
