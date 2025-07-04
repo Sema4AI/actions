@@ -21,6 +21,31 @@ class _AgentDummyServer(BaseHTTPRequestHandler):
             else:
                 self.wfile.write(json.dumps(body).encode("utf-8"))
 
+    def do_GET(self):
+        parsed_path = urllib.parse.urlparse(self.path)
+        path_parts = parsed_path.path.split("/")[1:]
+
+        # Handle /api/v2/ok endpoint for URL accessibility check
+        if (
+            len(path_parts) == 3
+            and path_parts[0] == "api"
+            and path_parts[1] == "v2"
+            and path_parts[2] == "ok"
+        ):
+            self._send_response(
+                200,
+                headers={"Content-Type": "application/json"},
+                body={"status": "ok"},
+            )
+            return
+        else:
+            self._send_response(
+                404,
+                headers={"Content-Type": "application/json"},
+                body={"error": "Not Found"},
+            )
+            return
+
     def do_POST(self):
         parsed_path = urllib.parse.urlparse(self.path)
         path_parts = parsed_path.path.split("/")[1:]

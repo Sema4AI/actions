@@ -107,10 +107,7 @@ def test_prompt_generate_with_platform_config(agent_dummy_server):
     """Test prompt_generate with platform_config parameter."""
     import os
 
-    from sema4ai.actions.agent import (
-        OpenAIPlatformParameters,
-        prompt_generate,
-    )
+    from sema4ai.actions.agent import OpenAIPlatformParameters, prompt_generate
 
     # Set the environment variable to point to our dummy server
     os.environ[
@@ -452,6 +449,7 @@ def test_prompt_validation_errors(agent_dummy_server):
 
     import pytest
     from pydantic import ValidationError
+
     from sema4ai.actions.agent import prompt_generate
 
     # Set the environment variable to point to our dummy server
