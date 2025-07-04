@@ -2,9 +2,6 @@ from typing import Annotated, Any, Literal, Union
 
 from pydantic import BaseModel, Field
 
-# TODO: Remove this once the files module is implemented
-UploadedFile = Any
-
 
 class PromptTextContent(BaseModel):
     """Represents a text message in the agent system.
@@ -130,10 +127,9 @@ class PromptDocumentContent(BaseModel):
     ]
 
     value: Annotated[
-        str | bytes | UploadedFile,
+        str | bytes,
         Field(
-            description="The document data - either an agent-server UploadedFile, "
-            "base64 encoded string, or raw bytes",
+            description="The document data - either a base64 encoded string, or raw bytes",
         ),
     ]
 
@@ -153,12 +149,12 @@ class PromptDocumentContent(BaseModel):
     ] = "document"
 
     sub_type: Annotated[
-        Literal["UploadedFile", "base64", "raw_bytes", "url"],
+        Literal["base64", "raw_bytes", "url"],
         Field(
-            default="UploadedFile",
-            description="Format of the document data - UploadedFile, base64 encoded string, raw bytes, or URL",
+            default="base64",
+            description="Format of the document data - base64 encoded string, raw bytes, or URL",
         ),
-    ] = "UploadedFile"
+    ] = "base64"
 
 
 class PromptToolResultContent(BaseModel):
