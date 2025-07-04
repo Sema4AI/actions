@@ -100,7 +100,7 @@ class BedrockPlatformParameters(BaseModel):
         description="AWS region name (e.g., 'us-west-2'). If not specified, "
         "boto3 will use the default region from AWS configuration chain "
         "(environment variables, config file, or instance metadata).",
-        example="us-east-1",
+        json_schema_extra={"example": "us-east-1"},
     )
 
     api_version: str | None = Field(
@@ -108,7 +108,7 @@ class BedrockPlatformParameters(BaseModel):
         description="API version to use for the AWS service. Generally should "
         "be left as None to use the latest available version. Only set this if "
         "you need a specific API version for compatibility.",
-        example="2023-04-20",
+        json_schema_extra={"example": "2023-04-20"},
     )
 
     use_ssl: bool | None = Field(
@@ -116,7 +116,7 @@ class BedrockPlatformParameters(BaseModel):
         description="Whether to use SSL/TLS when communicating with AWS "
         "(True by default). Setting this to False is not recommended in "
         "production environments.",
-        example=True,
+        json_schema_extra={"example": True},
     )
 
     verify: bool | str | None = Field(
@@ -125,7 +125,7 @@ class BedrockPlatformParameters(BaseModel):
         "- True: Verify certificates using system CA store (default)\n"
         "- False: Disable verification (not recommended)\n"
         "- str: Path to custom CA bundle file",
-        example="/path/to/custom/ca-bundle.pem",
+        json_schema_extra={"example": "/path/to/custom/ca-bundle.pem"},
     )
 
     endpoint_url: str | None = Field(
@@ -135,7 +135,7 @@ class BedrockPlatformParameters(BaseModel):
         "- Testing with local endpoints\n"
         "- Custom service endpoints\n"
         "Format should be a complete URL including scheme (https://)",
-        example="https://bedrock.us-east-1.amazonaws.com",
+        json_schema_extra={"example": "https://bedrock.us-east-1.amazonaws.com"},
     )
 
     aws_access_key_id: str | None = Field(
@@ -145,7 +145,7 @@ class BedrockPlatformParameters(BaseModel):
         "1. Environment variables\n"
         "2. Shared credential file (~/.aws/credentials)\n"
         "3. IAM role for EC2 instance or ECS task",
-        example="AKIAIOSFODNN7EXAMPLE",
+        json_schema_extra={"example": "AKIAIOSFODNN7EXAMPLE"},
     )
 
     aws_secret_access_key: str | None = Field(
@@ -153,7 +153,7 @@ class BedrockPlatformParameters(BaseModel):
         description="AWS secret access key for authentication. Required if "
         "aws_access_key_id is provided. Should be kept secure and not exposed in "
         "code or logs.",
-        example="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
+        json_schema_extra={"example": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"},
     )
 
     aws_session_token: str | None = Field(
@@ -161,7 +161,9 @@ class BedrockPlatformParameters(BaseModel):
         description="Temporary session token for AWS STS (Security Token "
         "Service) credentials. Only required when using temporary credentials "
         "(e.g., from AssumeRole or federated access).",
-        example="AQoEXAMPLEH4aoAH0gNCAPyJxz4BlCFFxWNE1OPTgk5TthT+...",
+        json_schema_extra={
+            "example": "AQoEXAMPLEH4aoAH0gNCAPyJxz4BlCFFxWNE1OPTgk5TthT+..."
+        },
     )
 
     config_params: dict = Field(

@@ -6,7 +6,6 @@ from copy import copy
 from urllib.parse import urlencode, urljoin, urlparse
 
 import sema4ai_http
-
 from sema4ai.actions._action import get_x_action_invocation_context
 
 log = logging.getLogger(__name__)
@@ -55,6 +54,7 @@ class _AgentAPIClient:
 
         if self._is_url_accessible(f"{env_url}/api/v2/ok"):
             return env_url
+        return None
 
     def _try_get_url_from_pid_file(self) -> str | None:
         pid_file_path = self._get_pid_file_path()
@@ -76,6 +76,7 @@ class _AgentAPIClient:
         except Exception as e:
             log.debug(f"Failed to read PID file: {e}")
             return None
+        return None
 
     def _is_url_accessible(self, url: str) -> bool:
         try:

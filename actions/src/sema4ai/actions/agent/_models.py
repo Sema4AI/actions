@@ -416,9 +416,9 @@ class ToolDefinition(BaseModel):
         Literal["client-exec-tool", "client-info-tool"],
         Field(
             description="The category of the tool",
-            default="unknown",
+            default="client-info-tool",
         ),
-    ] = "unknown"
+    ] = "client-info-tool"
 
 
 class Prompt(BaseModel):
