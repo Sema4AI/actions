@@ -1,16 +1,24 @@
 import logging
 
-# from pydantic import BaseModel
 from pydantic import validate_call
 from sema4ai.actions.agent._client import _AgentAPIClient
 from sema4ai.actions.agent._models import (
+    ConversationHistoryParams,
+    ConversationHistorySpecialMessage,
+    DocumentsParams,
+    DocumentsSpecialMessage,
+    MemoriesParams,
+    MemoriesSpecialMessage,
     Prompt,
+    PromptAgentMessage,
     PromptAudioContent,
     PromptDocumentContent,
     PromptImageContent,
     PromptTextContent,
     PromptToolResultContent,
     PromptToolUseContent,
+    PromptUserMessage,
+    ToolDefinition,
 )
 from sema4ai.actions.agent._platforms import (
     AnyPlatformParameters,
@@ -177,6 +185,13 @@ __all__ = [
     "PromptToolUseContent",
     "PromptAgentMessage",
     "PromptUserMessage",
+    "ConversationHistoryParams",
+    "ConversationHistorySpecialMessage",
+    "DocumentsParams",
+    "DocumentsSpecialMessage",
+    "MemoriesParams",
+    "MemoriesSpecialMessage",
+    "ToolDefinition",
     "AnyPlatformParameters",
     "BedrockPlatformParameters",
     "CortexPlatformParameters",

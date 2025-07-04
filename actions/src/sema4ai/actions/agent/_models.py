@@ -2,11 +2,6 @@ from typing import Annotated, Any, Literal, Union
 
 from pydantic import BaseModel, Field
 
-PromptImageMimeType = Literal["image/jpeg", "image/png", "image/gif", "image/webp"]
-ToolCategory = Literal[
-    "client-exec-tool",
-    "client-info-tool",
-]
 # TODO: Remove this once the files module is implemented
 UploadedFile = Any
 
@@ -40,7 +35,7 @@ class PromptImageContent(BaseModel):
     """
 
     mime_type: Annotated[
-        PromptImageMimeType,
+        Literal["image/jpeg", "image/png", "image/gif", "image/webp"],
         Field(description="MIME type of the image"),
     ]
 
@@ -422,7 +417,7 @@ class ToolDefinition(BaseModel):
     ]
 
     category: Annotated[
-        ToolCategory,
+        Literal["client-exec-tool", "client-info-tool"],
         Field(
             description="The category of the tool",
             default="unknown",
