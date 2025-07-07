@@ -126,18 +126,10 @@ class AgentDummyServer:
         self.last_request = None
 
     def _start_in_thread(self):
-        # Find an available port
-        for port in range(8000, 8100):
-            try:
-                self.server = HTTPServer(("localhost", port), _AgentDummyServer)
-                self.server._server_instance = self  # Store reference to self
-                self.port = port
-                break
-            except OSError:
-                continue
-
-        if self.server is None:
-            raise RuntimeError("Could not find an available port")
+        # Use port 0 to let the OS assign a free port (like files_dummy_server.py)
+        self.server = HTTPServer(("localhost", 0), _AgentDummyServer)
+        self.server._server_instance = self  # Store reference to self
+        self.port = self.server.server_port
 
         self.server.serve_forever()
 
@@ -145,8 +137,6 @@ class AgentDummyServer:
         self.thread = Thread(target=self._start_in_thread, daemon=True)
         self.thread.start()
         # Give the server a moment to start
-        import time
-
         time.sleep(0.1)
 
     def get_port(self):

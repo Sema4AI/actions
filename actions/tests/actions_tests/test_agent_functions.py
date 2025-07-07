@@ -626,7 +626,6 @@ def test_prompt_generate_pydantic_validation_errors(agent_dummy_server):
 
     import pytest
     from pydantic import ValidationError
-
     from sema4ai.actions.agent import (
         Prompt,
         PromptTextContent,
