@@ -1,18 +1,18 @@
 import json
 import logging
 import os
-import platform
+import sys
 from copy import copy
 from urllib.parse import urlencode, urljoin, urlparse
 
 import sema4ai_http
-
 from sema4ai.actions._action import get_x_action_invocation_context
+from sema4ai.actions._response import ActionError
 
 log = logging.getLogger(__name__)
 
 
-class AgentApiClientException(Exception):
+class AgentApiClientException(ActionError):
     """Exception raised when the Agent API client encounters an error."""
 
 
@@ -97,7 +97,7 @@ class _AgentAPIClient:
             str: Path to the PID file
         """
         # Determine OS-specific path
-        if platform.system() == "Windows":
+        if sys.platform == "win32":
             # Windows path: C:\Users\<username>\AppData\Local\sema4ai\sema4ai-studio\agent-server.pid
             local_app_data = os.environ.get("LOCALAPPDATA")
             if not local_app_data:
@@ -146,13 +146,9 @@ class _AgentAPIClient:
            AgentApiClientException: for HTTP errors
            ConnectionError: If the request fails
         """
-        url = self.api_url
-        if not url.endswith("/"):
-            url += "/"
-        url = urljoin(url, path)
+        url = urljoin(self.api_url, path)
 
         request_headers = copy(headers) if headers else {}
-
         request_headers[
             "x-action-invocation-context"
         ] = get_x_action_invocation_context()

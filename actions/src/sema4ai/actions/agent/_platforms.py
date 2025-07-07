@@ -367,15 +367,12 @@ class ReductoPlatformParameters(BaseModel):
     )
 
 
-AnyPlatformParameters = Annotated[
-    Union[
-        BedrockPlatformParameters,
-        CortexPlatformParameters,
-        OpenAIPlatformParameters,
-        AzureOpenAIPlatformParameters,
-        GooglePlatformParameters,
-        GroqPlatformParameters,
-        ReductoPlatformParameters,
-    ],
-    Field(discriminator="kind"),
-]
+AnyPlatformParameters = (
+    OpenAIPlatformParameters
+    | BedrockPlatformParameters
+    | CortexPlatformParameters
+    | AzureOpenAIPlatformParameters
+    | GooglePlatformParameters
+    | GroqPlatformParameters
+    | ReductoPlatformParameters
+)
