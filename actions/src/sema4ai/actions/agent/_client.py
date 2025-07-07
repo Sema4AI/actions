@@ -6,6 +6,7 @@ from copy import copy
 from urllib.parse import urlencode, urljoin, urlparse
 
 import sema4ai_http
+
 from sema4ai.actions._action import get_x_action_invocation_context
 from sema4ai.actions._response import ActionError
 

@@ -1,6 +1,7 @@
 import logging
 
 from pydantic import BaseModel
+
 from sema4ai.actions._response import ActionError
 from sema4ai.actions.agent._client import _AgentAPIClient
 from sema4ai.actions.agent._models import (

@@ -14,7 +14,11 @@ ______________________________________________________________________
 
 Get the thread ID from the action context or the request headers.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L117)
+**Note:**
+
+> This will raise an ActionError if the thread ID cannot be found. This is expected when calling this function directly from VSCode unless the `x-invoked_for_thread_id` header is set in the request in configured inputs.
+
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L134)
 
 ```python
 get_thread_id() → str
@@ -26,7 +30,11 @@ ______________________________________________________________________
 
 Get the agent ID from the action context or the request headers.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L122)
+**Note:**
+
+> This will raise an ActionError if the agent ID cannot be found. This is expected when calling this function directly from VSCode unless the `x-invoked_by_assistant_id` header is set in the request in configured inputs.
+
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L145)
 
 ```python
 get_agent_id() → str
@@ -52,15 +60,15 @@ Gives a prompt to an agent.
 **Returns:**
 JSON representation of the response from the agent.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/sema4ai/actions/agent/prompt_generate#L127)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L156)
 
 ```python
 prompt_generate(
-    prompt: Prompt,
-    platform_config: Optional[Annotated[Union[BedrockPlatformParameters, CortexPlatformParameters, OpenAIPlatformParameters, AzureOpenAIPlatformParameters, GooglePlatformParameters, GroqPlatformParameters, ReductoPlatformParameters], FieldInfo(annotation=NoneType, required=True, discriminator='kind')]] = None,
+    prompt: Prompt | dict,
+    platform_config: OpenAIPlatformParameters | BedrockPlatformParameters | CortexPlatformParameters | AzureOpenAIPlatformParameters | GooglePlatformParameters | GroqPlatformParameters | ReductoPlatformParameters | dict | None = None,
     thread_id: str | None = None,
     agent_id: str | None = None
-)
+) → dict
 ```
 
 ______________________________________________________________________
