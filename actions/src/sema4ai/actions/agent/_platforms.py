@@ -20,7 +20,7 @@ class OpenAIPlatformParameters(BaseModel):
     openai_api_key: str | None = Field(
         default=None,
         description="The OpenAI API key. If not provided, it will be "
-        "attempted to be inferred from the environment.",
+        "attempted to be inferred from the OPENAI_API_KEY environment variable.",
     )
 
 
@@ -198,14 +198,14 @@ class CortexPlatformParameters(BaseModel):
 
     snowflake_account: str | None = Field(
         default=None,
-        description="The Snowflake account. If not provided, it will be"
-        "inferred from the environment.",
+        description="The Snowflake account.",
     )
 
     snowflake_host: str | None = Field(
         default=None,
         description="The Snowflake host. If not provided, it will be"
-        "inferred from the environment (built from account name).",
+        "inferred from the SNOWFLAKE_HOST environment variable or built "
+        "from account name / SNOWFLAKE_ACCOUNT environment variable.",
     )
 
     snowflake_warehouse: str | None = Field(
@@ -246,31 +246,27 @@ class AzureOpenAIPlatformParameters(BaseModel):
     azure_api_key: str | None = Field(
         default=None,
         description="The Azure OpenAI API key. If not provided, it will be "
-        "attempted to be inferred from the environment.",
+        "attempted to be inferred from the azure_api_key environment variable.",
     )
 
     azure_endpoint_url: str | None = Field(
         default=None,
-        description="The Azure OpenAI endpoint URL. If not provided, "
-        "it will beattempted to be inferred from the environment.",
+        description="The Azure OpenAI endpoint URL.",
     )
 
     azure_deployment_name: str | None = Field(
         default=None,
-        description="The Azure OpenAI deployment name. If not provided, "
-        "it will be attempted to be inferred from the environment.",
+        description="The Azure OpenAI deployment name.",
     )
 
     azure_api_version: str | None = Field(
         default="2023-03-15-preview",
-        description="The Azure OpenAI API version. If not provided, "
-        "it will be attempted to be inferred from the environment.",
+        description="The Azure OpenAI API version.",
     )
 
     azure_deployment_name_embeddings: str | None = Field(
         default=None,
-        description="The Azure OpenAI deployment name for embeddings. If not "
-        "provided, it will be attempted to be inferred from the environment.",
+        description="The Azure OpenAI deployment name for embeddings.",
     )
 
     azure_generated_endpoint_url: str = Field(
@@ -305,7 +301,7 @@ class GooglePlatformParameters(BaseModel):
     google_api_key: str | None = Field(
         default=None,
         description="The Google API key. If not provided, it will be "
-        "attempted to be inferred from the environment.",
+        "attempted to be inferred from the GOOGLE_API_KEY environment variable.",
     )
 
 
@@ -326,7 +322,7 @@ class GroqPlatformParameters(BaseModel):
     groq_api_key: str | None = Field(
         default=None,
         description="The Groq API key. If not provided, it will be "
-        "attempted to be inferred from the environment.",
+        "attempted to be inferred from the GROQ_API_KEY environment variable.",
     )
 
 
@@ -352,7 +348,7 @@ class ReductoPlatformParameters(BaseModel):
     reducto_api_key: str | None = Field(
         default=None,
         description="The Reducto API key. If not provided, it will be "
-        "attempted to be inferred from the environment.",
+        "attempted to be inferred from the REDUCTO_API_KEY environment variable.",
     )
 
     delegate_kind: str | None = Field(
@@ -362,8 +358,7 @@ class ReductoPlatformParameters(BaseModel):
 
     delegate_api_key: str | None = Field(
         default=None,
-        description="The API key for the delegate platform client. If not "
-        "provided, it will be attempted to be inferred from the environment.",
+        description="The API key for the delegate platform client.",
     )
 
 

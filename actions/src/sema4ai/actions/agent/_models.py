@@ -1,4 +1,4 @@
-from typing import Annotated, Any, Literal, Union
+from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -179,12 +179,10 @@ class PromptToolResultContent(BaseModel):
     content: Annotated[
         list[
             Annotated[
-                Union[
-                    PromptTextContent,
-                    PromptImageContent,
-                    PromptAudioContent,
-                    PromptDocumentContent,
-                ],
+                PromptTextContent
+                | PromptImageContent
+                | PromptAudioContent
+                | PromptDocumentContent,
                 Field(discriminator="kind"),
             ]
         ],
@@ -255,7 +253,7 @@ class PromptAgentMessage(BaseModel):
     content: Annotated[
         list[
             Annotated[
-                Union[PromptTextContent, PromptToolUseContent],
+                PromptTextContent | PromptToolUseContent,
                 Field(discriminator="kind"),
             ]
         ],
@@ -277,13 +275,11 @@ class PromptUserMessage(BaseModel):
     content: Annotated[
         list[
             Annotated[
-                Union[
-                    PromptTextContent,
-                    PromptImageContent,
-                    PromptAudioContent,
-                    PromptToolResultContent,
-                    PromptDocumentContent,
-                ],
+                PromptTextContent
+                | PromptImageContent
+                | PromptAudioContent
+                | PromptToolResultContent
+                | PromptDocumentContent,
                 Field(discriminator="kind"),
             ],
         ],
@@ -442,13 +438,11 @@ class Prompt(BaseModel):
     messages: Annotated[
         list[
             Annotated[
-                Union[
-                    PromptUserMessage,
-                    PromptAgentMessage,
-                    ConversationHistorySpecialMessage,
-                    DocumentsSpecialMessage,
-                    MemoriesSpecialMessage,
-                ],
+                PromptUserMessage
+                | PromptAgentMessage
+                | ConversationHistorySpecialMessage
+                | DocumentsSpecialMessage
+                | MemoriesSpecialMessage,
                 Field(discriminator="role"),
             ]
         ],

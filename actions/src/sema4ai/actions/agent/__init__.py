@@ -32,6 +32,15 @@ from sema4ai.actions.agent._platforms import (
     OpenAIPlatformParameters,
     ReductoPlatformParameters,
 )
+from sema4ai.actions.agent._response import (
+    ResponseAudioContent,
+    ResponseDocumentContent,
+    ResponseImageContent,
+    ResponseMessage,
+    ResponseTextContent,
+    ResponseToolUseContent,
+    TokenUsage,
+)
 
 log = logging.getLogger(__name__)
 
@@ -158,7 +167,7 @@ def prompt_generate(
     platform_config: AnyPlatformParameters | dict | None = None,
     thread_id: str | None = None,
     agent_id: str | None = None,
-) -> dict:
+) -> ResponseMessage:
     """Gives a prompt to an agent.
 
     Args:
@@ -169,6 +178,7 @@ def prompt_generate(
 
     Note:
         Either platform_config, thread_id or agent_id must be provided when calling this method without action context.
+        The platform_config will be automatically obtained from the agent which is related to the thread_id or agent_id.
 
     Returns:
         JSON representation of the response from the agent.
@@ -231,4 +241,11 @@ __all__ = [
     "GooglePlatformParameters",
     "GroqPlatformParameters",
     "ReductoPlatformParameters",
+    "ResponseAudioContent",
+    "ResponseDocumentContent",
+    "ResponseImageContent",
+    "ResponseMessage",
+    "ResponseTextContent",
+    "ResponseToolUseContent",
+    "TokenUsage",
 ]
