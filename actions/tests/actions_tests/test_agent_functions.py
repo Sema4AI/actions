@@ -47,6 +47,10 @@ def test_prompt_generate_with_thread_id(agent_dummy_server):
     assert agent_dummy_server.last_request is not None
     assert agent_dummy_server.last_request["thread_id"] == "test-thread-id"
     assert (
+        agent_dummy_server.last_request["path"]
+        == "/api/v2/prompts/generate?thread_id=test-thread-id"
+    )
+    assert (
         agent_dummy_server.last_request["body"]["prompt"]["messages"][0]["content"][0][
             "text"
         ]
@@ -89,6 +93,10 @@ def test_prompt_generate_with_agent_id(agent_dummy_server):
     # Check that the request was made correctly
     assert agent_dummy_server.last_request is not None
     assert agent_dummy_server.last_request["agent_id"] == "test-agent-id"
+    assert (
+        agent_dummy_server.last_request["path"]
+        == "/api/v2/prompts/generate?agent_id=test-agent-id"
+    )
     assert (
         agent_dummy_server.last_request["body"]["prompt"]["messages"][0]["content"][0][
             "text"
@@ -136,6 +144,7 @@ def test_prompt_generate_with_platform_config(agent_dummy_server):
 
     # Check that the request was made correctly
     assert agent_dummy_server.last_request is not None
+    assert agent_dummy_server.last_request["path"] == "/api/v2/prompts/generate"
     assert (
         agent_dummy_server.last_request["body"]["prompt"]["messages"][0]["content"][0][
             "text"
@@ -227,6 +236,10 @@ def test_prompt_generate_complex_prompt(agent_dummy_server):
     # Check that the request was made correctly
     assert agent_dummy_server.last_request is not None
     assert agent_dummy_server.last_request["thread_id"] == "test-thread-id"
+    assert (
+        agent_dummy_server.last_request["path"]
+        == "/api/v2/prompts/generate?thread_id=test-thread-id"
+    )
 
     # Check the response
     assert (
@@ -311,7 +324,7 @@ def action_get_agent_id():
     json_input_contents = {
         "request": {
             "headers": {
-                "x-invoked_for_agent_id": "agent-id-from-header",
+                "x-invoked_by_assistant_id": "agent-id-from-header",
             }
         },
     }
@@ -474,6 +487,10 @@ def test_prompt_no_validation_with_dicts(agent_dummy_server):
     # This should work without raising validation errors since it's a dict
     response = prompt_generate(prompt=invalid_dict_prompt, thread_id="test-thread-id")
     assert response is not None
+    assert (
+        agent_dummy_server.last_request["path"]
+        == "/api/v2/prompts/generate?thread_id=test-thread-id"
+    )
 
     # Test 2: Invalid dict with wrong content type - should pass without validation
     invalid_content_dict = {
@@ -493,6 +510,10 @@ def test_prompt_no_validation_with_dicts(agent_dummy_server):
     # This should work without raising validation errors since it's a dict
     response = prompt_generate(prompt=invalid_content_dict, thread_id="test-thread-id")
     assert response is not None
+    assert (
+        agent_dummy_server.last_request["path"]
+        == "/api/v2/prompts/generate?thread_id=test-thread-id"
+    )
 
 
 def test_prompt_generate_with_pydantic_models(agent_dummy_server):
@@ -531,6 +552,7 @@ def test_prompt_generate_with_pydantic_models(agent_dummy_server):
 
     # Check that the request was made correctly
     assert agent_dummy_server.last_request is not None
+    assert agent_dummy_server.last_request["path"] == "/api/v2/prompts/generate"
     assert (
         agent_dummy_server.last_request["body"]["prompt"]["messages"][0]["content"][0][
             "text"
@@ -580,6 +602,10 @@ def test_prompt_generate_with_dicts_no_validation(agent_dummy_server):
     # Check that the request was made correctly
     assert agent_dummy_server.last_request is not None
     assert agent_dummy_server.last_request["thread_id"] == "test-thread-id"
+    assert (
+        agent_dummy_server.last_request["path"]
+        == "/api/v2/prompts/generate?thread_id=test-thread-id"
+    )
     assert (
         agent_dummy_server.last_request["body"]["prompt"]["messages"][0]["content"][0][
             "text"
@@ -704,6 +730,7 @@ def test_prompt_generate_mixed_dict_and_pydantic(agent_dummy_server):
 
     # Check that the request was made correctly
     assert agent_dummy_server.last_request is not None
+    assert agent_dummy_server.last_request["path"] == "/api/v2/prompts/generate"
     assert (
         agent_dummy_server.last_request["body"]["prompt"]["messages"][0]["content"][0][
             "text"
@@ -753,6 +780,10 @@ def test_prompt_generate_model_dump_behavior(agent_dummy_server):
 
     # Call prompt_generate
     response = prompt_generate(prompt=prompt, platform_config=platform_config)
+
+    # Verify that the request was made to the correct endpoint
+    assert agent_dummy_server.last_request is not None
+    assert agent_dummy_server.last_request["path"] == "/api/v2/prompts/generate"
 
     # Verify that the request body contains the dumped data (not Pydantic objects)
     request_body = agent_dummy_server.last_request["body"]

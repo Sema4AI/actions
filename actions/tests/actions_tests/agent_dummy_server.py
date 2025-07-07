@@ -81,6 +81,7 @@ class _AgentDummyServer(BaseHTTPRequestHandler):
                 "body": request_body,
                 "thread_id": thread_id,
                 "agent_id": agent_id,
+                "path": self.path,  # Store the full request path
             }
 
             # Return the expected response format

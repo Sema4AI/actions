@@ -146,10 +146,10 @@ def get_agent_id() -> str:
 
     Note:
         This will raise an ActionError if the agent ID cannot be found. This is expected when calling this
-        function directly from VSCode unless the `x-invoked_for_agent_id` header is set in the request in configured
+        function directly from VSCode unless the `x-invoked_by_assistant_id` header is set in the request in configured
         inputs.
     """
-    return _get_id_generic("agent_id", "x-invoked_for_agent_id")
+    return _get_id_generic("agent_id", "x-invoked_by_assistant_id")
 
 
 def prompt_generate(
@@ -194,7 +194,7 @@ def prompt_generate(
         query_params["agent_id"] = agent_id
 
     response = client.request(
-        "/api/v2/prompts/generate",
+        "prompts/generate",
         method="POST",
         json_data=payload,
         query_params=query_params,

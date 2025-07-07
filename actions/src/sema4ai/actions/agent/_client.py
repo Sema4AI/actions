@@ -54,7 +54,7 @@ class _AgentAPIClient:
             return None
 
         if self._is_url_accessible(f"{env_url}/api/v2/ok"):
-            return env_url
+            return f"{env_url}/api/v2/"
         return None
 
     def _try_get_url_from_pid_file(self) -> str | None:
@@ -69,8 +69,8 @@ class _AgentAPIClient:
                 server_info = json.loads(f.read())
                 base_url = server_info.get("base_url")
                 if base_url:
-                    endpoint_url = f"{base_url}/api/v2"
-                    if self._is_url_accessible(f"{endpoint_url}/ok"):
+                    endpoint_url = f"{base_url}/api/v2/"
+                    if self._is_url_accessible(urljoin(endpoint_url, "ok")):
                         return endpoint_url
                 else:
                     return None
@@ -85,7 +85,10 @@ class _AgentAPIClient:
             if parsed_url.scheme not in ("http", "https"):
                 return False
 
-            sema4ai_http.get(url, timeout=1).raise_for_status()
+            request_headers = {
+                "x-action-invocation-context": get_x_action_invocation_context()
+            }
+            sema4ai_http.get(url, timeout=1, headers=request_headers).raise_for_status()
             return True
         except Exception:
             return False
