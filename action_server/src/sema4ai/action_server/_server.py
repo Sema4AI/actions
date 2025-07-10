@@ -5,9 +5,11 @@ import socket
 import subprocess
 import sys
 import typing
+from contextlib import asynccontextmanager
 from functools import partial
 from typing import Optional, Sequence
 
+from fastapi.applications import FastAPI
 from termcolor import colored
 
 from ._protocols import ArgumentsNamespaceStart, IBeforeStartCallback
@@ -371,14 +373,19 @@ def start_server(
                         + f"{api_key}\n"
                     )
 
-    async def _on_startup() -> None:
+    @asynccontextmanager
+    async def _expose_and_shutdown(app: FastAPI):
+        import psutil
+
         loop = asyncio.get_event_loop()
         _LoopHolder.loop = loop
         if expose:
+            log.debug("Exposing action server...")
             loop.call_later(1 / 15.0, partial(expose_later, loop))
+        else:
+            log.debug("Not exposing action server...")
 
-    def _on_shutdown() -> None:
-        import psutil
+        yield
 
         if file_watcher is not None:
             file_watcher.stop()
@@ -410,8 +417,7 @@ def start_server(
                 except Exception:
                     log.exception("Error killing subprocess: %s", child.pid)
 
-    app.add_event_handler("startup", _on_startup)
-    app.add_event_handler("shutdown", _on_shutdown)
+    app.custom_lifespan.register(_expose_and_shutdown)
 
     with _actions_process_pool.setup_actions_process_pool(
         settings,

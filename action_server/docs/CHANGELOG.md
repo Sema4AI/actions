@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- `--expose` is working properly again (it broke in `2.11.0`).
+
 ## 2.12.1 - 2025-06-19
 
 - Properly marking `mcp` as a dependency of the Action Server (the PyPi version was failing to start due to the missing dependency).
