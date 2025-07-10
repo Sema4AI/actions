@@ -11,3 +11,4 @@ metadata.json
 output/
 temp/
 venv/
+__MACOSX

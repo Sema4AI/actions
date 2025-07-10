@@ -6,3 +6,4 @@ packaging/*.txt
 packaging/templates.yaml
 packaging/archive/**
 packaging/temp/**
+__MACOSX
