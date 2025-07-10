@@ -64,6 +64,7 @@ def create_package_yaml(tmpdir, exclude_patterns=None):
             "./**/venv",
             "./**/output",
             "./**/devdata",
+            "./**/__MACOSX",
         ]
 
     package_content = """name: test-package

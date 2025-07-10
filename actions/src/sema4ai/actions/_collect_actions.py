@@ -25,6 +25,7 @@ DEFAULT_EXCLUSION_PATTERNS = [
     "./**/*.pyc",
     "./**/*.zip",
     "./**/.env",
+    "./**/__MACOSX",
     "./**/__pycache__",
     "./**/.git",
     "./node_modules/**",
