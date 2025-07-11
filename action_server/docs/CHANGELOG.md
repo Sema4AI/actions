@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2.13.0 - 2025-07-11
+
 - `--expose` is working properly again (it broke in `2.11.0`).
 - `action-server new` command changes:
   - New flag: `--force` to force the creation of a new project even if the directory already exists and is not empty.
