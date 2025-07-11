@@ -752,7 +752,17 @@ def test_subprocesses_killed(
                     time.sleep(0.2)
                     break
         else:
-            return  # Ok, everything worked
+            break  # Ok, everything worked
+
+    # Ok, check the logs for some output we expect to be there at startup/shutdown.
+    datadir = action_server_process.datadir
+    server_log_file = datadir / "server_log.txt"
+    assert (
+        server_log_file.exists()
+    ), f"File not found: {server_log_file}. Files found: {list(datadir.iterdir())}"
+    text = server_log_file.read_text(encoding="utf-8")
+    assert text.count("Not exposing action server...") == 1
+    assert text.count("Stopping action server...") == 1
 
 
 @pytest.mark.integration_test

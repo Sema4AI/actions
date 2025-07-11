@@ -241,8 +241,7 @@ def test_server_expose_local(
         _server_expose._setup_logging(force=True)
         asyncio.run(
             _server_expose.expose_server(
-                port=int(port),
-                host=host,
+                server_url=f"http://{host}:{port}",
                 expose_url=websocket_expose_url,  # localhost
                 datadir=datadir,
                 expose_session=None,

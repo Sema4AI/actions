@@ -36,7 +36,7 @@ components:
       type: http
 info:
   title: Sema4.ai Action Server
-  version: 0.14.0
+  version: 2.12.1
 openapi: 3.1.0
 paths:
   /api/actions/test-server-expose/sleep-a-while/run:
@@ -77,3 +77,4 @@ paths:
       security:
       - HTTPBearer: []
       summary: Sleep A While
+      x-operation-kind: action
