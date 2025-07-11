@@ -12,13 +12,17 @@ from ._protocols import (
 log = logging.getLogger(__name__)
 
 
-def handle_new_project(directory: str = ".", template_name: str = "") -> int:
+def handle_new_project(
+    directory: str = ".", template_name: str = "", force: bool = False
+) -> int:
     """Creates a new project under the specified directory.
 
     Args:
         directory: The directory to create the project in.
         template_name: Template to use for the new project.
+        force: If true, the project will be created even if the directory already exists or is not empty.
     """
+    from sema4ai.action_server.package.package_exclude import PackageExcludeHandler
     from sema4ai.action_server.vendored_deps.termcolors import bold_red, bold_yellow
 
     from ._new_project_helpers import (
@@ -50,17 +54,31 @@ def handle_new_project(directory: str = ".", template_name: str = "") -> int:
             if not directory:
                 raise RuntimeError("The name of the project was not given.")
 
-        if directory != ".":
-            if os.path.exists(directory) and os.listdir(directory):
-                raise RuntimeError(
-                    f"The folder: {directory} already exists and is not empty."
+        if not force:
+            if os.path.exists(directory):
+                from pathlib import Path
+
+                # Consider empty only if the directory has files that don't match the exclusion patterns.
+                from sema4ai.actions._collect_actions import DEFAULT_EXCLUSION_PATTERNS
+
+                package_exclude_handler = PackageExcludeHandler()
+                package_exclude_handler.fill_exclude_patterns(
+                    DEFAULT_EXCLUSION_PATTERNS
                 )
+
+                found = list(
+                    package_exclude_handler.collect_files_excluding_patterns(
+                        Path(directory)
+                    )
+                )
+                if found:
+                    raise RuntimeError(
+                        f"The folder: {directory} already exists and is not empty. Use --force to override."
+                    )
 
         if not template_name:
             _print_templates_list(metadata.templates)
 
-            # @TODO:
-            # Make a reusable version once https://github.com/Sema4AI/actions/pull/3 is merged.
             while True:
                 try:
                     choice = int(input("Enter the number of your choice: "))

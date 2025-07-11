@@ -112,6 +112,8 @@ def _unpack_template(template_name: str, directory: str = ".") -> None:
     if not os.path.isfile(template_path):
         raise RuntimeError(f"Template {template_name} does not exist")
 
+    os.makedirs(directory, exist_ok=True)
+
     with zipfile.ZipFile(template_path, "r") as zip_ref:
         zip_ref.extractall(directory)
 

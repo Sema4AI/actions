@@ -3,6 +3,9 @@
 ## Unreleased
 
 - `--expose` is working properly again (it broke in `2.11.0`).
+- `action-server new` command changes:
+  - New flag: `--force` to force the creation of a new project even if the directory already exists and is not empty.
+  - The directory is now considered not empty only if it has files that don't match the default exclusion patterns (so, it can be created without the `--force` flag even if directories such as `.git` or `.vscode` exists inside it).
 
 ## 2.12.1 - 2025-06-19
 
