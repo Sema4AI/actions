@@ -90,17 +90,38 @@ def test_create_new_project_download_metadata_fail_with_cached_templates(
     ) as mock_get_action_templates_dir_path:
         mock_get_action_templates_dir_path.return_value = templates_path
 
+        project_path.mkdir()
+
+        # This file should be excluded by the default exclusion patterns, so, we
+        # can create a project in it even though it's not empty and without the --force flag.
+        (project_path / "some.pyc").write_text("foo", encoding="utf-8")
+
         retcode = handle_new_project(project_path, "minimal")
         log_info_args = log_info_mock.mock_calls[-1].args
         log_warning_args = log_warning_mock.mock_calls[0].args
 
         assert retcode == 0
-        assert os.path.isfile(project_path / "package.yaml") is True
+        package_yaml_path = project_path / "package.yaml"
+        assert os.path.isfile(package_yaml_path)
 
         assert "Refreshing templates failed" in log_warning_args[0]
         log_critical_mock.assert_not_called()
 
         assert "Project created" in log_info_args[0]
+
+        initial_package_yaml_content = package_yaml_path.read_text(encoding="utf-8")
+        package_yaml_path.write_text("foo", encoding="utf-8")
+
+        retcode = handle_new_project(project_path, "minimal")
+        assert retcode != 0
+        assert package_yaml_path.read_text(encoding="utf-8") == "foo"
+
+        retcode = handle_new_project(project_path, "minimal", force=True)
+        assert retcode == 0
+        assert (
+            package_yaml_path.read_text(encoding="utf-8")
+            == initial_package_yaml_content
+        )
 
 
 # It's important to mock the _ensure_latest_templates() here, so the test case does not attempt to

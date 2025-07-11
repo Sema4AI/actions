@@ -1,9 +1,7 @@
-import fnmatch
-import glob
 import os
 from logging import getLogger
 from pathlib import Path
-from typing import Iterator, List, Optional, Tuple
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -13,84 +11,6 @@ log = getLogger(__name__)
 class BuildResult(BaseModel):
     return_code: int
     package_path: Optional[str]
-
-
-def _check_matches(patterns, paths):
-    if not patterns and not paths:
-        # Matched to the end.
-        return True
-
-    if (not patterns and paths) or (patterns and not paths):
-        return False
-
-    pattern = patterns[0]
-    path = paths[0]
-
-    if not glob.has_magic(pattern):
-        if pattern != path:
-            return False
-
-    elif pattern == "**":
-        if len(patterns) == 1:
-            return True  # if ** is the last one it matches anything to the right.
-
-        for i in range(len(paths)):
-            # Recursively check the remaining patterns as the
-            # current pattern could match any number of paths.
-            if _check_matches(patterns[1:], paths[i:]):
-                return True
-
-    elif not fnmatch.fnmatch(path, pattern):
-        # Current part doesn't match.
-        return False
-
-    return _check_matches(patterns[1:], paths[1:])
-
-
-def _glob_matches_path(path, pattern, sep=os.sep, altsep=os.altsep):
-    if altsep:
-        pattern = pattern.replace(altsep, sep)
-        path = path.replace(altsep, sep)
-
-    patterns = pattern.split(sep)
-    paths = path.split(sep)
-    if paths:
-        if paths[0] == "":
-            paths = paths[1:]
-    if patterns:
-        if patterns[0] == "":
-            patterns = patterns[1:]
-
-    return _check_matches(patterns, paths)
-
-
-def _collect_files_excluding_patterns(
-    root_dir: Path, exclusion_patterns: List[str]
-) -> Iterator[Tuple[Path, str]]:
-    """
-    Collects all files within a directory, excluding those that match any of the
-    specified exclusion patterns.
-
-    Args:
-        root_dir (str): The root directory to traverse.
-        exclusion_patterns (list): A list of fnmatch patterns to exclude.
-
-    Returns:
-        An iterator over the full paths and the relative paths (str) found.
-    """
-
-    for path in root_dir.rglob("*"):  # Use rglob for recursive iteration
-        if path.is_file():
-            relative_path_str = str(path.relative_to(root_dir))
-
-            add = True
-            for pattern in exclusion_patterns:
-                if _glob_matches_path(relative_path_str, pattern):
-                    add = False
-                    break
-
-            if add:
-                yield path, relative_path_str
 
 
 def build_package(
@@ -117,6 +37,7 @@ def build_package(
     from sema4ai.action_server._ask_user import ask_user_input_to_proceed
     from sema4ai.action_server._cli_impl import _main_retcode
     from sema4ai.action_server._slugify import slugify
+    from sema4ai.action_server.package.package_exclude import PackageExcludeHandler
 
     from .._errors_action_server import ActionServerValidationError
 
@@ -163,38 +84,13 @@ def build_package(
         found = package_yaml_contents.get("packaging", {})
         if found and not isinstance(found, dict):
             raise ActionServerValidationError(
-                "Expected 'packaging' session in package.yaml to be a dict."
+                "Expected 'packaging' section in package.yaml to be a dict."
             )
         packaging = found
 
     exclude_list = packaging.get("exclude")
-    exclude_patterns = []
-    if exclude_list:
-        if not isinstance(exclude_list, list):
-            raise ActionServerValidationError(
-                "Expected 'packaging.exclude' session in package.yaml to be a list[str]."
-            )
-
-        for pat in exclude_list:
-            if not isinstance(pat, str):
-                raise ActionServerValidationError(
-                    f"Expected 'packaging.exclude' session in package.yaml to be a list[str]. Found: {pat} ({type(pat)})."
-                )
-
-            if pat.startswith("./"):
-                # If the user did './b/c', we have to start the match from
-                # the current path.
-                pat = pat[2:]
-            elif pat.startswith("/"):
-                # If the user did '/b/c', we have to start the match from
-                # the root.
-                pat = pat[1:]
-            elif not pat.startswith("**"):
-                # If the user did not anchor the pattern, make it available to
-                # be matched anywhere (i.e.: *.pyc must match .pyc files anywhere).
-                pat = f"**/{pat}"
-
-            exclude_patterns.append(pat)
+    exclude_handler = PackageExcludeHandler()
+    exclude_handler.fill_exclude_patterns(exclude_list)
 
     # Check the spec version
     spec_version = package_yaml_contents.get("spec-version", "v1")
@@ -243,8 +139,8 @@ def build_package(
     import zipfile
 
     with zipfile.ZipFile(output_file, "w") as zip_file:
-        for path, relative_path in _collect_files_excluding_patterns(
-            input_dir, exclude_patterns
+        for path, relative_path in exclude_handler.collect_files_excluding_patterns(
+            input_dir
         ):
             # Don't add the .zip itself.
             if os.path.samefile(path, output_file):
