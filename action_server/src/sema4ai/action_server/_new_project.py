@@ -158,4 +158,6 @@ def handle_new_command(base_args: ArgumentsNamespace) -> int:
 
         return handle_list_templates(output_json=list_templates_args.json)
 
-    return handle_new_project(directory=new_args.name, template_name=new_args.template)
+    return handle_new_project(
+        directory=new_args.name, template_name=new_args.template, force=new_args.force
+    )

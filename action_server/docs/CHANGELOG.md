@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Fixed issue where `action-server new --force` was not actually accepting the `--force` flag.
+
 ## 2.13.0 - 2025-07-11
 
 - `--expose` is working properly again (it broke in `2.11.0`).
@@ -17,8 +19,8 @@
 
 - Changed so that the MCP tools from actions are now called with just the name of the action (instead of `<action-package-name>/<action-name>`).
   - This is a backward incompatible change (but as MCP in 2.11.0 was still provisional, a major version bump won't be done).
-- Packages using `sema4ai-mcp` can now be deployed in the Action Server using the MCP protocol (using `@tool`, `@resource` and `@prompt` 
-  from `sema4ai-mcp`).  
+- Packages using `sema4ai-mcp` can now be deployed in the Action Server using the MCP protocol (using `@tool`, `@resource` and `@prompt`
+  from `sema4ai-mcp`).
 
 ## 2.11.0 - 2025-06-05
 
