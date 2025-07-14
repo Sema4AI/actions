@@ -162,3 +162,27 @@ def test_list_templates_no_templates_available(
 
         assert retcode == 0
         assert print_args[0] == b"[]"
+
+
+def test_action_server_new_force_flag(datadir):
+    from sema4ai.action_server._selftest import sema4ai_action_server_run
+
+    project_path = datadir / "my_project"
+    project_path.mkdir()
+    package_yaml_path = project_path / "package.yaml"
+    package_yaml_path.write_text("foo", encoding="utf-8")
+    assert package_yaml_path.read_text(encoding="utf-8") == "foo"
+
+    sema4ai_action_server_run(
+        [
+            "new",
+            "--name",
+            "my_project",
+            "--template",
+            "minimal",
+            "--force",
+        ],
+        returncode=0,
+        cwd=datadir,
+    )
+    assert package_yaml_path.read_text(encoding="utf-8") != "foo"

@@ -131,6 +131,7 @@ class ArgumentsNamespaceNew(ArgumentsNamespace):
 class ArgumentsNamespaceNewTemplates(ArgumentsNamespace):
     command: Literal["new"]
     new_command: Literal["list-templates"]
+    force: bool
     json: bool
 
 

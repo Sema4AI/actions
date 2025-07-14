@@ -319,6 +319,12 @@ def _add_new_command(command_subparser, defaults):
         help="Action template for the project",
     )
 
+    new_parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Force the project to be created even if it already exists",
+    )
+
     add_verbose_args(new_parser, defaults)
 
     new_subparsers = new_parser.add_subparsers(dest="new_command")
