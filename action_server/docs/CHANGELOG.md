@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2.13.1 - 2025-07-15
+
 - Fixed issue where `action-server new --force` was not actually accepting the `--force` flag.
 
 ## 2.13.0 - 2025-07-11
