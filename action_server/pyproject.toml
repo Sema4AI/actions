@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sema4ai-action-server"
-version = "2.13.0"
+version = "2.13.1"
 description = """Sema4AI Action Server"""
 authors = ["Fabio Z. <fabio@robocorp.com>"]
 readme = "README.md"
