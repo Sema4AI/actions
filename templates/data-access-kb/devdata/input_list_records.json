@@ -1,0 +1,57 @@
+{
+    "inputs": [
+        {
+            "inputName": "list-all-records",
+            "inputValue": {
+                "req": {
+                    "filter": {},
+                    "limit": 10
+                }
+            }
+        },
+        {
+            "inputName": "list-records-with-ids-filter",
+            "inputValue": {
+                "req": {
+                    "filter": {
+                        "record_ids": [
+                            "1",
+                            "2"
+                        ]
+                    },
+                    "limit": 10
+                }
+            }
+        },
+        {
+            "inputName": "list-records-with-metadata-filter",
+            "inputValue": {
+                "req": {
+                    "filter": {
+                        "metadata_filters": {
+                            "category": "ai"
+                        }
+                    },
+                    "limit": 10
+                }
+            }
+        }
+    ],
+    "metadata": {
+        "actionName": "list_records",
+        "actionRelativePath": "data_actions.py",
+        "schemaDescription": [
+            "req.filter: string: Record filtering options (optional)",
+            "req.limit: integer: Maximum number of records to return"
+        ],
+        "managedParamsSchemaDescription": {
+            "data_source": {
+                "type": "DataSource",
+                "description": "The knowledge base data source"
+            }
+        },
+        "inputFileVersion": "v3",
+        "kind": "query",
+        "actionSignature": "query/args: 'data_source: KnowledgeBaseDataSource, req: ListRequest'"
+    }
+}

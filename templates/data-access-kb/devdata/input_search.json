@@ -1,0 +1,32 @@
+{
+    "inputs": [
+        {
+            "inputName": "input-1",
+            "inputValue": {
+                "req": {
+                    "query": "how to get insights from data",
+                    "top_k": 1,
+                    "relevance_threshold": 0.5
+                }
+            }
+        }
+    ],
+    "metadata": {
+        "actionName": "search",
+        "actionRelativePath": "data_actions.py",
+        "schemaDescription": [
+            "req.query: string: Search query text",
+            "req.top_k: integer: Number of results to return",
+            "req.relevance_threshold: number: Minimum relevance score for results"
+        ],
+        "managedParamsSchemaDescription": {
+            "data_source": {
+                "type": "DataSource",
+                "description": "The knowledge base data source"
+            }
+        },
+        "inputFileVersion": "v3",
+        "kind": "query",
+        "actionSignature": "query/args: 'data_source: KnowledgeBaseDataSource, req: SearchRequest'"
+    }
+}

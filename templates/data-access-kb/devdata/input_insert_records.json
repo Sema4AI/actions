@@ -1,0 +1,56 @@
+{
+    "inputs": [
+        {
+            "inputName": "input-1",
+            "inputValue": {
+                "req": {
+                    "records": [
+                        {
+                            "id": "1",
+                            "content": "AI enables machines to mimic human intelligence, such as learning, reasoning, problem-solving, and language understanding.",
+                            "metadata": {
+                                "src": "src_1",
+                                "category": "ai"
+                            }
+                        },
+                        {
+                            "id": "2",
+                            "content": "Machine learning is a subset of AI that focuses on training algorithms to learn patterns from data without being explicitly programmed.",
+                            "metadata": {
+                                "src": "src_2",
+                                "category": "ml"
+                            }
+                        },
+                        {
+                            "id": "3",
+                            "content": "Generative AI, like ChatGPT or image generators, creates new content such as text, images, code, or music based on patterns learned from data.",
+                            "metadata": {
+                                "src": "src_3",
+                                "category": "ai"
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "metadata": {
+        "actionName": "insert_records",
+        "actionRelativePath": "data_actions.py",
+        "schemaDescription": [
+            "req.records: array: List of records to insert into the knowledge base",
+            "req.records.0.id: string: Unique identifier for the record",
+            "req.records.0.content: string: Main content of the record",
+            "req.records.0.metadata: string: Optional metadata for the record"
+        ],
+        "managedParamsSchemaDescription": {
+            "data_source": {
+                "type": "DataSource",
+                "description": "The knowledge base data source"
+            }
+        },
+        "inputFileVersion": "v3",
+        "kind": "query",
+        "actionSignature": "query/args: 'data_source: KnowledgeBaseDataSource, req: KnowledgeBaseInsertRequest'"
+    }
+}

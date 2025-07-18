@@ -1,0 +1,69 @@
+{
+    "inputs": [
+        {
+            "inputName": "search-without-filter",
+            "inputValue": {
+                "req": {
+                    "search": {
+                        "query": "what can I do with AI",
+                        "top_k": 2,
+                        "relevance_threshold": 0.5
+                    },
+                    "filter": {}
+                }
+            }
+        },
+        {
+            "inputName": "search-with-ids-filter",
+            "inputValue": {
+                "req": {
+                    "search": {
+                        "query": "what can I do with AI",
+                        "top_k": 2,
+                        "relevance_threshold": 0.5
+                    },
+                    "filter": {
+                        "record_ids": ["1", "2"]
+                    }
+                }
+            }
+        },
+        {
+            "inputName": "search-with-metadata-filter",
+            "inputValue": {
+                "req": {
+                    "search": {
+                        "query": "what can I do with AI",
+                        "top_k": 2,
+                        "relevance_threshold": 0.5
+                    },
+                    "filter": {
+                        "metadata_filters": {
+                            "category": "ai"
+                        }
+                    }
+                }
+            }
+        }
+    ],
+    "metadata": {
+        "actionName": "advanced_search",
+        "actionRelativePath": "data_actions.py",
+        "schemaDescription": [
+            "req.search.query: string: Search query text",
+            "req.search.top_k: integer: Number of results to return",
+            "req.search.relevance_threshold: number: Minimum relevance score for results",
+            "req.filter.record_ids: string: List of record IDs to filter (optional)",
+            "req.filter.metadata_filters: string: Metadata filters to apply (optional)"
+        ],
+        "managedParamsSchemaDescription": {
+            "data_source": {
+                "type": "DataSource",
+                "description": "The knowledge base data source"
+            }
+        },
+        "inputFileVersion": "v3",
+        "kind": "query",
+        "actionSignature": "query/args: 'data_source: KnowledgeBaseDataSource, req: AdvancedSearchRequest'"
+    }
+}

@@ -1,0 +1,22 @@
+{
+    "inputs": [
+        {
+            "inputName": "input-1",
+            "inputValue": {}
+        }
+    ],
+    "metadata": {
+        "actionName": "get_metadata_columns",
+        "actionRelativePath": "data_actions.py",
+        "schemaDescription": [],
+        "managedParamsSchemaDescription": {
+            "data_source": {
+                "type": "DataSource",
+                "description": "The knowledge base data source"
+            }
+        },
+        "inputFileVersion": "v3",
+        "kind": "query",
+        "actionSignature": "query/args: 'data_source: KnowledgeBaseDataSource'"
+    }
+}
