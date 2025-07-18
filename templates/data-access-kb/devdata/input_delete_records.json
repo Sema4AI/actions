@@ -1,0 +1,45 @@
+{
+    "inputs": [
+        {
+            "inputName": "delete-all-records",
+            "inputValue": {
+                "req": {}
+            }
+        },
+        {
+            "inputName": "delete-records-with-ids-filter",
+            "inputValue": {
+                "req": {
+                    "record_ids": ["1", "2"]
+                }
+            }
+        },
+        {
+            "inputName": "delete-records-with-metadata-filter",
+            "inputValue": {
+                "req": {
+                    "metadata_filters": {
+                        "category": "ai"
+                    }
+                }
+            }
+        }
+    ],
+    "metadata": {
+        "actionName": "delete_records",
+        "actionRelativePath": "data_actions.py",
+        "schemaDescription": [
+            "req.record_ids: string: List of record IDs to filter (optional)",
+            "req.metadata_filters: string: Metadata filters to apply (optional)"
+        ],
+        "managedParamsSchemaDescription": {
+            "data_source": {
+                "type": "DataSource",
+                "description": "The knowledge base data source"
+            }
+        },
+        "inputFileVersion": "v3",
+        "kind": "query",
+        "actionSignature": "query/args: 'data_source: KnowledgeBaseDataSource, req: RecordFilter'"
+    }
+}

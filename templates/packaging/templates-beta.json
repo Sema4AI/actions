@@ -25,6 +25,11 @@
             "id": "data-access-native",
             "name": "Data Access/Native Query",
             "desc": "Give agents access to a data source using native (named) queries."
+        },
+        {
+            "id": "data-access-kb",
+            "name": "Data Access/Knowledge Base",
+            "desc": "Give agents access to knowledge base."
         }
     ]
 }
