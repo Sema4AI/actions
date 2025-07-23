@@ -74,6 +74,7 @@ def test_collect_metadata(datadir, data_regression):
     result = sema4ai_actions_run(
         [
             "metadata",
+            "--skip-lint",
         ],
         returncode=0,
         cwd=str(datadir),

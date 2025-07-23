@@ -60,6 +60,7 @@ def test_new_list_templates(tmpdir) -> None:
         "minimal",
         "data-access-query",
         "data-access-native",
+        "data-access-kb",
     }
 
 

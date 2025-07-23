@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Fixed issue where an `@action(is_consequential=False)` wasn't being properly linted due to the decorator being a function call.
+
 ## 1.3.14 - 2025-07-07
 
 - Added new `sema4ai.actions.agent` module with agent interaction capabilities:

@@ -296,6 +296,7 @@ class _ActionsArgDispatcher(_ArgDispatcher):
                     for error in errors:
                         if error["severity"] == DiagnosticSeverity.Error:
                             found_critical = True
+                            break
 
                     if found_critical:
                         stream.write(json.dumps(lint_result))

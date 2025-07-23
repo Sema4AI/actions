@@ -1,9 +1,21 @@
 import ast as ast_module
 from dataclasses import dataclass
-from typing import Any, Iterator, List, Optional, Tuple, TypedDict, Union, overload
+from typing import (
+    Any,
+    Iterator,
+    List,
+    Literal,
+    Optional,
+    Tuple,
+    TypedDict,
+    Union,
+    overload,
+)
 
 from sema4ai.actions._commands import _get_managed_param_type
 from sema4ai.actions._customization._plugin_manager import PluginManager
+
+_Kind = Literal["action", "query", "predict", "tool", "prompt", "resource"]
 
 MAX_DOCS_LENGTH = 1024
 
@@ -209,7 +221,7 @@ def _make_error(
         )
 
 
-def _check_return_type(node: ast_module.FunctionDef, kind: str) -> Iterator[Error]:
+def _check_return_type(node: ast_module.FunctionDef, kind: _Kind) -> Iterator[Error]:
     return_type = node.returns
     if not return_type:
         yield _make_error(
@@ -221,7 +233,9 @@ def _check_return_type(node: ast_module.FunctionDef, kind: str) -> Iterator[Erro
         )
 
 
-def _check_return_statement(node: ast_module.FunctionDef, kind: str) -> Iterator[Error]:
+def _check_return_statement(
+    node: ast_module.FunctionDef, kind: _Kind
+) -> Iterator[Error]:
     for _stack, maybe_return_node in _iter_nodes(node, recursive=True):
         if isinstance(maybe_return_node, ast_module.Return):
             break
@@ -252,7 +266,10 @@ def _is_data_source_param(param_name: str, node: ast_module.FunctionDef) -> bool
 
 
 def _check_docstring_contents(
-    pm: Optional[PluginManager], node: ast_module.FunctionDef, docstring: str, kind: str
+    pm: Optional[PluginManager],
+    node: ast_module.FunctionDef,
+    docstring: str,
+    kind: _Kind,
 ) -> Iterator[Error]:
     import docstring_parser
 
@@ -337,42 +354,49 @@ def _check_docstring_contents(
                 )
 
 
-def _is_action_decorator(decorator: ast_module.expr) -> bool:
-    return (isinstance(decorator, ast_module.Name) and decorator.id == "action") or (
-        isinstance(decorator, ast_module.Attribute)
-        and decorator.attr == "action"
-        and isinstance(decorator.value, ast_module.Name)
-        and decorator.value.id == "actions"
-    )
-
-
-def _is_query_decorator(decorator: ast_module.expr) -> bool:
-    return (isinstance(decorator, ast_module.Name) and decorator.id == "query") or (
-        isinstance(decorator, ast_module.Attribute)
-        and decorator.attr == "query"
-        and isinstance(decorator.value, ast_module.Name)
-        and decorator.value.id == "data"
-    )
-
-
-def _is_predict_decorator(decorator: ast_module.expr) -> bool:
-    return (isinstance(decorator, ast_module.Name) and decorator.id == "predict") or (
-        isinstance(decorator, ast_module.Attribute)
-        and decorator.attr == "predict"
-        and isinstance(decorator.value, ast_module.Name)
-        and decorator.value.id == "data"
-    )
-
-
-def _get_kind(decorator: ast_module.expr) -> str:
-    if _is_action_decorator(decorator):
-        return "action"
-    elif _is_query_decorator(decorator):
-        return "query"
-    elif _is_predict_decorator(decorator):
-        return "predict"
+def _get_kind(decorator: ast_module.expr) -> _Kind | None:
+    if isinstance(decorator, ast_module.Call):
+        check = decorator.func
     else:
-        return ""
+        check = decorator
+
+    if isinstance(check, ast_module.Name):
+        decorator_name = check.id
+    elif isinstance(check, ast_module.Attribute):
+        name = check.attr
+        if isinstance(check.value, ast_module.Name):
+            module_name = check.value.id
+        else:
+            return None
+        decorator_name = f"{module_name}.{name}"
+    else:
+        return None
+
+    # Options are:
+    # Regular actions:
+    # action/actions.action
+    # query/data.query
+    # predict/data.predict
+
+    # MCP
+    # tool/actions.tool
+    # prompt/actions.prompt
+    # resource/actions.resource
+
+    if decorator_name in ["action", "actions.action"]:
+        return "action"
+    elif decorator_name in ["query", "data.query"]:
+        return "query"
+    elif decorator_name in ["predict", "data.predict"]:
+        return "predict"
+    elif decorator_name in ["tool", "actions.tool"]:
+        return "tool"
+    elif decorator_name in ["prompt", "actions.prompt"]:
+        return "prompt"
+    elif decorator_name in ["resource", "actions.resource"]:
+        return "resource"
+    else:
+        return None
 
 
 def iter_lint_errors(
