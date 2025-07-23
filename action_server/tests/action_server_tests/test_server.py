@@ -860,6 +860,7 @@ def calculator_sum(v1: str, v2: str) -> str:
             f"--dir={calculator.parent}",
             "--db-file=server.db",
             "-v",
+            "--skip-lint",
             "--datadir",
             action_server_datadir,
         ],
