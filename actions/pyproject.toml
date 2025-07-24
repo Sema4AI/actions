@@ -10,7 +10,7 @@ packages = [{ include = "sema4ai/actions", from = "src" }]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-cryptography = "^43.0.1"
+cryptography = ">=43.0.1,<45.0.0"
 robocorp-log = ">=2.4,<4"
 robocorp-truststore = ">=0.8.0"
 psutil = ">=5.0,<7.0"
