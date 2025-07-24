@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.3.15 - 2025-07-24
+
 - Fixed issue where an `@action(is_consequential=False)` wasn't being properly linted due to the decorator being a function call.
 
 ## 1.3.14 - 2025-07-07
