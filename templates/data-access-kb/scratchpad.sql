@@ -14,14 +14,14 @@ DELETE FROM sema4ai.my_kb WHERE id in ('1', '2');
 SELECT * 
 FROM sema4ai.my_kb 
 WHERE content = 'how to get insights from data'
-and relevance > 0.5
+and relevance >= 0.5
 LIMIT 1;
 
 -- search with metadata filters
 SELECT * 
 FROM sema4ai.my_kb 
 WHERE content = 'what can I do with AI'
-and relevance > 0.5
+and relevance >= 0.5
 and category = 'ai'
 LIMIT 1;
 
@@ -29,7 +29,7 @@ LIMIT 1;
 SELECT * 
 FROM sema4ai.my_kb 
 WHERE content = 'what can I do with AI'
-and relevance > 0.5
+and relevance >= 0.5
 and id in ('1', '2')
 LIMIT 1;
 
