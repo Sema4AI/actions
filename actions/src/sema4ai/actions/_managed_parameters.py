@@ -66,7 +66,7 @@ class ManagedParameterHeuristicSecret(ManagedParameterHeuristic):
 
             elif request_contexts is not None:
                 return use_class.from_action_context(
-                    request_contexts.action_context, f"secrets/{param_name}"
+                    request_contexts.action_context, param_name
                 )
         return None
 

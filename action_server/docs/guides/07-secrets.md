@@ -17,7 +17,7 @@ def my_action(my_secret: Secret):
     login(my_secret.value)
 ```
 
-### Passing Secrets (Development mode inside of VSCode)
+### Passing Secrets through the input.json (Development mode inside of VSCode)
 
 In development mode a secret can be passed by using the `input.json` (which
 is automatically created when an action is about to be run).
@@ -33,11 +33,18 @@ Example `input.json`:
 }
 ```
 
-### Passing Secrets (Production mode)
+### Passing Secrets through X-Action-Context (Production mode)
 
 In production secrets should be passed in the `X-Action-Context` header.
 
-The expected format of that header is a base64(JSON.stringify(content))
+Note: additional data to be considered as "headers" is expected to be passed in the
+body too when `x-action-invocation-context` is specified in the headers (this may
+be interesting to avoid size restrictions in headers).
+
+    In this case the body should be a json with `body` in the content and
+    all other entries that aren't `body` will be considered as headers.
+
+The expected format of `x-action-context` is a `base64(JSON.stringify(content))`
 where the content is a json object such as:
 
 ```
@@ -113,6 +120,47 @@ ACTION_SERVER_DECRYPT_KEYS=json.dumps(
 
 Note: all the keys will be checked in order and the caller may use any of the
 keys set to encrypt the data.
+
+### Passing Secrets as environment variables or headers
+
+Secrets may also be alternatively passed as environment variables
+or individually as headers (both in dev or production mode).
+
+This may be the preferred way when dealing with mcp servers or
+some infrastructure that doesn't have support for customizing
+the `X-Action-Context`.
+
+The environment variable name is by default the same name of the secret
+in uppercase.
+
+Example:
+
+Given the code:
+
+```python
+@mcp.tool
+def my_action(my_secret: Secret):
+    the_secret_is = my_secret.value
+```
+
+A secret may also be passed as an environment variable such as:
+
+```
+MY_SECRET=<secret-value>
+```
+
+or as a header prefixed by `X-` and replacing `_` by `-` in the variable name
+(in this case it's case insensitive). i.e.:
+
+```
+X-My-Secret=<secret-value>
+```
+
+The `<secret-value>` may be the plain value of the variable or it
+may also be encrypted with the same logic used to encrypt the
+`X-Action-Context` (the only difference being that the secret
+is a string and not a dictionary/object, but it should still
+be json-dumped/encrypted/put in the json envelope/converted to base64).
 
 ## OAuth2 Secrets
 
