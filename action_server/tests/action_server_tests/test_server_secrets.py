@@ -157,10 +157,21 @@ def test_secrets_unencrypted_set_through_separate_post_request(
 
 
 @pytest.mark.integration_test
-def test_secrets_encrypted_set_through_separate_post_request(
+@pytest.mark.parametrize(
+    "scenario",
+    [
+        "regular",
+        "header-encrypted",
+        "env-encrypted",
+        "header-unencrypted",
+        "env-unencrypted",
+    ],
+)
+def test_secrets_encrypted_set_through_separate_post_request_env_var_or_header(
     action_server_process: ActionServerProcess,
     client: ActionServerClient,
     datadir,
+    scenario,
 ):
     import base64
     import json
@@ -181,6 +192,11 @@ def test_secrets_encrypted_set_through_separate_post_request(
         ),
     )
 
+    if scenario == "env-encrypted":
+        env["PRIVATE_INFO"] = make_encrypted_data_envelope(keys[0], "my-secret-value")
+    elif scenario == "env-unencrypted":
+        env["PRIVATE_INFO"] = "my-secret-value"
+
     action_server_process.start(
         cwd=pack,
         actions_sync=True,
@@ -189,25 +205,51 @@ def test_secrets_encrypted_set_through_separate_post_request(
         env=env,
     )
 
-    ctx_info: str = make_encrypted_data_envelope(
-        keys[0],
-        {
-            "secrets": {"private_info": "my-secret-value"},
-            "scope": {"action-package": "pack_encryption"},
-        },
-    )
+    if scenario == "regular":
+        ctx_info: str = make_encrypted_data_envelope(
+            keys[0],
+            {
+                "secrets": {"private_info": "my-secret-value"},
+                "scope": {"action-package": "pack_encryption"},
+            },
+        )
+        set_result = client.post_get_str(
+            "api/secrets",
+            {"data": ctx_info},
+        )
+        assert json.loads(set_result) == "ok"
 
-    found = client.post_get_str(
-        "api/secrets",
-        {"data": ctx_info},
-    )
-    assert json.loads(found) == "ok"
+        found = client.post_get_str(
+            "api/actions/pack-encryption/get-private/run",
+            {"name": "Foo"},
+        )
 
-    found = client.post_get_str(
-        "api/actions/pack-encryption/get-private/run",
-        {"name": "Foo"},
-    )
-    assert "my-secret-value" == json.loads(found)
+    elif scenario == "header-unencrypted":
+        found = client.post_get_str(
+            "api/actions/pack-encryption/get-private/run",
+            {"name": "Foo"},
+            headers={"x-private-info": "my-secret-value"},
+        )
+
+    elif scenario == "header-encrypted":
+        # Send as a header
+        found = client.post_get_str(
+            "api/actions/pack-encryption/get-private/run",
+            {"name": "Foo"},
+            headers={
+                "x-private-info": make_encrypted_data_envelope(
+                    keys[0], "my-secret-value"
+                )
+            },
+        )
+    elif scenario in ["env-encrypted", "env-unencrypted"]:
+        # Sent in the env already.
+        found = client.post_get_str(
+            "api/actions/pack-encryption/get-private/run",
+            {"name": "Foo"},
+        )
+
+    assert json.loads(found) == "my-secret-value"
 
 
 @pytest.mark.integration_test

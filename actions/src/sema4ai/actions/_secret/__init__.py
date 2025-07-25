@@ -77,7 +77,7 @@ class Secret:
 
     @classmethod
     def from_action_context(
-        cls, action_context: "ActionContext", path: str
+        cls, action_context: "ActionContext | None", secret_name: str
     ) -> "Secret":
         """
         Creates a secret given the action context (which may be encrypted
@@ -86,14 +86,13 @@ class Secret:
         Args:
             action_context: The action context which has the secret.
 
-            path: The path inside of the action context for the secret data
-            requested (Example: 'secrets/my_secret_name').
+            secret_name: The name of the secret to be retrieved from the action context.
 
         Return: A Secret instance collected from the passed action context.
         """
         from sema4ai.actions._secret._secret import _SecretInActionContext
 
-        return _SecretInActionContext(action_context, path)
+        return _SecretInActionContext(action_context, secret_name)
 
     @property
     def value(self) -> str:
