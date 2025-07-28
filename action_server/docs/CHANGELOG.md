@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Headers are now properly forwarded for requests using the `mcp` protocol (so, it's possible
+  to receive `Secrets` as headers in the request -- also requires `sema4ai.actions` version `1.4.0`).
+
 ## 2.13.1 - 2025-07-15
 
 - Fixed issue where `action-server new --force` was not actually accepting the `--force` flag.
