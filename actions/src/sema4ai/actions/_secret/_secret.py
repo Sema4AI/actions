@@ -122,6 +122,7 @@ class _SecretInActionContext(Secret):
                 log.hide_from_output(repr(ret))
             return ret
 
+        error_if_not_found = f"{error_if_not_found} (note: also checked env var: {self._env_var_name} and request header: {self._request_name})."
         raise NoSecretInActionContextError(error_if_not_found)
 
     @property
@@ -134,7 +135,7 @@ class _SecretInActionContext(Secret):
         with log.suppress():
             if self._action_context is None:
                 return self.__secret_from_env_or_request(
-                    "Unable to get the secret in the action context because it's not available."
+                    "Unable to get the secret in the action context because it's not available"
                 )
 
             dct = self._action_context.value
@@ -144,26 +145,26 @@ class _SecretInActionContext(Secret):
                 if not isinstance(dct, dict):
                     dct = None  # Remove from context
                     return self.__secret_from_env_or_request(
-                        f"Unable to get path: {self._paths} in action context (expected dict to get {path!r} from)."
+                        f"Unable to get path: {self._paths} in action context (expected dict to get {path!r} from)"
                     )
                 try:
                     dct = v = dct[path]
                 except KeyError:
                     dct = None  # Remove from context
                     return self.__secret_from_env_or_request(
-                        f"Unable to get path: {self._paths} in action context (current path: {path!r})."
+                        f"Unable to get path: {self._paths} in action context (current path: {path!r})"
                     )
 
             dct = None  # Remove from context
             if v is None:
                 return self.__secret_from_env_or_request(
-                    f"Error. Path ({self._paths}) invalid for the action context."
+                    f"Error. Path ({self._paths}) invalid for the action context"
                 )
 
             if not isinstance(v, str):
                 del v
                 return self.__secret_from_env_or_request(
-                    f"Error. Path ({self._paths}) did not map to a string in the action context."
+                    f"Error. Path ({self._paths}) did not map to a string in the action context"
                 )
 
             return v
