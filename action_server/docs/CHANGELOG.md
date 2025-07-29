@@ -7,6 +7,7 @@
 - Headers are now properly forwarded for requests using the `mcp` protocol (so, it's possible
   to receive `Secrets` as headers in the request -- also requires `sema4ai.actions` version `1.4.0`).
 - Showing `/mcp` endpoint in the output.
+- Upgraded to `sema4ai.common` `0.2.0` (to fix issue where `process.kill` would raise an exception on windows).
 
 ## 2.13.1 - 2025-07-15
 

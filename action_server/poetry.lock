@@ -2416,14 +2416,14 @@ files = [
 
 [[package]]
 name = "sema4ai-actions"
-version = "1.3.13"
+version = "1.4.0"
 description = "Sema4AI Actions"
 optional = false
 python-versions = "<4.0,>=3.10"
 groups = ["main", "dev"]
 files = [
-    {file = "sema4ai_actions-1.3.13-py3-none-any.whl", hash = "sha256:697775efe2efcd84bdddd877c845f2c84051a8a729ee1766a2a16ce4478a0ff7"},
-    {file = "sema4ai_actions-1.3.13.tar.gz", hash = "sha256:be0e7e15872226bffa8537d19b7a39a1738ca16d640e5578bac568d36e3e7adf"},
+    {file = "sema4ai_actions-1.4.0-py3-none-any.whl", hash = "sha256:781f9b736d17b33cdeeb322ffeb450eb5fcc784a20ea9564aeabcdeb3a2e3670"},
+    {file = "sema4ai_actions-1.4.0.tar.gz", hash = "sha256:ebfdf85a04fed55dcf8afbccd9b5ae85237b00a7f354b1e15c23eecf0f0509fc"},
 ]
 
 [package.dependencies]
@@ -2431,6 +2431,7 @@ cryptography = ">=43.0.1,<44.0.0"
 docstring_parser_fork = ">=0.0.5,<0.0.6"
 psutil = ">=5.0,<7.0"
 pydantic = ">=2.11.7,<3.0.0"
+pyyaml = ">=6.0,<7.0"
 robocorp-log = ">=2.4,<4"
 robocorp-truststore = ">=0.8.0"
 sema4ai-http-helper = ">=2.0.1,<3.0.0"
@@ -2451,14 +2452,14 @@ url = "../build_common"
 
 [[package]]
 name = "sema4ai-common"
-version = "0.1.0"
+version = "0.2.0"
 description = "Sema4AI Common"
 optional = false
 python-versions = "<4.0,>=3.11"
 groups = ["main"]
 files = [
-    {file = "sema4ai_common-0.1.0-py3-none-any.whl", hash = "sha256:46c8e07d1420bf507300a51624e27e0dad1ecc3036604f57513d91d29926a917"},
-    {file = "sema4ai_common-0.1.0.tar.gz", hash = "sha256:0185f2e39fca7578a52558d6bf08d347c161f19757c3c779ad5345103660e16f"},
+    {file = "sema4ai_common-0.2.0-py3-none-any.whl", hash = "sha256:ee6fe40c6f2d423ee2062b25a24ff8fa065ab8e32f661c8b079435e20ad076f9"},
+    {file = "sema4ai_common-0.2.0.tar.gz", hash = "sha256:773a7583d6d4d68db9de8628534357f31c03590a5ebcb2e2d36f3c9044b9fc49"},
 ]
 
 [package.dependencies]
@@ -3281,4 +3282,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.14"
-content-hash = "e90aa0c7c76019947d87957860bf5e701a2085ed257d1a160fdd26e1a728463a"
+content-hash = "5581a8238ea5de37feb0ed407a88e36243aa5d119b0bbfb20e7c0b1fac9dc767"
