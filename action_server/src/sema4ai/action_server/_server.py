@@ -354,6 +354,11 @@ def start_server(
         settings.base_url = url
 
         log.info(
+            colored("\n  ⚡️ Local MCP endpoint: ", "green", attrs=["bold"])
+            + colored(f"{url}/mcp", "light_blue")
+        )
+
+        log.info(
             colored("\n  ⚡️ Local Action Server: ", "green", attrs=["bold"])
             + colored(url, "light_blue")
         )
@@ -362,9 +367,12 @@ def start_server(
             # No need to log the contents below when in a container.
             if not expose:
                 log.info(
-                    colored("     Public access: use ", attrs=["dark"])
+                    colored(
+                        "     Public access: use ",
+                        attrs=["dark"],
+                    )
                     + colored("--expose", attrs=["bold"])
-                    + colored(" to expose\n", attrs=["dark"])
+                    + colored(" to expose (OpenAPI only)", attrs=["dark"])
                 )
 
                 if api_key:
