@@ -1,0 +1,97 @@
+name: Build Action Server with CDN Frontend
+on:
+  workflow_dispatch:
+    inputs:
+      frontend_version:
+        description: 'Frontend version from CDN (e.g., latest, 2.13.1)'
+        required: false
+        default: 'latest'
+      upload_artifacts:
+        description: 'Upload built artifacts'
+        required: false
+        default: 'true'
+        type: boolean
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: ./action_server
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-22.04
+          - windows-2022
+          - macos-13
+          - macos-15
+        include:
+          - os: ubuntu-22.04
+            python: '3.12'
+            asset_name: action-server
+          - os: windows-2022
+            python: '3.12'
+            asset_name: action-server.exe
+          - os: macos-13
+            python: '3.12'
+            asset_name: action-server
+          - os: macos-15
+            python: '3.12'
+            asset_name: action-server
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      
+      - name: Install Python 3.12
+        run: uv python install 3.12
+      
+      - name: Install devutils requirements
+        run: uv run --no-project --python ${{ matrix.python }} python -m pip install
+          --break-system-packages -r ../devutils/requirements.txt
+      
+      - name: Install project dependencies
+        run: uv run --no-project --python ${{ matrix.python }} inv devinstall
+      
+      - name: Setup go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+      
+      - name: Build frontend from CDN
+        run: |
+          echo "Building frontend from CDN version: ${{ github.event.inputs.frontend_version }}"
+          uv run --no-project --python ${{ matrix.python }} poetry run inv build-frontend-cdn --version=${{ github.event.inputs.frontend_version }}
+      
+      - name: Build OAuth2 config
+        run: uv run --no-project --python ${{ matrix.python }} inv build-oauth2-config
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_GHA_TO_ANOTHER_REPO }}
+      
+      - name: Build executable (no signing)
+        run: |
+          uv run --no-project --python ${{ matrix.python }} poetry run inv build-executable --go-wrapper
+        env:
+          RC_ACTION_SERVER_FORCE_DOWNLOAD_RCC: 'true'
+          RC_ACTION_SERVER_DO_SELFTEST: 'false'
+      
+      - name: Test executable
+        run: |
+          ./dist/action-server/action-server version
+      
+      - name: Upload artifact
+        if: ${{ github.event.inputs.upload_artifacts == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: action-server-cdn-${{ matrix.os }}
+          path: action_server/dist/action-server/${{ matrix.asset_name }}

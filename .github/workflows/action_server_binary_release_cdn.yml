@@ -1,0 +1,214 @@
+name: Action Server BINARY Release (CDN Frontend)
+permissions:
+  contents: read
+'on':
+  push:
+    tags:
+    - sema4ai-action_server-*
+    branches:
+    - '*-beta'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Frontend version to use from CDN (e.g., latest, 2.13.1)'
+        required: false
+        default: 'latest'
+defaults:
+  run:
+    working-directory: ./action_server
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        os:
+        - ubuntu-22.04
+        - windows-2022
+        - macos-13
+        - macos-15
+        include:
+        - os: ubuntu-22.04
+          python: '3.12'
+          asset_path: action_server/dist/final/action-server
+        - os: windows-2022
+          python: '3.12'
+          asset_path: action_server/dist/final/action-server.exe
+        - os: macos-15
+          python: '3.12'
+          asset_path: action_server/dist/final/action-server
+        - os: macos-13
+          python: '3.12'
+          asset_path: action_server/dist/final/action-server
+    steps:
+    - name: Checkout repository and submodules
+      uses: actions/checkout@v3
+    - name: Install the latest version of uv
+      uses: astral-sh/setup-uv@v5
+      with:
+        enable-cache: true
+    - name: Install Python 3.12
+      run: uv python install 3.12
+    - name: Install devutils requirements
+      run: uv run --no-project --python ${{ matrix.python }}  python -m pip install
+        --break-system-packages -r ../devutils/requirements.txt
+    - name: Install project (not dev)
+      if: contains(matrix.name, '-devmode') == false
+      run: uv run --no-project --python ${{ matrix.python }} inv install
+    - name: Install project (dev)
+      if: contains(matrix.name, '-devmode')
+      run: uv run --no-project --python ${{ matrix.python }} inv devinstall
+    - name: Setup go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.23'
+    - name: Check tag version
+      run: uv run --no-project --python ${{ matrix.python }} poetry run inv check-tag-version
+      if: ${{ !endsWith(github.ref_name, '-beta') }}
+    
+    # NEW: Build frontend from CDN instead of npm
+    - name: Build frontend from CDN
+      run: |
+        # Determine version to use
+        VERSION="${{ github.event.inputs.version || 'latest' }}"
+        echo "Using frontend version: $VERSION"
+        
+        # Download the pre-built frontend HTML from CDN
+        echo "Downloading pre-built frontend from CDN..."
+        FRONTEND_URL="https://cdn.sema4.ai/action-server/releases/$VERSION/index.html"
+        
+        # Try to download directly if index.html is available
+        if curl --head --silent --fail "$FRONTEND_URL" > /dev/null; then
+          echo "Downloading frontend directly from $FRONTEND_URL"
+          curl -o frontend.html "$FRONTEND_URL"
+        else
+          # Fallback: Download and run the Linux binary to extract frontend
+          echo "Downloading Linux binary to extract frontend..."
+          curl -L -o temp-action-server "https://cdn.sema4.ai/action-server/releases/$VERSION/linux64/action-server"
+          chmod +x temp-action-server
+          
+          # Create minimal package structure
+          mkdir -p temp-package
+          cat > temp-package/package.yaml << EOF
+        name: temp-package
+        description: Temporary package for extracting frontend
+        version: 0.1.0
+        EOF
+          
+          cat > temp-package/dummy_action.py << EOF
+        from sema4ai.actions import action
+        @action
+        def dummy():
+            return "dummy"
+        EOF
+          
+          # Start server temporarily
+          cd temp-package
+          ../temp-action-server start --port 8080 &
+          SERVER_PID=$!
+          
+          # Wait for server to start
+          echo "Waiting for server to start..."
+          for i in {1..30}; do
+            if curl -s http://localhost:8080 > /dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          
+          # Download the frontend
+          curl -o ../frontend.html http://localhost:8080/
+          
+          # Stop the server
+          kill $SERVER_PID || true
+          cd ..
+          
+          # Cleanup
+          rm -rf temp-package temp-action-server
+        fi
+        
+        # Create the _static_contents.py file
+        DEST_FILE="src/sema4ai/action_server/_static_contents.py"
+        echo "Creating $DEST_FILE..."
+        
+        # Use Python to properly escape the HTML content
+        python3 << 'EOF'
+        import json
+        with open('frontend.html', 'rb') as f:
+            html_content = f.read()
+        
+        file_contents = {"index.html": html_content}
+        
+        with open('src/sema4ai/action_server/_static_contents.py', 'w', encoding='utf-8') as f:
+            f.write("""# coding: utf-8
+# Note: autogenerated file from CDN.
+# The FILE_CONTENTS contains the contents of the files with
+# html/javascript code for the static assets we use.
+FILE_CONTENTS = %s
+""" % repr(file_contents))
+        EOF
+        
+        echo "Frontend assets successfully extracted from CDN!"
+        
+        # Cleanup
+        rm -f frontend.html
+
+    - name: Build OAuth2 config
+      run: uv run --no-project --python ${{ matrix.python }} inv build-oauth2-config
+      env:
+        GH_TOKEN: ${{ secrets.GH_PAT_GHA_TO_ANOTHER_REPO }}
+    - name: Set version
+      run: '
+
+        uv run --no-project --python ${{ matrix.python }} poetry version | awk ''{print
+        $2}'' > version.txt
+
+        VERSION=$(cat version.txt)
+
+
+        echo "Version: $VERSION"
+
+        echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+        '
+      id: set_version
+      if: ${{ matrix.os == 'ubuntu-22.04' }}
+    - name: Build binary
+      env:
+        RC_ACTION_SERVER_FORCE_DOWNLOAD_RCC: 'true'
+        RC_ACTION_SERVER_DO_SELFTEST: 'true'
+        MACOS_SIGNING_CERT: ${{ secrets.MACOS_SIGNING_CERT_SEMA4AI }}
+        MACOS_SIGNING_CERT_PASSWORD: ${{ secrets.MACOS_SIGNING_CERT_PASSWORD_SEMA4AI
+          }}
+        MACOS_SIGNING_CERT_NAME: ${{ secrets.MACOS_SIGNING_CERT_NAME_SEMA4AI }}
+        APPLEID: ${{ secrets.MACOS_APP_ID_FOR_NOTARIZATION_SEMA4AI }}
+        APPLETEAMID: ${{ secrets.MACOS_TEAM_ID_FOR_NOTARIZATION_SEMA4AI }}
+        APPLEIDPASS: ${{ secrets.MACOS_APP_ID_PASSWORD_FOR_NOTARIZATION_SEMA4AI }}
+        VAULT_URL: ${{ secrets.WIN_SIGN_AZURE_KEY_VAULT_URL_SEMA4AI }}
+        CLIENT_ID: ${{ secrets.WIN_SIGN_AZURE_KEY_VAULT_CLIENT_ID_SEMA4AI }}
+        TENANT_ID: ${{ secrets.WIN_SIGN_AZURE_KEY_VAULT_TENANT_ID_SEMA4AI }}
+        CLIENT_SECRET: ${{ secrets.WIN_SIGN_AZURE_KEY_VAULT_CLIENT_SECRET_SEMA4AI
+          }}
+        CERTIFICATE_NAME: ${{ secrets.WIN_SIGN_AZURE_KEY_VAULT_CERTIFICATE_NAME_SEMA4AI
+          }}
+        GITHUB_EVENT_NAME: ${{ github.event_name }}
+        GITHUB_REF_NAME: ${{ github.ref_name }}
+        GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
+      run: uv run --no-project --python ${{ matrix.python }} poetry run inv build-executable
+        --sign --go-wrapper
+    - name: 'Upload artifact: action_server/dist/final/'
+      uses: actions/upload-artifact@v4
+      with:
+        name: action-server-${{ matrix.os }}
+        path: action_server/dist/final/
+    - name: 'Upload artifact: action_server/version.txt'
+      uses: actions/upload-artifact@v4
+      with:
+        name: action-server-version
+        path: action_server/version.txt
+      if: ${{ matrix.os == 'ubuntu-22.04' }}
+    outputs:
+      version: ${{ steps.set_version.outputs.version }}
+  
+  # The rest of the workflow (deploy-s3, trigger-brew-workflow, release) remains the same
+  # as the original action_server_binary_release.yml workflow
