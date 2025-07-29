@@ -9,7 +9,7 @@ on:
       upload_artifacts:
         description: 'Upload built artifacts'
         required: false
-        default: 'true'
+        default: true
         type: boolean
 
 permissions:
@@ -76,7 +76,7 @@ jobs:
       - name: Build OAuth2 config
         run: uv run --no-project --python ${{ matrix.python }} inv build-oauth2-config
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT_GHA_TO_ANOTHER_REPO }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Build executable (no signing)
         run: |
