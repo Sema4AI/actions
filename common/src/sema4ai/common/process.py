@@ -378,105 +378,40 @@ def _call(cmdline, **kwargs):
         return None
 
 
-def _kill_process_and_subprocess_linux(pid):
-    initial_pid = pid
-
-    def list_children_and_stop_forking(ppid):
-        children_pids = []
-        _call(
-            ["kill", "-STOP", str(ppid)], stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
-
-        list_popen = _popen(
-            ["pgrep", "-P", str(ppid)], stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
-
-        if list_popen is not None:
-            stdout, _ = list_popen.communicate()
-            for line in stdout.splitlines():
-                line = line.decode("ascii").strip()
-                if line:
-                    pid = str(line)
-                    children_pids.append(pid)
-                    # Recursively get children.
-                    children_pids.extend(list_children_and_stop_forking(pid))
-        return children_pids
-
-    previously_found = set()
-
-    for _ in range(50):  # Try this at most 50 times before giving up.
-        children_pids = list_children_and_stop_forking(initial_pid)
-        found_new = False
-
-        for pid in children_pids:
-            if pid not in previously_found:
-                found_new = True
-                previously_found.add(pid)
-                _call(
-                    ["kill", "-KILL", str(pid)],
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                )
-
-        if not found_new:
-            break
-
-    # Now, finish the initial one.
-    _call(
-        ["kill", "-KILL", str(initial_pid)],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
-
-
-def kill_process_and_subprocesses(pid):
+def kill_process_and_subprocesses(pid, soft_kill_timeout: float = 1.0):
     log.debug("Killing process and subprocesses of: %s", pid)
-    from subprocess import CalledProcessError
+    import psutil
 
-    if sys.platform == "win32":
-        args = ["taskkill", "/F", "/PID", str(pid), "/T"]
-        retcode = subprocess.call(
-            args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE
-        )
-        if retcode not in (0, 128, 255):
-            raise CalledProcessError(retcode, args)
+    try:
+        proc = psutil.Process(int(pid))
+        proc_children = proc.children(recursive=True)
+        all_processes = [proc] + proc_children
 
-    elif sys.platform == "darwin":
-        import psutil
+        # Terminate (soft-kill) all processes
+        for p in all_processes:
+            try:
+                p.terminate()
+            except psutil.NoSuchProcess:
+                continue
+            except Exception as e:
+                log.debug(f"Error terminating child process {p.pid}: {e}")
 
-        try:
-            proc = psutil.Process(int(pid))
-            proc_children = proc.children(recursive=True)
-            all_processes = [proc] + proc_children
+        # Wait a bit for all processes to terminate
+        _gone, alive = psutil.wait_procs(all_processes, timeout=soft_kill_timeout)
 
-            # Terminate (soft-kill) all processes
-            for p in all_processes:
-                try:
-                    p.terminate()
-                except psutil.NoSuchProcess:
-                    continue
-                except Exception as e:
-                    log.debug(f"Error terminating child process {p.pid}: {e}")
+        # Force kill any remaining children after the timeout elapses
+        for p in alive:
+            try:
+                p.kill()
+            except psutil.NoSuchProcess:
+                continue
+            except Exception as e:
+                log.debug(f"Error killing child process {p.pid}: {e}")
 
-            # Wait a bit for all processes to terminate
-            _gone, alive = psutil.wait_procs(all_processes, timeout=0.1)
-
-            # Force kill any remaining children after the timeout elapses
-            for p in alive:
-                try:
-                    p.kill()
-                except psutil.NoSuchProcess:
-                    continue
-                except Exception as e:
-                    log.debug(f"Error killing child process {p.pid}: {e}")
-
-        except psutil.NoSuchProcess:
-            log.debug(f"Process {pid} not found")
-        except Exception as e:
-            log.debug(f"Error killing process and subprocesses of {pid}: {e}")
-
-    else:
-        _kill_process_and_subprocess_linux(pid)
+    except psutil.NoSuchProcess:
+        log.debug(f"Process {pid} not found")
+    except Exception as e:
+        log.debug(f"Error killing process and subprocesses of {pid}: {e}")
 
 
 def kill_subprocesses(pid: int | None = None, soft_kill_timeout: float = 2) -> None:

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Use the same code (with psutil) in all platforms for `kill_process_and_subprocesses`.
+
 ## 0.1.1 - 2025-06-02
 
 - Fix issue when killing subprocesses on MacOS (apparently in MacOS we could
