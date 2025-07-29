@@ -105,7 +105,7 @@ class Database:
         return self._db_path
 
     def log_internal_info(self):
-        log.info("sqlite version: %s", sqlite3.sqlite_version)
+        log.debug("sqlite version: %s", sqlite3.sqlite_version)
 
     def _get_type_hints(self, cls) -> dict:
         try:
