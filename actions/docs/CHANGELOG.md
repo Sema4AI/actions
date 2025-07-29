@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.4.0 - 2025-07-29
+
 - Secrets may now also be passed as environment variables
   or individually as headers (both in dev or production mode).
 
