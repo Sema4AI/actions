@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 1.4.1 - 2025-08-07
+
+- Extend `psutil` dependency to <8.0 to support latest versions
+
 ## 1.4.0 - 2025-07-29
 
 - Secrets may now also be passed as environment variables
