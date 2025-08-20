@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## 1.4.2 - 2025-08-20
+- CVE fixes
+
 ## 1.4.1 - 2025-08-07
 
 - Extend `psutil` dependency to <8.0 to support latest versions
