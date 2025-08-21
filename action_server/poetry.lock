@@ -2462,14 +2462,14 @@ url = "../build_common"
 
 [[package]]
 name = "sema4ai-common"
-version = "0.2.0"
+version = "0.2.1"
 description = "Sema4AI Common"
 optional = false
 python-versions = "<4.0,>=3.11"
 groups = ["main"]
 files = [
-    {file = "sema4ai_common-0.2.0-py3-none-any.whl", hash = "sha256:ee6fe40c6f2d423ee2062b25a24ff8fa065ab8e32f661c8b079435e20ad076f9"},
-    {file = "sema4ai_common-0.2.0.tar.gz", hash = "sha256:773a7583d6d4d68db9de8628534357f31c03590a5ebcb2e2d36f3c9044b9fc49"},
+    {file = "sema4ai_common-0.2.1-py3-none-any.whl", hash = "sha256:e72c9a215bf3d4881a35a211792d5bd381f568ac87e462219596d1a3a3d616c2"},
+    {file = "sema4ai_common-0.2.1.tar.gz", hash = "sha256:69cf0229717458f3a269f6cbde71a9183c1943e25f98393a1d1035e259268653"},
 ]
 
 [package.dependencies]
@@ -3292,4 +3292,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.14"
-content-hash = "d9fcf83b3f3f5613092c09d1e31ed7ba03e633f52128b2e98d0b19c977a884cb"
+content-hash = "edd8eebae439927c2aa37b4be9111b1270f291ef6b6793d78059082e4adfaa8b"
