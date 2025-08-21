@@ -15,6 +15,7 @@
 name: Action Server PYPI Release
 permissions:
   contents: read
+  id-token: write
 'on':
   push:
     tags:
@@ -38,7 +39,7 @@ jobs:
           os: ubuntu-22.04
     steps:
     - name: Checkout repository and submodules
-      uses: actions/checkout@v3
+      uses: actions/checkout@v5
     - name: Install the latest version of uv
       uses: astral-sh/setup-uv@v5
       with:
@@ -59,7 +60,7 @@ jobs:
       env:
         ACTION_SERVER_SKIP_DOWNLOAD_IN_BUILD: 'true'
     - name: Setup node
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: 20.x
         registry-url: https://npm.pkg.github.com
