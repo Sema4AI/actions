@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 2.14.1 - 2025-08-21
+
+- CVE fixes
+
 ## 2.14.0 - 2025-07-29
 
 - Headers are now properly forwarded for requests using the `mcp` protocol (so, it's possible
