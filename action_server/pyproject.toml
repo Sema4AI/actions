@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sema4ai-action-server"
-version = "2.14.1"
+version = "2.14.2"
 description = """Sema4AI Action Server"""
 authors = ["Fabio Z. <fabio@robocorp.com>"]
 readme = "README.md"
@@ -39,7 +39,7 @@ cryptography = "^44.0.1"
 requests_oauthlib = "^2.0"
 watchfiles = "^0.24.0"
 sema4ai-common = "^0.2.1"
-mcp = "^1.9.2"
+mcp = "^1.10.0"
 
 [tool.poetry.group.dev.dependencies]
 sema4ai-devutils = { path = "../devutils/", develop = true }
