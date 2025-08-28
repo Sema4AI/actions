@@ -163,7 +163,7 @@ async def check_mcp_server(
             assert isinstance(prompt_result, GetPromptResult)
             expected_prompt_result = {
                 "meta": None,
-                "description": None,
+                "description": "\n        Prompt with an optional argument.\n\n        Args:\n            name: The name of the person to greet.\n        ",
                 "messages": [
                     {
                         "role": "user",
