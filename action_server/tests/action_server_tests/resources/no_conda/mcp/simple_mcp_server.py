@@ -104,11 +104,11 @@ async def my_prompt(name: str) -> str:
 @mcp.prompt()
 async def my_prompt_with_optional_arg(name: str | None = None) -> str:
     """
-    Prompt with an optional argument.
+        Prompt with an optional argument.
 
-    Args:
-        name: The name of the person to greet.
-    """
+        Args:
+            name: The name of the person to greet.
+        """
     return (
         f"This is the built in prompt for {name}."
         if name
