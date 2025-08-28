@@ -1,9 +1,51 @@
 # Development
 
+
+## Requirements
+
+- Python 3.10 or later
+- invoke 2.2.0 or later
+
+- `inv -l`
+
+```
+  build                  Build distributable .tar.gz and .wheel files
+  build-executable       Build the project executable via PyInstaller.
+  build-frontend         Build static .html frontend
+  build-go-wrapper
+  build-oauth2-config    Build static OAuth2 .yaml config.
+  check-all              Run all checks
+  check-tag-version      Checks if the current tag matches the latest version (exits with 1 if it
+  clean                  Clean build artifacts.
+  dev-frontend           Run the frontend in dev mode (starts its own localhost server using vite).
+  devinstall             Install the package in develop mode and its dependencies.
+  docs                   Build API documentation
+  doctest                Statically verify documentation examples.
+  download-rcc           Downloads RCC in the place where the action server expects it
+  install                Optionally updates then also installs dependencies.
+  lint                   Run static analysis and formatting checks.
+  make-release           Create a release tag
+  pretty                 Auto-format code and sort imports
+  print-env
+  publish                Publish to PyPI
+  set-version            Sets a new version for the project in all the needed files
+  test                   Run unittests
+  test-binary            Test the binary
+  test-not-integration
+  test-run-in-parallel   Just runs the action server in dist/final/action-server 3 times in parallel
+  typecheck              Type check code
+```
+
+- To run `inv test`: you need to set `ACTION_SERVER_TEST_ACCESS_CREDENTIALS` which is an access credential to `ci.robocorp.dev`
+
+
 ## Release process
 
 To release a new version use `inv` commands (in the `/action_server` directory):
 
+- 👉 Remember CVE cadence ando check the dependabot for items that can be fixed
+  - Handle direct deps. in pyproject.toml 
+  - Use `inv install --update` to bump the poetry.lock transient deps 
 - First, check that the `CHANGELOG.md` is updated with the new changes (keep the `## Unreleased` section for the current release).
 - `inv set-version <version>`: will set the version and update the `CHANGELOG.md` `## Unreleased` section to have the specified version/current date.
 - Commit/get the changes (open a PR, merge it, get the contents locally).
