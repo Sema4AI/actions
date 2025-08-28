@@ -155,6 +155,7 @@ class ProcessHandle:
 
         cwd = get_action_package_cwd(settings, action_package)
         from ._robo_utils.process import build_subprocess_kwargs
+
         subprocess_kwargs = build_subprocess_kwargs(cwd=cwd, env=env)
         subprocess_kwargs.update(
             stdout=subprocess.PIPE,
