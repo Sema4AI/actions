@@ -171,6 +171,7 @@ async def check_mcp_server(
                             "type": "text",
                             "text": "This is the built in prompt for John.",
                             "annotations": None,
+                            "meta": None,
                         },
                     }
                 ],
