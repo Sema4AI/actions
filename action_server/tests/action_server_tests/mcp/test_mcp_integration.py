@@ -2,9 +2,9 @@ from typing import Any, Literal
 
 import pytest
 from action_server_tests.fixtures import run_async_in_new_thread
-from mcp import ClientSession
-
 from sema4ai.action_server._selftest import ActionServerProcess
+
+from mcp import ClientSession
 
 
 async def check_mcp_server(
@@ -17,6 +17,8 @@ async def check_mcp_server(
     This method is meant to check that the `resources/no_conda/mcp` implementation
     is working.
     """
+    from pydantic.networks import AnyUrl
+
     from mcp.client.sse import sse_client
     from mcp.client.streamable_http import streamablehttp_client
     from mcp.types import (
@@ -27,7 +29,6 @@ async def check_mcp_server(
         TextContent,
         TextResourceContents,
     )
-    from pydantic.networks import AnyUrl
 
     client_protocol: Any
     if connection_mode == "mcp":
@@ -48,14 +49,14 @@ async def check_mcp_server(
             assert len(tools) > 0
 
             tool_names = [tool.name for tool in tools]
-            assert (
-                "greet_mcp" in tool_names
-            ), f"greet_mcp tool not found. Available tools: {tool_names}"
+            assert "greet_mcp" in tool_names, (
+                f"greet_mcp tool not found. Available tools: {tool_names}"
+            )
 
             greet_tool = next(tool for tool in tools if tool.name == "greet_mcp")
-            assert (
-                greet_tool is not None
-            ), f"'greet_mcp' tool not found. Available tools: {tool_names}"
+            assert greet_tool is not None, (
+                f"'greet_mcp' tool not found. Available tools: {tool_names}"
+            )
 
             input_schema = greet_tool.inputSchema
             expected_action_server = {
@@ -102,9 +103,9 @@ async def check_mcp_server(
             assert isinstance(tool_result, CallToolResult)
             tool_content = tool_result.content[0]
             assert isinstance(tool_content, TextContent)
-            assert (
-                tool_content.text == "Hello Mr. John."
-            ), f"Expected: Hello Mr. John., got: {tool_content.text}"
+            assert tool_content.text == "Hello Mr. John.", (
+                f"Expected: Hello Mr. John., got: {tool_content.text}"
+            )
 
             # -- Test prompts.
 
@@ -133,9 +134,9 @@ async def check_mcp_server(
                     "required": False,
                 }
             ]
-            assert (
-                as_dict["arguments"] == expected_arguments
-            ), f"Found: {as_dict['arguments']}. Expected: {expected_arguments}"
+            assert as_dict["arguments"] == expected_arguments, (
+                f"Found: {as_dict['arguments']}. Expected: {expected_arguments}"
+            )
 
             # Check the schema of the prompt without optional argument.
             prompt_without_optional_arg: Prompt = next(
@@ -152,34 +153,56 @@ async def check_mcp_server(
                     "required": True,
                 }
             ]
-            assert (
-                as_dict["arguments"] == expected_arguments
-            ), f"Found: {as_dict['arguments']}. Expected: {expected_arguments}"
+            assert as_dict["arguments"] == expected_arguments, (
+                f"Found: {as_dict['arguments']}. Expected: {expected_arguments}"
+            )
 
             # Get the prompt.
             prompt_result = await session.get_prompt(
                 "my_prompt_with_optional_arg", {"name": "John"}
             )
             assert isinstance(prompt_result, GetPromptResult)
-            expected_prompt_result = {
-                "meta": None,
-                "description": "Prompt with an optional argument.",
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": {
-                            "type": "text",
-                            "text": "This is the built in prompt for John.",
-                            "annotations": None,
-                            "meta": None,
-                        },
-                    }
-                ],
-            }
+
+            # The format differs between sema4ai MCP and standard MCP
+            if use_sema4ai_mcp:
+                # sema4ai MCP explicitly sets description=None
+                expected_prompt_result = {
+                    "meta": None,
+                    "description": None,
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": {
+                                "type": "text",
+                                "text": "This is the built in prompt for John.",
+                                "annotations": None,
+                                "meta": None,
+                            },
+                        }
+                    ],
+                }
+            else:
+                # Standard MCP now includes the prompt's description from docstring
+                expected_prompt_result = {
+                    "meta": None,
+                    "description": "\n        Prompt with an optional argument.\n\n        Args:\n            name: The name of the person to greet.\n        ",
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": {
+                                "type": "text",
+                                "text": "This is the built in prompt for John.",
+                                "annotations": None,
+                                "meta": None,
+                            },
+                        }
+                    ],
+                }
+
             found_prompt_result = prompt_result.model_dump()
-            assert (
-                found_prompt_result == expected_prompt_result
-            ), f"Found: {found_prompt_result}. Expected: {expected_prompt_result}"
+            assert found_prompt_result == expected_prompt_result, (
+                f"Found: {found_prompt_result}. Expected: {expected_prompt_result}"
+            )
 
             # -- Test resources (simple).
 
@@ -252,14 +275,14 @@ async def check_mcp_server_with_actions(
             assert len(tools) > 0
 
             tool_names = [tool.name for tool in tools]
-            assert (
-                "greet" in tool_names
-            ), f"greet tool not found. Available tools: {tool_names}"
+            assert "greet" in tool_names, (
+                f"greet tool not found. Available tools: {tool_names}"
+            )
 
             greet_tool = next(tool for tool in tools if tool.name == "greet")
-            assert (
-                greet_tool is not None
-            ), f"'greet' tool not found. Available tools: {tool_names}"
+            assert greet_tool is not None, (
+                f"'greet' tool not found. Available tools: {tool_names}"
+            )
 
             input_schema = greet_tool.inputSchema
             expected_action_server = {
@@ -306,9 +329,9 @@ async def check_mcp_server_with_actions(
             assert isinstance(tool_result, CallToolResult)
             tool_content = tool_result.content[0]
             assert isinstance(tool_content, TextContent)
-            assert (
-                tool_content.text == "Hello Mr. John."
-            ), f"Expected: Hello Mr. John., got: {tool_content.text}"
+            assert tool_content.text == "Hello Mr. John.", (
+                f"Expected: Hello Mr. John., got: {tool_content.text}"
+            )
 
             return "ok"
 
@@ -510,13 +533,13 @@ def test_mcp_integration_secrets(
                 await session.initialize()
                 tools_list = await session.list_tools()
                 tool_names = [tool.name for tool in tools_list.tools]
-                assert (
-                    "check_secrets" in tool_names
-                ), f"'check_secrets' tool not found. Available tools: {tool_names}"
+                assert "check_secrets" in tool_names, (
+                    f"'check_secrets' tool not found. Available tools: {tool_names}"
+                )
                 result = await session.call_tool("check_secrets", {})
-                assert (
-                    result.content[0].text == "FooSecret"
-                ), f"Expected 'FooSecret', got: {result.content[0].text}"
+                assert result.content[0].text == "FooSecret", (
+                    f"Expected 'FooSecret', got: {result.content[0].text}"
+                )
         return "ok"
 
     assert run_async_in_new_thread(partial(check_with_secrets)) == "ok"
