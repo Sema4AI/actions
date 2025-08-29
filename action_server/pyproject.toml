@@ -20,7 +20,7 @@ action-server = "sema4ai.action_server.cli:main"
 
 [tool.poetry.dependencies]
 aiohttp = "^3.11.16"
-fastapi-slim = "^0.115.11"
+fastapi-slim = "^0.116.1"
 jsonschema = "^4.23.0"
 # This one needs a `_fix_jsonschema_specifications` hack
 # See: https://github.com/python-jsonschema/jsonschema-specifications/issues/61

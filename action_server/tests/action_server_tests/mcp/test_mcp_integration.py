@@ -165,10 +165,10 @@ async def check_mcp_server(
 
             # The format differs between sema4ai MCP and standard MCP
             if use_sema4ai_mcp:
-                # sema4ai MCP explicitly sets description=None
+                # sema4ai MCP now includes the prompt's description from docstring (first line)
                 expected_prompt_result = {
                     "meta": None,
-                    "description": None,
+                    "description": "Prompt with an optional argument.",
                     "messages": [
                         {
                             "role": "user",
