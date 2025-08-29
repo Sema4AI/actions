@@ -101,7 +101,7 @@ async def my_prompt(name: str) -> str:
     return f"This is the built in prompt for {name}."
 
 
-@mcp.prompt
+@mcp.prompt()
 async def my_prompt_with_optional_arg(name: str | None = None) -> str:
     """
     Prompt with an optional argument.
