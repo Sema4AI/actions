@@ -36,7 +36,7 @@
   typecheck              Type check code
 ```
 
-- To run `inv test`: you need to set `ACTION_SERVER_TEST_ACCESS_CREDENTIALS` which is an access credential to `ci.robocorp.dev`
+- To run `inv test`: you need to set `ACTION_SERVER_TEST_ACCESS_CREDENTIALS` which is an access credential to `ci.robocloud.dev`
 - To run individual tests: `python -m pytest tests/action_server_tests/mcp/test_mcp_integration.py::test_mcp_integration_with_actions_in_no_conda_mcp -v`
 
 ## Release process
