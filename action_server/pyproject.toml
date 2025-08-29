@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sema4ai-action-server"
-version = "2.14.1"
+version = "2.14.2"
 description = """Sema4AI Action Server"""
 authors = ["Fabio Z. <fabio@robocorp.com>"]
 readme = "README.md"
@@ -20,7 +20,7 @@ action-server = "sema4ai.action_server.cli:main"
 
 [tool.poetry.dependencies]
 aiohttp = "^3.11.16"
-fastapi-slim = "^0.115.11"
+fastapi-slim = "^0.116.1"
 jsonschema = "^4.23.0"
 # This one needs a `_fix_jsonschema_specifications` hack
 # See: https://github.com/python-jsonschema/jsonschema-specifications/issues/61
@@ -39,7 +39,7 @@ cryptography = "^44.0.1"
 requests_oauthlib = "^2.0"
 watchfiles = "^0.24.0"
 sema4ai-common = "^0.2.1"
-mcp = "^1.9.2"
+mcp = "^1.10.0"
 
 [tool.poetry.group.dev.dependencies]
 sema4ai-devutils = { path = "../devutils/", develop = true }

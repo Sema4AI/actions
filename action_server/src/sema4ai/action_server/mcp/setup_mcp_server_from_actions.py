@@ -208,7 +208,7 @@ class McpServerSetupHelper:
                 # and the user could also provide the description and an actual list of messages.
                 # -- it's not really clear from the spec how that'd be used though.
                 return GetPromptResult(
-                    description=None,
+                    description=action_info.doc_desc,
                     messages=[
                         PromptMessage(
                             role="user", content=TextContent(type="text", text=result)

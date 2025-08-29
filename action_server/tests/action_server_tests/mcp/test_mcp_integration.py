@@ -161,20 +161,43 @@ async def check_mcp_server(
                 "my_prompt_with_optional_arg", {"name": "John"}
             )
             assert isinstance(prompt_result, GetPromptResult)
-            expected_prompt_result = {
-                "meta": None,
-                "description": None,
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": {
-                            "type": "text",
-                            "text": "This is the built in prompt for John.",
-                            "annotations": None,
-                        },
-                    }
-                ],
-            }
+
+            # The format differs between sema4ai MCP and standard MCP
+            if use_sema4ai_mcp:
+                # sema4ai MCP now includes the prompt's description from docstring (first line)
+                expected_prompt_result = {
+                    "meta": None,
+                    "description": "Prompt with an optional argument.",
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": {
+                                "type": "text",
+                                "text": "This is the built in prompt for John.",
+                                "annotations": None,
+                                "meta": None,
+                            },
+                        }
+                    ],
+                }
+            else:
+                # Standard MCP now includes the prompt's description from docstring
+                expected_prompt_result = {
+                    "meta": None,
+                    "description": "\n        Prompt with an optional argument.\n\n        Args:\n            name: The name of the person to greet.\n        ",
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": {
+                                "type": "text",
+                                "text": "This is the built in prompt for John.",
+                                "annotations": None,
+                                "meta": None,
+                            },
+                        }
+                    ],
+                }
+
             found_prompt_result = prompt_result.model_dump()
             assert (
                 found_prompt_result == expected_prompt_result

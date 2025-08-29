@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 2.14.2 - 2025-08-27
+
+- CVE fixes: mcp 1.10.0 or later required
+
 ## 2.14.1 - 2025-08-21
 
 - CVE fixes
