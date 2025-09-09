@@ -644,23 +644,7 @@ def generate_func_from_action(
         headers = dict((x[0].lower(), x[1]) for x in request.headers.items())
         cookies = dict(request.cookies)
         response_handler = ResponseHandler(response)
-        return await func_internal(response_handler, inputs, headers, cookies)
 
-    async def func_internal(
-        response_handler: IResponseHandler, inputs: Any, headers: dict, cookies: dict
-    ) -> Any:
-        """
-        This is an internal function that actually runs an action (in the threadpool) based on the user's inputs.
-
-        Args:
-            response_handler: The response handler to use (where we can set the run id and whether an async completion was done).
-            inputs: The inputs to the action (gotten from the request based on the agent input).
-            headers: The headers to the action (gotten from the request).
-            cookies: The cookies to the action (gotten from the request).
-
-        Returns:
-            The result of the action.
-        """
         # i.e.: if the `x-action-invocation-context` header is present, we
         # expect it to contain a data envelope (`base64(encrypted_data(JSON.stringify(content)))` or
         # `base64(JSON.stringify(content))`) with the invocation context.
@@ -685,6 +669,23 @@ def generate_func_from_action(
                 headers.update(inputs)
                 inputs = use_inputs
 
+        return await func_internal(response_handler, inputs, headers, cookies)
+
+    async def func_internal(
+        response_handler: IResponseHandler, inputs: Any, headers: dict, cookies: dict
+    ) -> Any:
+        """
+        This is an internal function that actually runs an action (in the threadpool) based on the user's inputs.
+
+        Args:
+            response_handler: The response handler to use (where we can set the run id and whether an async completion was done).
+            inputs: The inputs to the action (gotten from the request based on the agent input).
+            headers: The headers to the action (gotten from the request).
+            cookies: The cookies to the action (gotten from the request).
+
+        Returns:
+            The result of the action.
+        """
         runner = _ActionsRunner(
             action_package,
             action,
