@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2.14.3 - 2025-09-09
+
 - If the `x-action-invocation-context` header is present, it should not change how the arguments are processed in the MCP use case.
 
 ## 2.14.2 - 2025-08-27
