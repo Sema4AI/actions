@@ -4,7 +4,7 @@
 
 ## 1.4.3 - 2025-09-24
 
-- Add the ability to specify to use different llm model when generating prompts
+- Add the ability to use a different llm model when generating prompts
 
 ## 1.4.2 - 2025-08-21
 
