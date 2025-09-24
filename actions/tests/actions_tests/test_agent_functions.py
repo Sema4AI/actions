@@ -19,9 +19,9 @@ def test_prompt_generate_with_thread_id(agent_dummy_server):
     from sema4ai.actions.agent import prompt_generate
 
     # Set the environment variable to point to our dummy server
-    os.environ["SEMA4AI_AGENTS_SERVICE_URL"] = (
-        f"http://localhost:{agent_dummy_server.get_port()}"
-    )
+    os.environ[
+        "SEMA4AI_AGENTS_SERVICE_URL"
+    ] = f"http://localhost:{agent_dummy_server.get_port()}"
 
     # Create a simple prompt as a dictionary
     prompt = {
@@ -71,9 +71,9 @@ def test_prompt_generate_with_agent_id_and_model_name(agent_dummy_server):
     from sema4ai.actions.agent import prompt_generate
 
     # Set the environment variable to point to our dummy server
-    os.environ["SEMA4AI_AGENTS_SERVICE_URL"] = (
-        f"http://localhost:{agent_dummy_server.get_port()}"
-    )
+    os.environ[
+        "SEMA4AI_AGENTS_SERVICE_URL"
+    ] = f"http://localhost:{agent_dummy_server.get_port()}"
 
     # Create a simple prompt as a dictionary
     prompt = {
@@ -120,9 +120,9 @@ def test_prompt_generate_with_platform_config(agent_dummy_server):
     from sema4ai.actions.agent import OpenAIPlatformParameters, prompt_generate
 
     # Set the environment variable to point to our dummy server
-    os.environ["SEMA4AI_AGENTS_SERVICE_URL"] = (
-        f"http://localhost:{agent_dummy_server.get_port()}"
-    )
+    os.environ[
+        "SEMA4AI_AGENTS_SERVICE_URL"
+    ] = f"http://localhost:{agent_dummy_server.get_port()}"
 
     # Create a simple prompt as a dictionary
     prompt = {
@@ -169,9 +169,9 @@ def test_prompt_generate_complex_prompt(agent_dummy_server):
     from sema4ai.actions.agent import prompt_generate
 
     # Set the environment variable to point to our dummy server
-    os.environ["SEMA4AI_AGENTS_SERVICE_URL"] = (
-        f"http://localhost:{agent_dummy_server.get_port()}"
-    )
+    os.environ[
+        "SEMA4AI_AGENTS_SERVICE_URL"
+    ] = f"http://localhost:{agent_dummy_server.get_port()}"
 
     # Create the complex prompt structure as a dictionary
     prompt = {
@@ -465,9 +465,9 @@ def test_prompt_no_validation_with_dicts(agent_dummy_server):
     from sema4ai.actions.agent import prompt_generate
 
     # Set the environment variable to point to our dummy server
-    os.environ["SEMA4AI_AGENTS_SERVICE_URL"] = (
-        f"http://localhost:{agent_dummy_server.get_port()}"
-    )
+    os.environ[
+        "SEMA4AI_AGENTS_SERVICE_URL"
+    ] = f"http://localhost:{agent_dummy_server.get_port()}"
 
     # Test 1: Invalid dict structure - should pass without validation (escape hatch behavior)
     invalid_dict_prompt = {
@@ -531,9 +531,9 @@ def test_prompt_generate_with_pydantic_models(agent_dummy_server):
     )
 
     # Set the environment variable to point to our dummy server
-    os.environ["SEMA4AI_AGENTS_SERVICE_URL"] = (
-        f"http://localhost:{agent_dummy_server.get_port()}"
-    )
+    os.environ[
+        "SEMA4AI_AGENTS_SERVICE_URL"
+    ] = f"http://localhost:{agent_dummy_server.get_port()}"
 
     # Create a prompt using Pydantic models
     prompt = Prompt(
@@ -577,9 +577,9 @@ def test_prompt_generate_with_dicts_no_validation(agent_dummy_server):
     from sema4ai.actions.agent import prompt_generate
 
     # Set the environment variable to point to our dummy server
-    os.environ["SEMA4AI_AGENTS_SERVICE_URL"] = (
-        f"http://localhost:{agent_dummy_server.get_port()}"
-    )
+    os.environ[
+        "SEMA4AI_AGENTS_SERVICE_URL"
+    ] = f"http://localhost:{agent_dummy_server.get_port()}"
 
     # Test with invalid dict structure - should pass without validation
     invalid_prompt = {
@@ -637,9 +637,9 @@ def test_prompt_generate_pydantic_validation_errors(agent_dummy_server):
     )
 
     # Set the environment variable to point to our dummy server
-    os.environ["SEMA4AI_AGENTS_SERVICE_URL"] = (
-        f"http://localhost:{agent_dummy_server.get_port()}"
-    )
+    os.environ[
+        "SEMA4AI_AGENTS_SERVICE_URL"
+    ] = f"http://localhost:{agent_dummy_server.get_port()}"
 
     # Test 1: Invalid Pydantic model structure - missing required fields
     with pytest.raises(ValidationError) as exc_info:
@@ -703,9 +703,9 @@ def test_prompt_generate_mixed_dict_and_pydantic(agent_dummy_server):
     from sema4ai.actions.agent import OpenAIPlatformParameters, prompt_generate
 
     # Set the environment variable to point to our dummy server
-    os.environ["SEMA4AI_AGENTS_SERVICE_URL"] = (
-        f"http://localhost:{agent_dummy_server.get_port()}"
-    )
+    os.environ[
+        "SEMA4AI_AGENTS_SERVICE_URL"
+    ] = f"http://localhost:{agent_dummy_server.get_port()}"
 
     # Create a prompt as dict (no validation)
     prompt_dict = {
@@ -762,9 +762,9 @@ def test_prompt_generate_model_dump_behavior(agent_dummy_server):
     )
 
     # Set the environment variable to point to our dummy server
-    os.environ["SEMA4AI_AGENTS_SERVICE_URL"] = (
-        f"http://localhost:{agent_dummy_server.get_port()}"
-    )
+    os.environ[
+        "SEMA4AI_AGENTS_SERVICE_URL"
+    ] = f"http://localhost:{agent_dummy_server.get_port()}"
 
     # Create Pydantic models
     prompt = Prompt(
