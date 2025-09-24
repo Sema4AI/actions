@@ -167,6 +167,7 @@ def prompt_generate(
     platform_config: AnyPlatformParameters | dict | None = None,
     thread_id: str | None = None,
     agent_id: str | None = None,
+    model_name: str | None = None,
 ) -> ResponseMessage:
     """Gives a prompt to an agent.
 
@@ -175,6 +176,7 @@ def prompt_generate(
         platform_config: The platform configuration if method is called without action context (optional).
         thread_id: The thread ID to use for the prompt (optional).
         agent_id: The agent ID to use for the prompt (optional).
+        model_name: The model name to use for the prompt (optional).
 
     Note:
         Either platform_config, thread_id or agent_id must be provided when calling this method without action context.
@@ -203,6 +205,8 @@ def prompt_generate(
         query_params["thread_id"] = thread_id
     if agent_id:
         query_params["agent_id"] = agent_id
+    if model_name:
+        query_params["model_name"] = model_name
 
     response = client.request(
         "prompts/generate",

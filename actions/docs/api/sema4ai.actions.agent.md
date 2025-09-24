@@ -52,6 +52,7 @@ Gives a prompt to an agent.
 - <b>`platform_config`</b>: The platform configuration if method is called without action context (optional).
 - <b>`thread_id`</b>: The thread ID to use for the prompt (optional).
 - <b>`agent_id`</b>: The agent ID to use for the prompt (optional).
+- <b>`model_name`</b>: The model name to use for the prompt (optional).
 
 **Note:**
 
@@ -67,7 +68,8 @@ prompt_generate(
     prompt: Prompt | dict,
     platform_config: OpenAIPlatformParameters | BedrockPlatformParameters | CortexPlatformParameters | AzureOpenAIPlatformParameters | GooglePlatformParameters | GroqPlatformParameters | ReductoPlatformParameters | dict | None = None,
     thread_id: str | None = None,
-    agent_id: str | None = None
+    agent_id: str | None = None,
+    model_name: str | None = None
 ) → ResponseMessage
 ```
 
