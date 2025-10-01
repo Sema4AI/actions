@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- The `api/runs/{runid}/log.html` endpoint will now generate a `log.html` with partial contents if the run still hasn't finished.
+
 ## 2.14.3 - 2025-09-09
 
 - If the `x-action-invocation-context` header is present, it should not change how the arguments are processed in the MCP use case.
