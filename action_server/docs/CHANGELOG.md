@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2.15.0 - 2025-10-02
+
 - The `api/runs/{runid}/log.html` endpoint will now generate a `log.html` with partial contents if the run still hasn't finished.
 
 ## 2.14.3 - 2025-09-09
