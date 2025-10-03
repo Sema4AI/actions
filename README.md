@@ -260,6 +260,45 @@ Check out these example projects for inspiration.
 
 Build more `@actions` and be awesome! We'd love to hear and see what have you built. Join our [Slack community](https://sema4ai-users.slack.com/) to share your work.
 
+<div id="building"></div>
+
+## 🔨 Building from Source
+
+**Good news!** The Action Server can be built from source without any private credentials. The frontend design system packages are vendored directly in the repository.
+
+### Prerequisites
+
+- **Node.js**: LTS 20.x (20.9.0 or later)
+- **npm**: 10.x or later (bundled with Node.js)
+- **Python**: 3.11+ (for the Action Server backend)
+
+### Build the Frontend
+
+```sh
+# Navigate to frontend directory
+cd action_server/frontend
+
+# Install dependencies (no authentication required!)
+npm ci
+
+# Build the frontend
+npm run build
+```
+
+The build output will be in `action_server/frontend/dist/`.
+
+### Why No Credentials Needed?
+
+The frontend uses three private design system packages (`@sema4ai/components`, `@sema4ai/icons`, `@sema4ai/theme`) that are normally hosted in a private GitHub Packages registry. These packages are **vendored** (copied) directly into the repository at `action_server/frontend/vendored/`, making them available to all contributors.
+
+This approach enables:
+- ✅ External contributors can build without credentials
+- ✅ Offline builds work after initial clone
+- ✅ Reproducible builds with exact package versions
+- ✅ Air-gapped environments are supported
+
+For more details, see the [vendored packages documentation](action_server/frontend/vendored/README.md).
+
 <div id="contribute"></div>
 
 ## Contributing and issues
