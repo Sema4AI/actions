@@ -211,6 +211,22 @@ mv package vendored/components/
 
 ---
 
+### T011a Document repository size impact
+**Path**: `specs/002-build-packaging-bug/REPOSITORY-SIZE.md`  
+**Description**: Measure and document repository size increase from vendored assets:
+- Measure repository size before vendoring
+- Measure repository size after vendoring all three packages
+- Calculate absolute increase (MB) and percentage increase
+- Document individual package sizes
+- Justify the increase in terms of enabling external contributions
+- Provide git clone time comparison (before/after)
+
+This satisfies NFR-002 requirement.  
+**Dependencies**: T011 (after all packages vendored)  
+**Parallel**: No
+
+---
+
 ### T012 Update package.json to use vendored packages
 **Path**: `action_server/frontend/package.json`  
 **Description**: Modify dependencies to use local `file:` references:
@@ -234,7 +250,7 @@ mv package vendored/components/
 ```
 
 Refer to research.md decision #1 for rationale.  
-**Dependencies**: T009, T010, T011 (packages must be vendored first)  
+**Dependencies**: T009, T010, T011, T011a (packages must be vendored first and size documented)  
 **Parallel**: No
 
 ---
@@ -518,14 +534,14 @@ Create checklist and verify each item.
 
 ```
 Setup Phase:
-T001 → T002 → [T009, T010, T011] → T012 → T013
+T001 → T002 → [T009, T010, T011] → T011a → T012 → T013
        └─→ T003 (parallel)
 
 Test Phase (parallel):
 T004, T005, T006, T007 (all parallel, must complete before T013)
 
 Implementation:
-T007 → T008 → T009 → T010 → T011 → T012 → T013
+T007 → T008 → T009 → T010 → T011 → T011a → T012 → T013
 
 CI Integration:
 T013 → T014, T015 (parallel)
@@ -605,7 +621,7 @@ Task: "Create CI workflow for vendored integrity check at .github/workflows/vend
 - **0% Performance**: T021 validates the critical constraint
 - **Constitutional Compliance**: T023-T025 ensure release readiness
 
-**Total Tasks**: 26  
+**Total Tasks**: 27  
 **Parallelizable**: 11 tasks marked [P]  
-**Critical Path**: T001 → T002 → T009 → T010 → T011 → T012 → T013 → T020 → T026  
+**Critical Path**: T001 → T002 → T009 → T010 → T011 → T011a → T012 → T013 → T020 → T026  
 **Estimated Completion**: ~3-5 days (depending on review cycles)

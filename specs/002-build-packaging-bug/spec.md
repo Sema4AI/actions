@@ -45,9 +45,9 @@
 ## Problem Statement
 
 The Action Server frontend build process currently depends on three private packages hosted on GitHub Packages:
-- `@robocorp/theme`
-- `@robocorp/icons`
-- `@sema4ai/ds-internal`
+- `@sema4ai/theme`
+- `@sema4ai/icons`
+- `@sema4ai/components`
 
 These dependencies prevent anyone outside the Sema4.ai organization from:
 - Building the project from source
@@ -101,7 +101,7 @@ Currently, when I run the build command, I receive authentication errors because
 
 - **FR-005**: Build instructions MUST work for users without Sema4.ai organization access
 
-- **FR-006**: Solution MUST maintain visual consistency and functionality of existing UI components
+- **FR-006**: Solution MUST maintain visual consistency and functionality of existing UI components (validated by running the test suite and performing manual visual comparison of rendered components against baseline screenshots or reference implementation)
 
 - **FR-007**: Documentation MUST clearly describe the build process without referencing private resources
 
@@ -129,11 +129,11 @@ Currently, when I run the build command, I receive authentication errors because
 
 - **NFR-003**: Vendored assets MUST maintain the same visual fidelity and functionality as private packages
 
-- **NFR-004**: Automated update checks MUST run monthly to maintain vendored asset freshness while minimizing PR noise
+- **NFR-004**: Automated update checks MUST run monthly to maintain vendored asset freshness while minimizing PR noise (see FR-011 for automated CI implementation)
 
 ### Key Entities
 
-- **Private Design Packages**: The three packages (`@robocorp/theme`, `@robocorp/icons`, `@sema4ai/ds-internal`) currently blocking builds. These contain UI styling, iconography, and internal design system components.
+- **Private Design Packages**: The three packages (`@sema4ai/theme`, `@sema4ai/icons`, `@sema4ai/components`) currently blocking builds. These contain UI styling, iconography, and internal design system components.
 
 - **Frontend Build Artifacts**: The compiled output that the Action Server uses to serve its web interface. These must be buildable from source by anyone.
 
