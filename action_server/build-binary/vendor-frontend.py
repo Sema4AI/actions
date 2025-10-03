@@ -7,9 +7,7 @@ npm packages from GitHub Packages registry for vendoring into the repository.
 """
 
 import argparse
-import hashlib
 import json
-import os
 import shutil
 import subprocess
 import sys
@@ -18,34 +16,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
-
-def calculate_package_checksum(package_dir: Path) -> str:
-    """
-    Calculate SHA256 checksum of all files in package directory.
-    
-    Files are processed in sorted order for determinism.
-    
-    Args:
-        package_dir: Path to the package directory
-        
-    Returns:
-        Hexadecimal SHA256 checksum string
-    """
-    hasher = hashlib.sha256()
-    
-    # Walk directory in sorted order for determinism
-    for root, dirs, files in os.walk(package_dir):
-        dirs.sort()  # Sort subdirectories in place
-        for filename in sorted(files):
-            filepath = Path(root) / filename
-            # Skip symlinks for cross-platform compatibility
-            if filepath.is_symlink():
-                print(f"Warning: Skipping symlink {filepath}")
-                continue
-            with open(filepath, 'rb') as f:
-                hasher.update(f.read())
-    
-    return hasher.hexdigest()
+# Import checksum utility
+from checksum_utils import calculate_package_checksum
 
 
 def download_package(package_name: str, version: str, output_dir: Path) -> Path:

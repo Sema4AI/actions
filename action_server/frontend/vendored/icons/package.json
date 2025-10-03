@@ -1,0 +1,7 @@
+{
+  "name": "@sema4ai/icons",
+  "version": "0.1.2",
+  "main": "dist/index.js",
+  "license": "SEE LICENSE IN LICENSE",
+  "description": "Stub package for @sema4ai/icons"
+}

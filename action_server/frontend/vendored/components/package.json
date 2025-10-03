@@ -1,0 +1,7 @@
+{
+  "name": "@sema4ai/components",
+  "version": "0.1.1",
+  "main": "dist/index.js",
+  "license": "SEE LICENSE IN LICENSE",
+  "description": "Stub package for @sema4ai/components"
+}

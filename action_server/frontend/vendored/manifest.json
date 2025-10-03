@@ -1,6 +1,31 @@
 {
   "version": "1.0.0",
-  "updated": "2025-10-03T00:00:00Z",
-  "updatedBy": "manual",
-  "packages": {}
+  "updated": "2025-10-03T13:05:41.246072+00:00",
+  "updatedBy": "automated-stub-creation",
+  "packages": {
+    "@sema4ai/components": {
+      "version": "0.1.1",
+      "sha256": "bc61482bc0264482eea22175c7aa13890f6d76accafacf91dd30ed1305a1070d",
+      "source": "https://npm.pkg.github.com/@sema4ai/components/-/components-0.1.1.tgz",
+      "license": "SEE LICENSE IN LICENSE",
+      "vendoredDate": "2025-10-03T13:05:41.245591+00:00",
+      "notes": "Stub package for testing - replace with actual package using vendor-frontend.py with credentials"
+    },
+    "@sema4ai/icons": {
+      "version": "0.1.2",
+      "sha256": "020fa607b307521e6d1b02a36f265d7e86bdf0a668b8ba94cf09f9812733c4bd",
+      "source": "https://npm.pkg.github.com/@sema4ai/icons/-/icons-0.1.2.tgz",
+      "license": "SEE LICENSE IN LICENSE",
+      "vendoredDate": "2025-10-03T13:05:41.245841+00:00",
+      "notes": "Stub package for testing - replace with actual package using vendor-frontend.py with credentials"
+    },
+    "@sema4ai/theme": {
+      "version": "0.1.1-RC1",
+      "sha256": "8d78a13d504ec1e50e02b658dcd81af8e2bef523cd24e84e54977e85cd3610f9",
+      "source": "https://npm.pkg.github.com/@sema4ai/theme/-/theme-0.1.1-RC1.tgz",
+      "license": "SEE LICENSE IN LICENSE",
+      "vendoredDate": "2025-10-03T13:05:41.246056+00:00",
+      "notes": "Stub package for testing - replace with actual package using vendor-frontend.py with credentials"
+    }
+  }
 }
