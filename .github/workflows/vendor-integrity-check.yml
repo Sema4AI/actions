@@ -1,0 +1,105 @@
+name: Vendor Integrity Check
+
+on:
+  pull_request:
+    paths:
+      - 'action_server/frontend/vendored/**'
+      - '.github/workflows/vendor-integrity-check.yml'
+  push:
+    branches:
+      - master
+    paths:
+      - 'action_server/frontend/vendored/**'
+
+jobs:
+  check-integrity:
+    name: Verify vendored package checksums
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          # Install pytest if needed for tests
+          pip install pytest
+      
+      - name: Run integrity tests
+        working-directory: action_server
+        run: |
+          # Run the vendored integrity contract tests
+          python -m pytest tests/action_server_tests/test_vendored_integrity.py -v
+      
+      - name: Verify manifest exists
+        run: |
+          if [ ! -f "action_server/frontend/vendored/manifest.json" ]; then
+            echo "Error: manifest.json not found"
+            exit 1
+          fi
+          echo "✓ manifest.json exists"
+      
+      - name: Verify all required packages are vendored
+        run: |
+          # Check that all three required packages exist
+          for package in components icons theme; do
+            if [ ! -d "action_server/frontend/vendored/$package" ]; then
+              echo "Error: Package directory 'vendored/$package' not found"
+              exit 1
+            fi
+            
+            if [ ! -f "action_server/frontend/vendored/$package/package.json" ]; then
+              echo "Error: package.json not found in 'vendored/$package'"
+              exit 1
+            fi
+            
+            echo "✓ Package $package is present and valid"
+          done
+      
+      - name: Calculate and verify checksums
+        run: |
+          # Use Python to verify checksums match manifest
+          python << 'EOF'
+          import json
+          import sys
+          from pathlib import Path
+          
+          # Add build-binary to path for checksum_utils
+          sys.path.insert(0, str(Path("action_server/build-binary")))
+          from checksum_utils import calculate_package_checksum
+          
+          # Load manifest
+          manifest_path = Path("action_server/frontend/vendored/manifest.json")
+          with open(manifest_path) as f:
+              manifest = json.load(f)
+          
+          # Verify each package
+          errors = []
+          for package_name, package_info in manifest["packages"].items():
+              dir_name = package_name.split("/")[-1]
+              package_dir = Path(f"action_server/frontend/vendored/{dir_name}")
+              
+              expected = package_info["sha256"]
+              calculated = calculate_package_checksum(package_dir)
+              
+              if expected != calculated:
+                  errors.append(
+                      f"{package_name}: expected {expected}, got {calculated}"
+                  )
+              else:
+                  print(f"✓ {package_name} checksum verified")
+          
+          if errors:
+              print("\n❌ Checksum mismatches detected:")
+              for error in errors:
+                  print(f"  - {error}")
+              sys.exit(1)
+          else:
+              print("\n✓ All checksums verified successfully")
+          EOF

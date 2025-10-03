@@ -1,0 +1,97 @@
+name: Frontend Build (Unauthenticated)
+
+on:
+  pull_request:
+    paths:
+      - 'action_server/frontend/**'
+      - '.github/workflows/frontend-build-unauthenticated.yml'
+  push:
+    branches:
+      - master
+    paths:
+      - 'action_server/frontend/**'
+
+jobs:
+  build-external:
+    name: Build frontend without credentials
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Verify no credentials in environment
+        run: |
+          # Ensure no authentication tokens are present
+          if [ -n "$NPM_TOKEN" ]; then
+            echo "Error: NPM_TOKEN is set"
+            exit 1
+          fi
+          if [ -n "$NODE_AUTH_TOKEN" ]; then
+            echo "Error: NODE_AUTH_TOKEN is set"
+            exit 1
+          fi
+          # Note: GITHUB_TOKEN is always present in GH Actions but shouldn't be used for npm
+          echo "✓ No npm credentials detected"
+      
+      - name: Verify no .npmrc with credentials
+        run: |
+          if [ -f ~/.npmrc ]; then
+            echo "Error: .npmrc file found in home directory"
+            cat ~/.npmrc
+            exit 1
+          fi
+          echo "✓ No .npmrc file found"
+      
+      - name: Install dependencies
+        working-directory: action_server/frontend
+        run: npm ci
+      
+      - name: Build frontend
+        working-directory: action_server/frontend
+        run: npm run build
+      
+      - name: Verify build output
+        working-directory: action_server/frontend
+        run: |
+          # Check that dist directory was created
+          if [ ! -d "dist" ]; then
+            echo "Error: dist/ directory not created"
+            exit 1
+          fi
+          
+          # Check that index.html exists
+          if [ ! -f "dist/index.html" ]; then
+            echo "Error: dist/index.html not found"
+            exit 1
+          fi
+          
+          # Check for JavaScript files
+          js_count=$(find dist -name "*.js" | wc -l)
+          if [ "$js_count" -eq 0 ]; then
+            echo "Error: No JavaScript files found in dist/"
+            exit 1
+          fi
+          
+          # Check for CSS files
+          css_count=$(find dist -name "*.css" | wc -l)
+          if [ "$css_count" -eq 0 ]; then
+            echo "Error: No CSS files found in dist/"
+            exit 1
+          fi
+          
+          echo "✓ Build output verified successfully"
+          echo "  - JavaScript files: $js_count"
+          echo "  - CSS files: $css_count"
+      
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: action_server/frontend/dist/
+          retention-days: 7
