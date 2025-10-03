@@ -1,2 +1,37 @@
-// Stub implementation for @sema4ai/components
-export default {};
+// Stub components export - auto-generated
+export const Badge = () => null;
+export const Box = () => null;
+export const Button = () => null;
+export const ButtonProps = () => null;
+export const Checkbox = () => null;
+export const Code = () => null;
+export const Column = () => null;
+export const Dialog = () => null;
+export const Divider = () => null;
+export const Drawer = () => null;
+export const EditorView = () => null;
+export const EmptyState = () => null;
+export const Filter = () => null;
+export const FilterGroup = () => null;
+export const Form = () => null;
+export const Grid = () => null;
+export const Header = () => null;
+export const Input = () => null;
+export const InputProps = () => null;
+export const Link = () => null;
+export const Progress = () => null;
+export const Scroll = () => null;
+export const Select = () => null;
+export const SideNavigation = () => null;
+export const SortDirection = () => null;
+export const Switch = () => null;
+export const Table = () => null;
+export const TableRowProps = () => null;
+export const Tabs = () => null;
+export const Tooltip = () => null;
+export const Typography = () => null;
+export const componentWithRef = (fn) => fn;
+export const useClipboard = () => ({});
+export const usePopover = () => ({});
+export const useSystemTheme = () => ({});
+

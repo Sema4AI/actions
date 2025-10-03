@@ -1,11 +1,11 @@
 {
   "version": "1.0.0",
-  "updated": "2025-10-03T13:05:41.246072+00:00",
-  "updatedBy": "automated-stub-creation",
+  "updated": "2025-10-03T19:09:19.919942+00:00",
+  "updatedBy": "build-verification",
   "packages": {
     "@sema4ai/components": {
       "version": "0.1.1",
-      "sha256": "bc61482bc0264482eea22175c7aa13890f6d76accafacf91dd30ed1305a1070d",
+      "sha256": "5ac03eb3a8ef2a56165adf92038a20575b5a7f17c9018eae65b421d6961af404",
       "source": "https://npm.pkg.github.com/@sema4ai/components/-/components-0.1.1.tgz",
       "license": "SEE LICENSE IN LICENSE",
       "vendoredDate": "2025-10-03T13:05:41.245591+00:00",
@@ -13,7 +13,7 @@
     },
     "@sema4ai/icons": {
       "version": "0.1.2",
-      "sha256": "020fa607b307521e6d1b02a36f265d7e86bdf0a668b8ba94cf09f9812733c4bd",
+      "sha256": "fe51c1181016d8487ea443e3944e5844a516bc2bcb964c96f22324c44cb927d7",
       "source": "https://npm.pkg.github.com/@sema4ai/icons/-/icons-0.1.2.tgz",
       "license": "SEE LICENSE IN LICENSE",
       "vendoredDate": "2025-10-03T13:05:41.245841+00:00",
@@ -21,7 +21,7 @@
     },
     "@sema4ai/theme": {
       "version": "0.1.1-RC1",
-      "sha256": "8d78a13d504ec1e50e02b658dcd81af8e2bef523cd24e84e54977e85cd3610f9",
+      "sha256": "4bd02c422547bfa5b9e9d959f2c90caf7e5cc29084d10a1b7a8170d0f757a3a0",
       "source": "https://npm.pkg.github.com/@sema4ai/theme/-/theme-0.1.1-RC1.tgz",
       "license": "SEE LICENSE IN LICENSE",
       "vendoredDate": "2025-10-03T13:05:41.246056+00:00",
