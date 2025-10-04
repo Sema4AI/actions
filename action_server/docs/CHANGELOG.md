@@ -2,6 +2,29 @@
 
 ## Unreleased
 
+## 2.15.0 - 2025-10-02
+
+- The `api/runs/{runid}/log.html` endpoint will now generate a `log.html` with partial contents if the run still hasn't finished.
+
+## 2.14.3 - 2025-09-09
+
+- If the `x-action-invocation-context` header is present, it should not change how the arguments are processed in the MCP use case.
+
+## 2.14.2 - 2025-08-27
+
+- CVE fixes: mcp 1.10.0 or later required
+
+## 2.14.1 - 2025-08-21
+
+- CVE fixes
+
+## 2.14.0 - 2025-07-29
+
+- Headers are now properly forwarded for requests using the `mcp` protocol (so, it's possible
+  to receive `Secrets` as headers in the request -- also requires `sema4ai.actions` version `1.4.0`).
+- Showing `/mcp` endpoint in the output.
+- Upgraded to `sema4ai.common` `0.2.0` (to fix issue where `process.kill` would raise an exception on windows).
+
 ## 2.13.1 - 2025-07-15
 
 - Fixed issue where `action-server new --force` was not actually accepting the `--force` flag.

@@ -5,6 +5,10 @@ on:
     tags:
       - "sema4ai-mcp-*"
 
+permissions:
+  contents: read
+  id-token: write
+
 defaults:
   run:
     working-directory: "./mcp"
@@ -13,18 +17,15 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
-    strategy:
-      fail-fast: true
-
     steps:
       - name: Checkout repository and submodules
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
 
       - name: Install poetry
         run: pipx install poetry
 
       - name: Set up Python 3.10
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.10"
           cache: "poetry"

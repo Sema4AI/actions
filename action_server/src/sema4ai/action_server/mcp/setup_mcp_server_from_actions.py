@@ -61,6 +61,20 @@ class McpServerSetupHelper:
         self.server = server
         self._init_state()
 
+        def get_headers_and_cookies() -> tuple[dict[str, str], dict[str, str]]:
+            headers: dict[str, str] = {}
+            cookies: dict[str, str] = {}
+            try:
+                request_context = self.server.request_context
+            except LookupError:
+                return headers, cookies
+            if request_context:
+                request = request_context.request
+                if request:
+                    headers = dict(request.headers)
+                    cookies = dict(request.cookies)
+            return headers, cookies
+
         @server.list_tools()
         async def list_tools() -> list[Tool]:
             return self._tools
@@ -75,20 +89,22 @@ class McpServerSetupHelper:
 
         @server.call_tool()
         async def call_tool(
-            name: str, arguments: dict[str, Any]
+            name: str,
+            arguments: dict[str, Any],
         ) -> list[TextContent | ImageContent | EmbeddedResource]:
             import json
 
             try:
                 from sema4ai.action_server._actions_run import IInternalFuncAPI
 
+                headers, cookies = get_headers_and_cookies()
                 action_info = self._tool_name_to_action_info[name]
                 func: IInternalFuncAPI = action_info.func
                 result = await func(
                     response_handler=McpResponseHandler(),
                     inputs=arguments,
-                    headers={},
-                    cookies={},
+                    headers=headers,
+                    cookies=cookies,
                 )
                 if isinstance(result, str):
                     return [TextContent(type="text", text=result)]
@@ -127,12 +143,13 @@ class McpServerSetupHelper:
                             break
 
                 if action_info:
+                    headers, cookies = get_headers_and_cookies()
                     func = action_info.func
                     result = await func(
                         response_handler=McpResponseHandler(),
                         inputs=params,
-                        headers={},
-                        cookies={},
+                        headers=headers,
+                        cookies=cookies,
                     )
 
                     def gen() -> Iterable[ReadResourceContents]:
@@ -176,11 +193,14 @@ class McpServerSetupHelper:
             try:
                 action_info = self._prompt_name_to_action_info[name]
                 func = action_info.func
+
+                headers, cookies = get_headers_and_cookies()
+
                 result = await func(
                     response_handler=McpResponseHandler(),
                     inputs=arguments or {},
-                    headers={},
-                    cookies={},
+                    headers=headers,
+                    cookies=cookies,
                 )
                 # TODO: We could have a way for the user to customize more things in the prompt result,
                 # right now it's just the direct result of the prompt as a string, but it could be:
@@ -188,7 +208,7 @@ class McpServerSetupHelper:
                 # and the user could also provide the description and an actual list of messages.
                 # -- it's not really clear from the spec how that'd be used though.
                 return GetPromptResult(
-                    description=None,
+                    description=action_info.doc_desc,
                     messages=[
                         PromptMessage(
                             role="user", content=TextContent(type="text", text=result)

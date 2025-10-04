@@ -62,6 +62,81 @@ def _is_robocorp_log_available():
     return True
 
 
+def _decrypt_from_data_envelope(
+    encrypted_data: Dict[str, "JSONValue"],
+    var_name: str,
+    env: Optional[Dict[str, str]] = None,
+) -> "JSONValue":
+    keys = _get_str_list_from_env("ACTION_SERVER_DECRYPT_KEYS", env=env or os.environ)
+
+    if not keys:
+        raise RuntimeError(
+            f"The information in the {var_name} seems to be encrypted, but decryption keys are not available in ACTION_SERVER_DECRYPT_KEYS."
+        )
+
+    cipher = encrypted_data["cipher"]
+    algorithm = encrypted_data["algorithm"]
+    iv = encrypted_data["iv"]
+    auth_tag = encrypted_data["auth-tag"]
+
+    if not isinstance(cipher, str):
+        raise RuntimeError(f"Expected the cipher to be a str. Found: {cipher!r}")
+
+    if not isinstance(algorithm, str):
+        raise RuntimeError(f"Expected the algorithm to be a str. Found: {algorithm!r}")
+
+    if not isinstance(iv, str):
+        raise RuntimeError(f"Expected the iv to be a str. Found: {iv!r}")
+
+    if not isinstance(auth_tag, str):
+        raise RuntimeError(f"Expected the auth-tag to be a str. Found: {auth_tag!r}")
+
+    try:
+        cipher_decoded_base_64: bytes = base64.b64decode(cipher)
+    except Exception:
+        raise RuntimeError(
+            f"Unable to decode the 'cipher' field passed to {var_name} as base64."
+        )
+
+    try:
+        iv_decoded_base_64: bytes = base64.b64decode(iv)
+    except Exception:
+        raise RuntimeError(
+            f"Unable to decode the 'iv' field passed to {var_name} as base64."
+        )
+
+    try:
+        auth_tag_decoded_base_64 = base64.b64decode(auth_tag)
+    except Exception:
+        raise RuntimeError(
+            f"Unable to decode the 'auth-tag' field passed to {var_name} as base64."
+        )
+
+    if algorithm != "aes256-gcm":
+        raise RuntimeError(
+            f"Unable to recognize {var_name} encryption algorithm: {algorithm}"
+        )
+
+    for key in keys:
+        k: bytes = base64.b64decode(key.encode("ascii"))
+        try:
+            raw_data = _decrypt(
+                k,
+                iv_decoded_base_64,
+                cipher_decoded_base_64,
+                auth_tag_decoded_base_64,
+            )
+            break
+        except Exception:
+            continue
+    else:
+        raise RuntimeError(
+            f"It was not possible to decode the {var_name} with any of the available keys."
+        )
+
+    return json.loads(raw_data)
+
+
 class BaseContext:
     """
     This is data received as input which may or may not be encrypted.
@@ -163,82 +238,16 @@ class BaseContext:
             ctx = nullcontext()
 
         with ctx:
-            keys = _get_str_list_from_env(
-                "ACTION_SERVER_DECRYPT_KEYS", env=self._env or os.environ
+            context_data = _decrypt_from_data_envelope(
+                self._encrypted_data, self._header_name(), self._env
             )
-
-            if not keys:
+            if not isinstance(context_data, dict):
                 raise RuntimeError(
-                    f"The information in the {self._header_name()} seems to be encrypted, but decryption keys are not available in ACTION_SERVER_DECRYPT_KEYS."
+                    f"Decrypted {self._header_name()} is expected to be a dict, "
+                    f"however it's not. Found: {context_data!r}"
                 )
+            self._raw_data = context_data
 
-            cipher = self._encrypted_data["cipher"]
-            algorithm = self._encrypted_data["algorithm"]
-            iv = self._encrypted_data["iv"]
-            auth_tag = self._encrypted_data["auth-tag"]
-
-            if not isinstance(cipher, str):
-                raise RuntimeError(
-                    f"Expected the cipher to be a str. Found: {cipher!r}"
-                )
-
-            if not isinstance(algorithm, str):
-                raise RuntimeError(
-                    f"Expected the algorithm to be a str. Found: {algorithm!r}"
-                )
-
-            if not isinstance(iv, str):
-                raise RuntimeError(f"Expected the iv to be a str. Found: {iv!r}")
-
-            if not isinstance(auth_tag, str):
-                raise RuntimeError(
-                    f"Expected the auth-tag to be a str. Found: {auth_tag!r}"
-                )
-
-            try:
-                cipher_decoded_base_64: bytes = base64.b64decode(cipher)
-            except Exception:
-                raise RuntimeError(
-                    f"Unable to decode the 'cipher' field passed to {self._header_name()} as base64."
-                )
-
-            try:
-                iv_decoded_base_64: bytes = base64.b64decode(iv)
-            except Exception:
-                raise RuntimeError(
-                    f"Unable to decode the 'iv' field passed to {self._header_name()} as base64."
-                )
-
-            try:
-                auth_tag_decoded_base_64 = base64.b64decode(auth_tag)
-            except Exception:
-                raise RuntimeError(
-                    f"Unable to decode the 'auth-tag' field passed to {self._header_name()} as base64."
-                )
-
-            if algorithm != "aes256-gcm":
-                raise RuntimeError(
-                    f"Unable to recognize {self._header_name()} encryption algorithm: {algorithm}"
-                )
-
-            for key in keys:
-                k: bytes = base64.b64decode(key.encode("ascii"))
-                try:
-                    raw_data = _decrypt(
-                        k,
-                        iv_decoded_base_64,
-                        cipher_decoded_base_64,
-                        auth_tag_decoded_base_64,
-                    )
-                    break
-                except Exception:
-                    continue
-            else:
-                raise RuntimeError(
-                    f"It was not possible to decode the {self._header_name()} header with any of the available keys."
-                )
-
-            self._raw_data = json.loads(raw_data)
             self._hide_secrets()
 
         return self._raw_data
@@ -319,6 +328,10 @@ class RequestContexts:
         self._data_context: Optional[DataContext] = None
         self._action_context: Optional[ActionContext] = None
         self._invocation_context: Optional[InvocationContext] = None
+
+    @property
+    def request(self) -> Optional["Request"]:
+        return self._request
 
     @property
     def data_context(self) -> Optional[DataContext]:

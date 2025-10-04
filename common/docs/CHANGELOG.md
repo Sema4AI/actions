@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## 0.2.1 - 2025-08-21
+
+- CVE fixes
+
+## 0.2.0 - 2025-07-29
+
+- Use the same code (with psutil) in all platforms for `kill_process_and_subprocesses`.
+
 ## 0.1.1 - 2025-06-02
 
 - Fix issue when killing subprocesses on MacOS (apparently in MacOS we could

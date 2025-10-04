@@ -1,3 +1,5 @@
+from sema4ai.actions._secret import Secret
+
 from sema4ai import mcp
 
 
@@ -32,6 +34,20 @@ def greet_mcp(name: str, title="Mr.") -> str:
     }
     """
     return f"Hello {title} {name}."
+
+
+@mcp.tool
+async def check_secrets(my_secret: Secret) -> str:
+    """
+    Check if the secrets are working.
+
+    Args:
+        my_secret: The secret to check.
+
+    Returns:
+        The value of the secret.
+    """
+    return my_secret.value
 
 
 @mcp.tool()
@@ -85,7 +101,7 @@ async def my_prompt(name: str) -> str:
     return f"This is the built in prompt for {name}."
 
 
-@mcp.prompt
+@mcp.prompt()
 async def my_prompt_with_optional_arg(name: str | None = None) -> str:
     """
     Prompt with an optional argument.

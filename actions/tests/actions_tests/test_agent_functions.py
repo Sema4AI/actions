@@ -64,7 +64,7 @@ def test_prompt_generate_with_thread_id(agent_dummy_server):
     )
 
 
-def test_prompt_generate_with_agent_id(agent_dummy_server):
+def test_prompt_generate_with_agent_id_and_model_name(agent_dummy_server):
     """Test prompt_generate with agent_id parameter."""
     import os
 
@@ -88,14 +88,16 @@ def test_prompt_generate_with_agent_id(agent_dummy_server):
     }
 
     # Call prompt_generate with agent_id
-    response = prompt_generate(prompt=prompt, agent_id="test-agent-id")
+    response = prompt_generate(
+        prompt=prompt, agent_id="test-agent-id", model_name="o3-mini"
+    )
 
     # Check that the request was made correctly
     assert agent_dummy_server.last_request is not None
     assert agent_dummy_server.last_request["agent_id"] == "test-agent-id"
     assert (
         agent_dummy_server.last_request["path"]
-        == "/api/v2/prompts/generate?agent_id=test-agent-id"
+        == "/api/v2/prompts/generate?agent_id=test-agent-id&model_name=o3-mini"
     )
     assert (
         agent_dummy_server.last_request["body"]["prompt"]["messages"][0]["content"][0][

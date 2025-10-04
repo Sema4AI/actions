@@ -1,10 +1,10 @@
 # sema4ai-action-server
 
-[Sema4.ai Action Server](https://github.com/sema4ai/actions#readme) is a Python framework designed to simplify the deployment of actions (AI or otherwise).
+[Sema4.ai Action Server](https://github.com/sema4ai/actions#readme) is a Python framework designed to provide your Python functions to AI Agents. It works both as an MCP Server (hosting tools, resources and prompts) and also provides an OpenAPI compatible API.
 
-An `action` in this case is defined as a Python function (which has inputs/outputs defined), which is served by the `Sema4.ai Action Server`.
+A `tool` or `action` in this case is defined as a Python function (which has inputs/outputs defined), which is served by the `Sema4.ai Action Server`.
 
-The `Sema4.ai Action Server` automatically generates an OpenAPI spec for your Python code, enabling different AI/LLM Agents to understand and call your Action. It also manages the Action lifecycle and provides full traceability of what happened during runs.
+The `Sema4.ai Action Server` automatically provides a `/mcp` endpoint for connecting `MCP` clients and also generates an OpenAPI spec for your Python code, enabling different AI/LLM Agents to understand and call your Action. It also manages the Action lifecycle and provides full traceability of what happened during any tool or action call (open the `/runs` endpoint in a browser to see not only inputs and output, but also a full `log.html` with internal details, such as variables and function calls that your Python function executed).
 
 ## 1. Install Action Server
 
@@ -41,7 +41,7 @@ chmod a+x action-server
 sudo mv action-server /usr/local/bin/
 ```
 
-## 2. Run your first Action
+## 2. Run your first MCP tool
 
 ```sh
 # Bootstrap a new project using this template.
@@ -50,12 +50,10 @@ action-server new
 
 # Start Action Server
 cd my-project
-action-server start --expose
+action-server start
 ```
 
 👉 You should now have an Action Server running locally at: [http://localhost:8080](http://localhost:8080), so open that in your browser and the web UI will guide you further.
-
-👉 Using the `--expose` -flag, you also get a public internet-facing URL (something like "https://twently-cuddly-dinosaurs.robocorp.link") and the related token. These are the details that you need to configure your AI Agent to have access to your Action
 
 ## What do you need in your Action Package
 

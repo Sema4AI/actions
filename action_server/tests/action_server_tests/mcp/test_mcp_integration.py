@@ -161,20 +161,43 @@ async def check_mcp_server(
                 "my_prompt_with_optional_arg", {"name": "John"}
             )
             assert isinstance(prompt_result, GetPromptResult)
-            expected_prompt_result = {
-                "meta": None,
-                "description": None,
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": {
-                            "type": "text",
-                            "text": "This is the built in prompt for John.",
-                            "annotations": None,
-                        },
-                    }
-                ],
-            }
+
+            # The format differs between sema4ai MCP and standard MCP
+            if use_sema4ai_mcp:
+                # sema4ai MCP now includes the prompt's description from docstring (first line)
+                expected_prompt_result = {
+                    "meta": None,
+                    "description": "Prompt with an optional argument.",
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": {
+                                "type": "text",
+                                "text": "This is the built in prompt for John.",
+                                "annotations": None,
+                                "meta": None,
+                            },
+                        }
+                    ],
+                }
+            else:
+                # Standard MCP now includes the prompt's description from docstring
+                expected_prompt_result = {
+                    "meta": None,
+                    "description": "\n        Prompt with an optional argument.\n\n        Args:\n            name: The name of the person to greet.\n        ",
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": {
+                                "type": "text",
+                                "text": "This is the built in prompt for John.",
+                                "annotations": None,
+                                "meta": None,
+                            },
+                        }
+                    ],
+                }
+
             found_prompt_result = prompt_result.model_dump()
             assert (
                 found_prompt_result == expected_prompt_result
@@ -465,3 +488,57 @@ def test_mcp_integration_with_actions_in_no_conda_mcp(
                 headers={"Authorization": "Bearer Bar"},
             )
         )
+
+
+@pytest.mark.integration_test
+@pytest.mark.parametrize("scenario", ["env_var", "request_header"])
+def test_mcp_integration_secrets(
+    action_server_process: ActionServerProcess,
+    scenario: Literal["env_var", "request_header"],
+) -> None:
+    from functools import partial
+
+    from action_server_tests.fixtures import get_in_resources
+
+    root_dir = get_in_resources("no_conda", "mcp")
+
+    action_server_process.start(
+        db_file="server.db",
+        cwd=str(root_dir),
+        actions_sync=True,
+        timeout=60 * 10,
+        env={
+            "MY_SECRET": "FooSecret",
+        }
+        if scenario == "env_var"
+        else None,
+    )
+
+    async def check_with_secrets():
+        from mcp.client.streamable_http import streamablehttp_client
+
+        port = action_server_process.port
+        async with streamablehttp_client(
+            f"http://localhost:{port}/mcp",
+            headers={"x-my-secret": "FooSecret"}
+            if scenario == "request_header"
+            else None,
+        ) as (
+            read_stream,
+            write_stream,
+            *_,
+        ):
+            async with ClientSession(read_stream, write_stream) as session:
+                await session.initialize()
+                tools_list = await session.list_tools()
+                tool_names = [tool.name for tool in tools_list.tools]
+                assert (
+                    "check_secrets" in tool_names
+                ), f"'check_secrets' tool not found. Available tools: {tool_names}"
+                result = await session.call_tool("check_secrets", {})
+                assert (
+                    result.content[0].text == "FooSecret"
+                ), f"Expected 'FooSecret', got: {result.content[0].text}"
+        return "ok"
+
+    assert run_async_in_new_thread(partial(check_with_secrets)) == "ok"

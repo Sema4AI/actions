@@ -109,3 +109,48 @@ def test_actions_secret_without_request_with_data_in_headers(datadir: Path):
 
     sema4ai_actions_run(args, returncode=0, cwd=str(datadir))
     assert json_output.read_text() == "this-is-the-secret"
+
+
+def test_actions_secret_in_env(datadir: Path):
+    from devutils.fixtures import sema4ai_actions_run
+
+    # Specifies the request in the json input.
+    json_output = datadir / "json.output"
+
+    args = [
+        "run",
+        "-a",
+        "action_with_secret",
+    ]
+
+    sema4ai_actions_run(
+        args,
+        returncode=0,
+        cwd=str(datadir),
+        additional_env={"MY_PASSWORD": "this-is-the-secret"},
+    )
+    assert json_output.read_text() == "this-is-the-secret"
+
+
+def test_actions_secret_without_request_in_header_directly(datadir: Path):
+    from devutils.fixtures import sema4ai_actions_run
+
+    # Specifies the request in the json input.
+    json_output = datadir / "json.output"
+    json_input_contents = {
+        "request": {"headers": {"x-my-password": "this-is-the-secret"}},
+    }
+
+    input_json = datadir / "json.input"
+    input_json.write_text(json.dumps(json_input_contents))
+
+    args = [
+        "run",
+        "-a",
+        "action_with_secret",
+        datadir,
+        f"--json-input={input_json}",
+    ]
+
+    sema4ai_actions_run(args, returncode=0, cwd=str(datadir))
+    assert json_output.read_text() == "this-is-the-secret"
