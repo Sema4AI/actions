@@ -1,17 +1,17 @@
 # Sema4.ai Actions Constitution
 <!-- Sync Impact Report
-Version change: 2.1.1 → 2.2.0
+Version change: 2.2.0 → 2.3.0
 Modified principles:
-- V. Observability/Versioning → V. Vendored Builds & Reproducible Releases (refocused)
+- II. CLI & HTTP-First Interface → Added exemption clause for frontend-only UI component packages
 Added sections:
-- Additional Constraints: explicit vendored build policy and license/packaging constraints
+- None (expanded existing principle II with exemption)
 Removed sections:
 - None
-Templates updated: ✅ .specify/templates/plan-template.md
-				  ✅ .specify/templates/spec-template.md
-				  ✅ .specify/templates/tasks-template.md
-				  ✅ .specify/templates/agent-file-template.md
-Follow-up TODOs: ⚠ RATIFICATION_DATE left as TODO (see deferred items)
+Templates updated: ✅ .specify/templates/plan-template.md (Constitution Check guidance)
+				  ⚠ .specify/templates/spec-template.md (no changes needed)
+				  ⚠ .specify/templates/tasks-template.md (no changes needed)
+				  ⚠ .specify/templates/agent-file-template.md (no changes needed)
+Follow-up TODOs: ⚠ RATIFICATION_DATE left as TODO (original date unknown)
 -->
 
 ## Core Principles
@@ -31,8 +31,23 @@ All Action Packages MUST expose usable developer interfaces: a command-line surf
 contract (Action Server endpoints). Interfaces MUST be text-or-JSON friendly: machine-parseable outputs (JSON) and
 human-readable fallbacks for interactive use.
 
+**Exemption for Frontend-Only UI Packages**: Pure frontend UI component libraries (React components, design systems,
+visual elements) that provide no business logic or Action functionality are EXEMPT from the CLI & HTTP-First requirement.
+For these packages, the TypeScript interface definitions, component props APIs, and React component contracts serve as
+the equivalent "contract." These MUST be validated via:
+- Contract tests verifying all exports, types, and API compatibility
+- TypeScript compilation tests ensuring type correctness
+- Integration tests validating usage in the target application
+
+This exemption applies ONLY to:
+- Frontend design system packages vendored within the repository
+- Pure UI component libraries with no programmatic (non-visual) logic
+- NOT to Action packages, backend services, or any package intended for CLI/HTTP consumption by external systems
+
 Rationale: A predictable CLI + HTTP contract ensures Actions are usable in local development, CI, and by external AI
-platforms (e.g., GPTs, LangChain) with minimal glue code.
+platforms (e.g., GPTs, LangChain) with minimal glue code. However, visual UI components are fundamentally consumed
+through rendering in a React application, not through command-line or HTTP interfaces. Requiring CLI wrappers for
+components like `<Button>` or `<Dialog>` would add no meaningful value and violate the principle's intent.
 
 ### III. Test-First (NON-NEGOTIABLE)
 Tests MUST be written before implementation. Every new feature or contract change MUST include failing tests that express
@@ -110,5 +125,5 @@ surface area. These rules make vendoring auditable, automatable, and safer.
 	Automated checks in CI will validate mandatory gates (tests present, vendor manifest when vendoring, license checks,
 	and checksum verification for vendored artifacts).
 
-**Version**: 2.2.0 | **Ratified**: TODO(RATIFICATION_DATE): original adoption date unknown - please insert ISO date
-| **Last Amended**: 2025-10-03
+**Version**: 2.3.0 | **Ratified**: TODO(RATIFICATION_DATE): original adoption date unknown - please insert ISO date
+| **Last Amended**: 2025-10-04

@@ -52,7 +52,8 @@ The plan MUST explicitly document how it satisfies the Constitution. At minimum 
 - Library-First: Demonstrate that the feature will be authored as a standalone, testable library or justify why
    it is an exception.
 - CLI & HTTP-First: If the feature exposes functionality, document the CLI surface and/or HTTP contract and how
-   JSON-friendly machine outputs will be produced.
+   JSON-friendly machine outputs will be produced. **Exemption**: Frontend-only UI component packages are exempt if
+   they provide TypeScript contract tests, type definitions, and integration tests (see Constitution II).
 - Test-First: Confirm failing tests exist (unit/contract/integration) or list the failing-test placeholders that will
    be created in Phase 1.
 - Contract & Integration Tests: List the contract tests and integration scenarios that will be created. For any
