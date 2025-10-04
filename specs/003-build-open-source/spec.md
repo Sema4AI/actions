@@ -170,6 +170,23 @@ As an external open-source contributor, I want to clone the Action Server reposi
 ### Context from Previous Attempts
 This specification supersedes previous approaches that relied on upstream maintainers providing vendored packages. The previous spec (002-build-packaging-bug) assumed maintainers would supply pre-compiled assets, which will not happen. This specification takes a clean-room approach to ensure full open-source compliance and contributor accessibility.
 
+### Python Library vs. Backend Services Distinction
+The `sema4ai.data` Python package (available on PyPI under Apache 2.0 license) provides decorators like `@query` and `@predict` for data-access functionality. However, these decorators require connection to Sema4.ai's proprietary **Data Server** infrastructure for execution. 
+
+**Open-Source Components** (after spec 003 implementation):
+- Action Server (core application) - runs locally without enterprise backend
+- Python libraries (`sema4ai-actions`, `sema4ai-data`, etc.) - available on PyPI
+- Frontend UI (React application) - design system replaced with open-source components
+- Standard `@action` functions - work without enterprise infrastructure
+
+**Enterprise/Paid Components** (remain proprietary):
+- Data Server - backend query federation engine (required for `@query`/`@predict`)
+- Control Room - SaaS deployment and management platform
+- Data Access infrastructure - knowledge bases, ML models, enterprise data sources
+- VS Code Data Access Extension functionality - requires Data Server backend
+
+The Action Server can run **fully open-source** for standard HTTP API actions. Data-access features (showcased in templates like `data-access-query`, `data-access-native`, `data-access-kb`) require enterprise backend infrastructure and are included in the repository as **examples only**. See [Sema4.ai Enterprise Edition](https://sema4.ai/products/enterprise-edition/) for details on enterprise features.
+
 ### Success Validation
 The feature is considered complete when:
 1. A completely fresh repository clone builds successfully without any authentication
@@ -183,6 +200,9 @@ The feature is considered complete when:
 - Contributing changes back to upstream private packages
 - Supporting additional components beyond the current 26 in use
 - Migration of other parts of the codebase not related to frontend design system
+- **Enterprise backend services**: This spec does not replace or open-source the Data Server, Control Room, or other enterprise infrastructure. These remain proprietary and require enterprise subscriptions.
+- **Data access features**: Templates showcasing @query/@predict decorators remain in repository as examples, but require enterprise Data Server infrastructure to execute. The Action Server can run fully open-source for standard @action functions.
+- **sema4ai.data Python library**: This library is already open-source on PyPI (Apache 2.0) and remains as-is. Only the backend infrastructure it connects to (Data Server) is enterprise/proprietary.
 
 ### Implementation Tradeoffs
 - When conflicts arise between implementation simplicity and feature parity, exact feature parity takes precedence even if the implementation becomes more complex
