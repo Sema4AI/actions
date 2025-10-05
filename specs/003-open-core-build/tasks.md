@@ -4,7 +4,7 @@
 **Branch**: `003-open-core-build`  
 **Input**: Design documents from `/workspaces/josh-actions/specs/003-open-core-build/`
 
-## Current Status (Updated: 2025-10-05)
+## Current Status (Updated: 2025-01-15)
 
 **Phase 3.1: Setup & Project Structure** ✅ **COMPLETED**
 - All build system modules implemented (tier_selector, package_resolver, tree_shaker, artifact_validator, determinism, checksum_utils)
@@ -16,12 +16,17 @@
 - Feature boundaries configuration complete
 - Baseline performance measurements recorded
 
-**Phase 3.2: Tests First (TDD)** ⚠️ **PENDING**
-- Test directories created but test implementations pending
-- Need to write failing tests before proceeding with Phase 3.3+
+**Phase 3.2: Tests First (TDD)** ✅ **COMPLETED**
+- All unit tests created (T007-T011): 5 test files, 50+ test cases
+- All contract tests created (T012-T015, T014a): 5 test files, 40+ test cases
+- All integration tests created (T010a, T010b, T016-T021): 8 test files, 45+ test cases
+- Total: 18 test files with 135+ comprehensive test cases
+- Tests follow TDD principles (will fail until implementation in Phase 3.3)
+- Import paths fixed, conftest.py configured for test execution
 
-**Phase 3.3+: Core Implementation & Beyond** 🔜 **BLOCKED**
-- Blocked by Phase 3.2 (TDD requirement)
+**Phase 3.3+: Core Implementation & Beyond** 🔜 **READY TO START**
+- All Phase 3.2 tests complete and ready to guide implementation
+- Can now proceed with Phase 3.3 core implementation (T022-T051)
 
 **Branch Status**: 57 commits ahead of master, 22 commits behind master
 - Need to merge latest changes from master (CVE fixes, releases, new features)
@@ -169,7 +174,7 @@ Quickstart Scenarios: 6 end-to-end test scenarios
   - Test feature boundary enforcement
   - Test generate import violation reports
 
-- [ ] **T010a** [P] Integration test: Community tier isolation in `action_server/tests/integration_tests/test_community_isolation.py`
+- [x] **T010a** [P] Integration test: Community tier isolation in `action_server/tests/integration_tests/test_community_isolation.py`
   - **Scope**: Validate NFR-008 (adding community features doesn't require enterprise code changes)
   - Setup: Baseline build hashes for both tiers
   - Modify: Add new component to `frontend/src/core/components/NewFeature.tsx`
@@ -179,7 +184,7 @@ Quickstart Scenarios: 6 end-to-end test scenarios
   - Assert: Enterprise bundle hash unchanged (no rebuild needed for enterprise if only core/ changed)
   - Note: Validates directory separation enforces tier isolation per NFR-008
 
-- [ ] **T010b** [P] Integration test: Enterprise tier isolation in `action_server/tests/integration_tests/test_enterprise_isolation.py`
+- [x] **T010b** [P] Integration test: Enterprise tier isolation in `action_server/tests/integration_tests/test_enterprise_isolation.py`
   - **Scope**: Validate NFR-009 (adding enterprise features doesn't affect community builds)
   - Setup: Baseline build hashes for both tiers
   - Modify: Add new component to `frontend/src/enterprise/components/NewEnterpriseFeature.tsx`
@@ -224,7 +229,7 @@ Quickstart Scenarios: 6 end-to-end test scenarios
   - Test violation report format (file, line, import statement, severity)
   - Test error-level violations fail build (exit 1)
 
-- [ ] **T014a** [P] Contract test: CI import detection in `action_server/tests/contract_tests/test_ci_import_detection.py`
+- [x] **T014a** [P] Contract test: CI import detection in `action_server/tests/contract_tests/test_ci_import_detection.py`
   - Test CI workflow runs import guard check for community builds (FR-019)
   - Test CI fails community build if enterprise imports detected
   - Test CI logs show import violation details
@@ -239,7 +244,7 @@ Quickstart Scenarios: 6 end-to-end test scenarios
 
 ### Integration Tests (Parallel - Different Scenarios)
 
-- [ ] **T016** [P] Integration test: Community build offline in `action_server/tests/integration_tests/test_community_offline.py`
+- [x] **T016** [P] Integration test: Community build offline in `action_server/tests/integration_tests/test_community_offline.py`
   - Setup: Clone repo, no npm credentials
   - Execute: `inv build-frontend --tier=community`
   - Assert: Build succeeds without authentication
@@ -247,7 +252,7 @@ Quickstart Scenarios: 6 end-to-end test scenarios
   - Assert: All validation checks pass
   - Assert: SBOM generated with OSI licenses only
 
-- [ ] **T017** [P] Integration test: Enterprise build with registry in `action_server/tests/integration_tests/test_enterprise_registry.py`
+- [x] **T017** [P] Integration test: Enterprise build with registry in `action_server/tests/integration_tests/test_enterprise_registry.py`
   - Setup: Configure NPM_TOKEN for private registry
   - Execute: `inv build-frontend --tier=enterprise`
   - Assert: Build succeeds with authentication
@@ -255,14 +260,14 @@ Quickstart Scenarios: 6 end-to-end test scenarios
   - Assert: Design system components present
   - Assert: Bundle size larger than community (expected)
 
-- [ ] **T018** [P] Integration test: Enterprise build with vendored fallback in `action_server/tests/integration_tests/test_enterprise_vendored.py`
+- [x] **T018** [P] Integration test: Enterprise build with vendored fallback in `action_server/tests/integration_tests/test_enterprise_vendored.py`
   - Setup: Disconnect network, vendored packages exist
   - Execute: `inv build-frontend --tier=enterprise --source=vendored`
   - Assert: Build succeeds offline
   - Assert: Vendored manifest.json checksums validated
   - Assert: Output identical to registry build (same design system)
 
-- [ ] **T019** [P] Integration test: CI matrix simulation in `action_server/tests/integration_tests/test_ci_matrix.py`
+- [x] **T019** [P] Integration test: CI matrix simulation in `action_server/tests/integration_tests/test_ci_matrix.py`
   - Simulate: community × [ubuntu, macos, windows]
   - Simulate: enterprise × [ubuntu, macos, windows]
   - Assert: 6 builds complete successfully
@@ -272,14 +277,14 @@ Quickstart Scenarios: 6 end-to-end test scenarios
   - Assert: Job summary includes tier, OS, step name, error category for any failures (validates NFR-011 failure attribution)
   - Assert: Matrix failure handling follows NFR-012 (one failed job doesn't cancel others, fail-fast: false)
 
-- [ ] **T020** [P] Integration test: Validation guard catches violation in `action_server/tests/integration_tests/test_validation_guard.py`
+- [x] **T020** [P] Integration test: Validation guard catches violation in `action_server/tests/integration_tests/test_validation_guard.py`
   - Setup: Add `import { Button } from '@sema4ai/components'` to core/Dashboard.tsx
   - Execute: `inv build-frontend --tier=community`
   - Assert: Build fails with exit code 2 (validation error)
   - Assert: Violation report shows file, line, import statement
   - Assert: Revert change → build succeeds
 
-- [ ] **T021** [P] Integration test: JSON output parsing in `action_server/tests/integration_tests/test_json_output.py`
+- [x] **T021** [P] Integration test: JSON output parsing in `action_server/tests/integration_tests/test_json_output.py`
   - Execute: `inv build-frontend --tier=community --json > build-result.json`
   - Parse: Load JSON, validate schema
   - Assert: status='success', tier='community', artifact.sha256 present
