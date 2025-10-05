@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sema4ai-http-helper"
-version = "2.1.0"
+version = "2.1.1"
 description = "HTTP library that enables the use of OS certificate stores when working behind MITM firewalls"
 authors = [
 	"Kari H. <kari@sema4.ai>",
@@ -13,7 +13,7 @@ packages = [{ include = "*", from = "src" }]
 [tool.poetry.dependencies]
 python = "^3.10"
 truststore = "0.9.2"
-urllib3 = ">=2.2.2"
+urllib3 = ">=2.5.0"
 pyyaml = ">=5.0"
 types-PyYAML = ">=6.0.0"
 

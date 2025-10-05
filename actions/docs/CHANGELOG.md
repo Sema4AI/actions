@@ -2,6 +2,59 @@
 
 ## Unreleased
 
+## 1.4.3 - 2025-09-24
+
+- Add the ability to use a different llm model when generating prompts
+
+## 1.4.2 - 2025-08-21
+
+- CVE fixes
+
+## 1.4.1 - 2025-08-07
+
+- Extend `psutil` dependency to <8.0 to support latest versions
+
+## 1.4.0 - 2025-07-29
+
+- Secrets may now also be passed as environment variables
+  or individually as headers (both in dev or production mode).
+
+  This may be the preferred way when dealing with mcp servers or
+  some infrastructure that doesn't have support for customizing
+  the `X-Action-Context`.
+
+  The environment variable name is by default the same name of the secret
+  in uppercase.
+
+  Example:
+
+  Given the code:
+
+  ```python
+  @mcp.tool
+  def my_action(my_secret: Secret):
+      the_secret_is = my_secret.value
+  ```
+
+  A secret may also be passed as an environment variable such as:
+
+  ```
+  MY_SECRET=<secret-value>
+  ```
+
+  or as a header prefixed by `X-` and replacing `_` by `-` in the variable name
+  (in this case it's case insensitive). i.e.:
+
+  ```
+  X-My-Secret=<secret-value>
+  ```
+
+  The `<secret-value>` may be the plain value of the variable or it
+  may also be encrypted with the same logic used to encrypt the
+  `X-Action-Context` (the only difference being that the secret
+  is a string and not a dictionary/object, but it should still
+  be json-dumped/encrypted/put in the json envelope/converted to base64).
+
 ## 1.3.15 - 2025-07-24
 
 - Fixed issue where an `@action(is_consequential=False)` wasn't being properly linted due to the decorator being a function call.

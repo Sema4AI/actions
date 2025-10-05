@@ -126,7 +126,7 @@ class BaseWorkflow:
 
         self.full = {}
         self.full.update({"name": self.name})
-        self.full.update({"permissions": {"contents": "read"}})
+        self.full.update({"permissions": {"contents": "read", "id-token": "write"}})
         self.full.update(self.on_part(paths))
         self.full.update(self.defaults_part())
         self.full.update(self.jobs_part())
@@ -135,7 +135,7 @@ class BaseWorkflow:
         return [
             # {
             # "name": "Set up Python ${{ matrix.python }}",
-            # "uses": "actions/setup-python@v4",
+            # "uses": "actions/setup-python@v5",
             # "with": {
             #     "python-version": "${{ matrix.python }}",
             #     "cache": "poetry",
@@ -356,7 +356,7 @@ echo "::set-output name=is_beta::$is_beta"
     def setup_node(self):
         return {
             "name": "Setup node",
-            "uses": "actions/setup-node@v3",
+            "uses": "actions/setup-node@v4",
             "with": {
                 "node-version": "20.x",
                 "registry-url": "https://npm.pkg.github.com",
@@ -393,7 +393,7 @@ echo "::set-output name=is_beta::$is_beta"
     def checkout_repo(self):
         return {
             "name": "Checkout repository and submodules",
-            "uses": "actions/checkout@v3",
+            "uses": "actions/checkout@v5",
         }
 
     def install_devutils(self, additional_packages: list[str] = []):

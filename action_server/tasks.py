@@ -123,6 +123,7 @@ def build_frontend_cdn(ctx: Context, version: str = "latest"):
     import subprocess
     import time
     import requests
+    import shutil
     
     print(f"Building frontend from CDN (version: {version})...")
     
@@ -143,31 +144,47 @@ def build_frontend_cdn(ctx: Context, version: str = "latest"):
         
         os.chmod(binary_path, 0o755)
         
-        # Create minimal package
-        (temp_dir / "package.yaml").write_text("""name: temp-package
-description: Temporary package for extracting frontend
-version: 0.1.0""")
+        # Create action package using the basic template
+        package_dir = temp_dir / "temp_package"
+        print("Creating action package from template...")
+        subprocess.run(
+            [str(binary_path), "new", "--name", "temp_package", "--template", "basic"],
+            cwd=str(temp_dir),
+            check=True
+        )
         
-        (temp_dir / "dummy_action.py").write_text("""from sema4ai.actions import action
-@action
-def dummy():
-    return "dummy"
-""")
-        
-        # Start server
+        # Start server in the background
+        print("Starting action server...")
+        log_path = package_dir / "action_server.log"
         process = subprocess.Popen(
             [str(binary_path), "start", "--port", "8080"],
-            cwd=str(temp_dir),
+            cwd=str(package_dir),
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
         )
         
-        # Wait for server
+        # Wait for server to be ready
         print("Waiting for server to start...")
-        for i in range(30):
+        url = "http://localhost:8080"
+        timeout = 60
+        start_time = time.time()
+        
+        while time.time() - start_time < timeout:
+            # Check if log file indicates server is ready
+            if log_path.exists():
+                with open(log_path, "r") as f:
+                    log_content = f.read()
+                    if url in log_content:
+                        print(f"Server started successfully at {url}")
+                        break
+                    if "Error executing action-server" in log_content:
+                        raise RuntimeError(f"Server failed to start. Log:\n{log_content}")
+            
+            # Also try direct connection
             try:
-                response = requests.get("http://localhost:8080/")
+                response = requests.get(url, timeout=1)
                 if response.status_code == 200:
+                    print("Server is responding!")
                     break
             except requests.ConnectionError:
                 pass

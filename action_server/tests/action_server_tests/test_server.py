@@ -140,6 +140,31 @@ ER: PASS
         line = line.strip()
         assert line in log_pretty_printed, f"'{line}' not in:\n{log_pretty_printed}"
 
+    # Also get the log.html through the {run_id}/log.html route
+    log_html_contents = client.get_str(
+        f"api/runs/{run_id}/log.html",
+    )
+    log_pretty_printed = pretty_format_logs_from_log_html_contents(log_html_contents)
+    for line in expected.splitlines():
+        line = line.strip()
+        assert line in log_pretty_printed, f"'{line}' not in:\n{log_pretty_printed}"
+
+    # Now, delete the log.html from disk and see that we "generate" a log.html on demand.
+    # Note: we have to search for the log.html in the artifacts directory (glob recursively)
+    artifacts_dir = action_server_process.datadir / "artifacts" / run_id
+    log_html_path = artifacts_dir / "log.html"
+    assert log_html_path.exists()
+    log_html_path.unlink()
+    assert not log_html_path.exists()
+
+    log_html_contents = client.get_str(
+        f"api/runs/{run_id}/log.html",
+    )
+    log_pretty_printed = pretty_format_logs_from_log_html_contents(log_html_contents)
+    for line in expected.splitlines():
+        line = line.strip()
+        assert line in log_pretty_printed, f"'{line}' not in:\n{log_pretty_printed}"
+
 
 @pytest.mark.integration_test
 def test_global_return_reuse_process(

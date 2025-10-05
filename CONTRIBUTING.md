@@ -2,6 +2,86 @@
 
 This is a contribution guide for the Sema4ai actions and action server projects and its associated libraries.
 
+## Frontend Development
+
+### Building the Frontend
+
+The Action Server frontend uses vendored design system packages to enable builds without private registry credentials.
+
+#### Prerequisites
+
+- **Node.js**: LTS 20.x (20.9.0 or later)
+- **npm**: 10.x or later
+
+#### Build Steps
+
+```bash
+cd action_server/frontend
+npm ci          # Install dependencies (no credentials needed!)
+npm run build   # Build the frontend
+```
+
+#### Development Mode
+
+```bash
+npm run dev     # Start development server with hot reload
+npm test        # Run tests
+npm run test:lint   # Run linter
+npm run test:types  # Run TypeScript type checking
+```
+
+### Vendored Dependencies
+
+The frontend uses three vendored design system packages located in `action_server/frontend/vendored/`:
+
+- **@sema4ai/components** - UI component library
+- **@sema4ai/icons** - Icon library
+- **@sema4ai/theme** - Theming system
+
+These packages are vendored (copied into the repository) to enable external contributors to build without authentication to private GitHub Packages.
+
+#### For Maintainers: Updating Vendored Packages
+
+If you have access to Sema4.ai's GitHub Packages, you can update vendored packages:
+
+1. **Authenticate to GitHub Packages**:
+   ```bash
+   export GITHUB_TOKEN="your_github_token"
+   echo "//npm.pkg.github.com/:_authToken=$GITHUB_TOKEN" > ~/.npmrc
+   echo "@sema4ai:registry=https://npm.pkg.github.com" >> ~/.npmrc
+   ```
+
+2. **Update a package**:
+   ```bash
+   cd action_server
+   python build-binary/vendor-frontend.py \
+     --package @sema4ai/components \
+     --version 0.1.2
+   ```
+
+3. **Verify integrity**:
+   ```bash
+   python -m pytest tests/action_server_tests/test_vendored_integrity.py -v
+   ```
+
+4. **Test the build**:
+   ```bash
+   cd frontend
+   npm ci && npm run build
+   ```
+
+5. **Commit the changes**:
+   ```bash
+   git add vendored/ package.json
+   git commit -m "chore: Update vendored packages"
+   ```
+
+#### Automated Updates
+
+A GitHub Actions workflow runs monthly to check for package updates and creates pull requests automatically. See `.github/workflows/monthly-vendor-update.yml`.
+
+For more details, see the [vendored packages documentation](action_server/frontend/vendored/README.md).
+
 ## Libraries
 
 ### Prerequisites

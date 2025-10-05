@@ -3,4 +3,7 @@ dist
 dist_v3
 dist-test_v3
 
+# Allow vendored package dist directories
+!vendored/*/dist
+
 .npmrc
