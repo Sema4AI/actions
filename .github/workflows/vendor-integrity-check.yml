@@ -30,14 +30,13 @@ jobs:
           python -m pip install --upgrade pip
           # Install pytest if needed for tests
           pip install pytest
-          # Install devutils to satisfy conftest.py requirements
-          pip install -e devutils
       
       - name: Run integrity tests
         working-directory: action_server
         run: |
           # Run the vendored integrity contract tests
-          python -m pytest tests/action_server_tests/test_vendored_integrity.py -v
+          # Use --noconftest to avoid loading conftest.py which requires full project dependencies
+          python -m pytest tests/action_server_tests/test_vendored_integrity.py -v --noconftest
       
       - name: Verify manifest exists
         run: |
