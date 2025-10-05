@@ -15,6 +15,23 @@ The build system uses tier-specific package manifests:
 
 **Important**: Do not manually edit `package.json`. Always edit the tier-specific files (`package.json.community` or `package.json.enterprise`).
 
+### Pre-Commit Hooks (Optional)
+
+To enable local tier separation validation, install the pre-commit hook:
+
+```bash
+cd action_server
+invoke setup-hooks
+```
+
+The hook checks for:
+- Enterprise imports (`@sema4ai/*`, `@/enterprise`) in `core/` files
+- Enterprise file modifications on community branches
+
+To bypass the hook when needed: `git commit --no-verify`
+
+**Note**: The hook is optional for local development, but CI enforces these rules mandatory.
+
 ## Installation
 
 Install dependencies:

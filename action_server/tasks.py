@@ -473,6 +473,49 @@ def print_env(ctx: Context):
 
 
 @task
+def setup_hooks(ctx: Context):
+    """Setup git hooks for local development (optional).
+    
+    This task symlinks the pre-commit hook from .githooks/ to .git/hooks/
+    to enable local tier separation validation.
+    """
+    import os
+    import subprocess
+    
+    root_dir = CURDIR.parent
+    githooks_dir = root_dir / ".githooks"
+    git_hooks_dir = root_dir / ".git" / "hooks"
+    
+    # Ensure .git/hooks directory exists
+    git_hooks_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Source and destination paths
+    source_hook = githooks_dir / "pre-commit"
+    dest_hook = git_hooks_dir / "pre-commit"
+    
+    if not source_hook.exists():
+        print(f"Error: Pre-commit hook not found at {source_hook}")
+        sys.exit(1)
+    
+    # Create symlink (or copy on Windows)
+    if sys.platform == "win32":
+        # Windows: copy instead of symlink
+        import shutil
+        shutil.copy2(source_hook, dest_hook)
+        print(f"✅ Copied pre-commit hook to {dest_hook}")
+    else:
+        # Unix-like: create symlink
+        if dest_hook.exists() or dest_hook.is_symlink():
+            dest_hook.unlink()
+        dest_hook.symlink_to(source_hook)
+        print(f"✅ Symlinked pre-commit hook to {dest_hook}")
+    
+    print("Pre-commit hook installed successfully!")
+    print("The hook will check for enterprise imports in core/ files.")
+    print("To bypass the hook, use: git commit --no-verify")
+
+
+@task
 def test_run_in_parallel(ctx: Context):
     """
     Just runs the action server in dist/final/action-server 3 times in parallel

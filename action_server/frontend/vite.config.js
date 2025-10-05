@@ -20,6 +20,9 @@ export default defineConfig({
   resolve: {
     alias: {
       '~': path.join(__dirname, 'src'),
+      '@/core': path.join(__dirname, 'src/core'),
+      '@/enterprise': path.join(__dirname, 'src/enterprise'),
+      '@/shared': path.join(__dirname, 'src/shared'),
     },
     mainFields: ['module', 'main', 'browser'],
   },
