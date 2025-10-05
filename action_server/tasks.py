@@ -87,7 +87,7 @@ def build_frontend(
     ctx: Context,
     debug: bool = False,
     install: bool = True,
-    tier: str = "community",
+    tier: str = None,
     json_output: bool = False,
 ):
     """Build static .html frontend with tier-based configuration.
@@ -95,7 +95,7 @@ def build_frontend(
     Args:
         debug: Build in debug mode (not minified)
         install: Run npm ci before build
-        tier: Build tier ('community' or 'enterprise')
+        tier: Build tier ('community' or 'enterprise'), defaults to 'community' if not set via env var
         json_output: Output build result as JSON
     """
     import json as json_lib
@@ -230,17 +230,15 @@ FILE_CONTENTS = {repr(file_contents)}
 
 
 @task
-def build_frontend_community(ctx: Context, **kwargs):
+def build_frontend_community(ctx: Context, debug: bool = False, install: bool = True, json_output: bool = False):
     """Build frontend with community tier (alias for build-frontend --tier=community)."""
-    kwargs["tier"] = "community"
-    build_frontend(ctx, **kwargs)
+    build_frontend(ctx, debug=debug, install=install, tier="community", json_output=json_output)
 
 
 @task
-def build_frontend_enterprise(ctx: Context, **kwargs):
+def build_frontend_enterprise(ctx: Context, debug: bool = False, install: bool = True, json_output: bool = False):
     """Build frontend with enterprise tier (alias for build-frontend --tier=enterprise)."""
-    kwargs["tier"] = "enterprise"
-    build_frontend(ctx, **kwargs)
+    build_frontend(ctx, debug=debug, install=install, tier="enterprise", json_output=json_output)
 
 
 @task
