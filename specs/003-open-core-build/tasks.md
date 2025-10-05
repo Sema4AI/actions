@@ -190,7 +190,7 @@ Quickstart Scenarios: 6 end-to-end test scenarios
   - Assert: Enterprise bundle hash changes (enterprise rebuild triggered)
   - Note: Validates tree-shaking enforces tier isolation per NFR-009
 
-- [ ] **T011** [P] Unit test: BuildArtifact generation in `action_server/tests/build_system_tests/test_build_artifact.py`
+- [x] **T011** [P] Unit test: BuildArtifact generation in `action_server/tests/build_system_tests/test_build_artifact.py`
   - Test artifact naming convention: `frontend-dist-{tier}.tar.gz`
   - Test SHA256 hash computation
   - Test file size calculation
@@ -199,7 +199,7 @@ Quickstart Scenarios: 6 end-to-end test scenarios
 
 ### Contract Tests (Parallel - Different Concerns)
 
-- [ ] **T012** [P] Contract test: CLI interface in `action_server/tests/contract_tests/test_cli_contract.py`
+- [x] **T012** [P] Contract test: CLI interface in `action_server/tests/contract_tests/test_cli_contract.py`
   - **Scope**: Contract test for invoke CLI interface (end-to-end command invocation, not BuildTier class internals)
   - Test `inv build-frontend` default behavior (community tier)
   - Test `inv build-frontend --tier=enterprise` explicit tier
@@ -209,7 +209,7 @@ Quickstart Scenarios: 6 end-to-end test scenarios
   - Test exit codes: 0 (success), 1 (build error), 2 (validation error), 3 (config error), 4 (dependency error)
   - Test invalid tier error message
 
-- [ ] **T013** [P] Contract test: Artifact validation in `action_server/tests/contract_tests/test_artifact_validation.py`
+- [x] **T013** [P] Contract test: Artifact validation in `action_server/tests/contract_tests/test_artifact_validation.py`
   - Test validate-artifact imports check (zero enterprise imports in community)
   - Test validate-artifact license check (OSI-only for community)
   - Test validate-artifact size check (bundle ≤120% baseline from T001-PRE measurement in `tests/performance_tests/baseline.json`, warn only if exceeded)
@@ -217,7 +217,7 @@ Quickstart Scenarios: 6 end-to-end test scenarios
   - Test validate-artifact SBOM check (valid CycloneDX JSON)
   - Test JSON output schema
 
-- [ ] **T014** [P] Contract test: Import violations in `action_server/tests/contract_tests/test_import_guards.py`
+- [x] **T014** [P] Contract test: Import violations in `action_server/tests/contract_tests/test_import_guards.py`
   - Test ESLint detects @/enterprise imports in @/core (lint-time)
   - Test Vite plugin detects enterprise imports (build-time)
   - Test AST scan detects @sema4ai imports in built bundle (post-build)
@@ -231,7 +231,7 @@ Quickstart Scenarios: 6 end-to-end test scenarios
   - Test enterprise builds skip import guard (allowed to use enterprise code)
   - Test external PR (fork) triggers community import check only
 
-- [ ] **T015** [P] Contract test: Artifact naming in `action_server/tests/contract_tests/test_artifact_naming.py`
+- [x] **T015** [P] Contract test: Artifact naming in `action_server/tests/contract_tests/test_artifact_naming.py`
   - Test community artifact name: `frontend-dist-community.tar.gz`
   - Test enterprise artifact name: `frontend-dist-enterprise.tar.gz`
   - Test executable naming: `action-server-{tier}-{platform}-{commit}.zip`
