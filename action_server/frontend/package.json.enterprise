@@ -3,7 +3,7 @@
   "description": "",
   "version": "0.0.1",
   "copyright": "Copyright 2024 Sema4.ai, Inc.",
-  "license": "Apache-2.0",
+  "license": "SEE LICENSE IN LICENSE",
   "main": "index.js",
   "type": "module",
   "author": {
@@ -32,6 +32,9 @@
     "@radix-ui/react-dialog": "^1.0.5",
     "@radix-ui/react-dropdown-menu": "^2.0.6",
     "@radix-ui/react-slot": "^1.0.2",
+    "@sema4ai/components": "file:./vendored/components",
+    "@sema4ai/icons": "file:./vendored/icons",
+    "@sema4ai/theme": "file:./vendored/theme",
     "@tanstack/react-query": "^5.28.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",

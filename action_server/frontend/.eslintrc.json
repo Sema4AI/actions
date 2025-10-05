@@ -4,7 +4,12 @@
   "settings": {
     "import/resolver": {
       "alias": {
-        "map": [["~", "./src"]],
+        "map": [
+          ["~", "./src"],
+          ["@/core", "./src/core"],
+          ["@/enterprise", "./src/enterprise"],
+          ["@/shared", "./src/shared"]
+        ],
         "extensions": [".js", ".jsx", ".ts", ".tsx"]
       }
     }
@@ -12,6 +17,35 @@
   "rules": {
     "no-shadow": "off",
     "@typescript-eslint/no-shadow": "warn",
-    "import/no-extraneous-dependencies": ["error", { "devDependencies": ["**/*.test.ts"] }]
-  }
+    "import/no-extraneous-dependencies": ["error", { "devDependencies": ["**/*.test.ts"] }],
+    "no-restricted-imports": [
+      "error",
+      {
+        "patterns": [
+          {
+            "group": ["@/enterprise*", "@sema4ai/*"],
+            "message": "Core modules cannot import enterprise code. Move shared code to @/shared or create a community-tier alternative."
+          }
+        ]
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["src/core/**/*.{ts,tsx}"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["@/enterprise*", "@sema4ai/*", "../enterprise*"],
+                "message": "Core modules cannot import enterprise code. This violates tier separation."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
 }
