@@ -1,29 +1,46 @@
-name: Frontend Build (Unauthenticated)
+name: Action Server Build (Unauthenticated)
 
 on:
   pull_request:
     paths:
       - 'action_server/frontend/**'
       - '.github/workflows/frontend-build-unauthenticated.yml'
+  workflow_dispatch:
   push:
     branches:
       - master
     paths:
       - 'action_server/frontend/**'
 
+defaults:
+  run:
+    working-directory: ./action_server
+
 jobs:
   build-external:
-    name: Build frontend without credentials
-    runs-on: ubuntu-latest
+    name: Build Action Server binary without credentials
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-22.04
+          - windows-2022
+          - macos-13
+          - macos-15
+        include:
+          - os: ubuntu-22.04
+            python: '3.12'
+          - os: windows-2022
+            python: '3.12'
+          - os: macos-13
+            python: '3.12'
+          - os: macos-15
+            python: '3.12'
     
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
+      - name: Checkout repository and submodules
+        uses: actions/checkout@v3
       
       - name: Verify no credentials in environment
         run: |
@@ -38,6 +55,7 @@ jobs:
           fi
           # Note: GITHUB_TOKEN is always present in GH Actions but shouldn't be used for npm
           echo "✓ No npm credentials detected"
+        shell: bash
       
       - name: Verify no .npmrc with credentials
         run: |
@@ -47,51 +65,66 @@ jobs:
             exit 1
           fi
           echo "✓ No .npmrc file found"
+        shell: bash
       
-      - name: Install dependencies
-        working-directory: action_server/frontend
-        run: npm ci
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
       
-      - name: Build frontend
-        working-directory: action_server/frontend
-        run: npm run build
+      - name: Install Python 3.12
+        run: uv python install 3.12
       
-      - name: Verify build output
-        working-directory: action_server/frontend
+      - name: Install devutils requirements
+        run: uv run --no-project --python ${{ matrix.python }} python -m pip install --break-system-packages -r ../devutils/requirements.txt
+      
+      - name: Install project
+        run: uv run --no-project --python ${{ matrix.python }} inv devinstall
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20.x
+      
+      - name: Setup go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+      
+      - name: Build frontend (using vendored packages)
+        run: uv run --no-project --python ${{ matrix.python }} inv build-frontend
+        env:
+          CI: true
+      
+      - name: Build OAuth2 config
+        run: uv run --no-project --python ${{ matrix.python }} inv build-oauth2-config
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Build binary (unsigned, with Go wrapper)
+        env:
+          RC_ACTION_SERVER_FORCE_DOWNLOAD_RCC: 'true'
+          RC_ACTION_SERVER_DO_SELFTEST: 'true'
+        run: uv run --no-project --python ${{ matrix.python }} poetry run inv build-executable --go-wrapper
+      
+      - name: Verify binary was built
         run: |
-          # Check that dist directory was created
-          if [ ! -d "dist" ]; then
-            echo "Error: dist/ directory not created"
+          if [ ! -f "dist/final/action-server${{ matrix.os == 'windows-2022' && '.exe' || '' }}" ]; then
+            echo "Error: Binary not found at expected location"
+            ls -la dist/
             exit 1
           fi
-          
-          # Check that index.html exists
-          if [ ! -f "dist/index.html" ]; then
-            echo "Error: dist/index.html not found"
-            exit 1
-          fi
-          
-          # Check for JavaScript files
-          js_count=$(find dist -name "*.js" | wc -l)
-          if [ "$js_count" -eq 0 ]; then
-            echo "Error: No JavaScript files found in dist/"
-            exit 1
-          fi
-          
-          # Check for CSS files
-          css_count=$(find dist -name "*.css" | wc -l)
-          if [ "$css_count" -eq 0 ]; then
-            echo "Error: No CSS files found in dist/"
-            exit 1
-          fi
-          
-          echo "✓ Build output verified successfully"
-          echo "  - JavaScript files: $js_count"
-          echo "  - CSS files: $css_count"
+          echo "✓ Binary built successfully"
+        shell: bash
       
-      - name: Upload build artifacts
+      - name: Test binary
+        run: |
+          ./dist/final/action-server${{ matrix.os == 'windows-2022' && '.exe' || '' }} version
+        shell: bash
+      
+      - name: Upload binary artifact
         uses: actions/upload-artifact@v4
         with:
-          name: frontend-dist
-          path: action_server/frontend/dist/
+          name: action-server-unauthenticated-${{ matrix.os }}
+          path: action_server/dist/final/
           retention-days: 7
