@@ -12,7 +12,7 @@ from unittest.mock import Mock, patch
 
 # Import will fail until implementation exists (TDD)
 try:
-    from action_server.build_binary.artifact_validator import (
+    from artifact_validator import (
         ArtifactValidator,
         ValidationResult,
         ValidationCheck,

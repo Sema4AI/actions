@@ -10,7 +10,7 @@ from unittest.mock import Mock, patch, MagicMock
 
 import pytest
 
-from action_server.build_binary.package_resolver import (
+from package_resolver import (
     DependencyError,
     DependencySource,
     SourceType,

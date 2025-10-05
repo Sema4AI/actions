@@ -13,14 +13,14 @@ from unittest.mock import Mock, patch
 
 # Import will fail until implementation exists (TDD)
 try:
-    from action_server.build_binary.build_artifact import (
+    from build_artifact import (
         BuildArtifact,
         ArtifactType,
         generate_artifact_name,
         compute_sha256,
         generate_metadata,
     )
-    from action_server.build_binary.tier_selector import COMMUNITY, ENTERPRISE
+    from tier_selector import COMMUNITY, ENTERPRISE
 except ImportError:
     # Expected to fail initially (TDD)
     pytest.skip("BuildArtifact not yet implemented", allow_module_level=True)

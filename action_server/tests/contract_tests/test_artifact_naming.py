@@ -11,12 +11,12 @@ import re
 
 # Import will fail until implementation exists (TDD)
 try:
-    from action_server.build_binary.build_artifact import (
+    from build_artifact import (
         BuildArtifact,
         generate_artifact_name,
         ArtifactType,
     )
-    from action_server.build_binary.tier_selector import COMMUNITY, ENTERPRISE
+    from tier_selector import COMMUNITY, ENTERPRISE
 except ImportError:
     pytest.skip("Artifact naming not yet implemented", allow_module_level=True)
 

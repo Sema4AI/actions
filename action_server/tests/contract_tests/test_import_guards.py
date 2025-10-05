@@ -13,7 +13,7 @@ from unittest.mock import Mock, patch
 
 # Import will fail until implementation exists (TDD)
 try:
-    from action_server.build_binary.tree_shaker import ImportViolation
+    from tree_shaker import ImportViolation
 except ImportError:
     pytest.skip("Import guards not yet implemented", allow_module_level=True)
 
