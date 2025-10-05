@@ -4,6 +4,28 @@
 **Branch**: `003-open-core-build`  
 **Input**: Design documents from `/workspaces/josh-actions/specs/003-open-core-build/`
 
+## Current Status (Updated: 2025-10-05)
+
+**Phase 3.1: Setup & Project Structure** ✅ **COMPLETED**
+- All build system modules implemented (tier_selector, package_resolver, tree_shaker, artifact_validator, determinism, checksum_utils)
+- Frontend directory structure created (core/, enterprise/, shared/)
+- Dual package manifests (package.json.community, package.json.enterprise)
+- Build tasks implemented in action_server/tasks.py
+- Pre-commit hooks created
+- Architecture documentation complete
+- Feature boundaries configuration complete
+- Baseline performance measurements recorded
+
+**Phase 3.2: Tests First (TDD)** ⚠️ **PENDING**
+- Test directories created but test implementations pending
+- Need to write failing tests before proceeding with Phase 3.3+
+
+**Phase 3.3+: Core Implementation & Beyond** 🔜 **BLOCKED**
+- Blocked by Phase 3.2 (TDD requirement)
+
+**Branch Status**: 57 commits ahead of master, 22 commits behind master
+- Need to merge latest changes from master (CVE fixes, releases, new features)
+
 ## Execution Summary
 ```
 Tech Stack: Node.js 20.x LTS, TypeScript 5.3.3, Python 3.11.x, Vite 6.1.0, React 18.2.0
@@ -21,23 +43,25 @@ Quickstart Scenarios: 6 end-to-end test scenarios
 
 ---
 
-## Phase 3.1: Setup & Project Structure
+## Phase 3.1: Setup & Project Structure ✅ COMPLETED
 
-- [ ] **T001-PRE** Measure baseline performance (MUST complete before T001)
+- [x] **T001-PRE** Measure baseline performance (MUST complete before T001)
   - Measure current frontend build time: Run `time npm run build` from `action_server/frontend/` (3 trials, record average)
   - Measure current bundle size: Run `du -sh action_server/frontend/dist/` after build
   - Measure gzipped size: Run `gzip -c action_server/frontend/dist/index.html | wc -c` and sum all gzipped assets
   - Document results in spec.md NFR-001 comment: "<!-- Baseline: build={avg_time}s, bundle={size}MB, gzipped={gz_size}MB -->"
   - Create baseline reference file: `action_server/tests/performance_tests/baseline.json` with measured values
   - Purpose: Establish performance budget for NFR-001, NFR-002, and bundle size validation (T013)
+  - ✅ **COMPLETED**: baseline.json created with build_time=2.93s, bundle_size=0.56MB, gzipped=0.18MB
 
-- [ ] **T001** Create dual package manifest structure
+- [x] **T001** Create dual package manifest structure
   - Create `action_server/frontend/package.json.community` (Radix UI, Tailwind, public deps only)
   - Create `action_server/frontend/package.json.enterprise` (adds @sema4ai/* packages)
   - Add `.gitignore` entry for generated `package.json`
   - Document manifest precedence in `action_server/frontend/README.md`
+  - ✅ **COMPLETED**: Both package.json manifests created
 
-- [ ] **T002** Create frontend directory structure for tier separation
+- [x] **T002** Create frontend directory structure for tier separation
   - Create `action_server/frontend/src/core/` (community features)
   - Create `action_server/frontend/src/core/components/ui/` (Radix UI + Tailwind)
   - Create `action_server/frontend/src/core/pages/` (action execution, logs, artifacts)
@@ -47,26 +71,30 @@ Quickstart Scenarios: 6 end-to-end test scenarios
   - Create `action_server/frontend/src/enterprise/pages/` (KB, analytics, org management)
   - Create `action_server/frontend/src/enterprise/services/` (enterprise API clients)
   - Create `action_server/frontend/src/shared/` (tier-agnostic utilities)
+  - ✅ **COMPLETED**: All directories created with README.md files
 
-- [ ] **T003** Create build system Python module structure
+- [x] **T003** Create build system Python module structure
   - Create `action_server/build-binary/tier_selector.py` (CLI flag → BuildTier logic)
   - Create `action_server/build-binary/package_resolver.py` (registry → vendored → CDN fallback)
   - Create `action_server/build-binary/tree_shaker.py` (enterprise import detector)
   - Create `action_server/build-binary/artifact_validator.py` (naming, checksums, SBOM)
   - Create `action_server/build-binary/__init__.py`
+  - ✅ **COMPLETED**: All modules implemented with full functionality
 
-- [ ] **T004** Create test directory structure
+- [x] **T004** Create test directory structure
   - Create `action_server/tests/build_system_tests/` (tier selection, tree-shaking unit tests)
   - Create `action_server/tests/contract_tests/` (artifact validation, import guards)
   - Create `action_server/tests/integration_tests/` (end-to-end build scenarios)
+  - ✅ **COMPLETED**: All test directories created with README.md and __init__.py
 
-- [ ] **T005** Configure linting and build tools
+- [x] **T005** Configure linting and build tools
   - Update `action_server/frontend/.eslintrc.js` with `no-restricted-imports` rule (block @/enterprise in @/core)
   - Update `action_server/frontend/tsconfig.json` with path mappings (`@/core`, `@/enterprise`, `@/shared`)
   - Create `action_server/frontend/vite.config.js` with tier-based tree-shaking rules
   - Install dev dependencies: specific Radix UI components (Button, Dialog, DropdownMenu, Table per T032), tailwindcss v3.x, vitest latest
+  - ✅ **COMPLETED**: All configurations updated, dependencies installed
 
-- [ ] **T005a** Create pre-commit hook for local development guardrails
+- [x] **T005a** Create pre-commit hook for local development guardrails
   - Create `.githooks/pre-commit` script (tracked in repo, platform-agnostic bash script)
   - Hook checks: no `@/enterprise` or `@sema4ai/*` imports in `frontend/src/core/**/*.{ts,tsx}` (use grep or simple AST scan)
   - Hook checks: no `frontend/src/enterprise/` file modifications in commits to community-only branches (compare against branch naming convention)
@@ -74,13 +102,15 @@ Quickstart Scenarios: 6 end-to-end test scenarios
   - Create `inv setup-hooks` task in `action_server/tasks.py` to symlink `.githooks/pre-commit` → `.git/hooks/pre-commit`
   - Document hook installation in `action_server/frontend/README.md`: "Optional: Run `inv setup-hooks` to enable pre-commit import validation"
   - Note: Hook is opt-in for developers; CI import guards (T014a, T035) are mandatory enforcement
+  - ✅ **COMPLETED**: Pre-commit hook created in .githooks/
 
-- [ ] **T006** Create feature boundaries configuration
+- [x] **T006** Create feature boundaries configuration
   - Create `action_server/frontend/feature-boundaries.json` (9 features from data-model.md Entity 4)
   - Document feature IDs: design_system, kb_ui, themes, analytics_ui, sso_ui (enterprise)
   - Document feature IDs: action_ui, logs_ui, artifacts_ui, open_components (core)
+  - ✅ **COMPLETED**: feature-boundaries.json created with all 9 features
 
-- [ ] **T006a** Create architecture documentation in `specs/003-open-core-build/architecture.md`
+- [x] **T006a** Create architecture documentation in `specs/003-open-core-build/architecture.md`
   - Format: Markdown with embedded Mermaid diagrams (4 required diagrams per FR-030)
   - Diagram 1: Directory structure (flowchart showing core/ vs enterprise/ separation with example file paths)
   - Diagram 2: Build flow (sequence diagram: tier selection → dependency resolution → tree-shaking → artifact generation)
@@ -88,6 +118,7 @@ Quickstart Scenarios: 6 end-to-end test scenarios
   - Diagram 4: Feature boundaries (table/diagram mapping features to tiers with reference to FR-017 canonical list)
   - Include narrative: Build system architecture overview, tier selection mechanism, dependency resolution fallback order
   - Purpose: Visual guide for implementation phases (FR-030); reference from T043 documentation tasks
+  - ✅ **COMPLETED**: architecture.md created with comprehensive documentation
 
 ---
 
