@@ -6,6 +6,7 @@ for checksum verification of all vendored build artifacts.
 """
 import hashlib
 import json
+import os
 from pathlib import Path
 import pytest
 
@@ -40,11 +41,11 @@ class TestVendoredIntegrity:
         hasher = hashlib.sha256()
         
         # Walk directory in sorted order for determinism
-        for root, dirs, files in package_dir.walk():
+        for root, dirs, files in os.walk(package_dir):
             # Sort subdirectories for deterministic traversal
             dirs.sort()
             for filename in sorted(files):
-                filepath = root / filename
+                filepath = Path(root) / filename
                 # Skip symlinks for cross-platform compatibility
                 if filepath.is_symlink():
                     continue
