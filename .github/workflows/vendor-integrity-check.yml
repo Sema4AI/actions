@@ -30,6 +30,8 @@ jobs:
           python -m pip install --upgrade pip
           # Install pytest if needed for tests
           pip install pytest
+          # Install devutils to satisfy conftest.py requirements
+          pip install -e devutils
       
       - name: Run integrity tests
         working-directory: action_server
