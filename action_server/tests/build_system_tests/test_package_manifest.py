@@ -12,12 +12,12 @@ from unittest.mock import Mock, patch, mock_open
 
 # Import will fail until implementation exists (TDD)
 try:
-    from action_server.build_binary.package_manifest import (
+    from package_manifest import (
         PackageManifest,
         ValidationResult,
         ManifestValidationError,
     )
-    from action_server.build_binary.tier_selector import BuildTier, COMMUNITY, ENTERPRISE
+    from tier_selector import BuildTier, COMMUNITY, ENTERPRISE
 except ImportError:
     # Expected to fail initially (TDD)
     pytest.skip("PackageManifest not yet implemented", allow_module_level=True)

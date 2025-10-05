@@ -1,3 +1,13 @@
+import sys
+from pathlib import Path
+
+# Add build-binary directory to Python path for test imports
+# The build system modules are in build-binary/ (not a standard Python package)
+action_server_root = Path(__file__).parent.parent
+build_binary_path = action_server_root / "build-binary"
+if build_binary_path.exists() and str(build_binary_path) not in sys.path:
+    sys.path.insert(0, str(build_binary_path))
+
 pytest_plugins = [
     "devutils.fixtures",
     "action_server_tests.fixtures",

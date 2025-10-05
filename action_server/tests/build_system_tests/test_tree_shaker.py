@@ -11,14 +11,14 @@ from unittest.mock import Mock, patch
 
 # Import will fail until implementation exists (TDD)
 try:
-    from action_server.build_binary.tree_shaker import (
+    from tree_shaker import (
         TreeShaker,
         ImportViolation,
         scan_imports,
         detect_enterprise_imports,
         generate_vite_external_config,
     )
-    from action_server.build_binary.tier_selector import COMMUNITY, ENTERPRISE
+    from tier_selector import COMMUNITY, ENTERPRISE
 except ImportError:
     # Expected to fail initially (TDD)
     pytest.skip("TreeShaker not yet implemented", allow_module_level=True)

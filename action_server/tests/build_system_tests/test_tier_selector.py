@@ -6,7 +6,7 @@ Tests T007a: Default tier behavior (FR-003 compliance)
 
 import pytest
 
-from action_server.build_binary.tier_selector import (
+from tier_selector import (
     BuildTier,
     COMMUNITY,
     ENTERPRISE,
