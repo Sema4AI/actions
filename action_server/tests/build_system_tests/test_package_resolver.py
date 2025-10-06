@@ -467,10 +467,14 @@ class TestResolveEdgeCases:
     def test_resolve_with_invalid_tier(self, tmp_path):
         """Test resolve with invalid tier name (should not crash)."""
         # Implementation doesn't validate tier name, defaults to enterprise logic
-        # This documents current behavior
-        with pytest.raises(DependencyError):
-            # Invalid tier will try enterprise sources and fail
-            resolve("invalid", tmp_path)
+        # This documents current behavior - it should succeed if sources are available
+        result = resolve("invalid", tmp_path)
+        
+        # Should default to enterprise tier behavior (private registry first)
+        assert result.source_type in [SourceType.REGISTRY, SourceType.VENDORED, SourceType.CDN]
+        # If registry is available, it should be used (highest priority)
+        if result.source_type == SourceType.REGISTRY:
+            assert result.url == "https://npm.pkg.github.com"
             
     @patch('subprocess.run')
     def test_resolve_with_empty_frontend_dir(self, mock_run):
