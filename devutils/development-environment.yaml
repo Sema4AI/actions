@@ -1,6 +1,0 @@
-channels:
-  - conda-forge
-dependencies:
-  - python=3.10.12  # recommended Python version for development
-  # These below should stay in sync with requirements.txt.
-  - pip=23.2.1
