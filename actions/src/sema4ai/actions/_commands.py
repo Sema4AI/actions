@@ -375,7 +375,6 @@ def run(
         read_pyproject_toml,
         read_robocorp_auto_log_config,
     )
-
     from sema4ai.actions._action import Context, set_current_action
     from sema4ai.actions._collect_actions import collect_actions
     from sema4ai.actions._config import RunConfig, set_config
@@ -536,15 +535,22 @@ def run(
     retcode = 22  # Something went off if this was kept until the end.
     update_pythonpath(p.absolute())
     try:
-        with set_config(run_config), setup_cli_auto_logging(
-            # Note: we can't customize what's a "project" file or a "library" file,
-            # right now the customizations are all based on module names.
-            config
-        ), redirect.setup_stdout_logging(log_output_to_stdout), setup_log_output(
-            output_dir=output_dir_path,
-            max_files=max_log_files,
-            max_file_size=max_log_file_size,
-        ), setup_log_output_to_port(), context.register_lifecycle_prints():
+        with (
+            set_config(run_config),
+            setup_cli_auto_logging(
+                # Note: we can't customize what's a "project" file or a "library" file,
+                # right now the customizations are all based on module names.
+                config
+            ),
+            redirect.setup_stdout_logging(log_output_to_stdout),
+            setup_log_output(
+                output_dir=output_dir_path,
+                max_files=max_log_files,
+                max_file_size=max_log_file_size,
+            ),
+            setup_log_output_to_port(),
+            context.register_lifecycle_prints(),
+        ):
             run_name = os.path.basename(p)
             if action_name:
                 run_name += f" - {action_name}"

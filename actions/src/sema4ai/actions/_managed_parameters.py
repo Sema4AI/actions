@@ -85,6 +85,16 @@ class ManagedParameterHeuristicSecret(ManagedParameterHeuristic):
                         "Secret",
                         "actions.Secret",
                         "sema4ai.actions.Secret",
+                        "DocumentIntelligenceSecret",
+                    ):
+                        return True
+
+                    # Check for Annotated[Secret, ...] patterns
+                    # Handle: Annotated[Secret, SecretSpec(...)]
+                    if "Annotated[" in unparsed and (
+                        "Secret," in unparsed
+                        or "actions.Secret," in unparsed
+                        or "sema4ai.actions.Secret," in unparsed
                     ):
                         return True
 
@@ -342,9 +352,9 @@ class ManagedParameters:
             return True
 
         if node is not None:
-            assert (
-                param is None
-            ), "Either node or param is expected, but not both at the same time."
+            assert param is None, (
+                "Either node or param is expected, but not both at the same time."
+            )
 
             for heuristic in self._heuristics:
                 if heuristic.is_managed_node(param_name, node=node):

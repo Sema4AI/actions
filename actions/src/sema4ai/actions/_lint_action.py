@@ -272,7 +272,6 @@ def _check_docstring_contents(
     kind: _Kind,
 ) -> Iterator[Error]:
     import docstring_parser
-
     from sema4ai.actions._commands import _is_managed_param
 
     assert docstring, "Expected docstring to be given."
@@ -315,15 +314,6 @@ def _check_docstring_contents(
         for arg in arguments.args:
             desc = param_name_to_description.pop(arg.arg, None)
             if pm is not None and _is_managed_param(pm, arg.arg, node=node):
-                if not desc:
-                    if _get_managed_param_type(pm, arg.arg, node=node) == "Secret":
-                        yield _make_error(
-                            arg,
-                            f"Parameter: `{arg.arg}` documentation not found in docstring. "
-                            "Please update docstring to add it (as it will be added to the "
-                            "secrets metadata explaining the secret).",
-                        )
-
                 continue
 
             if _is_data_source_param(arg.arg, node=node):
@@ -457,15 +447,13 @@ class LintResultTypedDict(TypedDict):
 @overload
 def format_lint_results(
     lint_result: LintResultTypedDict,
-) -> Optional[FormattedLintResult]:
-    ...
+) -> Optional[FormattedLintResult]: ...
 
 
 @overload
 def format_lint_results(
     lint_result: dict,
-) -> Optional[FormattedLintResult]:
-    ...
+) -> Optional[FormattedLintResult]: ...
 
 
 def format_lint_results(

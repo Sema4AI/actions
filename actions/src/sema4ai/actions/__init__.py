@@ -39,23 +39,21 @@ from ._fixtures import setup, teardown
 from ._protocols import IAction, Status
 from ._request import Request
 from ._response import ActionError, Response
-from ._secret import OAuth2Secret, Secret
+from ._secret import OAuth2Secret, Secret, SecretSpec
 from ._table import Row, RowValue, Table
 
-__version__ = "1.4.3"
+__version__ = "1.5.0"
 version_info = [int(x) for x in __version__.split(".")]
 
 
 @overload
-def action(func: Callable) -> Callable:
-    ...
+def action(func: Callable) -> Callable: ...
 
 
 @overload
 def action(
     *, is_consequential: Optional[bool] = None, display_name: Optional[str] = None
-) -> Callable:
-    ...
+) -> Callable: ...
 
 
 def action(*args, **kwargs):
@@ -206,6 +204,7 @@ __all__ = [
     "Request",
     "Response",
     "Secret",
+    "SecretSpec",
     "Status",
     "action",
     "action_cache",

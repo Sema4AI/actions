@@ -6,7 +6,6 @@ from typing import Any, Dict, List, Literal, Optional, Tuple, get_type_hints
 
 from robocorp.log import ConsoleMessageKind, console_message
 from robocorp.log.protocols import OptExcInfo
-
 from sema4ai.actions._constants import SUPPORTED_TYPES_IN_SCHEMA
 from sema4ai.actions._customization._plugin_manager import PluginManager
 from sema4ai.actions._protocols import IAction, IContext, Status
@@ -239,6 +238,14 @@ class Action:
                     dct["provider"] = provider_str
                     dct["scopes"] = scope_strs
 
+                elif tp == "Secret":
+                    # Check if this is a annotated secret with a SecretSpec tag
+                    from sema4ai.actions._secret import get_secret_spec_from_annotation
+
+                    secret_spec = get_secret_spec_from_annotation(param.annotation)
+                    if secret_spec:
+                        dct["tag"] = secret_spec.tag
+
                 elif tp == "DataSource":
                     # Just mark that a datasource is needed here, no need to add additional information
                     # (the metadata on the actual datasources will be added as a separate node in the
@@ -270,9 +277,9 @@ class Action:
         method_name = self.method.__code__.co_name
         type_hints = get_type_hints(self.method)
 
-        param_name_to_description: dict[
-            str, str
-        ] = self._get_param_name_to_description()
+        param_name_to_description: dict[str, str] = (
+            self._get_param_name_to_description()
+        )
 
         properties: Dict[str, Any] = {}
         required: List[str] = []
@@ -579,9 +586,10 @@ class Context:
     def register_lifecycle_prints(self):
         from sema4ai.actions._hooks import after_action_run, before_action_run
 
-        with before_action_run.register(
-            self._before_action_run
-        ), after_action_run.register(self._after_action_run):
+        with (
+            before_action_run.register(self._before_action_run),
+            after_action_run.register(self._after_action_run),
+        ):
             yield
 
     def __typecheckself__(self) -> None:
