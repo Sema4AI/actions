@@ -12,7 +12,6 @@ __pycache__/
 .mypy_cache/
 .coverage
 .idea/
-/devutils/bin/rcc*
 
 # VS Code
 .vscode/settings.json
