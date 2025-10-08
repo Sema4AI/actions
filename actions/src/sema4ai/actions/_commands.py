@@ -375,6 +375,7 @@ def run(
         read_pyproject_toml,
         read_robocorp_auto_log_config,
     )
+
     from sema4ai.actions._action import Context, set_current_action
     from sema4ai.actions._collect_actions import collect_actions
     from sema4ai.actions._config import RunConfig, set_config

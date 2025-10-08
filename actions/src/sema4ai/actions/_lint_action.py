@@ -12,7 +12,6 @@ from typing import (
     overload,
 )
 
-from sema4ai.actions._commands import _get_managed_param_type
 from sema4ai.actions._customization._plugin_manager import PluginManager
 
 _Kind = Literal["action", "query", "predict", "tool", "prompt", "resource"]
@@ -272,6 +271,7 @@ def _check_docstring_contents(
     kind: _Kind,
 ) -> Iterator[Error]:
     import docstring_parser
+
     from sema4ai.actions._commands import _is_managed_param
 
     assert docstring, "Expected docstring to be given."
@@ -447,13 +447,15 @@ class LintResultTypedDict(TypedDict):
 @overload
 def format_lint_results(
     lint_result: LintResultTypedDict,
-) -> Optional[FormattedLintResult]: ...
+) -> Optional[FormattedLintResult]:
+    ...
 
 
 @overload
 def format_lint_results(
     lint_result: dict,
-) -> Optional[FormattedLintResult]: ...
+) -> Optional[FormattedLintResult]:
+    ...
 
 
 def format_lint_results(

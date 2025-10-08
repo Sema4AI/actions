@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Literal, Optional, Tuple, get_type_hints
 
 from robocorp.log import ConsoleMessageKind, console_message
 from robocorp.log.protocols import OptExcInfo
+
 from sema4ai.actions._constants import SUPPORTED_TYPES_IN_SCHEMA
 from sema4ai.actions._customization._plugin_manager import PluginManager
 from sema4ai.actions._protocols import IAction, IContext, Status
@@ -277,9 +278,9 @@ class Action:
         method_name = self.method.__code__.co_name
         type_hints = get_type_hints(self.method)
 
-        param_name_to_description: dict[str, str] = (
-            self._get_param_name_to_description()
-        )
+        param_name_to_description: dict[
+            str, str
+        ] = self._get_param_name_to_description()
 
         properties: Dict[str, Any] = {}
         required: List[str] = []
