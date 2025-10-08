@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- RCC v20.3.1: Uses embedded `uv` v0.8.17 for PyPI installations
+
 ## 2.15.0 - 2025-10-02
 
 - The `api/runs/{runid}/log.html` endpoint will now generate a `log.html` with partial contents if the run still hasn't finished.
