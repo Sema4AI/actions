@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2.16.0 - 2025-10-08
+
 - RCC v20.3.1: Uses embedded `uv` v0.8.17 for PyPI installations
 
 ## 2.15.0 - 2025-10-02
