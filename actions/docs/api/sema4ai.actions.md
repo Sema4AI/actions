@@ -383,7 +383,7 @@ Creates an OAuth2 Secret given the action context (which may be encrypted in mem
 
 Return: An OAuth2Secret instance collected from the passed action context.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/_secret/__init__.py#L215)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/_secret/__init__.py#L206)
 
 ```python
 from_action_context(action_context: 'ActionContext', path: str) → OAuth2Secret
@@ -403,7 +403,7 @@ Return: An OAuth2Secret instance with the given value.
 
 Note: the model_validate method is used for compatibility with the pydantic API.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/_secret/__init__.py#L190)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/_secret/__init__.py#L181)
 
 ```python
 model_validate(value: dict) → OAuth2Secret
@@ -509,7 +509,7 @@ Creates a secret given the action context (which may be encrypted in memory unti
 
 Return: A Secret instance collected from the passed action context.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/_secret/__init__.py#L92)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/_secret/__init__.py#L87)
 
 ```python
 from_action_context(
@@ -532,7 +532,7 @@ Return: A Secret instance with the given value.
 
 Note: the model_validate method is used for compatibility with the pydantic API.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/_secret/__init__.py#L74)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/_secret/__init__.py#L69)
 
 ```python
 model_validate(value: str) → Secret
@@ -550,7 +550,7 @@ The secret will still have the same API as Secret (i.e., .value property which c
 
 ### `__init__`
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/_secret/__init__.py#L128)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/_secret/__init__.py#L123)
 
 ```python
 __init__(tag: str)

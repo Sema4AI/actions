@@ -348,9 +348,9 @@ class ManagedParameters:
             return True
 
         if node is not None:
-            assert param is None, (
-                "Either node or param is expected, but not both at the same time."
-            )
+            assert (
+                param is None
+            ), "Either node or param is expected, but not both at the same time."
 
             for heuristic in self._heuristics:
                 if heuristic.is_managed_node(param_name, node=node):
