@@ -1,0 +1,130 @@
+name: Action Server Build (Unauthenticated)
+
+on:
+  pull_request:
+    paths:
+      - 'action_server/frontend/**'
+      - '.github/workflows/frontend-build-unauthenticated.yml'
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+    paths:
+      - 'action_server/frontend/**'
+
+defaults:
+  run:
+    working-directory: ./action_server
+
+jobs:
+  build-external:
+    name: Build Action Server binary without credentials
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-22.04
+          - windows-2022
+          - macos-13
+          - macos-15
+        include:
+          - os: ubuntu-22.04
+            python: '3.12'
+          - os: windows-2022
+            python: '3.12'
+          - os: macos-13
+            python: '3.12'
+          - os: macos-15
+            python: '3.12'
+    
+    steps:
+      - name: Checkout repository and submodules
+        uses: actions/checkout@v3
+      
+      - name: Verify no credentials in environment
+        run: |
+          # Ensure no authentication tokens are present
+          if [ -n "$NPM_TOKEN" ]; then
+            echo "Error: NPM_TOKEN is set"
+            exit 1
+          fi
+          if [ -n "$NODE_AUTH_TOKEN" ]; then
+            echo "Error: NODE_AUTH_TOKEN is set"
+            exit 1
+          fi
+          # Note: GITHUB_TOKEN is always present in GH Actions but shouldn't be used for npm
+          echo "✓ No npm credentials detected"
+        shell: bash
+      
+      - name: Verify no .npmrc with credentials
+        run: |
+          if [ -f ~/.npmrc ]; then
+            echo "Error: .npmrc file found in home directory"
+            cat ~/.npmrc
+            exit 1
+          fi
+          echo "✓ No .npmrc file found"
+        shell: bash
+      
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      
+      - name: Install Python 3.12
+        run: uv python install 3.12
+      
+      - name: Install devutils requirements
+        run: uv run --no-project --python ${{ matrix.python }} python -m pip install --break-system-packages -r ../devutils/requirements.txt
+      
+      - name: Install project
+        run: uv run --no-project --python ${{ matrix.python }} inv devinstall
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20.x
+      
+      - name: Setup go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+      
+      - name: Build frontend (using vendored packages)
+        run: uv run --no-project --python ${{ matrix.python }} inv build-frontend
+        env:
+          CI: true
+      
+      - name: Build OAuth2 config
+        run: uv run --no-project --python ${{ matrix.python }} inv build-oauth2-config
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Build binary (unsigned, with Go wrapper)
+        env:
+          RC_ACTION_SERVER_FORCE_DOWNLOAD_RCC: 'true'
+          RC_ACTION_SERVER_DO_SELFTEST: 'true'
+        run: uv run --no-project --python ${{ matrix.python }} poetry run inv build-executable --go-wrapper
+      
+      - name: Verify binary was built
+        run: |
+          if [ ! -f "dist/final/action-server${{ matrix.os == 'windows-2022' && '.exe' || '' }}" ]; then
+            echo "Error: Binary not found at expected location"
+            ls -la dist/
+            exit 1
+          fi
+          echo "✓ Binary built successfully"
+        shell: bash
+      
+      - name: Test binary
+        run: |
+          ./dist/final/action-server${{ matrix.os == 'windows-2022' && '.exe' || '' }} version
+        shell: bash
+      
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: action-server-unauthenticated-${{ matrix.os }}
+          path: action_server/dist/final/
+          retention-days: 7

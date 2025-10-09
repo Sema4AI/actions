@@ -1,0 +1,177 @@
+name: Monthly Vendor Update Check
+
+on:
+  schedule:
+    # Run on the first day of every month at midnight UTC
+    - cron: '0 0 1 * *'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  check-updates:
+    name: Check for vendored package updates
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+      pull-requests: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Authenticate to GitHub Packages
+        run: |
+          # Create .npmrc with GitHub token for private package access
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc
+          echo "@sema4ai:registry=https://npm.pkg.github.com" >> ~/.npmrc
+      
+      - name: Check for package updates
+        id: check
+        run: |
+          # Load current versions from manifest
+          python << 'EOF'
+          import json
+          import subprocess
+          import sys
+          from pathlib import Path
+          
+          manifest_path = Path("action_server/frontend/vendored/manifest.json")
+          with open(manifest_path) as f:
+              manifest = json.load(f)
+          
+          updates_available = []
+          
+          for package_name, package_info in manifest["packages"].items():
+              current_version = package_info["version"]
+              
+              # Query npm for latest version
+              try:
+                  result = subprocess.run(
+                      ["npm", "view", package_name, "version"],
+                      capture_output=True,
+                      text=True,
+                      check=True
+                  )
+                  latest_version = result.stdout.strip()
+                  
+                  if latest_version != current_version:
+                      updates_available.append({
+                          "package": package_name,
+                          "current": current_version,
+                          "latest": latest_version
+                      })
+                      print(f"Update available: {package_name} {current_version} → {latest_version}")
+                  else:
+                      print(f"Up to date: {package_name} {current_version}")
+              
+              except subprocess.CalledProcessError as e:
+                  print(f"Error checking {package_name}: {e.stderr}")
+          
+          # Save update info for next step
+          if updates_available:
+              with open("/tmp/updates.json", "w") as f:
+                  json.dump(updates_available, f)
+              print(f"\n{len(updates_available)} update(s) available")
+              # Set output for GitHub Actions
+              with open(process.env['GITHUB_OUTPUT'], 'a') as f:
+                  f.write(f"updates_found=true\n")
+          else:
+              print("\nAll packages are up to date")
+              with open(process.env['GITHUB_OUTPUT'], 'a') as f:
+                  f.write(f"updates_found=false\n")
+          EOF
+      
+      - name: Update packages if needed
+        if: steps.check.outputs.updates_found == 'true'
+        run: |
+          # Read updates from file
+          python << 'EOF'
+          import json
+          import subprocess
+          from pathlib import Path
+          
+          with open("/tmp/updates.json") as f:
+              updates = json.load(f)
+          
+          for update in updates:
+              package = update["package"]
+              version = update["latest"]
+              
+              print(f"\nUpdating {package} to {version}...")
+              
+              # Run vendor script
+              result = subprocess.run(
+                  [
+                      "python",
+                      "action_server/build-binary/vendor-frontend.py",
+                      "--package", package,
+                      "--version", version,
+                      "--updated-by", "monthly-automation"
+                  ],
+                  capture_output=True,
+                  text=True
+              )
+              
+              if result.returncode == 0:
+                  print(f"✓ Successfully updated {package}")
+              else:
+                  print(f"❌ Failed to update {package}")
+                  print(result.stderr)
+          EOF
+      
+      - name: Create Pull Request
+        if: steps.check.outputs.updates_found == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: Update vendored design system packages"
+          title: "chore: Update vendored design system packages"
+          body: |
+            ## Automated Vendor Update
+            
+            This PR updates vendored design system packages to their latest versions.
+            
+            ### Updates
+            
+            The following packages have been updated:
+            
+            ```json
+            $(cat /tmp/updates.json)
+            ```
+            
+            ### Verification
+            
+            - [ ] Review changelog for each updated package
+            - [ ] Verify checksums in manifest.json
+            - [ ] Run integration tests
+            - [ ] Test frontend build locally
+            
+            ### How to Test
+            
+            ```bash
+            cd action_server/frontend
+            npm ci
+            npm run build
+            npm test
+            ```
+            
+            ---
+            
+            _This PR was automatically generated by the monthly vendor update workflow._
+          branch: vendor-update-${{ github.run_number }}
+          delete-branch: true
+          labels: |
+            dependencies
+            automated

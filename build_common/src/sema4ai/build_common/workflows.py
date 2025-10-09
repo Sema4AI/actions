@@ -165,6 +165,25 @@ def build_and_sign_executable(
         ), f"Executable {target_executable} does not exist (NOT onefile mode)"
 
         print(f"Finished building executable with pyinstaller: {target_executable}")
+        
+        # Fix libpython symlink issue on Linux
+        if sys.platform == "linux":
+            internal_dir = app_dir_inside_dist_dir / "_internal"
+            if internal_dir.exists():
+                import glob
+                libpython_files = glob.glob(str(internal_dir / "libpython*.so.*"))
+                if libpython_files:
+                    for libpython_full in libpython_files:
+                        libpython_full_path = Path(libpython_full)
+                        # Create symlink without the version suffix (e.g., libpython3.12.so.1.0 -> libpython3.12.so)
+                        parts = libpython_full_path.name.split('.')
+                        if len(parts) >= 4:  # e.g., ['libpython3', '12', 'so', '1', '0']
+                            symlink_name = '.'.join(parts[:3])  # libpython3.12.so
+                            symlink_path = internal_dir / symlink_name
+                            if not symlink_path.exists():
+                                print(f"Creating symlink: {symlink_path.name} -> {libpython_full_path.name}")
+                                symlink_path.symlink_to(libpython_full_path.name)
+        
         if sign:
             print("Signing executable...")
             if sys.platform == "darwin":
