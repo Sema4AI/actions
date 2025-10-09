@@ -223,3 +223,78 @@ The payload for OAuth2 secrets is:
   }
 }
 ```
+
+### Tagged Secrets with SecretSpec
+
+Secrets can be annotated with metadata using the `SecretSpec` class.
+This allows you to mark secrets with well-known tags so that Sema4.ai external clients will automatically know to
+pull the appropriate configurations.
+
+#### Using Annotated with SecretSpec directly
+
+```python
+from typing import Annotated
+from sema4ai.actions import action, Secret, SecretSpec
+
+@action
+def analyze_document(
+    document_url: str,
+    doc_intel_secret: Annotated[Secret, SecretSpec(tag="document-intelligence")]
+) -> str:
+    """
+    Analyze a document using Document Intelligence service.
+
+    Args:
+        document_url: URL of the document to analyze
+        doc_intel_secret: Document Intelligence credentials
+    """
+    # Access the secret value
+    secret_value = doc_intel_secret.value
+    ...
+```
+
+#### Using a Type Alias
+
+For cleaner code, you can create a type alias for commonly used tagged secrets:
+
+```python
+from typing import Annotated
+from sema4ai.actions import action, Secret, SecretSpec
+
+# Create a reusable type alias
+DocumentIntelligenceSecret = Annotated[Secret, SecretSpec(tag="document-intelligence")]
+
+@action
+def analyze_document(
+    document_url: str,
+    doc_intel_secret: DocumentIntelligenceSecret
+) -> str:
+    """
+    Analyze a document using Document Intelligence service.
+
+    Args:
+        document_url: URL of the document to analyze
+        doc_intel_secret: Document Intelligence credentials
+    """
+    secret_value = doc_intel_secret.value
+    ...
+```
+
+> **Note**: Currently, the only supported pre-defined tag is `document-intelligence` with the
+> pre-defined alias `DocumentIntelligenceSecret`. When you use this tag or alias, Sema4.ai
+> external clients will automatically pull the document-intelligence configurations.
+
+#### Use Cases for SecretSpec
+
+The `SecretSpec` tag is particularly useful for:
+
+1. **Global secret management**: Mark secrets that should be managed centrally across multiple actions
+2. **Well-known credentials**: Identify common third-party API keys or service credentials (e.g., "document-intelligence", "openai-api-key", "github-token")
+3. **Client-side handling**: Allow AI agents or orchestration systems to recognize and handle specific secrets automatically
+
+The secret will still behave exactly like a regular `Secret` with the `.value` property providing access to the actual secret value.
+
+#### How it appears in metadata
+
+When an action with an annotated secret is inspected, the tag will be exposed in the action's metadata,
+allowing external clients to identify and handle these secrets appropriately before invoking the action.
