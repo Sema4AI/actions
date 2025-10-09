@@ -9,16 +9,11 @@ def is_secret_subclass(cls: type) -> bool:
     from typing import get_args, get_origin
 
     # Handle Annotated types (e.g., Annotated[Secret, SecretSpec(...)])
-    try:
-        origin = get_origin(cls)
-        if origin is not None and hasattr(typing, "Annotated"):
-            if origin is getattr(typing, "Annotated", None):
-                # Get the first argument, which is the actual type
-                args = get_args(cls)
-                if args:
-                    cls = args[0]
-    except Exception:
-        pass
+    origin = get_origin(cls)
+    if origin is typing.Annotated:
+        args = get_args(cls)
+        if args:
+            cls = args[0]
 
     try:
         return issubclass(cls, Secret)
@@ -133,17 +128,13 @@ def get_secret_spec_from_annotation(annotation: type) -> "SecretSpec | None":
     """Extract SecretSpec from an Annotated type annotation if it exists."""
     from typing import get_args, get_origin
 
-    try:
-        origin = get_origin(annotation)
-        if origin is not None and hasattr(typing, "Annotated"):
-            if origin is getattr(typing, "Annotated", None):
-                args = get_args(annotation)
-                # Check metadata for SecretSpec
-                for metadata in args[1:]:
-                    if isinstance(metadata, SecretSpec):
-                        return metadata
-    except Exception:
-        pass
+    origin = get_origin(annotation)
+    if origin is typing.Annotated:
+        args = get_args(annotation)
+        # Check metadata for SecretSpec
+        for metadata in args[1:]:
+            if isinstance(metadata, SecretSpec):
+                return metadata
 
     return None
 

@@ -62,76 +62,17 @@ def get_weather_forecast(city: str, days: int, scale: str = "celsius") -> str:
 
 Actions can work with sensitive credentials by using the `Secret` type from the `sema4ai.actions` library. Secrets are handled securely and will not be exposed in logs or the API documentation.
 
-#### Basic Secret usage
-
-You can annotate a parameter directly with the `Secret` type to indicate it requires sensitive credentials:
-
 ```py
 from sema4ai.actions import action, Secret
 
 @action
 def process_document(document_url: str, credentials: Secret) -> str:
-    """
-    Process a document using secure credentials.
-
-    Args:
-        document_url: URL of the document to process
-        credentials: Secure credentials for document processing service
-
-    Returns:
-        str: Processing result
-    """
+    """Process a document using secure credentials."""
+    api_key = credentials.value
     ...
 ```
 
-#### Tagged Secrets with SecretSpec
-
-For specific secret types, you can use `SecretSpec` with a tag to define secrets with particular structures. When using tagged secrets, Sema4.ai external clients will automatically know to pull the appropriate configurations.
-
-**Using Annotated with SecretSpec directly:**
-
-```py
-from typing import Annotated
-from sema4ai.actions import action, Secret, SecretSpec
-
-@action
-def analyze_document(
-    document_url: str,
-    doc_intel_secret: Annotated[Secret, SecretSpec(tag="document-intelligence")]
-) -> str:
-    """
-    Analyze a document using Document Intelligence service.
-
-    Args:
-        document_url: URL of the document to analyze
-    """
-    print(doc_intel_secret.value)
-```
-
-**Using a type alias**
-
-```py
-from typing import Annotated
-from sema4ai.actions import action, Secret, SecretSpec
-
-DocumentIntelligenceSecret = Annotated[Secret, SecretSpec(tag="document-intelligence")]
-
-@action
-def analyze_document(
-    document_url: str,
-    doc_intel_secret: DocumentIntelligenceSecret
-) -> str:
-    """
-    Analyze a document using Document Intelligence service.
-
-    Args:
-        document_url: URL of the document to analyze
-    """
-    print(doc_intel_secret.value)
-    ...
-```
-
-> Note: Currently, the only supported tag is `document-intelligence` with the pre-defined alias `DocumentIntelligenceSecret`. When you use this tag or alias, Sema4.ai external clients will automatically pull the document-intelligence configurations.
+For more details on secrets, including tagged secrets with `SecretSpec`, OAuth2 secrets, and passing secrets in development and production modes, see the [Secrets Guide](https://github.com/sema4ai/actions/blob/master/action_server/docs/guides/07-secrets.md).
 
 ### Execution
 
