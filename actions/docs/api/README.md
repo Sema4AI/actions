@@ -19,6 +19,7 @@
 - [`_response.Response`](./sema4ai.actions._response.md#class-response): The response class provides a way for the user to signal that the action
 - [`builtins.list`](./builtins.md#class-list): Built-in mutable sequence.
 - [`_secret.Secret`](./sema4ai.actions._secret.md#class-secret): This class should be used to receive secrets.
+- [`_secret.SecretSpec`](./sema4ai.actions._secret.md#class-secretspec): Metadata for secrets that specifies a tag for identification by external clients.
 - [`_protocols.Status`](./sema4ai.actions._protocols.md#class-status): Action state
 - [`_table.Table`](./sema4ai.actions._table.md#class-table): Table is a simple data structure that represents a table with columns and rows.
 - [`_platforms.AzureOpenAIPlatformParameters`](./sema4ai.actions.agent._platforms.md#class-azureopenaiplatformparameters): Parameters for the Azure OpenAI platform.

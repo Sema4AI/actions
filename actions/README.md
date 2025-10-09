@@ -58,6 +58,22 @@ You can explicitly provide the `is_consequential` flag for an action to mark it'
 def get_weather_forecast(city: str, days: int, scale: str = "celsius") -> str:
 ```
 
+### Working with Secrets
+
+Actions can work with sensitive credentials by using the `Secret` type from the `sema4ai.actions` library. Secrets are handled securely and will not be exposed in logs or the API documentation.
+
+```py
+from sema4ai.actions import action, Secret
+
+@action
+def process_document(document_url: str, credentials: Secret) -> str:
+    """Process a document using secure credentials."""
+    api_key = credentials.value
+    ...
+```
+
+For more details on secrets, including tagged secrets with `SecretSpec`, OAuth2 secrets, and passing secrets in development and production modes, see the [Secrets Guide](https://github.com/sema4ai/actions/blob/master/action_server/docs/guides/07-secrets.md).
+
 ### Execution
 
 To get the full benefits of your actions, the suggested way to run them is using Action Server. But it's also possible to do that directly in command line by passing the named arguments:

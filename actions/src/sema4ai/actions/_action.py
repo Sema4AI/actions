@@ -239,6 +239,14 @@ class Action:
                     dct["provider"] = provider_str
                     dct["scopes"] = scope_strs
 
+                elif tp == "Secret":
+                    # Check if this is a annotated secret with a SecretSpec tag
+                    from sema4ai.actions._secret import get_secret_spec_from_annotation
+
+                    secret_spec = get_secret_spec_from_annotation(param.annotation)
+                    if secret_spec:
+                        dct["tag"] = secret_spec.tag
+
                 elif tp == "DataSource":
                     # Just mark that a datasource is needed here, no need to add additional information
                     # (the metadata on the actual datasources will be added as a separate node in the
@@ -579,9 +587,10 @@ class Context:
     def register_lifecycle_prints(self):
         from sema4ai.actions._hooks import after_action_run, before_action_run
 
-        with before_action_run.register(
-            self._before_action_run
-        ), after_action_run.register(self._after_action_run):
+        with (
+            before_action_run.register(self._before_action_run),
+            after_action_run.register(self._after_action_run),
+        ):
             yield
 
     def __typecheckself__(self) -> None:

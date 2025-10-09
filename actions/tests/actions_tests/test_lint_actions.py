@@ -197,11 +197,20 @@ def test_lint_action_secret(data_regression, datadir):
     from sema4ai.actions._managed_parameters import ManagedParameters
 
     contents = """
-from sema4ai.actions import Secret, action
+from typing import Annotated
+from sema4ai.actions import Secret, SecretSpec, action
 from sema4ai import actions
 
+DocumentIntelligenceSecret = Annotated[Secret, SecretSpec(tag="document-intelligence")]
+
+
 @action
-def my_action(my_password: Secret, another: actions.Secret) -> str:
+def my_action(
+    my_password: Secret,
+    another: actions.Secret,
+    annotated_secret: Annotated[Secret, SecretSpec(tag="special-secret")],
+    docint_secret: DocumentIntelligenceSecret
+) -> str:
     '''
     This is an action.
     '''

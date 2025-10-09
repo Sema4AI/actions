@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 1.5.0 - 2025-10-08
+
+- Added `SecretSpec` class for tagging secrets with metadata that can be used by external clients for special handling.
+  - `SecretSpec` can be used with `Annotated` to mark secrets with well-known tags that signal to external clients
+    that a secret requires special treatment (e.g., as a global setting managed centrally).
+
 ## 1.4.3 - 2025-09-24
 
 - Add the ability to use a different llm model when generating prompts

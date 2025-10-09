@@ -39,10 +39,10 @@ from ._fixtures import setup, teardown
 from ._protocols import IAction, Status
 from ._request import Request
 from ._response import ActionError, Response
-from ._secret import OAuth2Secret, Secret
+from ._secret import OAuth2Secret, Secret, SecretSpec
 from ._table import Row, RowValue, Table
 
-__version__ = "1.4.3"
+__version__ = "1.5.0"
 version_info = [int(x) for x in __version__.split(".")]
 
 
@@ -206,6 +206,7 @@ __all__ = [
     "Request",
     "Response",
     "Secret",
+    "SecretSpec",
     "Status",
     "action",
     "action_cache",
