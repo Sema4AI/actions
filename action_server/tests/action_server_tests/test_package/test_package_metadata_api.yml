@@ -15,6 +15,9 @@ metadata:
             tag.
           tag: special-secret
           type: Secret
+        doc_int_know_secret:
+          tag: document-intelligence
+          type: Secret
         private_info:
           description: Some private information gotten from somewhere.
           type: Secret
