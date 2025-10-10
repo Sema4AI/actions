@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 2.16.1 - 2025-10-09
+
+- RCC v20.3.2: Fix init error of missing `uv` extraction
+
 ## 2.16.0 - 2025-10-08
 
 - RCC v20.3.1: Uses embedded `uv` v0.8.17 for PyPI installations
