@@ -102,7 +102,7 @@ def build_frontend(ctx: Context, debug: bool = False, install: bool = True):
 
     file_contents = {"index.html": index_src.read_bytes()}
 
-    with open(dest_static_contents, "w", encoding="utf-8") as stream:
+    with open(dest_static_contents, "w", encoding="utf-8", newline="\n") as stream:
         print(f"Writing static contents to: {dest_static_contents}")
         stream.write(
             f"""# coding: utf-8
@@ -158,7 +158,7 @@ def build_oauth2_config(ctx: Context):
         "default_user_config": default_user_config_contents,
     }
 
-    with open(dest_path, "w", encoding="utf-8") as stream:
+    with open(dest_path, "w", encoding="utf-8", newline="\n") as stream:
         print(f"Writing OAuth2 configs to: {dest_path}")
         stream.write(
             f"""# coding: utf-8
@@ -349,6 +349,40 @@ def test_binary(ctx: Context, test: str = "", jobs: str = "auto"):
         cwd=str(action_server_dir / "tests"),
         env=env,
     )
+
+
+@task
+def set_rcc_version(ctx: Context, version: str):
+    """Set RCC version in both build.py and _download_rcc.py files."""
+    import re
+    
+    # Files to update
+    files_to_update = [
+        CURDIR / "build.py",
+        CURDIR / "src" / "sema4ai" / "action_server" / "_download_rcc.py"
+    ]
+    
+    for file_path in files_to_update:
+        if not file_path.exists():
+            print(f"Warning: {file_path} does not exist, skipping...")
+            continue
+            
+        # Read current content
+        with open(file_path, "r", encoding="utf-8", newline="\n") as f:
+            content = f.read()
+        
+        # Replace RCC_VERSION = "..." with new version
+        pattern = r'RCC_VERSION = "[^"]*"'
+        replacement = f'RCC_VERSION = "{version}"'
+        new_content = re.sub(pattern, replacement, content)
+        
+        if new_content != content:
+            # Write updated content with LF line endings
+            with open(file_path, "w", encoding="utf-8", newline="\n") as f:
+                f.write(new_content)
+            print(f"Updated {file_path} with RCC version {version}")
+        else:
+            print(f"No RCC_VERSION found in {file_path}")
 
 
 @task
