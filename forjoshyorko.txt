@@ -1,0 +1,19 @@
+ Complete fresh build commands (copy-paste ready):
+
+cd /workspaces/actions/action_server
+
+# Step 1: Install dependencies
+uv run --no-project --python 3.12 python -m pip install --break-system-packages -r ../devutils/requirements.txt
+uv run --no-project --python 3.12 inv install
+
+# Step 2: Build community frontend
+uv run --no-project --python 3.12 inv build-frontend --tier=community
+
+# Step 3: Build final binary (with Go in PATH)
+export PATH=$PATH:/usr/local/go/bin
+uv run --no-project --python 3.12 poetry run inv build-executable --go-wrapper
+
+# Step 4: Copy to root and test
+cp dist/final/action-server /workspaces/actions/action-server
+cd /tmp/test-action-server
+/workspaces/actions/action-server start --port=8080
