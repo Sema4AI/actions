@@ -85,7 +85,13 @@ class ManagedParameterHeuristicSecret(ManagedParameterHeuristic):
                         "Secret",
                         "actions.Secret",
                         "sema4ai.actions.Secret",
+                        "DocumentIntelligenceSecret",
                     ):
+                        return True
+
+                    # Check for Annotated[Secret, ...] patterns
+                    # Handle: Annotated[Secret, SecretSpec(...)]
+                    if "Annotated[" in unparsed and "Secret," in unparsed:
                         return True
 
                 return False
