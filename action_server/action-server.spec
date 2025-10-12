@@ -4,8 +4,10 @@ import argparse
 import os
 import pprint
 import sys
+import warnings
 
-import pkg_resources
+# Suppress pkg_resources deprecation warnings from dependencies
+warnings.filterwarnings("ignore", message="pkg_resources is deprecated")
 
 # Prevent PyInstaller from using the NLTK runtime hook
 import PyInstaller.config
