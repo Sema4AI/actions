@@ -6,6 +6,15 @@ if typing.TYPE_CHECKING:
 
 
 def is_secret_subclass(cls: type) -> bool:
+    from typing import get_args, get_origin
+
+    # Handle Annotated types (e.g., Annotated[Secret, SecretSpec(...)])
+    origin = get_origin(cls)
+    if origin is typing.Annotated:
+        args = get_args(cls)
+        if args:
+            cls = args[0]
+
     try:
         return issubclass(cls, Secret)
     except TypeError:
@@ -99,6 +108,35 @@ class Secret:
         raise NotImplementedError(
             "The Secret class is abstract and should not be directly used."
         )
+
+
+class SecretSpec:
+    """
+    Metadata for secrets that specifies a tag for identification by external clients.
+
+    This can be used with Annotated to mark secrets with custom tags that signal
+    to external clients that this secret requires special handling (e.g., as a global setting managed centrally).
+
+    The secret will still have the same API as Secret (i.e., .value property which can be a JSON string or a string).
+    """
+
+    def __init__(self, tag: str):
+        self.tag = tag
+
+
+def get_secret_spec_from_annotation(annotation: type) -> "SecretSpec | None":
+    """Extract SecretSpec from an Annotated type annotation if it exists."""
+    from typing import get_args, get_origin
+
+    origin = get_origin(annotation)
+    if origin is typing.Annotated:
+        args = get_args(annotation)
+        # Check metadata for SecretSpec
+        for metadata in args[1:]:
+            if isinstance(metadata, SecretSpec):
+                return metadata
+
+    return None
 
 
 ProviderT = TypeVar("ProviderT", bound=str)
