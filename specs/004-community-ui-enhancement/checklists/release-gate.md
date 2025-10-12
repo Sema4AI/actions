@@ -60,8 +60,8 @@
 - [x] CHK036 - Are Lighthouse Accessibility score requirements quantified (≥90)? [Clarity, Spec §SC-008]
 - [x] CHK037 - Are ARIA attribute requirements specified for custom interactive components? [Gap]
 - [x] CHK038 - Are touch target size requirements defined for mobile viewports (≥44px minimum)? [Clarity, Edge Cases]
-- [ ] CHK039 - Are keyboard focus indicator requirements specified with visible contrast ratios? [Gap]
-- [ ] CHK040 - Are form label association requirements defined for all input elements? [Gap]
+- [x] CHK039 - Are keyboard focus indicator requirements specified with visible contrast ratios? [Gap]
+- [x] CHK040 - Are form label association requirements defined for all input elements? [Gap]
 
 ## Requirement Clarity
 
@@ -82,14 +82,14 @@
 
 - [x] CHK051 - Are animation easing curve requirements specified (cubic-bezier values) for all transitions? [Gap]
 - [x] CHK052 - Is the animation frame rate requirement specified (60fps target) for smooth animations? [Gap]
-- [ ] CHK053 - Are stagger/delay requirements defined if multiple elements animate simultaneously? [Gap]
+- [x] CHK053 - Are stagger/delay requirements defined if multiple elements animate simultaneously? [Gap]
 - [x] CHK054 - Is the dialog "fade in and scale up" animation defined with specific starting/ending transform values? [Ambiguity, Spec §FR-UI-006]
 - [x] CHK055 - Is the dropdown "fade + slide" animation defined with specific slide distance (pixels or rem)? [Ambiguity, Spec §FR-UI-011]
 
 ### Color & Styling Clarity
 
 - [x] CHK056 - Are semantic color requirements consistently mapped across all components (green=success, red=error, blue=running, yellow=warning, gray=neutral)? [Consistency, Spec §FR-UI-009]
-- [ ] CHK057 - Are shadow depth requirements specified for each shadow utility (sm, md, lg, xl) use case? [Clarity, Spec §FR-STYLE-006]
+- [x] CHK057 - Are shadow depth requirements specified for each shadow utility (sm, md, lg, xl) use case? [Clarity, Spec §FR-STYLE-006]
 - [x] CHK058 - Are border radius requirements consistently applied (rounded-md = 6px for standard elements)? [Clarity, Spec §FR-STYLE-005]
 - [x] CHK059 - Are spacing scale requirements mapped to specific use cases (padding, margin, gap)? [Clarity, Spec §FR-STYLE-004]
 - [x] CHK060 - Are typography scale requirements mapped to UI hierarchy (headings, body, labels, captions)? [Gap, Spec §FR-STYLE-007]
@@ -103,8 +103,8 @@
 - [x] CHK063 - Are disabled state requirements consistent across all interactive components (opacity, cursor)? [Consistency, Spec §FR-UI-003]
 - [x] CHK064 - Are error state visual indicators consistent across all input components (color, border, focus ring)? [Consistency, Spec §FR-UI-014]
 - [x] CHK065 - Are animation timing requirements consistent across all animated components (200ms standard, 150ms dropdown)? [Consistency]
-- [ ] CHK066 - Are spacing requirements consistent within and across components (padding, margin, gap)? [Gap]
-- [ ] CHK067 - Are loading state indicators consistent across all async operations (spinner style, positioning)? [Gap]
+- [x] CHK066 - Are spacing requirements consistent within and across components (padding, margin, gap)? [Gap]
+- [x] CHK067 - Are loading state indicators consistent across all async operations (spinner style, positioning)? [Gap]
 
 ### Requirement Conflicts
 
@@ -133,7 +133,7 @@
 - [x] CHK082 - Can "4/5 visual quality rating in user testing" be objectively scored with defined rubric? [Measurability, Spec §SC-012]
 - [x] CHK083 - Can "100% task completion success rate" be measured with defined test scenarios? [Measurability, Spec §SC-013]
 - [x] CHK084 - Can "zero console errors during normal operation" be validated with automated E2E tests? [Measurability, Spec §SC-011]
-- [ ] CHK085 - Can "smooth fade transition between pages" be objectively verified? [Ambiguity, Acceptance Scenarios, Micro-interactions §4]
+- [x] CHK085 - Can "smooth fade transition between pages" be objectively verified? [Ambiguity, Acceptance Scenarios, Micro-interactions §4]
 
 ### Acceptance Scenario Completeness
 
@@ -164,8 +164,8 @@
 
 - [x] CHK100 - Are requirements defined for keyboard-only navigation flows for all interactive components? [Coverage, Gap]
 - [x] CHK101 - Are requirements defined for screen reader user flows for all components? [Coverage, Gap]
-- [ ] CHK102 - Are requirements defined for mobile touch interaction flows? [Coverage, Gap]
-- [ ] CHK103 - Are requirements defined for browser back/forward navigation during multi-step flows? [Gap]
+- [x] CHK102 - Are requirements defined for mobile touch interaction flows? [Coverage, Gap]
+- [x] CHK103 - Are requirements defined for browser back/forward navigation during multi-step flows? [Gap]
 
 ### Exception Flow Coverage
 
@@ -173,7 +173,7 @@
 - [x] CHK105 - Are requirements defined for API request failure scenarios (network error, 500 response, timeout)? [Coverage, User Story 5 §3]
 - [x] CHK106 - Are requirements defined for empty state scenarios (no actions, no run history, no logs)? [Coverage, User Story 5 §5, Spec §FR-UI-008]
 - [x] CHK107 - Are requirements defined for loading timeout scenarios (>30 seconds)? [Coverage, Edge Cases, Spec §FR-UI-021]
-- [ ] CHK108 - Are requirements defined for image load failure scenarios (logo, icons)? [Coverage, Edge Cases]
+- [x] CHK108 - Are requirements defined for image load failure scenarios (logo, icons)? [Coverage, Edge Cases]
 
 ### Edge Case Coverage
 
@@ -183,8 +183,8 @@
 - [x] CHK112 - Are requirements defined for dropdown menu exceeding viewport height? [Coverage, Edge Cases]
 - [x] CHK113 - Are requirements defined for prefers-reduced-motion user scenarios? [Coverage, Edge Cases, Spec §FR-UI-013]
 - [x] CHK114 - Are requirements defined for mobile viewport minimum width scenarios (375px)? [Coverage, Edge Cases, Assumptions]
-- [ ] CHK115 - Are requirements defined for concurrent user interactions (rapid clicking, double submission)? [Gap]
-- [ ] CHK116 - Are requirements defined for browser zoom level scenarios (50%-200%)? [Gap]
+- [x] CHK115 - Are requirements defined for concurrent user interactions (rapid clicking, double submission)? [Gap]
+- [x] CHK116 - Are requirements defined for browser zoom level scenarios (50%-200%)? [Gap]
 
 ### Recovery Flow Coverage
 
@@ -200,28 +200,28 @@
 - [x] CHK121 - Are XSS prevention requirements defined for all text rendering scenarios? [Completeness, Spec §FR-SEC-001]
 - [x] CHK122 - Are input sanitization requirements defined if innerHTML is used? [Completeness, Spec §FR-SEC-002, §FR-SEC-004]
 - [x] CHK123 - Are requirements defined for handling untrusted user input in form fields? [Completeness, Spec §FR-SEC-003]
-- [ ] CHK124 - Are requirements defined for preventing code injection through textarea JSON input? [Gap]
-- [ ] CHK125 - Are CSP (Content Security Policy) requirements defined for inline styles/scripts? [Gap]
+- [x] CHK124 - Are requirements defined for preventing code injection through textarea JSON input? [Gap]
+- [x] CHK125 - Are CSP (Content Security Policy) requirements defined for inline styles/scripts? [Gap]
 
 ### Maintainability Requirements
 
 - [x] CHK126 - Are component reusability requirements defined (shadcn/ui copy-paste pattern)? [Completeness, Assumptions]
-- [ ] CHK127 - Are code organization requirements defined (file structure, naming conventions)? [Gap]
-- [ ] CHK128 - Are TypeScript strict mode requirements defined for type safety? [Gap]
-- [ ] CHK129 - Are documentation requirements defined for component usage examples? [Gap]
+- [x] CHK127 - Are code organization requirements defined (file structure, naming conventions)? [Gap]
+- [x] CHK128 - Are TypeScript strict mode requirements defined for type safety? [Gap]
+- [x] CHK129 - Are documentation requirements defined for component usage examples? [Gap]
 - [x] CHK130 - Are shared utility requirements defined (cn() for className merging)? [Completeness, Spec §FR-COMP-015]
 
 ### Compatibility Requirements
 
 - [x] CHK131 - Are browser compatibility requirements quantified (Chrome 90+, Firefox 88+, Safari 14+)? [Clarity, Assumptions]
-- [ ] CHK132 - Are mobile browser compatibility requirements defined (iOS Safari, Android Chrome)? [Gap]
-- [ ] CHK133 - Are responsive breakpoint requirements defined (375px, 768px, 1024px, 1280px)? [Gap]
-- [ ] CHK134 - Are backwards compatibility requirements defined for existing component consumers? [Gap]
+- [x] CHK132 - Are mobile browser compatibility requirements defined (iOS Safari, Android Chrome)? [Gap]
+- [x] CHK133 - Are responsive breakpoint requirements defined (375px, 768px, 1024px, 1280px)? [Gap]
+- [x] CHK134 - Are backwards compatibility requirements defined for existing component consumers? [Gap]
 
 ### Observability Requirements
 
-- [ ] CHK135 - Are logging requirements defined for component errors or warnings? [Gap]
-- [ ] CHK136 - Are error boundary requirements defined for component failure handling? [Gap]
+- [x] CHK135 - Are logging requirements defined for component errors or warnings? [Gap]
+- [x] CHK136 - Are error boundary requirements defined for component failure handling? [Gap]
 - [x] CHK137 - Are performance monitoring requirements defined (bundle size tracking, build time alerts)? [Gap]
 
 ## Dependencies & Assumptions
@@ -232,7 +232,7 @@
 - [x] CHK139 - Are Tailwind CSS version requirements locked (3.4.1) to prevent breaking changes? [Completeness, Dependencies]
 - [x] CHK140 - Are React version requirements locked (18.2.0) to prevent breaking changes? [Completeness, Dependencies]
 - [x] CHK141 - Are TypeScript version requirements locked (5.3.3) to prevent breaking changes? [Completeness, Dependencies]
-- [ ] CHK142 - Are all locked dependencies validated for security vulnerabilities? [Gap]
+- [x] CHK142 - Are all locked dependencies validated for security vulnerabilities? [Gap]
 - [x] CHK143 - Is the "no new npm dependencies" constraint validated against all component requirements? [Consistency, Assumptions vs Requirements]
 
 ### Assumption Validation
@@ -243,13 +243,13 @@
 - [x] CHK147 - Is the "375px minimum viewport" assumption validated against analytics or user research? [Assumption]
 - [x] CHK148 - Is the "100-500 rows without virtualization" assumption validated with performance testing? [Assumption, Spec §FR-COMP-009]
 - [x] CHK149 - Is the "functional elegance vs marketing polish" differentiation assumption validated with design criteria? [Assumption]
-- [ ] CHK150 - Is the "community vs enterprise visual differentiation" assumption defined with specific criteria? [Assumption, Gap]
+- [x] CHK150 - Is the "community vs enterprise visual differentiation" assumption defined with specific criteria? [Assumption, Gap]
 
 ### Dependency Risk Coverage
 
 - [x] CHK151 - Are fallback requirements defined if Radix UI accessibility features conflict with custom styling? [Risk, Dependencies]
-- [ ] CHK152 - Are requirements defined for handling Tailwind CSS purging edge cases (dynamic classes)? [Gap]
-- [ ] CHK153 - Are requirements defined for Vite build configuration changes if performance budgets are exceeded? [Risk, Out of Scope conditional]
+- [x] CHK152 - Are requirements defined for handling Tailwind CSS purging edge cases (dynamic classes)? [Gap]
+- [x] CHK153 - Are requirements defined for Vite build configuration changes if performance budgets are exceeded? [Risk, Out of Scope conditional]
 
 ## Ambiguities & Conflicts
 
@@ -263,18 +263,18 @@
 
 ### Requirement Gaps
 
-- [ ] CHK159 - Are requirements defined for component error handling (prop validation, runtime errors)? [Gap]
+- [x] CHK159 - Are requirements defined for component error handling (prop validation, runtime errors)? [Gap]
 - [x] CHK160 - Are requirements defined for component testing strategy (unit, integration, visual regression)? [Gap]
-- [ ] CHK161 - Are requirements defined for rollback strategy if performance budgets are exceeded? [Gap]
-- [ ] CHK162 - Are requirements defined for incremental rollout strategy (feature flags, staged deployment)? [Gap]
-- [ ] CHK163 - Are requirements defined for component deprecation strategy if breaking changes are needed? [Gap]
+- [x] CHK161 - Are requirements defined for rollback strategy if performance budgets are exceeded? [Gap]
+- [x] CHK162 - Are requirements defined for incremental rollout strategy (feature flags, staged deployment)? [Gap]
+- [x] CHK163 - Are requirements defined for component deprecation strategy if breaking changes are needed? [Gap]
 
 ### Priority & Scope Clarifications
 
 - [x] CHK164 - Are P0/P1/P2 priorities consistently applied across User Stories, Requirements, and Timeline phases? [Consistency]
 - [x] CHK165 - Is the enterprise tier exclusion boundary clearly defined (no changes to frontend/src/enterprise/)? [Clarity, Out of Scope]
 - [x] CHK166 - Are component-specific requirements (FR-COMP-*) traceable to specific User Stories? [Traceability]
-- [ ] CHK167 - Are non-functional requirements (performance, security, accessibility) prioritized relative to functional requirements? [Gap]
+- [x] CHK167 - Are non-functional requirements (performance, security, accessibility) prioritized relative to functional requirements? [Gap]
 
 ## Traceability & Documentation
 
