@@ -21,6 +21,3 @@ Auto-generated from all feature plans. Last updated: [DATE]
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->
-## Vendored Builds
-When present, vendored build artifacts and their manifests will be listed here with the producing CI run link and
-short justification. Manual additions about vendored artifacts should be kept between the MANUAL ADDITIONS markers.
