@@ -4,6 +4,9 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/core/components/ui/Button';
 import { Input } from '@/core/components/ui/Input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/core/components/ui/Table';
+import { Badge } from '@/core/components/ui/Badge';
+import { Loading } from '@/core/components/ui/Loading';
+import { ErrorBanner } from '@/core/components/ui/ErrorBanner';
 import { useActionServerContext } from '@/shared/context/actionServerContext';
 import { Run, RunStatus } from '@/shared/types';
 import { cn } from '@/shared/utils/cn';
@@ -69,15 +72,15 @@ export const RunHistoryPage = () => {
   if (loadedRuns.isPending) {
     return (
       <div className="flex h-full items-center justify-center text-sm text-gray-600">
-        Loading run history…
+        <Loading text="Loading run history…" />
       </div>
     );
   }
 
   if (loadedRuns.errorMessage) {
     return (
-      <div className="rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-        Unable to load run history: {loadedRuns.errorMessage}
+      <div className="p-6">
+        <ErrorBanner message={`Unable to load run history: ${loadedRuns.errorMessage}`} />
       </div>
     );
   }
@@ -165,14 +168,14 @@ export const RunHistoryPage = () => {
                         {formatDuration(run)}
                       </TableCell>
                       <TableCell>
-                        <span
-                          className={cn(
-                            'inline-flex items-center rounded-full px-2 py-1 text-xs font-medium',
-                            statusStyles[run.status],
-                          )}
-                        >
+                        <Badge variant={
+                          run.status === RunStatus.PASSED ? 'success' :
+                          run.status === RunStatus.FAILED ? 'error' :
+                          run.status === RunStatus.RUNNING ? 'info' :
+                          run.status === RunStatus.CANCELLED ? 'warning' : 'neutral'
+                        }>
                           {statusLabel[run.status]}
-                        </span>
+                        </Badge>
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">

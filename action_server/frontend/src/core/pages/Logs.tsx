@@ -41,7 +41,7 @@ export const LogsPage = () => {
   if (loadedRuns.isPending) {
     return (
       <div className="flex h-full items-center justify-center text-sm text-gray-600">
-        Loading run details…
+        <Loading text="Loading run details…" />
       </div>
     );
   }
@@ -50,8 +50,7 @@ export const LogsPage = () => {
     return (
       <div className="flex h-full items-center justify-center">
         <div className="max-w-md rounded-md border border-red-200 bg-red-50 p-6 text-center text-sm text-red-700">
-          Run <span className="font-mono text-red-900">{runId}</span> was not found in the local
-          cache. It may have expired or been deleted.
+          <ErrorBanner message={`Run ${runId} was not found in the local cache.`} />
           <div className="mt-4">
             <Button variant="secondary" onClick={() => navigate('/runs')}>
               Back to run history

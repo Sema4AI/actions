@@ -59,6 +59,19 @@ export default defineConfig({
     mainFields: ['module', 'main', 'browser'],
   },
   plugins: [react(), tierSeparationPlugin(), viteSingleFile()],
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: './__tests__/a11y/setup.ts',
+  include: ['**/__tests__/**/*.test.*', '**/__tests__/**/*.spec.*'],
+  // Visual tests using Playwright live under __tests__/visual and must be
+  // executed by Playwright, not Vitest. Exclude them from Vitest's collector.
+  exclude: ['**/__tests__/visual/**'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov'],
+    },
+  },
   build: {
     rollupOptions: {
       // Tree-shake enterprise code in community builds

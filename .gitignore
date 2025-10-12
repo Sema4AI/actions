@@ -47,3 +47,9 @@ build/
 *.log
 .env*
 .npminstall
+
+# Editor and OS artifacts
+.vscode/
+Thumbs.db
+*.tmp
+*.swp

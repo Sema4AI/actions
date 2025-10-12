@@ -7,3 +7,13 @@ dist-test_v3
 !vendored/*/dist
 
 .npmrc
+
+# Common frontend ignore entries
+build/
+*.log
+.env*
+.DS_Store
+.vscode/
+coverage/
+*.tmp
+*.swp

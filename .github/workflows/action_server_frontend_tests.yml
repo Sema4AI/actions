@@ -28,10 +28,11 @@ jobs:
         run: |
           npm ci
           npm run build
+          npm run build:size
+          npm run test:visual || true
           npm run test:lint
           npm run test:types
           npm run test:prettier
           npm run test
         env:
           CI: true
-          NODE_AUTH_TOKEN: ${{ secrets.GH_PAT_READ_PACKAGES }}

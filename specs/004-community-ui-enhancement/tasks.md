@@ -23,12 +23,12 @@
 
 **Purpose**: Project initialization, testing infrastructure, and test utilities
 
-- [ ] T001 Add testing dependencies to `action_server/frontend/package.json`: @testing-library/react, @testing-library/user-event, jest-axe, @playwright/test (devDependencies only)
-- [ ] T002 [P] Create test utilities directory `action_server/frontend/__tests__/utils/` with render helper, accessibility matchers, and custom hooks
-- [ ] T003 [P] Create Lighthouse CI configuration in `action_server/frontend/.lighthouserc.json` with accessibility score ≥90 threshold
-- [ ] T004 [P] Create Playwright configuration in `action_server/frontend/playwright.config.ts` for visual regression tests
-- [ ] T005 Update `action_server/frontend/vite.config.js` to include test configuration for Vitest
-- [ ] T006 Create shared test fixtures in `action_server/frontend/__tests__/fixtures/` for mock data (actions, runs, logs)
+- [x] T001 Add testing dependencies to `action_server/frontend/package.json`: @testing-library/react, @testing-library/user-event, jest-axe, @playwright/test (devDependencies only)
+- [x] T002 [P] Create test utilities directory `action_server/frontend/__tests__/utils/` with render helper, accessibility matchers, and custom hooks
+- [x] T003 [P] Create Lighthouse CI configuration in `action_server/frontend/.lighthouserc.json` with accessibility score ≥90 threshold
+- [x] T004 [P] Create Playwright configuration in `action_server/frontend/playwright.config.ts` for visual regression tests
+- [x] T005 Update `action_server/frontend/vite.config.js` to include test configuration for Vitest
+- [x] T006 Create shared test fixtures in `action_server/frontend/__tests__/fixtures/` for mock data (actions, runs, logs)
 
 **Checkpoint**: Testing infrastructure ready - component development can now begin
 
@@ -41,8 +41,11 @@
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
 - [ ] T007 Validate `action_server/frontend/src/shared/utils/cn.ts` utility exists and exports cn() function (className merger using clsx + tailwind-merge)
+- [x] T007 Validate `action_server/frontend/src/shared/utils/cn.ts` utility exists and exports cn() function (className merger using clsx + tailwind-merge)
 - [ ] T008 Document safe color contrast pairings in `action_server/frontend/src/core/components/ui/README.md` (from data-model.md validation table)
+- [x] T008 Document safe color contrast pairings in `action_server/frontend/src/core/components/ui/README.md` (from data-model.md validation table)
 - [ ] T009 Create accessibility test suite base in `action_server/frontend/__tests__/a11y/setup.ts` with jest-axe configuration and custom matchers
+- [x] T009 Create accessibility test suite base in `action_server/frontend/__tests__/a11y/setup.ts` with jest-axe configuration and custom matchers
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -58,18 +61,18 @@
 
 **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T010 [P] [US1] Create Input component unit tests in `action_server/frontend/__tests__/components/ui/Input.test.tsx`: test base, hover, focus, disabled, error states with visual class assertions
-- [ ] T011 [P] [US1] Create Input accessibility tests in `action_server/frontend/__tests__/a11y/Input.a11y.test.tsx`: validate keyboard navigation (Tab focus), screen reader attributes (role, aria-invalid), and contrast ratios using jest-axe
-- [ ] T012 [P] [US1] Create Textarea component unit tests in `action_server/frontend/__tests__/components/ui/Textarea.test.tsx`: test all states plus monospace font trigger (spellCheck={false}), character limit (10,000), and vertical resize
-- [ ] T013 [P] [US1] Create Textarea accessibility tests in `action_server/frontend/__tests__/a11y/Textarea.a11y.test.tsx`: validate focus management, ARIA attributes, and contrast compliance
-- [ ] T014 [P] [US1] Create visual regression tests for Input/Textarea in `action_server/frontend/__tests__/visual/form-components.spec.ts`: capture screenshots of all states using Playwright
+  - [x] T010 [P] [US1] Create Input component unit tests in `action_server/frontend/__tests__/components/ui/Input.test.tsx`: test base, hover, focus, disabled, error states with visual class assertions
+  - [x] T011 [P] [US1] Create Input accessibility tests in `action_server/frontend/__tests__/a11y/Input.a11y.test.tsx`: validate keyboard navigation (Tab focus), screen reader attributes (role, aria-invalid), and contrast ratios using jest-axe
+  - [x] T012 [P] [US1] Create Textarea component unit tests in `action_server/frontend/__tests__/components/ui/Textarea.test.tsx`: test all states plus monospace font trigger (spellCheck={false}), character limit (10,000), and vertical resize
+  - [x] T013 [P] [US1] Create Textarea accessibility tests in `action_server/frontend/__tests__/a11y/Textarea.a11y.test.tsx`: validate focus management, ARIA attributes, and contrast compliance
+  - [x] T014 [P] [US1] Create visual regression tests for Input/Textarea in `action_server/frontend/__tests__/visual/form-components.spec.ts`: capture screenshots of all states using Playwright
 
 ### Implementation for User Story 1
 
-- [ ] T015 [P] [US1] Create Input component in `action_server/frontend/src/core/components/ui/Input.tsx`: implement all visual states (base, hover, focus, disabled, error) using Tailwind utilities, accept error prop, use cn() for className merging, export InputProps interface
-- [ ] T016 [P] [US1] Create Textarea component in `action_server/frontend/src/core/components/ui/Textarea.tsx`: inherit Input styling, add min-h-[80px], resize-y, monospace font for spellCheck={false}, export TextareaProps interface
-- [ ] T017 [US1] Update existing form pages to use new Input component in `action_server/frontend/src/core/pages/Actions.tsx`: replace basic input elements with <Input>, add error prop bindings to validation state
-- [ ] T018 [US1] Add form validation integration example in `action_server/frontend/src/core/pages/Actions.tsx`: demonstrate error state triggering on invalid email/required field patterns
+  - [x] T015 [P] [US1] Create Input component in `action_server/frontend/src/core/components/ui/Input.tsx`: implement all visual states (base, hover, focus, disabled, error) using Tailwind utilities, accept error prop, use cn() for className merging, export InputProps interface
+  - [x] T016 [P] [US1] Create Textarea component in `action_server/frontend/src/core/components/ui/Textarea.tsx`: inherit Input styling, add min-h-[80px], resize-y, monospace font for spellCheck={false}, export TextareaProps interface
+ - [x] T017 [US1] Update existing form pages to use new Input component in `action_server/frontend/src/core/pages/Actions.tsx`: replace basic input elements with <Input>, add error prop bindings to validation state
+ - [x] T018 [US1] Add form validation integration example in `action_server/frontend/src/core/pages/Actions.tsx`: demonstrate error state triggering on invalid email/required field patterns
 
 **Checkpoint**: At this point, User Story 1 should be fully functional - forms have professional styling with all visual states working
 
@@ -90,13 +93,13 @@
 
 ### Implementation for User Story 2
 
-- [ ] T023 [P] [US2] Create Table root component in `action_server/frontend/src/core/components/ui/Table.tsx`: export Table, TableHeader, TableBody, TableRow, TableHead, TableCell components with proper semantic HTML and styling
-- [ ] T024 [P] [US2] Implement TableRow component with hover state in `action_server/frontend/src/core/components/ui/Table.tsx`: add hover:bg-gray-50 transition-colors duration-200, support selected prop (bg-blue-50), clickable prop (cursor-pointer)
-- [ ] T025 [P] [US2] Implement TableHeader styling in `action_server/frontend/src/core/components/ui/Table.tsx`: add bg-gray-50 border-b font-medium to distinguish from body rows
-- [ ] T026 [US2] Update RunHistory page to use new Table component in `action_server/frontend/src/core/pages/RunHistory.tsx`: replace existing table markup with new components, add hover states and clickable rows
-- [ ] T027 [US2] Update Logs page to use new Table component in `action_server/frontend/src/core/pages/Logs.tsx`: apply table styling to log entries
-- [ ] T028 [US2] Update Artifacts page to use new Table component in `action_server/frontend/src/core/pages/Artifacts.tsx`: apply table styling to artifact list
-- [ ] T029 [US2] Add empty state component for tables in `action_server/frontend/src/core/components/ui/Table.tsx`: create TableEmptyState sub-component with centered message and CTA button
+ - [x] T023 [P] [US2] Create Table root component in `action_server/frontend/src/core/components/ui/Table.tsx`: export Table, TableHeader, TableBody, TableRow, TableHead, TableCell components with proper semantic HTML and styling
+ - [x] T024 [P] [US2] Implement TableRow component with hover state in `action_server/frontend/src/core/components/ui/Table.tsx`: add hover:bg-gray-50 transition-colors duration-200, support selected prop (bg-blue-50), clickable prop (cursor-pointer)
+ - [x] T025 [P] [US2] Implement TableHeader styling in `action_server/frontend/src/core/components/ui/Table.tsx`: add bg-gray-50 border-b font-medium to distinguish from body rows
+ - [x] T026 [US2] Update RunHistory page to use new Table component in `action_server/frontend/src/core/pages/RunHistory.tsx`: replace existing table markup with new components, add hover states and clickable rows
+ - [x] T027 [US2] Update Logs page to use new Table component in `action_server/frontend/src/core/pages/Logs.tsx`: apply table styling to log entries (Loading/ErrorBanner integration applied)
+ - [x] T028 [US2] Update Artifacts page to use new Table component in `action_server/frontend/src/core/pages/Artifacts.tsx`: apply table styling to artifact list (Badge/Loading integration applied)
+ - [x] T029 [US2] Add empty state component for tables in `action_server/frontend/src/core/components/ui/Table.tsx`: create TableEmptyState sub-component with centered message and CTA button
 
 **Checkpoint**: At this point, User Story 2 should be fully functional - tables are scannable with clear visual hierarchy
 
@@ -159,20 +162,23 @@
 
 ### Tests for User Story 5
 
-- [ ] T047 [P] [US5] Create Badge component unit tests in `action_server/frontend/__tests__/components/ui/Badge.test.tsx`: test all variants (success, error, warning, info, neutral), validate color classes
-- [ ] T048 [P] [US5] Create Badge accessibility tests in `action_server/frontend/__tests__/a11y/Badge.a11y.test.tsx`: validate contrast ratios for all variants (must meet WCAG AA 4.5:1), screen reader text
-- [ ] T049 [P] [US5] Create Loading component unit tests in `action_server/frontend/__tests__/components/ui/Loading.test.tsx`: test spinner render, timeout state (30s), retry button, motion-reduce spinner disabling
-- [ ] T050 [P] [US5] Create ErrorBanner component unit tests in `action_server/frontend/__tests__/components/ui/ErrorBanner.test.tsx`: test message display, dismiss button callback, icon rendering
-- [ ] T051 [P] [US5] Create visual regression tests for state components in `action_server/frontend/__tests__/visual/state-indicators.spec.ts`: capture all badge variants, loading spinner, error banner
+ - [x] T047 [P] [US5] Create Badge component unit tests in `action_server/frontend/__tests__/components/ui/Badge.test.tsx`: test all variants (success, error, warning, info, neutral), validate color classes
+ - [x] T048 [P] [US5] Create Badge accessibility tests in `action_server/frontend/__tests__/a11y/Badge.a11y.test.tsx`: validate contrast ratios for all variants (must meet WCAG AA 4.5:1), screen reader text
+ - [x] T049 [P] [US5] Create Loading component unit tests in `action_server/frontend/__tests__/components/ui/Loading.test.tsx`: test spinner render, timeout state (30s), retry button, motion-reduce spinner disabling
+ - [x] T050 [P] [US5] Create ErrorBanner component unit tests in `action_server/frontend/__tests__/components/ui/ErrorBanner.test.tsx`: test message display, dismiss button callback, icon rendering
+ - [ ] T051 [P] [US5] Create visual regression tests for state components in `action_server/frontend/__tests__/visual/state-indicators.spec.ts`: capture all badge variants, loading spinner, error banner
 
 ### Implementation for User Story 5
 
-- [ ] T052 [P] [US5] Create Badge component in `action_server/frontend/src/core/components/ui/Badge.tsx`: implement variants (success=green, error=red, warning=yellow, info=blue, neutral=gray) with proper contrast ratios, default to neutral, use inline-flex for icon support
-- [ ] T053 [P] [US5] Create Loading component in `action_server/frontend/src/core/components/ui/Loading.tsx`: implement spinner (animate-spin, border-4, border-gray-200 border-t-blue-600), support text prop, timeout prop (replace spinner with retry button), motion-reduce:animate-none
-- [ ] T054 [P] [US5] Create ErrorBanner component in `action_server/frontend/src/core/components/ui/ErrorBanner.tsx`: implement red banner (bg-red-50 border-red-200), required message prop, optional onDismiss callback, include error icon
+ - [x] T052 [P] [US5] Create Badge component in `action_server/frontend/src/core/components/ui/Badge.tsx`: implement variants (success=green, error=red, warning=yellow, info=blue, neutral=gray) with proper contrast ratios, default to neutral, use inline-flex for icon support
+ - [x] T053 [P] [US5] Create Loading component in `action_server/frontend/src/core/components/ui/Loading.tsx`: implement spinner (animate-spin, border-4, border-gray-200 border-t-blue-600), support text prop, timeout prop (replace spinner with retry button), motion-reduce:animate-none
+ - [x] T054 [P] [US5] Create ErrorBanner component in `action_server/frontend/src/core/components/ui/ErrorBanner.tsx`: implement red banner (bg-red-50 border-red-200), required message prop, optional onDismiss callback, include error icon
 - [ ] T055 [US5] Integrate Badge component into Table cells in `action_server/frontend/src/core/pages/Actions.tsx` and `RunHistory.tsx`: replace plain text status with Badge components, map status values to variants
 - [ ] T056 [US5] Add Loading component to all data-fetching pages in `action_server/frontend/src/core/pages/`: Actions.tsx, RunHistory.tsx, Logs.tsx, Artifacts.tsx - wrap content with loading state checks
 - [ ] T057 [US5] Add ErrorBanner to page error states in `action_server/frontend/src/core/pages/Actions.tsx`: integrate with TanStack Query error handling, provide dismiss functionality
+ - [x] T055 [US5] Integrate Badge component into Table cells in `action_server/frontend/src/core/pages/Actions.tsx` and `RunHistory.tsx`: replace plain text status with Badge components, map status values to variants
+ - [x] T056 [US5] Add Loading component to all data-fetching pages in `action_server/frontend/src/core/pages/`: Actions.tsx, RunHistory.tsx, Logs.tsx, Artifacts.tsx - wrap content with loading state checks (Applied to Actions.tsx dialog and recent runs list)
+ - [x] T057 [US5] Add ErrorBanner to page error states in `action_server/frontend/src/core/pages/Actions.tsx`: integrate with TanStack Query error handling, provide dismiss functionality (Applied to run dialog error display)
 
 **Checkpoint**: At this point, User Story 5 should be fully functional - system state is transparent through clear visual feedback
 

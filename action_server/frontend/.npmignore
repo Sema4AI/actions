@@ -50,3 +50,8 @@ tsconfig.json
 
 # Vendored packages (internal)
 vendored/
+
+# Playwright artifacts and visual tests
+__tests__/visual/
+*.png
+playwright-report/

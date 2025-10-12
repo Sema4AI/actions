@@ -21,6 +21,7 @@ import { Action, ActionPackage, Run, RunStatus, ServerConfig } from '@/shared/ty
 import { formDataToPayload, propertiesToFormData } from '@/shared/utils/formData';
 import { prettyPrint } from '@/shared/utils/helpers';
 import { cn } from '@/shared/utils/cn';
+import { Badge } from '@/core/components/ui/Badge';
 
 type RunResult = {
   runId: string;
@@ -35,13 +36,7 @@ const statusLabel: Record<RunStatus, string> = {
   [RunStatus.CANCELLED]: 'Cancelled',
 };
 
-const statusBadgeStyles: Record<RunStatus, string> = {
-  [RunStatus.NOT_RUN]: 'bg-gray-100 text-gray-600',
-  [RunStatus.RUNNING]: 'bg-blue-100 text-blue-700',
-  [RunStatus.PASSED]: 'bg-green-100 text-green-700',
-  [RunStatus.FAILED]: 'bg-red-100 text-red-700',
-  [RunStatus.CANCELLED]: 'bg-yellow-100 text-yellow-700',
-};
+// statusBadgeStyles is superseded by Badge variants — mapping now lives in renderStatusBadge
 
 declare global {
   interface Window {
@@ -80,12 +75,18 @@ const getRunsForAction = (runs: Run[] | undefined, actionId: string | null): Run
   return runs.filter((run) => run.action_id === actionId);
 };
 
-const renderStatusBadge = (status: RunStatus) => {
-  return (
-    <span className={cn('inline-flex items-center rounded-full px-2 py-1 text-xs font-medium', statusBadgeStyles[status])}>
-      {statusLabel[status]}
-    </span>
-  );
+export const renderStatusBadge = (status: RunStatus) => {
+  // Map run status to badge variants for consistent visual semantics
+  const map: Record<RunStatus, 'success' | 'error' | 'warning' | 'info' | 'neutral'> = {
+    [RunStatus.NOT_RUN]: 'neutral',
+    [RunStatus.RUNNING]: 'info',
+    [RunStatus.PASSED]: 'success',
+    [RunStatus.FAILED]: 'error',
+    [RunStatus.CANCELLED]: 'warning',
+  };
+  const variant = map[status] ?? 'neutral';
+
+  return <Badge variant={variant}>{statusLabel[status]}</Badge>;
 };
 
 const renderPackageBadge = (pkg: ActionPackage | undefined) => {
@@ -188,6 +189,9 @@ export const ActionsPage = () => {
   const [runPayload, setRunPayload] = useState<string>('{}');
   const [runResult, setRunResult] = useState<RunResult | null>(null);
   const [runError, setRunError] = useState<string | null>(null);
+  const [jsonPayloadError, setJsonPayloadError] = useState<string | null>(null);
+  const [contactEmail, setContactEmail] = useState<string>('');
+  const [contactEmailError, setContactEmailError] = useState<string | null>(null);
   const [apiKey, setApiKey] = useLocalStorage<string>('action-server-api-key', '');
   const { mutateAsync: runAction, isPending: isRunning } = useActionRunMutation();
 
@@ -239,8 +243,9 @@ export const ActionsPage = () => {
       let parsedPayload: unknown;
       try {
         parsedPayload = JSON.parse(runPayload || '{}');
+        setJsonPayloadError(null);
       } catch (err) {
-        setRunError('Invalid JSON payload. Please fix any syntax issues and try again.');
+        setJsonPayloadError('Invalid JSON payload. Please fix any syntax issues and try again.');
         return;
       }
 
@@ -453,6 +458,30 @@ export const ActionsPage = () => {
             </div>
 
             <div className="grid gap-2">
+              <label htmlFor="contact-email" className="text-sm font-medium text-gray-700">
+                Contact email (optional)
+              </label>
+              <Input
+                id="contact-email"
+                value={contactEmail}
+                error={!!contactEmailError}
+                placeholder="owner@example.com"
+                onChange={(event) => {
+                  const value = event.target.value;
+                  setContactEmail(value);
+                  if (value && !/^\S+@\S+\.\S+$/.test(value)) {
+                    setContactEmailError('Invalid email address');
+                  } else {
+                    setContactEmailError(null);
+                  }
+                }}
+              />
+              {contactEmailError && (
+                <p className="mt-1 text-sm text-red-600">{contactEmailError}</p>
+              )}
+            </div>
+
+            <div className="grid gap-2">
               <label htmlFor="payload" className="text-sm font-medium text-gray-700">
                 Payload (JSON)
               </label>
@@ -460,19 +489,33 @@ export const ActionsPage = () => {
                 id="payload"
                 spellCheck={false}
                 value={runPayload}
-                onChange={(event) => setRunPayload(event.target.value)}
+                error={!!jsonPayloadError}
+                onChange={(event) => {
+                  setRunPayload(event.target.value);
+                  if (jsonPayloadError) {
+                    setJsonPayloadError(null);
+                  }
+                }}
               />
               <p className="text-xs text-gray-500">
                 The payload must be valid JSON matching the action input schema.
               </p>
+              {jsonPayloadError && (
+                <p className="mt-2 text-sm text-red-700">{jsonPayloadError}</p>
+              )}
             </div>
 
             {runError && (
-              <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-                {runError}
+              <div className="mb-3">
+                <ErrorBanner message={String(runError)} onDismiss={() => setRunError(null)} />
               </div>
             )}
 
+            {isRunning && (
+              <div className="rounded-md border border-gray-200 bg-gray-50 p-4">
+                <Loading text="Running action…" />
+              </div>
+            )}
             {runResult && (
               <div className="rounded-md border border-gray-200 bg-gray-50 p-4">
                 <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500">

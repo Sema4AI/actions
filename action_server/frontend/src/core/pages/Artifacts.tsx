@@ -92,8 +92,8 @@ export const ArtifactsPage = () => {
           {artifactState.isPending ? (
             <div className="text-sm text-gray-600">Loading artifact list…</div>
           ) : artifactState.errorMessage ? (
-            <div className="rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-              Unable to load artifacts: {artifactState.errorMessage}
+            <div className="mb-4">
+              <ErrorBanner message={`Unable to load artifacts: ${artifactState.errorMessage}`} />
             </div>
           ) : !artifactState.data || artifactState.data.length === 0 ? (
             <div className="rounded-md border border-dashed border-gray-300 bg-gray-50 p-12 text-center text-sm text-gray-500">
