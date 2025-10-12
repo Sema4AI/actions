@@ -31,7 +31,12 @@
   - T024: PackageManifest manager (13/15 tests ✅)
   - T025: TreeShaker (15/18 tests ✅)
   - T026: BuildArtifact (20/20 tests ✅)
-- Build Task Implementation (T027-T029a): 🔜 **READY TO START**
+- Build Task Implementation (T027-T029a): ✅ **COMPLETED**
+  - T027: build_frontend task (✅)
+  - T027a: Tier logging integration test (✅)
+  - T028: Task aliases (✅)
+  - T029: Vite config with tier-based tree-shaking (✅)
+  - T029a: Deterministic build timestamps (✅)
 
 **Branch Status**: 57 commits ahead of master, 22 commits behind master
 - Need to merge latest changes from master (CVE fixes, releases, new features)
@@ -355,7 +360,7 @@ Quickstart Scenarios: 6 end-to-end test scenarios
 
 ### Build Task Implementation (Sequential - Shared Files)
 
-- [ ] **T027** Implement `inv build-frontend` in `action_server/tasks.py`
+- [x] **T027** Implement `inv build-frontend` in `action_server/tasks.py`
   - Task: `@task def build_frontend(ctx, tier='community', source='auto', debug=False, install=True, json_output=False, output_dir='./dist')`
   - Step 1: Select tier (call tier_selector.select_tier)
   - Step 2: Resolve dependencies (call package_resolver.resolve)
@@ -366,33 +371,38 @@ Quickstart Scenarios: 6 end-to-end test scenarios
   - Step 7: Generate SBOM (run `npx @cyclonedx/cyclonedx-npm`)
   - Output: Human-readable or JSON (if json_output=True)
   - Exit codes: 0 (success), 1 (build error), 2 (validation error), 3 (config error), 4 (dependency error)
+  - ✅ **COMPLETED**: Full implementation with all 7 steps
 
-- [ ] **T027a** Integration test: Tier logging in `action_server/tests/integration_tests/test_tier_logging.py`
+- [x] **T027a** Integration test: Tier logging in `action_server/tests/integration_tests/test_tier_logging.py`
   - **Scope**: Validate FR-009 (build logs explicitly display selected tier)
   - Execute: `inv build-frontend --tier=community` and capture stdout
   - Assert: Log output contains "Building with tier: community" or similar tier indicator
   - Execute: `inv build-frontend --tier=enterprise` and capture stdout
   - Assert: Log output contains "Building with tier: enterprise" or similar tier indicator
   - Assert: Tier is logged at start of build process (before dependency resolution)
+  - ✅ **COMPLETED**: Comprehensive test suite with 4 test cases
 
-- [ ] **T028** Implement task aliases in `action_server/tasks.py`
+- [x] **T028** Implement task aliases in `action_server/tasks.py`
   - Alias: `@task def build_frontend_community(ctx, **kwargs)` → `build_frontend(ctx, tier='community', **kwargs)`
   - Alias: `@task def build_frontend_enterprise(ctx, **kwargs)` → `build_frontend(ctx, tier='enterprise', **kwargs)`
+  - ✅ **COMPLETED**: Both aliases implemented
 
-- [ ] **T029** Update Vite config in `action_server/frontend/vite.config.js`
+- [x] **T029** Update Vite config in `action_server/frontend/vite.config.js`
   - Import: Read tier from env var `process.env.TIER`
   - Config: Set `build.rollupOptions.external` to exclude `../enterprise/` for community tier
   - Plugin: Custom Vite plugin to fail if enterprise imports detected during build
   - Output: Deterministic bundle configuration (`build.rollupOptions.output.entryFileNames: 'assets/[name]-[hash].js'`, `chunkFileNames: 'assets/[name]-[hash].js'`, `assetFileNames: 'assets/[name]-[hash].[ext]'`)
   - Define: `__TIER__` global (replaced at build time)
+  - ✅ **COMPLETED**: Full Vite configuration with tier separation plugin
 
-- [ ] **T029a** Implement deterministic build timestamps in `action_server/build-binary/determinism.py`
+- [x] **T029a** Implement deterministic build timestamps in `action_server/build-binary/determinism.py`
   - Function: `set_source_date_epoch() -> int` returns Unix timestamp for reproducible builds
   - Logic: Extract from git commit timestamp: `git log -1 --format=%ct` (run via subprocess)
   - Fallback: Use `int(time.time())` if not in git repository (log warning: "Not in git repo, using current timestamp")
   - Export: Set environment variable `SOURCE_DATE_EPOCH` before Vite build
   - Integration: Call from T027 (build task) before `vite build` execution
   - Test: T013 validates determinism by rebuilding with same SOURCE_DATE_EPOCH and comparing SHA256
+  - ✅ **COMPLETED**: Full implementation with git fallback
 
 ### Frontend Structure Migration (Sequential - Potentially Overlapping Files)
 
