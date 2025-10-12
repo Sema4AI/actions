@@ -6,6 +6,8 @@ Auto-generated from all feature plans. Last updated: 2025-10-12
 - Node.js (LTS 20.x) / TypeScript 5.3.3 for frontend; Python 3.11.x for build automation + Vite 6.1.0, React 18.2.0, design system packages to be vendored (002-build-packaging-bug)
 - Node.js 20.x LTS / TypeScript 5.3.3 (frontend), Python 3.11.x (backend/build automation) + Vite 6.1.0, React 18.2.0, Radix UI + Tailwind CSS (community), @sema4ai/* design system (enterprise), invoke (build tasks), PyInstaller (backend packaging) (003-open-core-build)
 - File-based (vendored packages in `action_server/frontend/vendored/`, build artifacts) (003-open-core-build)
+- TypeScript 5.3.3, React 18.2.0 + Vite 6.1.0 (build), Radix UI 1.0.x (headless components), Tailwind CSS 3.4.1 (styling), class-variance-authority 0.7.0 (variants), clsx 2.1.0 + tailwind-merge 2.2.0 (className utility), React Router DOM 6.21.3 (navigation), TanStack Query 5.28.0 (data fetching) (004-community-ui-enhancement)
+- N/A (frontend only, no persistence layer) (004-community-ui-enhancement)
 
 ## Project Structure
 ```
@@ -62,6 +64,7 @@ python build-binary/artifact_validator.py \
 Node.js (LTS 20.x) / TypeScript 5.3.3 for frontend; Python 3.11.x for build automation: Follow standard conventions
 
 ## Recent Changes
+- 004-community-ui-enhancement: Added TypeScript 5.3.3, React 18.2.0 + Vite 6.1.0 (build), Radix UI 1.0.x (headless components), Tailwind CSS 3.4.1 (styling), class-variance-authority 0.7.0 (variants), clsx 2.1.0 + tailwind-merge 2.2.0 (className utility), React Router DOM 6.21.3 (navigation), TanStack Query 5.28.0 (data fetching)
 - 003-open-core-build: Added Node.js 20.x LTS / TypeScript 5.3.3 (frontend), Python 3.11.x (backend/build automation) + Vite 6.1.0, React 18.2.0, Radix UI + Tailwind CSS (community), @sema4ai/* design system (enterprise), invoke (build tasks), PyInstaller (backend packaging)
 - 002-build-packaging-bug: Added Node.js (LTS 20.x) / TypeScript 5.3.3 for frontend; Python 3.11.x for build automation + Vite 6.1.0, React 18.2.0, design system packages to be vendored
 
