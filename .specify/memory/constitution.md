@@ -1,17 +1,17 @@
 # Sema4.ai Actions Constitution
 <!-- Sync Impact Report
-Version change: 2.1.1 → 2.2.0
+Version change: 2.2.0 → 2.2.1
 Modified principles:
-- V. Observability/Versioning → V. Vendored Builds & Reproducible Releases (refocused)
+- Additional Constraints: clarified runtime declaration requirement (now mandatory)
 Added sections:
-- Additional Constraints: explicit vendored build policy and license/packaging constraints
+- None
 Removed sections:
 - None
-Templates updated: ✅ .specify/templates/plan-template.md
-				  ✅ .specify/templates/spec-template.md
-				  ✅ .specify/templates/tasks-template.md
-				  ✅ .specify/templates/agent-file-template.md
-Follow-up TODOs: ⚠ RATIFICATION_DATE left as TODO (see deferred items)
+Templates updated:
+- ✅ .specify/templates/plan-template.md
+- ✅ .specify/templates/spec-template.md
+- ✅ .specify/templates/tasks-template.md
+Follow-up TODOs: None
 -->
 
 ## Core Principles
@@ -71,7 +71,7 @@ surface area. These rules make vendoring auditable, automatable, and safer.
 ## Additional Constraints
 
 - Language & Runtime: Python 3.11.x is the supported runtime for Actions and tooling unless a feature explicitly
-	documents a compelling reason for a different runtime. Package environments should be declared in `package.yaml`.
+	documents a compelling reason for a different runtime. Package environments MUST be declared in `package.yaml`.
 - Licensing: Project is Apache-2.0. Third-party dependencies and vendored artifacts MUST have license declarations and
 	pass license scanning before release.
 - Build & Release: Releases MUST follow semantic versioning. Vendored build artifacts MUST follow the Vendored Builds
@@ -110,5 +110,4 @@ surface area. These rules make vendoring auditable, automatable, and safer.
 	Automated checks in CI will validate mandatory gates (tests present, vendor manifest when vendoring, license checks,
 	and checksum verification for vendored artifacts).
 
-**Version**: 2.2.0 | **Ratified**: TODO(RATIFICATION_DATE): original adoption date unknown - please insert ISO date
-| **Last Amended**: 2025-10-03
+**Version**: 2.2.1 | **Ratified**: 2025-10-03 | **Last Amended**: 2025-10-12

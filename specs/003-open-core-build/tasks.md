@@ -351,7 +351,7 @@ Quickstart Scenarios: 6 end-to-end test scenarios
   - Exit codes: 0 (pass), 1 (fail), 2 (invalid args)
   - ✅ **COMPLETED**: 20/20 tests passing (100%) - Note: Implementation in build_artifact.py
 
-- [ ] **T026a** [P] Contract test: Configuration file constraint in `action_server/tests/contract_tests/test_config_files.py`
+- [x] **T026a** [P] Contract test: Configuration file constraint in `action_server/tests/contract_tests/test_config_files.py`
   - **Scope**: Validate NFR-007 (≤3 config files for tier logic)
   - Test: Scan codebase for tier selection logic (grep for 'tier.*=.*community|enterprise' or similar patterns)
   - Assert: Tier logic only appears in ≤3 configuration files: tier_selector.py, vite.config.js, feature-boundaries.json

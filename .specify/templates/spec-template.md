@@ -8,9 +8,9 @@
 ## User Scenarios & Testing *(mandatory)*
 
 <!--
-  IMPORTANT: User stories should be PRIORITIZED as user journeys ordered by importance.
-  Each user story/journey must be INDEPENDENTLY TESTABLE - meaning if you implement just ONE of them,
-  you should still have a viable MVP (Minimum Viable Product) that delivers value.
+  IMPORTANT: User stories MUST be PRIORITIZED as user journeys ordered by importance.
+  Each user story/journey MUST be INDEPENDENTLY TESTABLE - meaning if you implement just ONE of them,
+  you still have a viable MVP (Minimum Viable Product) that delivers value.
   
   Assign priorities (P1, P2, P3, etc.) to each story, where P1 is the most critical.
   Think of each story as a standalone slice of functionality that can be:
@@ -99,6 +99,37 @@
 
 - **[Entity 1]**: [What it represents, key attributes without implementation]
 - **[Entity 2]**: [What it represents, relationships to other entities]
+
+## Interface Contracts *(mandatory — Constitution Principle II)*
+
+### CLI Surface
+
+- **Command Name**: `[cli-command]`
+- **Description**: [What the command delivers and why it is needed]
+- **Inputs**: [Flags/args; include validation rules]
+- **Outputs**: [Machine-readable JSON schema + human-readable summary]
+
+### HTTP / Action Server Surface *(if applicable)*
+
+- **Endpoint**: `[method] /path`
+- **Payload Contracts**: [Request/response schemas, versioning, error model]
+- **Compatibility Plan**: [How breaking changes will be communicated or avoided]
+
+*If an interface type is not required, explicitly document why the omission still satisfies Principle II.*
+
+## Test Strategy *(mandatory — Constitution Principles III & IV)*
+
+- **Pre-Implementation Tests**: [List failing tests to author first: unit, contract, integration]
+- **Coverage Map**: [Link each test to user stories and interface contracts]
+- **Migration Tests**: [Describe backward-compatibility or breaking-change validation]
+- **Automation Hooks**: [How CI will execute these tests and surface artifacts]
+
+## Vendored Artifacts *(conditional — Constitution Principle V)*
+
+- **Need**: [Justification for vendoring; state "None" if not applicable]
+- **Artifact Source**: [Build command, CI workflow, origin URL]
+- **Manifest Path**: [Location for vendor manifest + checksum]
+- **Verification Plan**: [Checksum/byte-for-byte checks performed in CI]
 
 ## Success Criteria *(mandatory)*
 

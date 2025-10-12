@@ -7,7 +7,8 @@ description: "Task list template for feature implementation"
 **Input**: Design documents from `/specs/[###-feature-name]/`
 **Prerequisites**: plan.md (required), spec.md (required for user stories), research.md, data-model.md, contracts/
 
-**Tests**: The examples below include test tasks. Tests are OPTIONAL - only include them if explicitly requested in the feature specification.
+**Tests**: Tests are MANDATORY per the constitution. Each user story MUST list the failing tests that will be authored
+and run before implementation tasks begin.
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
@@ -65,6 +66,8 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] T007 Create base models/entities that all stories depend on
 - [ ] T008 Configure error handling and logging infrastructure
 - [ ] T009 Setup environment configuration management
+- [ ] T010 Establish observability (structured logging, traces, metrics) compliant with security constraints
+- [ ] T011 Document package environment in `package.yaml` (runtime/tooling declaration)
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -76,23 +79,24 @@ Examples of foundational tasks (adjust based on your project):
 
 **Independent Test**: [How to verify this story works on its own]
 
-### Tests for User Story 1 (OPTIONAL - only if tests requested) ⚠️
+### Tests for User Story 1 (MANDATORY — write first) ⚠️
 
-**NOTE: Write these tests FIRST, ensure they FAIL before implementation**
+**NOTE: Write these tests FIRST, ensure they FAIL before implementation ships**
 
-- [ ] T010 [P] [US1] Contract test for [endpoint] in tests/contract/test_[name].py
-- [ ] T011 [P] [US1] Integration test for [user journey] in tests/integration/test_[name].py
+- [ ] T012 [P] [US1] Contract test for [endpoint] in tests/contract/test_[name].py
+- [ ] T013 [P] [US1] Integration test for [user journey] in tests/integration/test_[name].py
+- [ ] T014 [P] [US1] Unit test(s) guarding critical logic in tests/unit/test_[name].py
 
 ### Implementation for User Story 1
 
-- [ ] T012 [P] [US1] Create [Entity1] model in src/models/[entity1].py
-- [ ] T013 [P] [US1] Create [Entity2] model in src/models/[entity2].py
-- [ ] T014 [US1] Implement [Service] in src/services/[service].py (depends on T012, T013)
-- [ ] T015 [US1] Implement [endpoint/feature] in src/[location]/[file].py
-- [ ] T016 [US1] Add validation and error handling
-- [ ] T017 [US1] Add logging for user story 1 operations
+- [ ] T015 [P] [US1] Create [Entity1] model in src/models/[entity1].py
+- [ ] T016 [P] [US1] Create [Entity2] model in src/models/[entity2].py
+- [ ] T017 [US1] Implement [Service] in src/services/[service].py (depends on T015, T016)
+- [ ] T018 [US1] Implement [endpoint/feature] in src/[location]/[file].py
+- [ ] T019 [US1] Add validation and error handling
+- [ ] T020 [US1] Add logging/metrics for user story 1 operations (redact secrets)
 
-**Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
+**Checkpoint**: At this point, User Story 1 MUST be fully functional and testable independently
 
 ---
 
@@ -102,19 +106,21 @@ Examples of foundational tasks (adjust based on your project):
 
 **Independent Test**: [How to verify this story works on its own]
 
-### Tests for User Story 2 (OPTIONAL - only if tests requested) ⚠️
+### Tests for User Story 2 (MANDATORY — write first) ⚠️
 
-- [ ] T018 [P] [US2] Contract test for [endpoint] in tests/contract/test_[name].py
-- [ ] T019 [P] [US2] Integration test for [user journey] in tests/integration/test_[name].py
+- [ ] T021 [P] [US2] Contract test for [endpoint] in tests/contract/test_[name].py
+- [ ] T022 [P] [US2] Integration test for [user journey] in tests/integration/test_[name].py
+- [ ] T023 [P] [US2] Unit test(s) in tests/unit/test_[name].py
 
 ### Implementation for User Story 2
 
-- [ ] T020 [P] [US2] Create [Entity] model in src/models/[entity].py
-- [ ] T021 [US2] Implement [Service] in src/services/[service].py
-- [ ] T022 [US2] Implement [endpoint/feature] in src/[location]/[file].py
-- [ ] T023 [US2] Integrate with User Story 1 components (if needed)
+- [ ] T024 [P] [US2] Create [Entity] model in src/models/[entity].py
+- [ ] T025 [US2] Implement [Service] in src/services/[service].py
+- [ ] T026 [US2] Implement [endpoint/feature] in src/[location]/[file].py
+- [ ] T027 [US2] Integrate with User Story 1 components (if needed)
+- [ ] T028 [US2] Extend logging/metrics coverage without exposing secrets
 
-**Checkpoint**: At this point, User Stories 1 AND 2 should both work independently
+**Checkpoint**: At this point, User Stories 1 AND 2 MUST both work independently
 
 ---
 
@@ -124,18 +130,20 @@ Examples of foundational tasks (adjust based on your project):
 
 **Independent Test**: [How to verify this story works on its own]
 
-### Tests for User Story 3 (OPTIONAL - only if tests requested) ⚠️
+### Tests for User Story 3 (MANDATORY — write first) ⚠️
 
-- [ ] T024 [P] [US3] Contract test for [endpoint] in tests/contract/test_[name].py
-- [ ] T025 [P] [US3] Integration test for [user journey] in tests/integration/test_[name].py
+- [ ] T029 [P] [US3] Contract test for [endpoint] in tests/contract/test_[name].py
+- [ ] T030 [P] [US3] Integration test for [user journey] in tests/integration/test_[name].py
+- [ ] T031 [P] [US3] Unit test(s) in tests/unit/test_[name].py
 
 ### Implementation for User Story 3
 
-- [ ] T026 [P] [US3] Create [Entity] model in src/models/[entity].py
-- [ ] T027 [US3] Implement [Service] in src/services/[service].py
-- [ ] T028 [US3] Implement [endpoint/feature] in src/[location]/[file].py
+- [ ] T032 [P] [US3] Create [Entity] model in src/models/[entity].py
+- [ ] T033 [US3] Implement [Service] in src/services/[service].py
+- [ ] T034 [US3] Implement [endpoint/feature] in src/[location]/[file].py
+- [ ] T035 [US3] Add observability hooks and secret-safe logging
 
-**Checkpoint**: All user stories should now be independently functional
+**Checkpoint**: All user stories MUST now be independently functional
 
 ---
 
@@ -150,9 +158,19 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] TXXX [P] Documentation updates in docs/
 - [ ] TXXX Code cleanup and refactoring
 - [ ] TXXX Performance optimization across all stories
-- [ ] TXXX [P] Additional unit tests (if requested) in tests/unit/
+- [ ] TXXX [P] Expand regression test suite in tests/unit/
 - [ ] TXXX Security hardening
 - [ ] TXXX Run quickstart.md validation
+- [ ] TXXX Verify vendored manifest + checksums (if applicable)
+- [ ] TXXX Validate license scan + SBOM output
+
+## Vendored Build Compliance (if applicable)
+
+- [ ] V001 Capture build command + inputs in docs/BUILDING_WITH_CDN.md (or feature-specific doc)
+- [ ] V002 Generate vendor manifest with checksums in build-binary/[feature]/vendor-manifest.json
+- [ ] V003 Attach CI run URL producing the artifact in docs/release-notes.md
+- [ ] V004 Run automated checksum comparison against canonical pipeline artifact
+- [ ] V005 Record legal/license review outcome (append to feature plan or docs)
 
 ---
 
@@ -170,8 +188,8 @@ Examples of foundational tasks (adjust based on your project):
 ### User Story Dependencies
 
 - **User Story 1 (P1)**: Can start after Foundational (Phase 2) - No dependencies on other stories
-- **User Story 2 (P2)**: Can start after Foundational (Phase 2) - May integrate with US1 but should be independently testable
-- **User Story 3 (P3)**: Can start after Foundational (Phase 2) - May integrate with US1/US2 but should be independently testable
+- **User Story 2 (P2)**: Can start after Foundational (Phase 2) - May integrate with US1 but MUST remain independently testable
+- **User Story 3 (P3)**: Can start after Foundational (Phase 2) - May integrate with US1/US2 but MUST remain independently testable
 
 ### Within Each User Story
 
@@ -241,7 +259,7 @@ With multiple developers:
 
 - [P] tasks = different files, no dependencies
 - [Story] label maps task to specific user story for traceability
-- Each user story should be independently completable and testable
+- Each user story MUST be independently completable and testable
 - Verify tests fail before implementing
 - Commit after each task or logical group
 - Stop at any checkpoint to validate story independently

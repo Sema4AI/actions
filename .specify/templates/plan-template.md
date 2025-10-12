@@ -3,7 +3,7 @@
 **Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
 **Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
 
-**Note**: This template is filled in by the `/speckit.plan` command. See `.specify/templates/commands/plan.md` for the execution workflow.
+**Note**: This template is filled in by the `/speckit.plan` command. See `.github/prompts/speckit.plan.prompt.md` for the execution workflow.
 
 ## Summary
 
@@ -31,7 +31,21 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+- [ ] **Principle I — Library-First Action Design**: Identify the library/module boundary, public surface, and reuse plan
+  (documented in plan + spec). Explain why the feature cannot live inside another existing library.
+- [ ] **Principle II — CLI & HTTP-First Interface**: Enumerate required CLI commands and HTTP endpoints (or explicitly
+  state "N/A" with justification). Confirm outputs are machine-readable (JSON) and human-readable.
+- [ ] **Principle III — Test-First**: List the failing tests that will be authored before implementation (unit, contract,
+  integration). Link to corresponding tasks and describe the trigger that makes them fail initially.
+- [ ] **Principle IV — Contract & Integration Testing**: Capture schema/versioning implications and how compatibility will
+  be enforced (migration plan or breaking-change rationale).
+- [ ] **Principle V — Vendored Builds & Reproducible Releases**: If vendoring is required, include justification, build
+  command, manifest responsibilities, and checksum validation plan. If not required, state "No vendored artifacts".
+- [ ] **Runtime & Tooling Constraint**: Confirm Python 3.11.x (or approved alternative) and declare package environment
+  definition path (`package.yaml`).
+- [ ] **Licensing & Security**: Note third-party dependencies, license scan impact, and any security review or threat
+  model checkpoints.
+- [ ] **Observability**: Describe structured logging/telemetry requirements and guardrails against leaking secrets.
 
 ## Project Structure
 
