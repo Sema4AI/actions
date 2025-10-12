@@ -115,6 +115,29 @@ A developer interacts with various UI elements and expects professional polish t
 
 ---
 
+### User Story 7 - Navigate with Keyboard and Screen Reader (Priority: P0)
+
+A developer using assistive technology (keyboard-only navigation or screen reader) needs to access all functionality without a mouse. They expect proper focus management, ARIA announcements, and keyboard shortcuts to work consistently across all components.
+
+**Why this priority**: Accessibility is not optional. Users with disabilities must have equal access to all features per WCAG AA compliance requirements.
+
+**Independent Test**: Can be fully tested by navigating the entire application using only keyboard (Tab, Enter, Escape, Arrow keys) and validating with screen reader (NVDA, JAWS, VoiceOver). Delivers value by making the application usable for 15-20% of developers with accessibility needs.
+
+**Acceptance Scenarios**:
+
+1. **Given** any interactive element (button, input, link), **When** I press Tab to navigate, **Then** I see a visible focus indicator and screen reader announces the element role and state
+2. **Given** a form with multiple inputs, **When** I navigate with Tab, **Then** focus moves in logical order and screen reader announces label, type, and required status for each input
+3. **Given** an open dialog, **When** I press Tab, **Then** focus stays trapped within the dialog and I can reach all interactive elements
+4. **Given** a dropdown menu, **When** I press Enter or Space to open and use Arrow keys, **Then** focus moves between menu items and screen reader announces each item
+5. **Given** a table with clickable rows, **When** I navigate with Tab and press Enter, **Then** the row action triggers and screen reader announces the result
+6. **Given** a loading state, **When** data is being fetched, **Then** screen reader announces "loading" status with aria-live region
+7. **Given** an error banner, **When** it appears, **Then** screen reader announces the error message immediately via aria-live="assertive"
+8. **Given** a status badge, **When** I focus on it or its parent element, **Then** screen reader announces both the status label and semantic meaning (e.g., "success" or "error")
+9. **Given** any page on mobile viewport (375px), **When** I tap interactive elements, **Then** all touch targets are ≥44px and don't trigger accidentally
+10. **Given** any animation, **When** I have prefers-reduced-motion enabled, **Then** animations are disabled or reduced to opacity-only changes
+
+---
+
 ### Edge Cases
 
 - What happens when a table has zero rows? (Empty state per FR-UI-008 must be shown)
@@ -155,24 +178,28 @@ A developer interacts with various UI elements and expects professional polish t
 - **FR-UI-022**: Textareas MUST handle up to 10,000 characters without performance degradation (lag, scroll jank)
 - **FR-UI-023**: All interactive elements MUST have touch targets ≥44px (width and height) on mobile viewports (≤768px) per WCAG 2.5.5 Level AAA
 - **FR-UI-024**: When multiple components load simultaneously, show page-level spinner until all critical data arrives, then transition to content smoothly
+- **FR-UI-025**: All animations MUST use only GPU-accelerated CSS properties (transform, opacity) to maintain 60fps performance; animations on layout properties (width, height, margin, padding) are prohibited
+- **FR-UI-026**: All transitions MUST use ease-in-out easing curve by default; dialog open/close MUST use cubic-bezier(0.16, 1, 0.3, 1) for smooth spring effect; hover states MUST use linear easing for immediate response
+- **FR-UI-027**: All animations MUST maintain ≥60fps frame rate; if frame rate drops below 60fps during testing, reduce animation complexity or disable animation for that component
 
 ### Component Enhancement Requirements
 
-- **FR-COMP-001**: Input component MUST support base, focus, hover, disabled, and error states
+- **FR-COMP-001**: Input component MUST support base, focus, hover, disabled, and error states, and MUST support HTML input types: text, email, password, number, search, tel, url, date, time, datetime-local (all with consistent styling)
 - **FR-COMP-002**: Input component MUST accept error prop to trigger error styling
 - **FR-COMP-003**: Textarea component MUST inherit all Input styling patterns
 - **FR-COMP-004**: Textarea component MUST have minimum height of 80px, allow vertical resize only, and support up to 10,000 characters (display character counter at 9,000 chars, show warning state at 9,500 chars, enforce hard stop at 10,000 with error message)
 - **FR-COMP-005**: Dialog component MUST include backdrop, content container, header, footer, title, and description sub-components
-- **FR-COMP-006**: Dialog component MUST use Radix UI primitives for accessibility and keyboard handling
-- **FR-COMP-007**: Table component MUST include header row, body rows, and cell styling
+- **FR-COMP-006**: Dialog component MUST use Radix UI primitives for accessibility and keyboard handling, and support states: open (visible with backdrop), closed (hidden), opening (fade-in animation), closing (fade-out animation)
+- **FR-COMP-007**: Table component MUST include header row, body rows, and cell styling, and support states for rows: base (default), hover (gray-50 background), selected (blue-50 background), disabled (opacity 0.5)
 - **FR-COMP-008**: Table component MUST support optional selected row state (blue-50 background)
 - **FR-COMP-009**: Table component MUST maintain smooth scrolling (≥60fps) and hover states for up to 1,000 rows without virtualization; performance tests must validate at 100, 500, and 1,000 row thresholds
-- **FR-COMP-010**: DropdownMenu component MUST use Button component for trigger
-- **FR-COMP-011**: DropdownMenu component MUST support separator elements with gray-200 divider
+- **FR-COMP-010**: DropdownMenu component MUST use Button component for trigger, and support states: closed (hidden), open (visible with animation), opening (fade+slide in), closing (fade+slide out)
+- **FR-COMP-011**: DropdownMenu component MUST support separator elements with gray-200 divider, and menu items must support states: base (default), hover (gray-100 background), focus (gray-100 background with focus ring), disabled (opacity 0.5, not-allowed cursor)
 - **FR-COMP-012**: Badge component MUST be created with variants for each semantic status
 - **FR-COMP-013**: Loading component MUST be created with spinner, optional text, and timeout state (30s) with retry button
 - **FR-COMP-014**: ErrorBanner component MUST be created with dismiss functionality
 - **FR-COMP-015**: All components MUST use cn() utility for className merging
+- **FR-COMP-016**: All components MUST define TypeScript interfaces for props with explicit types for: className (string), children (ReactNode), variant enums, size enums, state booleans (disabled, error, loading), and event handlers (onClick, onChange, onSubmit)
 
 ### Styling Requirements
 
@@ -184,6 +211,7 @@ A developer interacts with various UI elements and expects professional polish t
 - **FR-STYLE-006**: Shadows MUST use Tailwind's shadow utilities (sm, md, lg, xl)
 - **FR-STYLE-007**: Font sizes MUST follow Tailwind's typography scale (xs, sm, base, lg, xl, 2xl)
 - **FR-STYLE-008**: All utility classes MUST be applied via Tailwind (no custom CSS unless necessary)
+- **FR-STYLE-009**: Tailwind CSS purge configuration MUST scan all TSX files in src/ directory to remove unused styles; production builds MUST enable minification and purge to maintain bundle size ≤350KB total (≤110KB gzipped)
 
 ### Security Requirements
 
@@ -191,6 +219,17 @@ A developer interacts with various UI elements and expects professional polish t
 - **FR-SEC-002**: Any use of `dangerouslySetInnerHTML` MUST sanitize input with DOMPurify library (version ≥3.0.0 with default safe configuration)
 - **FR-SEC-003**: Form inputs MUST NOT render untrusted HTML; display as escaped text only
 - **FR-SEC-004**: DOMPurify MUST be added as dependency only if innerHTML rendering is required
+
+### Accessibility Requirements
+
+- **FR-A11Y-001**: Input component MUST include aria-label or aria-labelledby, aria-invalid (when error=true), aria-required (when required=true), aria-describedby (linking to error message)
+- **FR-A11Y-002**: Button component MUST include aria-label (when no visible text), aria-disabled (when disabled=true), aria-pressed (for toggle buttons), aria-expanded (for dropdown triggers)
+- **FR-A11Y-003**: Dialog component MUST include role="dialog", aria-modal="true", aria-labelledby (linking to dialog title), aria-describedby (linking to dialog description), and focus trap implementation
+- **FR-A11Y-004**: Table component MUST include role="table" on container, role="row" on rows, role="columnheader" on headers, role="cell" on cells, and aria-label on the table describing its purpose
+- **FR-A11Y-005**: DropdownMenu component MUST include role="menu" on menu container, role="menuitem" on items, aria-haspopup="menu" on trigger, aria-expanded on trigger, and keyboard navigation (Arrow keys, Enter, Escape)
+- **FR-A11Y-006**: Badge component MUST include aria-label describing both the status text and semantic meaning (e.g., aria-label="Status: Success" for green success badge)
+- **FR-A11Y-007**: Loading component MUST include role="status", aria-live="polite", and aria-label="Loading" (or descriptive text if provided)
+- **FR-A11Y-008**: ErrorBanner component MUST include role="alert", aria-live="assertive" for immediate announcement, and aria-atomic="true" for complete message announcement
 
 ### Testing Requirements
 
@@ -230,6 +269,8 @@ A developer interacts with various UI elements and expects professional polish t
 - **SC-016**: All transitions respect prefers-reduced-motion when enabled
 - **SC-017**: Keyboard navigation works for 100% of interactive elements (Tab, Enter, Escape)
 - **SC-018**: Screen readers correctly announce element roles and states for all components
+- **SC-019**: All interactive elements on mobile viewports (375px-768px) have touch targets ≥44px and work correctly with touch gestures (tap, swipe)
+- **SC-020**: Animations maintain ≥60fps frame rate on standard devices; no janky animations on low-end devices (tested with CPU throttling 4x slowdown)
 
 ## Clarifications
 
@@ -241,6 +282,16 @@ A developer interacts with various UI elements and expects professional polish t
 - Q: When a loading state exceeds the mentioned "30 seconds" threshold (from edge cases), what should the UI display to the user? → A: Show timeout message with manual retry button
 - Q: When users enter JSON or multi-line text into form inputs/textareas, what is the maximum character limit that should be supported without UX degradation (lag, scroll issues)? → A: 10,000 characters
 - Q: Are the enhanced UI components being built exclusively for the action-server frontend, or should they be designed as reusable components that could be shared across other packages in the monorepo (actions, mcp, etc.)? → A: Action-server only
+
+### Session 2025-10-12 (Critical Gaps Addressed)
+
+- Q: What does "smooth transition" mean precisely? → A: Use ease-in-out easing curve (cubic-bezier(0.42, 0, 0.58, 1)) for standard transitions; use cubic-bezier(0.16, 1, 0.3, 1) for dialog spring effect; use linear easing for instant-response hover states
+- Q: What does "clear visual separation" mean for dialog header/footer? → A: 1px border (gray-200) with 16px padding on header and footer
+- Q: What does "prominent" mean when describing UI elements? → A: Higher z-index (≥10), bold font-weight (600), or larger font size (+1 scale step) than surrounding elements
+- Q: What does "professional polish" mean? → A: Visual quality that achieves 4/5 user rating (defined in SC-012), with consistent spacing, smooth 60fps animations, and no visual glitches
+- Q: What does "actionable call-to-action button" mean in empty states? → A: Primary Button variant (blue-600 background) with clear action text (e.g., "Create Action", "Import Data")
+- Q: What does "properly aligned" mean for dropdown icons? → A: Use flexbox with items-center to vertically center icons with text; apply 8px (space-2) gap between icon and text
+- Q: What is a "standard connection" for performance requirements? → A: 3G network simulation (3 Mbps download, 1.6 Mbps upload, 50ms latency) per Lighthouse default throttling
 
 ## Assumptions
 
