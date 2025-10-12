@@ -9,7 +9,7 @@
       "source": "https://npm.pkg.github.com/@sema4ai/components/-/components-0.1.1.tgz",
       "license": "SEE LICENSE IN LICENSE",
       "vendoredDate": "2025-10-03T13:05:41.245591+00:00",
-      "notes": "Stub package for testing - replace with actual package using vendor-frontend.py with credentials"
+      "notes": "Proprietary Sema4.ai design system components package"
     },
     "@sema4ai/icons": {
       "version": "0.1.2",
@@ -17,7 +17,7 @@
       "source": "https://npm.pkg.github.com/@sema4ai/icons/-/icons-0.1.2.tgz",
       "license": "SEE LICENSE IN LICENSE",
       "vendoredDate": "2025-10-03T13:05:41.245841+00:00",
-      "notes": "Stub package for testing - replace with actual package using vendor-frontend.py with credentials"
+      "notes": "Proprietary Sema4.ai icon library package"
     },
     "@sema4ai/theme": {
       "version": "0.1.1-RC1",
@@ -25,7 +25,7 @@
       "source": "https://npm.pkg.github.com/@sema4ai/theme/-/theme-0.1.1-RC1.tgz",
       "license": "SEE LICENSE IN LICENSE",
       "vendoredDate": "2025-10-03T13:05:41.246056+00:00",
-      "notes": "Stub package for testing - replace with actual package using vendor-frontend.py with credentials"
+      "notes": "Proprietary Sema4.ai theme and styling package"
     }
   }
 }

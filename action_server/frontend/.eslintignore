@@ -1,0 +1,23 @@
+# ESLint ignore patterns for Action Server frontend
+
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Coverage reports
+coverage/
+
+# Minified files
+*.min.js
+
+# Vendored packages (already linted)
+vendored/
+
+# Generated files
+*.generated.*
+
+# Logs
+*.log

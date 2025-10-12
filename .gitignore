@@ -39,3 +39,11 @@ dist/
 /**/output/
 /action_server/build-binary/*.html
 /action_server/build-binary/*.json
+
+# Node.js
+node_modules/
+dist/
+build/
+*.log
+.env*
+.npminstall

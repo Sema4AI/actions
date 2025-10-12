@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction, createContext, useContext } from 'react';
 
-import { Run, RunTableEntry } from '~/lib/types';
+import { Run, RunTableEntry } from '@/shared/types';
 
 export type ActionRunsContextType = {
   showRun: RunTableEntry | undefined;

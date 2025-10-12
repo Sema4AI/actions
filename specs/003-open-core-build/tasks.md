@@ -406,20 +406,20 @@ Quickstart Scenarios: 6 end-to-end test scenarios
 
 ### Frontend Structure Migration (Sequential - Potentially Overlapping Files)
 
-- [ ] **T030** Create shared utilities in `action_server/frontend/src/shared/`
+- [x] **T030** Create shared utilities in `action_server/frontend/src/shared/`
   - Move tier-agnostic code: `utils/`, `hooks/`, `constants/`
   - Create: `shared/types.ts` (TypeScript interfaces)
   - Create: `shared/api-client.ts` (base HTTP client)
   - Update imports in existing files to use `@/shared`
 
-- [ ] **T031** Migrate core pages to `action_server/frontend/src/core/pages/`
+- [x] **T031** Migrate core pages to `action_server/frontend/src/core/pages/`
   - Move: `pages/Actions.tsx` → `core/pages/Actions.tsx`
   - Move: `pages/RunHistory.tsx` → `core/pages/RunHistory.tsx`
   - Move: `pages/Logs.tsx` → `core/pages/Logs.tsx`
   - Move: `pages/Artifacts.tsx` → `core/pages/Artifacts.tsx`
   - Update imports: Replace `@sema4ai/components` with Radix UI equivalents
 
-- [ ] **T032** Create Radix UI + Tailwind components in `action_server/frontend/src/core/components/ui/`
+- [x] **T032** Create Radix UI + Tailwind components in `action_server/frontend/src/core/components/ui/`
   - Component: `Button.tsx` (Radix Button + Tailwind)
   - Component: `Dialog.tsx` (Radix Dialog + Tailwind)
   - Component: `DropdownMenu.tsx` (Radix DropdownMenu + Tailwind)
@@ -427,13 +427,13 @@ Quickstart Scenarios: 6 end-to-end test scenarios
   - Component: `Input.tsx` (Tailwind styled input)
   - Follow shadcn/ui pattern (copy-paste, fully customizable)
 
-- [ ] **T033** Update App.tsx for tier-based routing in `action_server/frontend/src/App.tsx`
+- [x] **T033** Update App.tsx for tier-based routing in `action_server/frontend/src/App.tsx`
   - Import: Check `__TIER__` global
   - Routing: Conditionally import enterprise routes only if `__TIER__ === 'enterprise'`
   - Fallback: Show "Feature unavailable" for enterprise routes in community tier
   - Layout: Use tier-appropriate components (@/core vs @/enterprise)
 
-- [ ] **T034** Create enterprise pages in `action_server/frontend/src/enterprise/pages/`
+- [x] **T034** Create enterprise pages in `action_server/frontend/src/enterprise/pages/`
   - Page: `KnowledgeBase.tsx` (KB interface with @sema4ai/components - **frontend scaffolding only, no backend API integration**)
   - Page: `Analytics.tsx` (advanced analytics charts - **UI only, data mocked or stubbed**)
   - Page: `OrgManagement.tsx` (organization settings - **UI only, Phase 2 for backend**)
@@ -443,7 +443,7 @@ Quickstart Scenarios: 6 end-to-end test scenarios
 
 ### CI Workflow Implementation (Sequential - Single File)
 
-- [ ] **T035** Create CI workflow in `.github/workflows/frontend-build.yml`
+- [x] **T035** Create CI workflow in `.github/workflows/frontend-build.yml`
   - Matrix: `tier: [community, enterprise]`, `os: [ubuntu-latest, macos-latest, windows-latest]`, `fail-fast: false` (per NFR-012)
   - Conditional: Skip enterprise jobs if `github.event.pull_request.head.repo.fork == true`
   - Secrets scoping: `NPM_TOKEN: ${{ matrix.tier == 'enterprise' && secrets.NPM_TOKEN || '' }}`
@@ -457,7 +457,7 @@ Quickstart Scenarios: 6 end-to-end test scenarios
   - Failure attribution: Capture and display tier, OS, step name, error category, and actionable remediation message in job summary
   - Success rate monitoring: Track community tier success rate metric (% of community jobs passing) in job summary - implements NFR-010 monitoring
 
-- [ ] **T036** Update CDN workflow to manual-only in `.github/workflows/frontend-build-cdn.yml`
+- [x] **T036** Update CDN workflow to manual-only in `.github/workflows/frontend-build-cdn.yml`
   - Triggers: Change to `workflow_dispatch` only (remove `push`, `pull_request`)
   - Description: Add "INTERNAL USE ONLY - Not for release artifacts" label
   - Input: `version` (required, no default)
@@ -549,12 +549,12 @@ Quickstart Scenarios: 6 end-to-end test scenarios
 
 ### Vendoring & Release
 
-- [ ] **T050** Verify vendored packages in `action_server/frontend/vendored/manifest.json`
+- [x] **T050** Verify vendored packages in `action_server/frontend/vendored/manifest.json`
   - Validate: Checksums match existing packages
   - Validate: Licenses documented (from LICENSE-REVIEW.md)
   - Document: Vendored packages never in community builds (enterprise-only)
 
-- [ ] **T051** Update agent context in `.github/copilot-instructions.md`
+- [x] **T051** Update agent context in `.github/copilot-instructions.md`
   - Confirm: Tech stack matches (Node 20.x, TypeScript 5.3.3, Python 3.11.x, Vite 6.1.0, React 18.2.0)
   - Confirm: File-based storage documented (vendored packages, build artifacts)
   - Confirm: Build commands listed (inv build-frontend --tier=community|enterprise)

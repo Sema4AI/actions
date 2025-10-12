@@ -3,7 +3,7 @@ import { Box, Typography, usePopover } from '@sema4ai/components';
 import { IconGlobe, IconLink, IconWifiNoConnection } from '@sema4ai/icons';
 import { styled } from '@sema4ai/theme';
 
-import { useActionServerContext } from '~/lib/actionServerContext';
+import { useActionServerContext } from '@/shared/context/actionServerContext';
 import { ActionServerLogo } from './Logo';
 import { InputCopy } from './CopyToClipboard';
 

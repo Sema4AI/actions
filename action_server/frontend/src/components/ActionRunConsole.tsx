@@ -1,6 +1,6 @@
 import { FC, useEffect, useState } from 'react';
-import { collectRunArtifacts } from '~/lib/requestData';
-import { LoadedArtifacts } from '~/lib/types';
+import { collectRunArtifacts } from '@/shared/api-client';
+import { LoadedArtifacts } from '@/shared/types';
 import { Progress } from '@sema4ai/components';
 import { Code } from '~/components';
 

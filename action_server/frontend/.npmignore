@@ -1,0 +1,52 @@
+# NPM ignore patterns for Action Server frontend
+
+# Dependencies
+node_modules/
+
+# Source control
+.git/
+.gitignore
+
+# Build outputs
+dist/
+build/
+
+# Coverage reports
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment files
+.env*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Lock files (keep one, typically package-lock.json for npm)
+yarn.lock
+pnpm-lock.yaml
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test files
+**/*.test.*
+**/*.spec.*
+
+# Development files
+.eslintrc*
+.prettierrc*
+*.config.js
+vite.config.js
+tsconfig.json
+
+# Vendored packages (internal)
+vendored/

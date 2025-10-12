@@ -1,0 +1,32 @@
+name: Frontend Build CDN
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'INTERNAL USE ONLY - Not for release artifacts'
+        required: true
+
+jobs:
+  build-frontend-cdn:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Invoke
+        run: pip install invoke
+
+      - name: Build Frontend CDN
+        working-directory: action_server
+        run: inv build-frontend-cdn --version=${{ inputs.version }}

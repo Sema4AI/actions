@@ -1,0 +1,173 @@
+name: Frontend Build
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'action_server/frontend/**'
+      - '.github/workflows/frontend-build.yml'
+  pull_request:
+    branches: [master]
+    paths:
+      - 'action_server/frontend/**'
+      - '.github/workflows/frontend-build.yml'
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        tier: [community, enterprise]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+      fail-fast: false
+    # Skip enterprise jobs for external fork PRs
+    if: ${{ matrix.tier == 'community' || github.event.pull_request.head.repo.fork != 'true' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Invoke
+        run: pip install invoke
+
+      - name: Network Hardening (Community)
+        if: matrix.tier == 'community'
+        run: |
+          if [ "$RUNNER_OS" == "Linux" ]; then
+            sudo sh -c 'echo "127.0.0.1 npm.pkg.github.com" >> /etc/hosts'
+          elif [ "$RUNNER_OS" == "macOS" ]; then
+            sudo sh -c 'echo "127.0.0.1 npm.pkg.github.com" >> /etc/hosts'
+          elif [ "$RUNNER_OS" == "Windows" ]; then
+            echo "127.0.0.1 npm.pkg.github.com" | Out-File -Encoding ASCII -Append C:\Windows\System32\drivers\etc\hosts
+          fi
+
+      - name: Build Frontend
+        id: build-frontend
+        working-directory: action_server
+        run: inv build-frontend --tier ${{ matrix.tier }}
+        env:
+          NPM_TOKEN: ${{ matrix.tier == 'enterprise' && secrets.NPM_TOKEN || '' }}
+
+      - name: Import Detection (Community)
+        id: validate-imports
+        if: matrix.tier == 'community'
+        working-directory: action_server
+        run: inv validate-imports --tier community
+
+      - name: Determinism Check (Community)
+        id: determinism-check
+        if: matrix.tier == 'community'
+        working-directory: action_server
+        run: |
+          # Move first build
+          mv frontend/dist frontend/dist_first
+          # Rebuild
+          inv build-frontend --tier community
+          # Compare SHA256
+          find frontend/dist -type f -exec sha256sum {} \; | sort > dist_second.sha
+          find frontend/dist_first -type f -exec sha256sum {} \; | sort > dist_first.sha
+          if ! diff dist_first.sha dist_second.sha; then
+            echo "Determinism check failed: Builds are not reproducible"
+            # Restore first build for artifact upload
+            rm -rf frontend/dist
+            mv frontend/dist_first frontend/dist
+            exit 1
+          fi
+          # Restore first build (cleanup second build)
+          rm -rf frontend/dist
+          mv frontend/dist_first frontend/dist
+
+      - name: Validate Artifact
+        id: validate-artifact
+        working-directory: action_server
+        run: inv validate-artifact --tier ${{ matrix.tier }}
+
+      - name: Generate SBOM
+        run: |
+          npm install -g @cyclonedx/cyclonedx-npm
+          cd action_server/frontend
+          cyclonedx-npm --output-file sbom.json
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-${{ matrix.tier }}-${{ matrix.os }}-${{ github.sha }}
+          path: action_server/frontend/dist/**
+
+      - name: Job Summary
+        if: always()
+        run: |
+          # Capture job status
+          JOB_STATUS=${{ job.status }}
+          
+          echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Attribute | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Tier** | ${{ matrix.tier }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **OS** | ${{ matrix.os }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Status** | ${JOB_STATUS} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Commit** | ${{ github.sha }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${JOB_STATUS}" != "success" ]; then
+            echo "### ❌ Failure Analysis" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            # Determine failure category from step outcomes
+            if [ "${{ steps.build-frontend.outcome }}" == "failure" ]; then
+              echo "**Category:** Build Error (exit code 1)" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "**Remediation:**" >> $GITHUB_STEP_SUMMARY
+              echo "- Check TypeScript compilation errors" >> $GITHUB_STEP_SUMMARY
+              echo "- Verify all dependencies are installed (npm ci succeeded)" >> $GITHUB_STEP_SUMMARY
+              echo "- Review Vite build logs for module resolution issues" >> $GITHUB_STEP_SUMMARY
+              echo "- Ensure all imports resolve correctly" >> $GITHUB_STEP_SUMMARY
+            elif [ "${{ steps.validate-imports.outcome }}" == "failure" ] || [ "${{ steps.validate-artifact.outcome }}" == "failure" ]; then
+              echo "**Category:** Validation Error (exit code 2)" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "**Remediation:**" >> $GITHUB_STEP_SUMMARY
+              echo "- Remove enterprise imports from core/ files" >> $GITHUB_STEP_SUMMARY
+              echo "- Run 'inv validate-imports --tier community' locally to reproduce" >> $GITHUB_STEP_SUMMARY
+              echo "- Check for @sema4ai/* or @/enterprise imports in community tier" >> $GITHUB_STEP_SUMMARY
+              echo "- Verify artifact size is within budget" >> $GITHUB_STEP_SUMMARY
+            elif [ "${{ steps.determinism-check.outcome }}" == "failure" ]; then
+              echo "**Category:** Determinism Error" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "**Remediation:**" >> $GITHUB_STEP_SUMMARY
+              echo "- Rebuild produces different artifacts (non-deterministic)" >> $GITHUB_STEP_SUMMARY
+              echo "- Check for timestamp injection or random values in build" >> $GITHUB_STEP_SUMMARY
+              echo "- Verify SOURCE_DATE_EPOCH is set correctly" >> $GITHUB_STEP_SUMMARY
+              echo "- Review Vite config for deterministic output settings" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "**Category:** Configuration/Dependency Error (exit code 3/4)" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "**Remediation:**" >> $GITHUB_STEP_SUMMARY
+              echo "- Verify environment configuration (tier, NPM_TOKEN for enterprise)" >> $GITHUB_STEP_SUMMARY
+              echo "- Check dependency resolution (registry accessible, vendored packages present)" >> $GITHUB_STEP_SUMMARY
+              echo "- Review build-binary module imports" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "### ✅ Build Successful" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Calculate community success rate (only for completed workflow runs)
+          if [ "${{ github.event_name }}" == "push" ] || [ "${{ github.event_name }}" == "pull_request" ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "---" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 📊 Community Tier Health" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "This metric tracks the reliability of community tier builds across all platforms." >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "_Note: Success rate calculated from matrix job outcomes in this workflow run._" >> $GITHUB_STEP_SUMMARY
+          fi

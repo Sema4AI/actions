@@ -21,10 +21,10 @@ import {
 } from '@sema4ai/components';
 import { IconBolt, IconLoading, IconLogIn, IconLogOut } from '@sema4ai/icons';
 
-import { Action, ActionPackage, AsyncLoaded, RunStatus, ServerConfig } from '~/lib/types';
-import { toKebabCase } from '~/lib/helpers';
-import { useActionServerContext } from '~/lib/actionServerContext';
-import { useLocalStorage } from '~/lib/useLocalStorage';
+import { Action, ActionPackage, AsyncLoaded, RunStatus, ServerConfig } from '@/shared/types';
+import { toKebabCase } from '@/shared/utils/helpers';
+import { useActionServerContext } from '@/shared/context/actionServerContext';
+import { useLocalStorage } from '@/shared/hooks/useLocalStorage';
 import {
   formDataToPayload,
   Payload,
@@ -33,7 +33,7 @@ import {
   PropertyFormData,
   PropertyFormDataType,
   setArrayItemTitle,
-} from '~/lib/formData';
+} from '@/shared/utils/formData';
 import { useActionRunMutation } from '~/queries/actions';
 import { Code } from '~/components/Code';
 import {
@@ -41,8 +41,8 @@ import {
   IOAuth2UserProvider,
   IProviderToCollectedOauth2Tokens,
   IRequiredOauth2Data,
-} from '~/lib/oauth2';
-import { collectOAuth2Status } from '~/lib/requestData';
+} from '@/shared/utils/oauth2';
+import { collectOAuth2Status } from '@/shared/api-client';
 import { CancelButton } from '~/components/CancelButton';
 import { ActionRunResult } from './ActionRunResult';
 import { ErrorDialog, ErrorDialogInfo } from './ErrorDialog';

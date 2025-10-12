@@ -2,8 +2,8 @@ import { FC } from 'react';
 import { Header } from '@sema4ai/components';
 
 import { Code } from '~/components';
-import { prettyPrint } from '~/lib/helpers';
-import { Action } from '~/lib/types';
+import { prettyPrint } from '@/shared/utils/helpers';
+import { Action } from '@/shared/types';
 
 type Props = {
   action: Action;

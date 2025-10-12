@@ -1,7 +1,7 @@
 import { Drawer, Header, Link } from '@sema4ai/components';
 import { FC, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { logError } from '~/lib/helpers';
+import { logError } from '@/shared/utils/helpers';
 import {
   ActionRunConsole,
   DefinitionList,
@@ -10,7 +10,7 @@ import {
   Timestamp,
   Code,
 } from '~/components';
-import { baseUrl } from '~/lib/requestData';
+import { baseUrl } from '@/shared/api-client';
 import { IconFileText } from '@sema4ai/icons';
 import { CancelButton } from '~/components/CancelButton';
 import { useActionRunsContext } from './context';

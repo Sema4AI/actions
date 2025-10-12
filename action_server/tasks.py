@@ -242,6 +242,127 @@ def build_frontend_enterprise(ctx: Context, debug: bool = False, install: bool =
 
 
 @task
+def validate_imports(ctx: Context, tier: str = "community", json_output: bool = False):
+    """Validate that community artifacts have no enterprise imports.
+    
+    Args:
+        tier: Build tier to validate (typically 'community')
+        json_output: Output validation result as JSON
+    """
+    import json as json_lib
+    from pathlib import Path
+    
+    sys.path.insert(0, str(CURDIR / "build-binary"))
+    from tree_shaker import scan_imports, detect_enterprise_imports
+    
+    dist_path = CURDIR / "frontend" / "dist"
+    if not dist_path.exists():
+        msg = f"Distribution directory not found: {dist_path}"
+        if json_output:
+            print(json_lib.dumps({"status": "error", "message": msg}, indent=2))
+        else:
+            print(f"❌ {msg}")
+        sys.exit(2)
+    
+    # Scan all built files for enterprise imports
+    violations = detect_enterprise_imports(str(dist_path))
+    
+    if violations:
+        msg = f"Found {len(violations)} enterprise import(s) in {tier} build"
+        details = []
+        for v in violations:
+            details.append({
+                "file": str(v.file_path),
+                "line": v.line_number,
+                "import": v.import_statement,
+                "module": v.prohibited_module,
+                "severity": v.severity
+            })
+        
+        if json_output:
+            print(json_lib.dumps({
+                "status": "failed",
+                "message": msg,
+                "violations": details
+            }, indent=2))
+        else:
+            print(f"❌ {msg}")
+            for v in violations:
+                print(f"  {v.file_path}:{v.line_number}: {v.import_statement}")
+        sys.exit(2)
+    
+    if json_output:
+        print(json_lib.dumps({
+            "status": "passed",
+            "message": f"No enterprise imports found in {tier} build"
+        }, indent=2))
+    else:
+        print(f"✅ No enterprise imports found in {tier} build")
+
+
+@task
+def validate_artifact(ctx: Context, tier: str = "community", json_output: bool = False):
+    """Validate built artifacts meet all requirements.
+    
+    Args:
+        tier: Build tier to validate
+        json_output: Output validation result as JSON
+    """
+    import json as json_lib
+    
+    sys.path.insert(0, str(CURDIR / "build-binary"))
+    from artifact_validator import validate_artifact as validate_artifact_func
+    
+    artifact_path = CURDIR / "frontend" / "dist"
+    if not artifact_path.exists():
+        msg = f"Artifact path not found: {artifact_path}"
+        if json_output:
+            print(json_lib.dumps({"status": "error", "message": msg}, indent=2))
+        else:
+            print(f"❌ {msg}")
+        sys.exit(2)
+    
+    baseline_path = CURDIR / "tests" / "performance_tests" / "baseline.json"
+    
+    try:
+        all_passed, checks = validate_artifact_func(
+            artifact_path, 
+            tier, 
+            baseline_path if baseline_path.exists() else None,
+            json_output
+        )
+        
+        if json_output:
+            output = {
+                "status": "passed" if all_passed else "failed",
+                "checks": [
+                    {
+                        "name": check.name,
+                        "passed": check.passed,
+                        "message": check.message,
+                        "severity": check.severity
+                    }
+                    for check in checks
+                ]
+            }
+            print(json_lib.dumps(output, indent=2))
+        else:
+            for check in checks:
+                status = "✅" if check.passed else "❌"
+                print(f"{status} {check.name}: {check.message}")
+        
+        if not all_passed:
+            sys.exit(2)
+    
+    except Exception as e:
+        if json_output:
+            print(json_lib.dumps({"status": "error", "message": str(e)}, indent=2))
+        else:
+            print(f"❌ Validation error: {e}")
+        sys.exit(2)
+
+
+@task
 def build_frontend_cdn(ctx: Context, version: str = "latest"):
     """Build static .html frontend from CDN (bypasses npm dependencies)"""
     import subprocess

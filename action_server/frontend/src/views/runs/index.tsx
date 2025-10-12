@@ -23,10 +23,10 @@ import {
   IconSearch,
 } from '@sema4ai/icons';
 
-import { RunStatus, RunTableEntry } from '~/lib/types';
-import { useActionServerContext } from '~/lib/actionServerContext';
+import { RunStatus, RunTableEntry } from '@/shared/types';
+import { useActionServerContext } from '@/shared/context/actionServerContext';
 import { Duration, Timestamp, StatusBadge, ViewLoader, ViewError } from '~/components';
-import { baseUrl } from '~/lib/requestData';
+import { baseUrl } from '@/shared/api-client';
 
 import { ActionRunsContext, useActionRunsContext } from './components/context';
 import { ActionRunDetails } from './components/ActionRunDetails';
