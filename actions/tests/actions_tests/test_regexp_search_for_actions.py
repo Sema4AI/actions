@@ -21,6 +21,8 @@ def test_should_match_decorators_with_parameters():
     assert pattern.search("@mcp.prompt(description='test')")
     assert pattern.search("@mcp.resource(type='file')")
 
+    assert pattern.search("DataSourceSpec(name='test')")
+
 
 def test_should_not_match_invalid_patterns():
     """Test that the regex doesn't match invalid patterns."""
