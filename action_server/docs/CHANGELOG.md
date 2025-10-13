@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 2.16.2 - 2025-10-13
+
+- RCC v20.3.3: Fix for the `rcc ht hash` call with `--warranty-voided` problem
+
 ## 2.16.1 - 2025-10-09
 
 - RCC v20.3.2: Fix init error of missing `uv` extraction
