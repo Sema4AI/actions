@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 1.5.1 - 2025-10-13
+
+- Fixed issue where it was looking for `@DataSourceSpec` instead of `DataSourceSpec` in the files to decide whether to automatically
+  load the module when collecting definitions.
+
 ## 1.5.0 - 2025-10-08
 
 - Added `SecretSpec` class for tagging secrets with metadata that can be used by external clients for special handling.
