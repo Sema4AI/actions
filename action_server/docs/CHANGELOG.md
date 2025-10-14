@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 2.16.3 - 2025-10-14
+
+- Expose version field in /api/actionPackages api route
+
 ## 2.16.2 - 2025-10-13
 
 - RCC v20.3.3: Fix for the `rcc ht hash` call with `--warranty-voided` problem
