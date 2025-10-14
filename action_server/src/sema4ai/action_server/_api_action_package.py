@@ -1,15 +1,13 @@
+import logging
 from dataclasses import dataclass
 from typing import List
-
-import yaml
 
 from fastapi.routing import APIRouter
 
 from sema4ai.action_server._models import Action, ActionPackage
-from sema4ai.action_server._settings import get_settings
-from sema4ai.action_server._actions_run_helpers import get_action_package_cwd
 
 action_package_api_router = APIRouter(prefix="/api/actionPackages")
+log = logging.getLogger(__name__)
 
 
 @dataclass
@@ -23,8 +21,12 @@ class ActionPackageApi:
 @action_package_api_router.get("", response_model=List[ActionPackageApi])
 def list_action_packages():
     from sema4ai.action_server._models import get_db
+    from sema4ai.action_server._settings import get_settings
+    from sema4ai.action_server._actions_run_helpers import get_action_package_cwd
+    import yaml
 
     db = get_db()
+    settings = get_settings()
     with db.connect():
         # We're running in the threadpool used by fast api, so, we need
         # to make a new connection (maybe it'd make sense to create a
@@ -32,7 +34,6 @@ def list_action_packages():
         action_packages = db.all(ActionPackage)
 
         id_to_action_package = {}
-        settings = get_settings()
         for action_package in action_packages:
             version = ""
             try:
@@ -46,8 +47,12 @@ def list_action_packages():
                         if v is not None:
                             version = str(v)
             except Exception:
-                # Ignore errors and keep version empty if it can't be determined
-                pass
+                # Keep version empty if it can't be determined, but log for troubleshooting.
+                log.debug(
+                    "Unable to determine version for action package %s",
+                    action_package.name,
+                    exc_info=True,
+                )
 
             id_to_action_package[action_package.id] = ActionPackageApi(
                 action_package.id, action_package.name, [], version
