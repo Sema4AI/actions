@@ -49,7 +49,7 @@ def list_action_packages():
                             version = str(v)
             except Exception:
                 # Keep version empty if it can't be determined, but log for troubleshooting.
-                log.debug(
+                log.info(
                     "Unable to determine version for action package %s",
                     action_package.name,
                     exc_info=True,
