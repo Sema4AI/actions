@@ -1,9 +1,13 @@
 from dataclasses import dataclass
 from typing import List
 
+import yaml
+
 from fastapi.routing import APIRouter
 
 from sema4ai.action_server._models import Action, ActionPackage
+from sema4ai.action_server._settings import get_settings
+from sema4ai.action_server._actions_run_helpers import get_action_package_cwd
 
 action_package_api_router = APIRouter(prefix="/api/actionPackages")
 
@@ -13,6 +17,7 @@ class ActionPackageApi:
     id: str  # primary key (uuid)
     name: str  # The name for the action package
     actions: List[Action]
+    version: str
 
 
 @action_package_api_router.get("", response_model=List[ActionPackageApi])
@@ -27,9 +32,25 @@ def list_action_packages():
         action_packages = db.all(ActionPackage)
 
         id_to_action_package = {}
+        settings = get_settings()
         for action_package in action_packages:
+            version = ""
+            try:
+                directory = get_action_package_cwd(settings, action_package)
+                package_yaml_path = directory / "package.yaml"
+                if package_yaml_path.exists():
+                    with package_yaml_path.open("r", encoding="utf-8") as stream:
+                        contents = yaml.safe_load(stream)
+                    if isinstance(contents, dict):
+                        v = contents.get("version")
+                        if v is not None:
+                            version = str(v)
+            except Exception:
+                # Ignore errors and keep version empty if it can't be determined
+                pass
+
             id_to_action_package[action_package.id] = ActionPackageApi(
-                action_package.id, action_package.name, []
+                action_package.id, action_package.name, [], version
             )
 
         for action in db.all(Action):
