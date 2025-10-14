@@ -20,10 +20,11 @@ class ActionPackageApi:
 
 @action_package_api_router.get("", response_model=List[ActionPackageApi])
 def list_action_packages():
+    import yaml
+
+    from sema4ai.action_server._actions_run_helpers import get_action_package_cwd
     from sema4ai.action_server._models import get_db
     from sema4ai.action_server._settings import get_settings
-    from sema4ai.action_server._actions_run_helpers import get_action_package_cwd
-    import yaml
 
     db = get_db()
     settings = get_settings()
