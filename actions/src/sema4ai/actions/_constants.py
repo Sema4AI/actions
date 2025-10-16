@@ -15,6 +15,7 @@ DEFAULT_ACTION_SEARCH_GLOB = "*"
 # DataSourceSpec
 REGEXP_TO_LOAD_FOR_DEFINITIONS = (
     r"@("
+    # With @ symbol:
     # Actions:
     r"\baction\b|"
     r"\bquery\b|"
@@ -28,10 +29,11 @@ REGEXP_TO_LOAD_FOR_DEFINITIONS = (
     # MCP with dot notation:
     r"\bmcp\.tool\b|"
     r"\bmcp\.prompt\b|"
-    r"\bmcp\.resource\b|"
+    r"\bmcp\.resource\b"
+    r")|"
+    # Without @ symbol:
     # Data source definitions:
     r"\bDataSourceSpec\b"
-    r")"
 )
 
 MODULE_ENTRY_POINT = "sema4ai.actions"
