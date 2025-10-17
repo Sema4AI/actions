@@ -55,6 +55,18 @@ action_table_in_out:
               type: string
             title: Columns
             type: array
+          description:
+            anyOf:
+            - type: string
+            - type: 'null'
+            default: null
+            title: Description
+          name:
+            anyOf:
+            - type: string
+            - type: 'null'
+            default: null
+            title: Name
           rows:
             items:
               items:
@@ -92,6 +104,18 @@ action_table_in_out:
           type: string
         title: Columns
         type: array
+      description:
+        anyOf:
+        - type: string
+        - type: 'null'
+        default: null
+        title: Description
+      name:
+        anyOf:
+        - type: string
+        - type: 'null'
+        default: null
+        title: Name
       rows:
         items:
           items:
@@ -140,6 +164,18 @@ action_table_response:
                 type: string
               title: Columns
               type: array
+            description:
+              anyOf:
+              - type: string
+              - type: 'null'
+              default: null
+              title: Description
+            name:
+              anyOf:
+              - type: string
+              - type: 'null'
+              default: null
+              title: Name
             rows:
               items:
                 items:
@@ -183,6 +219,18 @@ action_with_table_result:
           type: string
         title: Columns
         type: array
+      description:
+        anyOf:
+        - type: string
+        - type: 'null'
+        default: null
+        title: Description
+      name:
+        anyOf:
+        - type: string
+        - type: 'null'
+        default: null
+        title: Name
       rows:
         items:
           items:

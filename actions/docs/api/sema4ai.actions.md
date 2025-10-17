@@ -570,13 +570,17 @@ It's meant to be used to represent the result of a table-like operation.
 
 - <b>`columns`</b>: The columns of the table.
 - <b>`rows`</b>: The rows of the table.
+- <b>`name`</b>: Optional name for the table (e.g., "sales_data").
+- <b>`description`</b>: Optional description (e.g., "Sales records for Q1 2024").
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/_table.py#L19)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/_table.py#L21)
 
 ```python
 __init__(
     columns: list[str],
-    rows: list[list[str | int | float | bool | list | dict | None]]
+    rows: list[list[str | int | float | bool | list | dict | None]],
+    name: str | None = None,
+    description: str | None = None
 )
 ```
 
@@ -611,7 +615,7 @@ Get a row from the table as a dictionary.
 **Returns:**
 The row at the given index as a dictionary.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/_table.py#L82)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/_table.py#L90)
 
 ```python
 get_row_as_dict(
@@ -628,7 +632,7 @@ Iterate over the rows of the table as dictionaries.
 **Returns:**
 An iterator over the rows of the table as dictionaries.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/_table.py#L51)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/_table.py#L59)
 
 ```python
 iter_as_dicts() → Iterator[dict[str, str | int | float | bool | list | dict | None]]

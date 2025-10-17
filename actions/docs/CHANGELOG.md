@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+## 1.5.1 - 2025-10-17
+
+- Table validation now checks all rows for consistency, not just the first 5 rows. This ensures data integrity with negligible performance impact.
+
+- Table now accepts optional `name` and `description` fields for better labeling and documentation of table data. 
+  Fields are optional and default to `None`, maintaining backward compatibility.
+
+- Added `agent.list_data_frames()` and `agent.get_data_frame()` functions for programmatic access to thread dataframes.
+
 ## 1.5.0 - 2025-10-08
 
 - Added `SecretSpec` class for tagging secrets with metadata that can be used by external clients for special handling.
