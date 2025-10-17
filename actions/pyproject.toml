@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sema4ai-actions"
-version = "1.6.0"
+version = "1.5.0"
 description = "Sema4AI Actions"
 authors = ["Sema4.ai Engineering <engineering@sema4.ai>"]
 readme = "README.md"

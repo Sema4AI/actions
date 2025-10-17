@@ -2,41 +2,14 @@
 
 ## Unreleased
 
-- **Table validation improvement**: All rows are now validated for consistency, not just the first 5.
-  - Previously, the `Table` class only validated the first 5 rows for performance reasons, which could allow inconsistent data beyond row 5 to pass undetected.
-  - Now all rows are validated to ensure data integrity, with negligible performance impact for typical use cases.
-  - This prevents bugs where row 6+ might have incorrect column counts.
+## 1.5.1 - 2025-10-17
 
-- **Table metadata support**: `Table` now accepts optional `name` and `description` fields.
-  - Enables better labeling and documentation of table data.
-  - Useful when actions return tables that need to be identified or described.
-  - Fields are optional and default to `None`, maintaining backward compatibility.
-  - Serialized tables now include `name` and `description` fields (as `null` when not set).
-  - Example: `Table(columns=["a"], rows=[[1]], name="sales", description="Q1 sales data")`
+- Table validation now checks all rows for consistency, not just the first 5 rows. This ensures data integrity with negligible performance impact.
 
-- **New dataframe API functions**: Added `agent.list_data_frames()` and `agent.get_data_frame()` for programmatic access to thread dataframes.
-  - `agent.list_data_frames()` - Lists all available dataframes in the current thread with metadata (name, description, row/column counts, headers).
-  - `agent.get_data_frame(name, limit=10000)` - Fetches a specific dataframe by name, returning a `Table` object.
-  - Both functions require an action execution context (automatically available when called from within an `@action`).
-  - Raises `ActionError` if called outside an action context or if the agent-server endpoint is unavailable.
-  - Raises `ValueError` if a requested dataframe is not found (404).
-  - Example usage:
-    ```python
-    from sema4ai.actions import action, agent
+- Table now accepts optional `name` and `description` fields for better labeling and documentation of table data. 
+  Fields are optional and default to `None`, maintaining backward compatibility.
 
-    @action
-    def analyze_sales() -> str:
-        '''Analyze sales data from available dataframes.'''
-        # List all dataframes
-        dfs = agent.list_data_frames()
-        print(f"Found {len(dfs)} dataframes")
-        
-        # Fetch specific dataframe
-        sales = agent.get_data_frame("sales_data", limit=1000)
-        total = sum(row[2] for row in sales.rows)  # Sum column 3
-        return f"Total sales: ${total:,.2f}"
-    ```
-  - **Note**: This is Phase 1 (client-side only). The corresponding server-side API endpoints will be implemented in a future update to the agent-platform.
+- Added `agent.list_data_frames()` and `agent.get_data_frame()` functions for programmatic access to thread dataframes.
 
 ## 1.5.0 - 2025-10-08
 
