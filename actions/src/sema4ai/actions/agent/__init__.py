@@ -217,10 +217,123 @@ def prompt_generate(
     return response.json()
 
 
+def list_data_frames() -> list[dict]:
+    """List all data frames available in the current thread.
+
+    Returns:
+        List of dataframe metadata dictionaries with keys:
+        - name: str - Name of the dataframe
+        - description: str | None - Description of the dataframe
+        - num_rows: int - Number of rows
+        - num_columns: int - Number of columns
+        - column_headers: list[str] - List of column names
+
+    Raises:
+        ActionError: If called outside of an action context or if unable to fetch dataframes.
+
+    Example:
+        >>> from sema4ai.actions import action, agent
+        >>>
+        >>> @action
+        >>> def list_available_data() -> str:
+        >>>     '''List all dataframes in the current conversation.'''
+        >>>     dfs = agent.list_data_frames()
+        >>>     return f"Found {len(dfs)} dataframes: {[df['name'] for df in dfs]}"
+
+    Note:
+        This function requires the agent-server to support the dataframes API endpoint.
+        If the endpoint is not available, this will raise an ActionError.
+    """
+    from sema4ai.actions.agent._client import AgentApiClientException
+
+    thread_id = get_thread_id()
+    client = _AgentAPIClient()
+
+    try:
+        response = client.request(
+            "data-frames",
+            method="GET",
+            query_params={"thread_id": thread_id},
+        )
+        return response.json()
+    except AgentApiClientException as e:
+        raise ActionError(
+            f"Failed to list dataframes from thread {thread_id}: {e}"
+        ) from e
+
+
+def get_data_frame(name: str, limit: int = 10000) -> "Table":
+    """Get a data frame by name from the current thread.
+
+    Args:
+        name: Name of the data frame to retrieve
+        limit: Maximum number of rows to fetch (default: 10000).
+               For very large dataframes, consider using SQL to filter
+               data before fetching.
+
+    Returns:
+        Table object with the data frame contents, including:
+        - columns: list[str]
+        - rows: list[list]
+        - name: str | None
+        - description: str | None
+
+    Raises:
+        ActionError: If called outside of an action context.
+        ValueError: If data frame with given name not found.
+
+    Example:
+        >>> from sema4ai.actions import action, agent
+        >>>
+        >>> @action
+        >>> def analyze_sales(dataframe_name: str) -> str:
+        >>>     '''Analyze sales data from a dataframe.'''
+        >>>     sales_data = agent.get_data_frame(dataframe_name)
+        >>>     total = sum(row[1] for row in sales_data.rows)
+        >>>     return f"Total sales: ${total:,.2f}"
+
+    Note:
+        This function requires the agent-server to support the dataframes API endpoint.
+        If the endpoint is not available, this will raise an ActionError.
+    """
+    from sema4ai.actions import Table
+    from sema4ai.actions.agent._client import AgentApiClientException
+
+    thread_id = get_thread_id()
+    client = _AgentAPIClient()
+
+    try:
+        response = client.request(
+            f"data-frames/{name}",
+            method="GET",
+            query_params={"thread_id": thread_id, "limit": limit},
+        )
+        data = response.json()
+
+        return Table(
+            columns=data["columns"],
+            rows=data["rows"],
+            name=data.get("name"),
+            description=data.get("description"),
+        )
+    except AgentApiClientException as e:
+        # Convert 404 to ValueError for better UX
+        if "404" in str(e):
+            raise ValueError(
+                f"Data frame '{name}' not found in thread {thread_id}"
+            ) from e
+        # Wrap other errors in ActionError
+        raise ActionError(
+            f"Failed to fetch dataframe '{name}' from thread {thread_id}: {e}"
+        ) from e
+
+
 __all__ = [
     "get_thread_id",
     "get_agent_id",
     "prompt_generate",
+    "list_data_frames",
+    "get_data_frame",
     "Prompt",
     "PromptTextContent",
     "PromptImageContent",
