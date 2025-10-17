@@ -5,7 +5,7 @@
 
 import { Button, Dialog, Tooltip } from '@sema4ai/components';
 import { FC, useCallback, useState } from 'react';
-import { ServerConfig } from '~/lib/types';
+import { ServerConfig } from '@/shared/types';
 
 export interface CheckVersionDialogInfo {
   serverConfig: ServerConfig | undefined;

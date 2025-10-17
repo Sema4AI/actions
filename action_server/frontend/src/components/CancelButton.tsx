@@ -1,8 +1,8 @@
 import { FC, useMemo } from 'react';
 import { Button, Tooltip } from '@sema4ai/components';
 import { IconStop } from '@sema4ai/icons';
-import { cancelRun } from '~/lib/requestData';
-import { RunStatus } from '~/lib/types';
+import { cancelRun } from '@/shared/api-client';
+import { RunStatus } from '@/shared/types';
 
 type Props = {
   runId?: string;

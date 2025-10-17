@@ -1,6 +1,6 @@
 import { FC } from 'react';
 import { Header, Link } from '@sema4ai/components';
-import { baseUrl } from '~/lib/requestData';
+import { baseUrl } from '@/shared/api-client';
 import { ActionRunConsole, Code } from '~/components';
 import { IconFileText } from '@sema4ai/icons';
 

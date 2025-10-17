@@ -5,7 +5,7 @@ import {
   formDataToPayload,
   payloadToFormData,
   PropertyFormData,
-} from '../lib/formData';
+} from '@/shared/utils/formData';
 
 import inputSchema from './fixtures/inputSchema.json';
 import formData from './fixtures/formData.json';

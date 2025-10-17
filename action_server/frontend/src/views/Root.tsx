@@ -14,7 +14,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { HeaderAndMenu } from '~/components/Header';
 import { Redirect, SideHeader } from '~/components';
-import { LoadedActionsPackages, LoadedServerConfig, LoadedRuns } from '~/lib/types';
+import { LoadedActionsPackages, LoadedServerConfig, LoadedRuns } from '@/shared/types';
 import {
   startTrackActions,
   startTrackRuns,
@@ -22,8 +22,8 @@ import {
   stopTrackActions,
   stopTrackRuns,
   stopTrackServerConfig,
-} from '~/lib/requestData';
-import { useLocalStorage } from '~/lib/useLocalStorage';
+} from '@/shared/api-client';
+import { useLocalStorage } from '@/shared/hooks/useLocalStorage';
 
 import { ActionRuns } from './runs';
 import { ActionPackages } from './actions';
@@ -32,7 +32,7 @@ import {
   ActionServerContextType,
   ViewSettings,
   defaultActionServerState,
-} from '../lib/actionServerContext';
+} from '@/shared/context/actionServerContext';
 import { CheckVersionDialog } from './actions/components/CheckVersionDialog';
 
 const Main = styled.main<{ isCollapsed: boolean }>`

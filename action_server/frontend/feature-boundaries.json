@@ -1,0 +1,58 @@
+{
+  "features": [
+    {
+      "id": "design_system",
+      "name": "Design System",
+      "tier": "enterprise",
+      "description": "Proprietary @sema4ai design system components"
+    },
+    {
+      "id": "kb_ui",
+      "name": "Knowledge Base UI",
+      "tier": "enterprise",
+      "description": "Knowledge Base interface and components"
+    },
+    {
+      "id": "themes",
+      "name": "Themes",
+      "tier": "enterprise",
+      "description": "Advanced theming and branding capabilities"
+    },
+    {
+      "id": "analytics_ui",
+      "name": "Analytics UI",
+      "tier": "enterprise",
+      "description": "Advanced analytics charts and dashboards"
+    },
+    {
+      "id": "sso_ui",
+      "name": "SSO UI",
+      "tier": "enterprise",
+      "description": "SAML/SSO configuration interface"
+    },
+    {
+      "id": "action_ui",
+      "name": "Action UI",
+      "tier": "core",
+      "description": "Action execution interface"
+    },
+    {
+      "id": "logs_ui",
+      "name": "Logs UI",
+      "tier": "core",
+      "description": "Log viewing and filtering"
+    },
+    {
+      "id": "artifacts_ui",
+      "name": "Artifacts UI",
+      "tier": "core",
+      "description": "Artifact browsing and download"
+    },
+    {
+      "id": "open_components",
+      "name": "Open Components",
+      "tier": "core",
+      "description": "Radix UI + Tailwind CSS components"
+    }
+  ]
+}

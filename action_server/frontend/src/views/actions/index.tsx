@@ -2,8 +2,8 @@ import { FC, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Badge, Column, Header, Table, TableRowProps } from '@sema4ai/components';
 
-import { useActionServerContext } from '~/lib/actionServerContext';
-import { Action, ActionPackage, Run } from '~/lib/types';
+import { useActionServerContext } from '@/shared/context/actionServerContext';
+import { Action, ActionPackage, Run } from '@/shared/types';
 import { ViewError, ViewLoader } from '~/components';
 
 import { IconPlay, IconUnorderedList } from '@sema4ai/icons';

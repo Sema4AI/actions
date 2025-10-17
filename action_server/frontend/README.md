@@ -1,5 +1,37 @@
 # sema4ai-server-frontend
 
+## Dual-Tier Build System
+
+This frontend supports two build tiers:
+- **Community**: Open-source build using Radix UI + Tailwind CSS (no proprietary dependencies)
+- **Enterprise**: Internal build using @sema4ai design system packages
+
+### Package Manifest Precedence
+
+The build system uses tier-specific package manifests:
+- `package.json.community` - Community tier dependencies (Radix UI, Tailwind, OSI-licensed packages only)
+- `package.json.enterprise` - Enterprise tier dependencies (includes @sema4ai/* packages from vendored/)
+- `package.json` - Active manifest (copied from tier-specific file during build)
+
+**Important**: Do not manually edit `package.json`. Always edit the tier-specific files (`package.json.community` or `package.json.enterprise`).
+
+### Pre-Commit Hooks (Optional)
+
+To enable local tier separation validation, install the pre-commit hook:
+
+```bash
+cd action_server
+invoke setup-hooks
+```
+
+The hook checks for:
+- Enterprise imports (`@sema4ai/*`, `@/enterprise`) in `core/` files
+- Enterprise file modifications on community branches
+
+To bypass the hook when needed: `git commit --no-verify`
+
+**Note**: The hook is optional for local development, but CI enforces these rules mandatory.
+
 ## Installation
 
 Install dependencies:

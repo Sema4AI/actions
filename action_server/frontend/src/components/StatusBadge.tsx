@@ -1,7 +1,7 @@
 import { FC, useMemo } from 'react';
 import { Badge } from '@sema4ai/components';
 
-import { RunStatus } from '~/lib/types';
+import { RunStatus } from '@/shared/types';
 
 type Props = {
   status: RunStatus;

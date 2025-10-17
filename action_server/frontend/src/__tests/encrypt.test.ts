@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect, test } from 'vitest';
-import { decrypt, encrypt, getAESKey } from '~/lib/encryption';
+import { decrypt, encrypt, getAESKey } from '@/shared/utils/encryption';
 
 test('Encryption', async () => {
   const key = crypto.getRandomValues(new Uint8Array(32));
