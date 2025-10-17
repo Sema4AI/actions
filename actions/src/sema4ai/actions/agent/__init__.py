@@ -1,9 +1,13 @@
 import logging
+from typing import TYPE_CHECKING
 
 from pydantic import BaseModel
 
 from sema4ai.actions._response import ActionError
 from sema4ai.actions.agent._client import _AgentAPIClient
+
+if TYPE_CHECKING:
+    from sema4ai.actions import Table
 from sema4ai.actions.agent._models import (
     ConversationHistoryParams,
     ConversationHistorySpecialMessage,
