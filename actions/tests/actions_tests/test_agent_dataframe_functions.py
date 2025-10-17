@@ -35,7 +35,9 @@ def test_list_data_frames_api():
         mock_instance.request.return_value = mock_response
 
         # Mock get_thread_id to return a test thread ID
-        with patch("sema4ai.actions.agent.get_thread_id", return_value="test-thread-123"):
+        with patch(
+            "sema4ai.actions.agent.get_thread_id", return_value="test-thread-123"
+        ):
             # Call list_data_frames
             result = list_data_frames()
 
@@ -76,7 +78,9 @@ def test_get_data_frame_api():
         mock_instance.request.return_value = mock_response
 
         # Mock get_thread_id
-        with patch("sema4ai.actions.agent.get_thread_id", return_value="test-thread-456"):
+        with patch(
+            "sema4ai.actions.agent.get_thread_id", return_value="test-thread-456"
+        ):
             # Call get_data_frame
             result = get_data_frame("q1_sales", limit=5000)
 
@@ -107,10 +111,14 @@ def test_get_data_frame_not_found():
         MockClient.return_value = mock_instance
 
         # Mock a 404 error
-        mock_instance.request.side_effect = AgentApiClientException("HTTP 404: Not Found")
+        mock_instance.request.side_effect = AgentApiClientException(
+            "HTTP 404: Not Found"
+        )
 
         # Mock get_thread_id
-        with patch("sema4ai.actions.agent.get_thread_id", return_value="test-thread-789"):
+        with patch(
+            "sema4ai.actions.agent.get_thread_id", return_value="test-thread-789"
+        ):
             # Call get_data_frame - should raise ValueError
             with pytest.raises(ValueError) as exc_info:
                 get_data_frame("nonexistent_df")
@@ -162,7 +170,9 @@ def test_data_frame_api_with_limit():
         mock_instance.request.return_value = mock_response
 
         # Mock get_thread_id
-        with patch("sema4ai.actions.agent.get_thread_id", return_value="test-thread-limit"):
+        with patch(
+            "sema4ai.actions.agent.get_thread_id", return_value="test-thread-limit"
+        ):
             # Call get_data_frame with custom limit
             result = get_data_frame("test_data", limit=100)
 
@@ -176,4 +186,3 @@ def test_data_frame_api_with_limit():
             # Verify the response
             assert result.name == "test_data"
             assert len(result.rows) == 100
-

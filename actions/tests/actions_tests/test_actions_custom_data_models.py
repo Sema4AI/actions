@@ -151,13 +151,13 @@ def test_table_validation_fails_on_row_50():
     # Create 100 rows where row 50 has wrong column count
     columns = ["col1", "col2", "col3"]
     rows = [[f"val{i}_1", f"val{i}_2", f"val{i}_3"] for i in range(100)]
-    
+
     # Make row 50 invalid (only 2 columns instead of 3)
     rows[50] = ["bad_val1", "bad_val2"]
 
     with pytest.raises(ValueError) as e:
         Table(columns=columns, rows=rows)
-    
+
     # Verify the error message specifically mentions row 50
     assert "Row 50 has 2 columns, expected 3" in str(e.value), str(e.value)
 
@@ -171,13 +171,13 @@ def test_table_validation_fails_on_last_row():
     # Create 20 rows where the last row (row 19) has wrong column count
     columns = ["a", "b"]
     rows = [[f"val{i}_1", f"val{i}_2"] for i in range(20)]
-    
+
     # Make last row invalid (3 columns instead of 2)
     rows[19] = ["last_val1", "last_val2", "extra_column"]
 
     with pytest.raises(ValueError) as e:
         Table(columns=columns, rows=rows)
-    
+
     # Verify the error message mentions row 19
     assert "Row 19 has 3 columns, expected 2" in str(e.value), str(e.value)
 
@@ -190,8 +190,10 @@ def test_table_validation_performance():
 
     # Create a table with 10,000 rows
     columns = ["col1", "col2", "col3", "col4", "col5"]
-    rows = [[f"val{i}_1", f"val{i}_2", f"val{i}_3", f"val{i}_4", f"val{i}_5"] 
-            for i in range(10000)]
+    rows = [
+        [f"val{i}_1", f"val{i}_2", f"val{i}_3", f"val{i}_4", f"val{i}_5"]
+        for i in range(10000)
+    ]
 
     start_time = time.time()
     table = Table(columns=columns, rows=rows)
