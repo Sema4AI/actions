@@ -202,3 +202,32 @@ Raw content of the file
 ```python
 get_file(name: str) → Path
 ```
+
+______________________________________________________________________
+
+## `list_files`
+
+Lists all files in the current chat thread.
+
+**Returns:**
+A list of filenames in the thread.
+
+**Raises:**
+
+- <b>`RuntimeError`</b>: If unable to get client or thread_id.
+- <b>`ValueError`</b>: If the API request fails in remote mode.
+
+**Example:**
+
+```python
+from sema4ai.actions import chat
+files = chat.list_files()
+print(files)
+# ['document.pdf', 'data.json']
+```
+
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/chat/__init__.py#L361)
+
+```python
+list_files() → list[str]
+```

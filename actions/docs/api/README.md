@@ -77,4 +77,5 @@
 - [`chat.get_file_content`](./sema4ai.actions.chat.md#function-get_file_content): Get the content of a file in the current action chat.
 - [`chat.get_json`](./sema4ai.actions.chat.md#function-get_json): Get the JSON content of a file in the current action chat.
 - [`chat.get_text`](./sema4ai.actions.chat.md#function-get_text): Get the text content of a file in the current action chat.
+- [`chat.list_files`](./sema4ai.actions.chat.md#function-list_files): Lists all files in the current chat thread.
 - [`cli.main`](./sema4ai.actions.cli.md#function-main): Entry point for running actions from sema4ai-actions.
