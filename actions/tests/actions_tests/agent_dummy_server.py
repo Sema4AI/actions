@@ -93,7 +93,7 @@ class _AgentDummyServer(BaseHTTPRequestHandler):
             and path_parts[2] == "data-frames"
         ):
             dataframe_name = path_parts[3]
-            
+
             # Extract query parameters
             query_params = urllib.parse.parse_qs(parsed_path.query)
             thread_id = query_params.get("thread_id", [None])[0]

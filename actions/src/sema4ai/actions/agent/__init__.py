@@ -50,6 +50,7 @@ if TYPE_CHECKING:
 # Cache PyArrow availability to avoid repeated imports
 _pyarrow_available = None
 
+
 def _is_pyarrow_available() -> bool:
     """Check if PyArrow is available, caching the result."""
     global _pyarrow_available
@@ -57,6 +58,7 @@ def _is_pyarrow_available() -> bool:
         try:
             import pyarrow  # noqa: F401
             import pyarrow.parquet  # noqa: F401
+
             _pyarrow_available = True
         except ImportError:
             _pyarrow_available = False
@@ -65,25 +67,27 @@ def _is_pyarrow_available() -> bool:
 
 def _parse_dataframe_response(response) -> dict:
     """Parse dataframe response, trying Parquet first, then falling back to JSON.
-    
+
     Args:
         response: HTTP response object
-        
+
     Returns:
         dict: Parsed dataframe data with columns, rows, name, description
     """
     # Check if response is Parquet format and PyArrow is available
-    content_type = response.headers.get('content-type', '').lower()
-    if ('parquet' in content_type or 'application/octet-stream' in content_type) and _is_pyarrow_available():
+    content_type = response.headers.get("content-type", "").lower()
+    if (
+        "parquet" in content_type or "application/octet-stream" in content_type
+    ) and _is_pyarrow_available():
         try:
             import pyarrow as pa  # noqa: F401
             import pyarrow.parquet as pq
             from io import BytesIO
-            
+
             # Read Parquet data
             parquet_data = BytesIO(response.content)
             table = pq.read_table(parquet_data)
-            
+
             # Convert to our format
             columns = table.column_names
             rows = []
@@ -93,20 +97,19 @@ def _parse_dataframe_response(response) -> dict:
                     value = table[col][i].as_py()
                     row.append(value)
                 rows.append(row)
-            
+
             return {
                 "columns": columns,
                 "rows": rows,
                 "name": None,  # Parquet doesn't include metadata
-                "description": None
+                "description": None,
             }
         except Exception:
             # Parquet parsing failed, fall back to JSON
             pass
-    
+
     # Fallback to JSON
     return response.json()
-
 
 
 log = logging.getLogger(__name__)
@@ -330,11 +333,11 @@ def list_data_frames() -> list[DataFrameInfo]:
 
 
 def get_data_frame(
-    name: str, 
+    name: str,
     limit: int = 1000,
     offset: int = 0,
     column_names: list[str] | None = None,
-    order_by: str | None = None
+    order_by: str | None = None,
 ) -> "Table":
     """Get a data frame by name from the current thread.
 
@@ -369,8 +372,8 @@ def get_data_frame(
         >>>     '''Analyze sales data from a dataframe.'''
         >>>     # Get first 100 rows, sorted by revenue
         >>>     sales_data = agent.get_data_frame(
-        >>>         dataframe_name, 
-        >>>         limit=100, 
+        >>>         dataframe_name,
+        >>>         limit=100,
         >>>         order_by="revenue"
         >>>     )
         >>>     total = sum(row[1] for row in sales_data.rows)
@@ -387,29 +390,25 @@ def get_data_frame(
     client = _AgentAPIClient()
 
     try:
-        query_params = {
-            "thread_id": thread_id, 
-            "limit": limit,
-            "offset": offset
-        }
-        
+        query_params = {"thread_id": thread_id, "limit": limit, "offset": offset}
+
         if column_names:
             query_params["column_names"] = ",".join(column_names)
         if order_by:
             query_params["order_by"] = order_by
-        
+
         # Request Parquet format if PyArrow is available, otherwise JSON
         if _is_pyarrow_available():
             query_params["format"] = "parquet"
         else:
             query_params["format"] = "json"
-            
+
         response = client.request(
             f"data-frames/{name}",
             method="GET",
             query_params=query_params,
         )
-        
+
         # Try to parse as Parquet first, fallback to JSON
         data = _parse_dataframe_response(response)
 

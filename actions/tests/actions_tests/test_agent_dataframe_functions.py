@@ -24,16 +24,18 @@ def test_list_data_frames_api(agent_dummy_server):
 
     # Mock get_thread_id to return a test thread ID
     from unittest.mock import patch
-    with patch(
-        "sema4ai.actions.agent.get_thread_id", return_value="test-thread-123"
-    ):
+
+    with patch("sema4ai.actions.agent.get_thread_id", return_value="test-thread-123"):
         # Call list_data_frames
         result = list_data_frames()
 
         # Verify the request was made correctly
         assert agent_dummy_server.last_request is not None
         assert agent_dummy_server.last_request["thread_id"] == "test-thread-123"
-        assert agent_dummy_server.last_request["path"] == "/api/v2/data-frames?thread_id=test-thread-123"
+        assert (
+            agent_dummy_server.last_request["path"]
+            == "/api/v2/data-frames?thread_id=test-thread-123"
+        )
         assert agent_dummy_server.last_request["method"] == "GET"
 
         # Verify the response
@@ -55,9 +57,8 @@ def test_get_data_frame_api(agent_dummy_server):
 
     # Mock get_thread_id
     from unittest.mock import patch
-    with patch(
-        "sema4ai.actions.agent.get_thread_id", return_value="test-thread-456"
-    ):
+
+    with patch("sema4ai.actions.agent.get_thread_id", return_value="test-thread-456"):
         # Call get_data_frame
         result = get_data_frame("q1_sales", limit=5000)
 
@@ -87,9 +88,8 @@ def test_get_data_frame_not_found(agent_dummy_server):
 
     # Mock get_thread_id
     from unittest.mock import patch
-    with patch(
-        "sema4ai.actions.agent.get_thread_id", return_value="test-thread-789"
-    ):
+
+    with patch("sema4ai.actions.agent.get_thread_id", return_value="test-thread-789"):
         # Call get_data_frame - should raise ValueError
         with pytest.raises(ValueError) as exc_info:
             get_data_frame("nonexistent_df")
@@ -134,9 +134,8 @@ def test_data_frame_api_with_limit(agent_dummy_server):
 
     # Mock get_thread_id
     from unittest.mock import patch
-    with patch(
-        "sema4ai.actions.agent.get_thread_id", return_value="test-thread-limit"
-    ):
+
+    with patch("sema4ai.actions.agent.get_thread_id", return_value="test-thread-limit"):
         # Call get_data_frame with custom limit
         result = get_data_frame("test_data", limit=100)
 
@@ -163,6 +162,7 @@ def test_get_data_frame_with_additional_parameters(agent_dummy_server):
 
     # Mock get_thread_id
     from unittest.mock import patch
+
     with patch(
         "sema4ai.actions.agent.get_thread_id", return_value="test-thread-params"
     ):
@@ -171,7 +171,7 @@ def test_get_data_frame_with_additional_parameters(agent_dummy_server):
             limit=50,
             offset=10,
             column_names=["product", "revenue"],
-            order_by="revenue"
+            order_by="revenue",
         )
 
         # Verify the client was called with correct parameters
@@ -201,6 +201,7 @@ def test_get_data_frame_parquet_fallback(agent_dummy_server):
 
     # Mock get_thread_id
     from unittest.mock import patch
+
     with patch(
         "sema4ai.actions.agent.get_thread_id", return_value="test-thread-parquet"
     ):
