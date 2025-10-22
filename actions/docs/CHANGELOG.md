@@ -2,14 +2,17 @@
 
 ## Unreleased
 
-## 1.5.1 - 2025-10-17
+## 2.0.0 - 2025-10-XX
 
-- Table validation now checks all rows for consistency, not just the first 5 rows. This ensures data integrity with negligible performance impact.
+**BREAKING CHANGES:**
+- **Table serialization schema change**: The `Table` model now includes `name` and `description` fields in serialized output (model_dump). This is a backward-incompatible change for consumers expecting the old schema. The fields are present as `null` when not set.
 
-- Table now accepts optional `name` and `description` fields for better labeling and documentation of table data. 
-  Fields are optional and default to `None`, maintaining backward compatibility.
-
-- Added `agent.list_data_frames()` and `agent.get_data_frame()` functions for programmatic access to thread dataframes.
+**New Features:**
+- **Enhanced error handling**: `AgentApiClientException` now exposes `status_code` attribute for robust error checking instead of string matching.
+- **Improved type safety**: `agent.list_data_frames()` now returns `list[DataFrameInfo]` instead of `list[dict]` for better type hints and IDE support.
+- **Table validation improvement**: All rows are now validated for consistency, not just the first 5 rows. This ensures data integrity with negligible performance impact.
+- **Table metadata support**: `Table` now accepts optional `name` and `description` fields for better labeling and documentation of table data.
+- **New dataframe API functions**: Added `agent.list_data_frames()` and `agent.get_data_frame()` for programmatic access to thread dataframes. Both functions require an action execution context and are client-side only.
 
 ## 1.5.0 - 2025-10-08
 

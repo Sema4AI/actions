@@ -1,6 +1,16 @@
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any, Literal, TypedDict
 
 from pydantic import BaseModel, Field
+
+
+class DataFrameInfo(TypedDict):
+    """Information about a dataframe available in the current thread."""
+    
+    name: str
+    description: str | None
+    num_rows: int
+    num_columns: int
+    column_headers: list[str]
 
 
 class PromptTextContent(BaseModel):

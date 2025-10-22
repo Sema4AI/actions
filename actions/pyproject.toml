@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sema4ai-actions"
-version = "1.5.0"
+version = "2.0.0"
 description = "Sema4AI Actions"
 authors = ["Sema4.ai Engineering <engineering@sema4.ai>"]
 readme = "README.md"
@@ -18,6 +18,9 @@ docstring_parser_fork = "^0.0.5"
 pydantic = "^2.11.7"
 sema4ai-http-helper = "^2.0.1"
 pyyaml = "^6.0"
+
+[tool.poetry.group.optional.dependencies]
+pyarrow = "^15.0"
 
 [tool.poetry.group.dev.dependencies]
 sema4ai-devutils = { path = "../devutils/", develop = true }

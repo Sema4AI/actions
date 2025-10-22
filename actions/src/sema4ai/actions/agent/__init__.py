@@ -8,9 +8,75 @@ from sema4ai.actions.agent._client import _AgentAPIClient
 
 if TYPE_CHECKING:
     from sema4ai.actions import Table
+
+
+# Cache PyArrow availability to avoid repeated imports
+_pyarrow_available = None
+
+def _is_pyarrow_available() -> bool:
+    """Check if PyArrow is available, caching the result."""
+    global _pyarrow_available
+    if _pyarrow_available is None:
+        try:
+            import pyarrow as pa
+            import pyarrow.parquet as pq
+            _pyarrow_available = True
+        except ImportError:
+            _pyarrow_available = False
+    return _pyarrow_available
+
+
+def _parse_dataframe_response(response) -> dict:
+    """Parse dataframe response, trying Parquet first, then falling back to JSON.
+    
+    Args:
+        response: HTTP response object
+        
+    Returns:
+        dict: Parsed dataframe data with columns, rows, name, description
+    """
+    import json
+    
+    # Check if response is Parquet format and PyArrow is available
+    content_type = response.headers.get('content-type', '').lower()
+    if ('parquet' in content_type or 'application/octet-stream' in content_type) and _is_pyarrow_available():
+        try:
+            import pyarrow as pa
+            import pyarrow.parquet as pq
+            from io import BytesIO
+            
+            # Read Parquet data
+            parquet_data = BytesIO(response.content)
+            table = pq.read_table(parquet_data)
+            
+            # Convert to our format
+            columns = table.column_names
+            rows = []
+            for i in range(len(table)):
+                row = []
+                for col in columns:
+                    value = table[col][i].as_py()
+                    row.append(value)
+                rows.append(row)
+            
+            return {
+                "columns": columns,
+                "rows": rows,
+                "name": None,  # Parquet doesn't include metadata
+                "description": None
+            }
+        except Exception:
+            # Parquet parsing failed, fall back to JSON
+            pass
+    
+    # Fallback to JSON
+    return response.json()
+
+
 from sema4ai.actions.agent._models import (
     ConversationHistoryParams,
     ConversationHistorySpecialMessage,
+    DataFrameInfo,
     DocumentsParams,
     DocumentsSpecialMessage,
     MemoriesParams,
@@ -221,11 +287,11 @@ def prompt_generate(
     return response.json()
 
 
-def list_data_frames() -> list[dict]:
+def list_data_frames() -> list[DataFrameInfo]:
     """List all data frames available in the current thread.
 
     Returns:
-        List of dataframe metadata dictionaries with keys:
+        List of DataFrameInfo objects containing:
         - name: str - Name of the dataframe
         - description: str | None - Description of the dataframe
         - num_rows: int - Number of rows
@@ -266,14 +332,26 @@ def list_data_frames() -> list[dict]:
         ) from e
 
 
-def get_data_frame(name: str, limit: int = 10000) -> "Table":
+def get_data_frame(
+    name: str, 
+    limit: int = 1000,
+    offset: int = 0,
+    column_names: list[str] | None = None,
+    order_by: str | None = None
+) -> "Table":
     """Get a data frame by name from the current thread.
 
     Args:
         name: Name of the data frame to retrieve
-        limit: Maximum number of rows to fetch (default: 10000).
+        limit: Maximum number of rows to fetch (default: 1000).
                For very large dataframes, consider using SQL to filter
                data before fetching.
+        offset: Number of rows to skip from the beginning (default: 0).
+                Useful for pagination when combined with limit.
+        column_names: List of specific column names to retrieve (default: None).
+                     If None, all columns are returned.
+        order_by: Column name to sort by (default: None).
+                 If None, no specific ordering is applied.
 
     Returns:
         Table object with the data frame contents, including:
@@ -292,7 +370,12 @@ def get_data_frame(name: str, limit: int = 10000) -> "Table":
         >>> @action
         >>> def analyze_sales(dataframe_name: str) -> str:
         >>>     '''Analyze sales data from a dataframe.'''
-        >>>     sales_data = agent.get_data_frame(dataframe_name)
+        >>>     # Get first 100 rows, sorted by revenue
+        >>>     sales_data = agent.get_data_frame(
+        >>>         dataframe_name, 
+        >>>         limit=100, 
+        >>>         order_by="revenue"
+        >>>     )
         >>>     total = sum(row[1] for row in sales_data.rows)
         >>>     return f"Total sales: ${total:,.2f}"
 
@@ -307,12 +390,31 @@ def get_data_frame(name: str, limit: int = 10000) -> "Table":
     client = _AgentAPIClient()
 
     try:
+        query_params = {
+            "thread_id": thread_id, 
+            "limit": limit,
+            "offset": offset
+        }
+        
+        if column_names:
+            query_params["column_names"] = ",".join(column_names)
+        if order_by:
+            query_params["order_by"] = order_by
+        
+        # Request Parquet format if PyArrow is available, otherwise JSON
+        if _is_pyarrow_available():
+            query_params["format"] = "parquet"
+        else:
+            query_params["format"] = "json"
+            
         response = client.request(
             f"data-frames/{name}",
             method="GET",
-            query_params={"thread_id": thread_id, "limit": limit},
+            query_params=query_params,
         )
-        data = response.json()
+        
+        # Try to parse as Parquet first, fallback to JSON
+        data = _parse_dataframe_response(response)
 
         return Table(
             columns=data["columns"],
@@ -322,7 +424,7 @@ def get_data_frame(name: str, limit: int = 10000) -> "Table":
         )
     except AgentApiClientException as e:
         # Convert 404 to ValueError for better UX
-        if "404" in str(e):
+        if e.status_code == 404:
             raise ValueError(
                 f"Data frame '{name}' not found in thread {thread_id}"
             ) from e

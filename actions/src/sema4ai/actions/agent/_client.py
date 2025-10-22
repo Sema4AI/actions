@@ -15,6 +15,10 @@ log = logging.getLogger(__name__)
 
 class AgentApiClientException(ActionError):
     """Exception raised when the Agent API client encounters an error."""
+    
+    def __init__(self, message: str, status_code: int | None = None):
+        super().__init__(message)
+        self.status_code = status_code
 
 
 class _AgentAPIClient:
@@ -180,6 +184,6 @@ class _AgentAPIClient:
             else:
                 error_msg += f": {response.reason or 'Unknown error'}"
 
-            raise AgentApiClientException(error_msg)
+            raise AgentApiClientException(error_msg, status_code=response.status_code)
 
         return response
