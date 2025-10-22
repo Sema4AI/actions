@@ -82,7 +82,10 @@ def test_get_data_frame_api(agent_dummy_server):
 
 
 def test_get_data_frame_not_found(agent_dummy_server):
-    """Test get_data_frame raises ValueError when dataframe not found (404)."""
+    """Test get_data_frame raises ActionError when dataframe not found (404)."""
+    from unittest.mock import patch
+
+    from sema4ai.actions._response import ActionError
     from sema4ai.actions.agent import get_data_frame
 
     # Set the environment variable to point to our dummy server
@@ -91,11 +94,9 @@ def test_get_data_frame_not_found(agent_dummy_server):
     ] = f"http://localhost:{agent_dummy_server.get_port()}"
 
     # Mock get_thread_id
-    from unittest.mock import patch
-
     with patch("sema4ai.actions.agent.get_thread_id", return_value="test-thread-789"):
-        # Call get_data_frame - should raise ValueError
-        with pytest.raises(ValueError) as exc_info:
+        # Call get_data_frame - should raise ActionError
+        with pytest.raises(ActionError) as exc_info:
             get_data_frame("nonexistent_df")
 
         # Verify the error message

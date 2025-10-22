@@ -410,9 +410,9 @@ def get_data_frame(
             description=data.get("description"),
         )
     except AgentApiClientException as e:
-        # Convert 404 to ValueError for better UX
+        # Convert 404 to ActionError for better UX
         if e.status_code == 404:
-            raise ValueError(
+            raise ActionError(
                 f"Data frame '{name}' not found in thread {thread_id}"
             ) from e
         # Wrap other errors in ActionError
