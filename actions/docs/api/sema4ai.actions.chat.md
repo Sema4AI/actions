@@ -219,12 +219,10 @@ A list of filenames in the thread.
 
 **Example:**
 
-```python
-from sema4ai.actions import chat
-files = chat.list_files()
-print(files)
-# ['document.pdf', 'data.json']
-```
+` from sema4ai.actions import chat`
+` files = chat.list_files()`
+` print(files)`
+['document.pdf', 'data.json']
 
 [**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/chat/__init__.py#L361)
 
