@@ -5,74 +5,6 @@ from pydantic import BaseModel
 
 from sema4ai.actions._response import ActionError
 from sema4ai.actions.agent._client import _AgentAPIClient
-
-if TYPE_CHECKING:
-    from sema4ai.actions import Table
-
-
-# Cache PyArrow availability to avoid repeated imports
-_pyarrow_available = None
-
-def _is_pyarrow_available() -> bool:
-    """Check if PyArrow is available, caching the result."""
-    global _pyarrow_available
-    if _pyarrow_available is None:
-        try:
-            import pyarrow as pa
-            import pyarrow.parquet as pq
-            _pyarrow_available = True
-        except ImportError:
-            _pyarrow_available = False
-    return _pyarrow_available
-
-
-def _parse_dataframe_response(response) -> dict:
-    """Parse dataframe response, trying Parquet first, then falling back to JSON.
-    
-    Args:
-        response: HTTP response object
-        
-    Returns:
-        dict: Parsed dataframe data with columns, rows, name, description
-    """
-    import json
-    
-    # Check if response is Parquet format and PyArrow is available
-    content_type = response.headers.get('content-type', '').lower()
-    if ('parquet' in content_type or 'application/octet-stream' in content_type) and _is_pyarrow_available():
-        try:
-            import pyarrow as pa
-            import pyarrow.parquet as pq
-            from io import BytesIO
-            
-            # Read Parquet data
-            parquet_data = BytesIO(response.content)
-            table = pq.read_table(parquet_data)
-            
-            # Convert to our format
-            columns = table.column_names
-            rows = []
-            for i in range(len(table)):
-                row = []
-                for col in columns:
-                    value = table[col][i].as_py()
-                    row.append(value)
-                rows.append(row)
-            
-            return {
-                "columns": columns,
-                "rows": rows,
-                "name": None,  # Parquet doesn't include metadata
-                "description": None
-            }
-        except Exception:
-            # Parquet parsing failed, fall back to JSON
-            pass
-    
-    # Fallback to JSON
-    return response.json()
-
-
 from sema4ai.actions.agent._models import (
     ConversationHistoryParams,
     ConversationHistorySpecialMessage,
@@ -109,8 +41,73 @@ from sema4ai.actions.agent._response import (
     ResponseMessage,
     ResponseTextContent,
     ResponseToolUseContent,
-    TokenUsage,
 )
+
+if TYPE_CHECKING:
+    from sema4ai.actions import Table
+
+
+# Cache PyArrow availability to avoid repeated imports
+_pyarrow_available = None
+
+def _is_pyarrow_available() -> bool:
+    """Check if PyArrow is available, caching the result."""
+    global _pyarrow_available
+    if _pyarrow_available is None:
+        try:
+            import pyarrow  # noqa: F401
+            import pyarrow.parquet  # noqa: F401
+            _pyarrow_available = True
+        except ImportError:
+            _pyarrow_available = False
+    return _pyarrow_available
+
+
+def _parse_dataframe_response(response) -> dict:
+    """Parse dataframe response, trying Parquet first, then falling back to JSON.
+    
+    Args:
+        response: HTTP response object
+        
+    Returns:
+        dict: Parsed dataframe data with columns, rows, name, description
+    """
+    # Check if response is Parquet format and PyArrow is available
+    content_type = response.headers.get('content-type', '').lower()
+    if ('parquet' in content_type or 'application/octet-stream' in content_type) and _is_pyarrow_available():
+        try:
+            import pyarrow as pa  # noqa: F401
+            import pyarrow.parquet as pq
+            from io import BytesIO
+            
+            # Read Parquet data
+            parquet_data = BytesIO(response.content)
+            table = pq.read_table(parquet_data)
+            
+            # Convert to our format
+            columns = table.column_names
+            rows = []
+            for i in range(len(table)):
+                row = []
+                for col in columns:
+                    value = table[col][i].as_py()
+                    row.append(value)
+                rows.append(row)
+            
+            return {
+                "columns": columns,
+                "rows": rows,
+                "name": None,  # Parquet doesn't include metadata
+                "description": None
+            }
+        except Exception:
+            # Parquet parsing failed, fall back to JSON
+            pass
+    
+    # Fallback to JSON
+    return response.json()
+
+
 
 log = logging.getLogger(__name__)
 

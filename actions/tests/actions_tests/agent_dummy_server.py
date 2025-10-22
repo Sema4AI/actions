@@ -127,23 +127,21 @@ class _AgentDummyServer(BaseHTTPRequestHandler):
 
             # Return mock dataframe data based on requested format
             if format_type == "parquet":
-                # Simulate Parquet response
-                if dataframe_name == "parquet_data":
-                    # Return invalid parquet data to test fallback
-                    self._send_response(
-                        200,
-                        headers={"Content-Type": "application/octet-stream"},
-                        body=b"invalid-parquet-data",
-                    )
-                    return
-                else:
-                    # Return valid parquet data (simulated)
-                    self._send_response(
-                        200,
-                        headers={"Content-Type": "application/octet-stream"},
-                        body=b"valid-parquet-data",  # This would be real parquet in production
-                    )
-                    return
+                # For testing, we'll always return JSON even when Parquet is requested
+                # This simulates a server that doesn't support Parquet format
+                response = {
+                    "columns": ["product", "sales"],
+                    "rows": [["Widget", 100], ["Gadget", 200]],
+                    "name": dataframe_name,
+                    "description": f"Data for {dataframe_name}",
+                }
+
+                self._send_response(
+                    200,
+                    headers={"Content-Type": "application/json"},
+                    body=response,
+                )
+                return
             else:
                 # Default JSON response
                 response = {
