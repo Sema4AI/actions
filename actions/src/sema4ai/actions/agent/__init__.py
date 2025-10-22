@@ -80,9 +80,10 @@ def _parse_dataframe_response(response) -> dict:
         "parquet" in content_type or "application/octet-stream" in content_type
     ) and _is_pyarrow_available():
         try:
+            from io import BytesIO
+
             import pyarrow as pa  # noqa: F401
             import pyarrow.parquet as pq
-            from io import BytesIO
 
             # Read Parquet data
             parquet_data = BytesIO(response.content)

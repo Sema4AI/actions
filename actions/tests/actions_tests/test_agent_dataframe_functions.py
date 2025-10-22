@@ -1,6 +1,7 @@
 """Tests for agent dataframe API functions."""
 
 import os
+
 import pytest
 from actions_tests.agent_dummy_server import AgentDummyServer
 
@@ -106,9 +107,10 @@ def test_get_data_frame_not_found(agent_dummy_server):
 
 def test_get_data_frame_outside_context():
     """Test get_data_frame raises ActionError when called outside action context."""
+    from unittest.mock import patch
+
     from sema4ai.actions._response import ActionError
     from sema4ai.actions.agent import get_data_frame
-    from unittest.mock import patch
 
     # Mock get_thread_id to raise ActionError (simulating no context)
     with patch(
