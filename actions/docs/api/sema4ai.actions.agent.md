@@ -18,7 +18,7 @@ Get the thread ID from the action context or the request headers.
 
 > This will raise an ActionError if the thread ID cannot be found. This is expected when calling this function directly from VSCode unless the `x-invoked_for_thread_id` header is set in the request in configured inputs.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L143)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L203)
 
 ```python
 get_thread_id() → str
@@ -34,7 +34,7 @@ Get the agent ID from the action context or the request headers.
 
 > This will raise an ActionError if the agent ID cannot be found. This is expected when calling this function directly from VSCode unless the `x-invoked_by_assistant_id` header is set in the request in configured inputs.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L154)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L214)
 
 ```python
 get_agent_id() → str
@@ -61,7 +61,7 @@ Gives a prompt to an agent.
 **Returns:**
 JSON representation of the response from the agent.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L165)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L225)
 
 ```python
 prompt_generate(
@@ -71,6 +71,113 @@ prompt_generate(
     agent_id: str | None = None,
     model_name: str | None = None
 ) → ResponseMessage
+```
+
+______________________________________________________________________
+
+## `list_data_frames`
+
+List all data frames available in the current thread.
+
+**Returns:**
+List of DataFrameInfo objects containing:
+\- name: str - Name of the dataframe
+\- description: str | None - Description of the dataframe
+\- num_rows: int - Number of rows
+\- num_columns: int - Number of columns
+\- column_headers: list[str] - List of column names
+
+**Raises:**
+
+- <b>`ActionError`</b>: If called outside of an action context or if unable to fetch dataframes.
+
+**Example:**
+
+` from sema4ai.actions import action, agent`
+
+````
+``` @action```
+``` def list_available_data() -> str:```
+```     '''List all dataframes in the current conversation.'''```
+```     dfs = agent.list_data_frames()```
+```     return f"Found {len(dfs)} dataframes: {[df['name'] for df in dfs]}"```
+
+:
+This function requires the agent-server to support the dataframes API endpoint.
+If the endpoint is not available, this will raise an ActionError.
+
+ [**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L280)
+
+```python
+list_data_frames() → list[DataFrameInfo]
+```
+
+
+---
+
+## `get_data_frame`
+
+Get a data frame by name from the current thread.
+
+
+
+**Args:**
+
+ - <b>`name`</b>:  Name of the data frame to retrieve
+ - <b>`limit`</b>:  Maximum number of rows to fetch (default: 1000). For very large dataframes, consider using SQL to filter data before fetching.
+ - <b>`offset`</b>:  Number of rows to skip from the beginning (default: 0). Useful for pagination when combined with limit.
+ - <b>`column_names`</b>:  List of specific column names to retrieve (default: None). If None, all columns are returned.
+ - <b>`order_by`</b>:  Column name to sort by (default: None). If None, no specific ordering is applied.
+
+
+
+**Returns:**
+Table object with the data frame contents, including:
+    - columns: list[str]
+    - rows: list[list]
+    - name: str | None
+    - description: str | None
+
+
+
+**Raises:**
+
+ - <b>`ActionError`</b>:  If called outside of an action context.
+ - <b>`ValueError`</b>:  If data frame with given name not found.
+
+
+
+**Example:**
+
+``` from sema4ai.actions import action, agent```
+````
+
+` @action`
+` def analyze_sales(dataframe_name: str) -> str:`
+`     '''Analyze sales data from a dataframe.'''`
+`     # Get first 100 rows, sorted by revenue`
+`     sales_data = agent.get_data_frame(`
+`         dataframe_name,`
+`         limit=100,`
+`         order_by="revenue"`
+`     )`
+`     total = sum(row[1] for row in sales_data.rows)`
+`     return f"Total sales: ${total:,.2f}"`
+
+:
+This function requires the agent-server to support the dataframes API endpoint.
+If the endpoint is not available, this will raise an ActionError.
+
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L325)
+
+```python
+get_data_frame(
+    name: str,
+    limit: int = 1000,
+    offset: int = 0,
+    column_names: list[str] | None = None,
+    order_by: str | None = None
+) → Table
 ```
 
 ______________________________________________________________________
