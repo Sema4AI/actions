@@ -26,8 +26,6 @@ pyarrow = "^15.0"
 sema4ai-devutils = { path = "../devutils/", develop = true }
 types-psutil = ">=5.9,<8.0"
 types-PyYAML = "6.0"
-mypy = "^1.0"
-types-pyarrow = "^15.0"
 
 [tool.mypy]
 mypy_path = "src:tests"
