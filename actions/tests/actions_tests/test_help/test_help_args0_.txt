@@ -4,9 +4,12 @@ Sema4.ai framework for AI actions.
 
 positional arguments:
   {run,list,metadata}
-    run                Collects actions with the @action decorator and all actions that matches based on the action name filter.
-    list               Provides output to stdout with json contents of the actions available.
-    metadata           Provides output to stdout with json contents of the metadata available.
+    run                Collects actions with the @action decorator and all
+                       actions that matches based on the action name filter.
+    list               Provides output to stdout with json contents of the
+                       actions available.
+    metadata           Provides output to stdout with json contents of the
+                       metadata available.
 
 options:
   -h, --help           show this help message and exit
