@@ -25,6 +25,31 @@ def test_client_local_mode(tmpdir):
     assert client.get_bytes("test.txt", thread_id="some-thread-id") == b"some-content"
 
 
+def test_client_local_mode_list_files(tmpdir):
+    from sema4ai.actions.chat import _client
+
+    p = Path(tmpdir)
+    uri = p.as_uri()
+    client = _client._Client(uri)
+    assert client.is_local_mode()
+
+    # Initially empty
+    files = client.list_files(thread_id="some-thread-id")
+    assert files == []
+
+    # Add some files
+    client.set_bytes("test1.txt", b"content1", thread_id="some-thread-id")
+    client.set_bytes("test2.json", b"content2", thread_id="some-thread-id")
+    client.set_bytes("test3.pdf", b"content3", thread_id="some-thread-id")
+
+    # List files
+    files = client.list_files(thread_id="some-thread-id")
+    assert len(files) == 3
+    assert "test1.txt" in files
+    assert "test2.json" in files
+    assert "test3.pdf" in files
+
+
 def test_client_server_write_to_local(dummy_server):
     from sema4ai.actions.chat import _client
 
@@ -34,6 +59,30 @@ def test_client_server_write_to_local(dummy_server):
 
     client.set_bytes("test.txt", b"some-content", thread_id="some-thread-id")
     assert client.get_bytes("test.txt", thread_id="some-thread-id") == b"some-content"
+
+
+def test_client_server_list_files(dummy_server):
+    from sema4ai.actions.chat import _client
+
+    uri = f"http://localhost:{dummy_server.get_port()}"
+    client = _client._Client(uri)
+    assert not client.is_local_mode()
+
+    # Initially empty
+    files = client.list_files(thread_id="some-thread-id")
+    assert files == []
+
+    # Add some files
+    client.set_bytes("test1.txt", b"content1", thread_id="some-thread-id")
+    client.set_bytes("test2.json", b"content2", thread_id="some-thread-id")
+    client.set_bytes("test3.pdf", b"content3", thread_id="some-thread-id")
+
+    # List files
+    files = client.list_files(thread_id="some-thread-id")
+    assert len(files) == 3
+    assert "test1.txt" in files
+    assert "test2.json" in files
+    assert "test3.pdf" in files
 
 
 def test_client_server_write_to_url(dummy_server):
@@ -65,6 +114,28 @@ def test_actions_file_api(monkeypatch, tmpdir):
 
     # Previous content is preserved
     assert chat.get_file_content("my-file.txt") == b"another text"
+
+
+def test_actions_list_files_api(monkeypatch, tmpdir):
+    monkeypatch.setenv("SEMA4AI_FILE_MANAGEMENT_URL", Path(tmpdir).as_uri())
+
+    from sema4ai.actions import chat
+
+    # Initially empty
+    files = chat.list_files()
+    assert files == []
+
+    # Add some files
+    chat.attach_file_content("file1.txt", b"content1")
+    chat.attach_file_content("file2.json", b"content2")
+    chat.attach_file_content("file3.pdf", b"content3")
+
+    # List files
+    files = chat.list_files()
+    assert len(files) == 3
+    assert "file1.txt" in files
+    assert "file2.json" in files
+    assert "file3.pdf" in files
 
 
 def test_actions_with_agent_headers_call_from_agent_server(datadir: Path):

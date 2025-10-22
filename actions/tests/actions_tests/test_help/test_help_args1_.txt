@@ -1,15 +1,8 @@
-usage: sema4ai.actions run [-h] [--glob GLOB] [-a ACTION_NAME] [-o OUTPUT_DIR]
-                           [--max-log-files MAX_LOG_FILES]
-                           [--max-log-file-size MAX_LOG_FILE_SIZE]
-                           [--console-colors {auto,plain,ansi}]
-                           [--log-output-to-stdout {no,json}]
-                           [--json-input JSON_INPUT]
-                           [--json-output JSON_OUTPUT]
-                           [--preload-module PRELOAD_MODULE] [--no-status-rc]
-                           [--teardown-dump-threads-timeout TEARDOWN_DUMP_THREADS_TIMEOUT]
-                           [--teardown-interrupt-timeout TEARDOWN_INTERRUPT_TIMEOUT]
-                           [--os-exit {no,before-teardown,after-teardown}]
-                           [--print-input] [--print-result]
+usage: sema4ai.actions run [-h] [--glob GLOB] [-a ACTION_NAME] [-o OUTPUT_DIR] [--max-log-files MAX_LOG_FILES]
+                           [--max-log-file-size MAX_LOG_FILE_SIZE] [--console-colors {auto,plain,ansi}] [--log-output-to-stdout {no,json}]
+                           [--json-input JSON_INPUT] [--json-output JSON_OUTPUT] [--preload-module PRELOAD_MODULE] [--no-status-rc]
+                           [--teardown-dump-threads-timeout TEARDOWN_DUMP_THREADS_TIMEOUT] [--teardown-interrupt-timeout TEARDOWN_INTERRUPT_TIMEOUT]
+                           [--os-exit {no,before-teardown,after-teardown}] [--print-input] [--print-result]
                            [path]
 
 positional arguments:
@@ -17,56 +10,36 @@ positional arguments:
 
 options:
   -h, --help            show this help message and exit
-  --glob GLOB           May be used to specify a glob to select from which
-                        files actions should be searched (default '*')
+  --glob GLOB           May be used to specify a glob to select from which files actions should be searched (default '*')
   -a ACTION_NAME, --action ACTION_NAME
                         The name of the action that should be run.
   -o OUTPUT_DIR, --output-dir OUTPUT_DIR
-                        The directory where the logging output files will be
-                        stored (default `ROBOT_ARTIFACTS` environment variable
-                        or `./output`).
+                        The directory where the logging output files will be stored (default `ROBOT_ARTIFACTS` environment variable or `./output`).
   --max-log-files MAX_LOG_FILES
                         The maximum number of output files to store the logs.
   --max-log-file-size MAX_LOG_FILE_SIZE
                         The maximum size for the log files (i.e.: 1MB, 500kb).
   --console-colors {auto,plain,ansi}
-                        Define how the console messages shown should be color
-                        encoded. "auto" (default) will color either using the
-                        windows API or the ansi color codes. "plain" will
-                        disable console coloring. "ansi" will force the
-                        console coloring to use ansi color codes.
+                        Define how the console messages shown should be color encoded. "auto" (default) will color either using the windows API or
+                        the ansi color codes. "plain" will disable console coloring. "ansi" will force the console coloring to use ansi color codes.
   --log-output-to-stdout {no,json}
-                        Can be used so that log messages are also sent to the
-                        'stdout' (if not specified the RC_LOG_OUTPUT_STDOUT is
-                        also queried).
+                        Can be used so that log messages are also sent to the 'stdout' (if not specified the RC_LOG_OUTPUT_STDOUT is also queried).
   --json-input JSON_INPUT
-                        May be used to pass the arguments to the action by
-                        loading the arguments from a file (defined as a json
-                        object, where keys are the arguments names and the
-                        values are the values to be set to the arguments).
+                        May be used to pass the arguments to the action by loading the arguments from a file (defined as a json object, where keys
+                        are the arguments names and the values are the values to be set to the arguments).
   --json-output JSON_OUTPUT
-                        May be used to save the result of running the action
-                        in json format (object with "result", "message" and
-                        "status")
+                        May be used to save the result of running the action in json format (object with "result", "message" and "status")
   --preload-module PRELOAD_MODULE
-                        May be used to load a module(s) as the first step when
-                        collecting actions.
-  --no-status-rc        When set, if running actions has an error inside the
-                        action the return code of the process is 0.
+                        May be used to load a module(s) as the first step when collecting actions.
+  --no-status-rc        When set, if running actions has an error inside the action the return code of the process is 0.
   --teardown-dump-threads-timeout TEARDOWN_DUMP_THREADS_TIMEOUT
-                        The timeout (in seconds) to print running threads
-                        after the teardown starts (if not specified the
-                        RC_TEARDOWN_DUMP_THREADS_TIMEOUT is also queried).
-                        Defaults to 5 seconds.
+                        The timeout (in seconds) to print running threads after the teardown starts (if not specified the
+                        RC_TEARDOWN_DUMP_THREADS_TIMEOUT is also queried). Defaults to 5 seconds.
   --teardown-interrupt-timeout TEARDOWN_INTERRUPT_TIMEOUT
-                        The timeout (in seconds) to interrupt the teardown
-                        process (if not specified the
-                        RC_TEARDOWN_INTERRUPT_TIMEOUT is also queried).
+                        The timeout (in seconds) to interrupt the teardown process (if not specified the RC_TEARDOWN_INTERRUPT_TIMEOUT is also
+                        queried).
   --os-exit {no,before-teardown,after-teardown}
-                        Can be used to do an early os._exit to avoid the
-                        actions session teardown or the interpreter teardown.
-                        Not recommended in general.
-  --print-input         Can be used to see the input of the actions run in the
-                        terminal.
-  --print-result        Can be used to see the result of the actions run in
-                        the terminal.
+                        Can be used to do an early os._exit to avoid the actions session teardown or the interpreter teardown. Not recommended in
+                        general.
+  --print-input         Can be used to see the input of the actions run in the terminal.
+  --print-result        Can be used to see the result of the actions run in the terminal.
