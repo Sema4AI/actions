@@ -229,7 +229,7 @@ def test_get_data_frame_requests_parquet_format_when_pyarrow_available(
     agent_dummy_server,
 ):
     """Test get_data_frame requests Parquet format when PyArrow is available.
-    
+
     Note: This test only verifies that the correct format is requested.
     The dummy server returns JSON, so we can't test actual Parquet parsing here.
     """
@@ -255,7 +255,7 @@ def test_get_data_frame_requests_parquet_format_when_pyarrow_available(
                 "name": "test_data",
                 "description": "Data for test_data",
             }
-            
+
             with patch(
                 "sema4ai.actions.agent.get_thread_id",
                 return_value="test-thread-parquet",
@@ -265,9 +265,9 @@ def test_get_data_frame_requests_parquet_format_when_pyarrow_available(
                 # Verify Parquet format was requested
                 assert agent_dummy_server.last_request is not None
                 assert agent_dummy_server.last_request["format"] == "parquet"
-                
+
                 # Verify the parquet parser was called
                 assert mock_parse.called
-                
+
                 # Verify the result
                 assert result.name == "test_data"

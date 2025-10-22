@@ -41,6 +41,7 @@ from sema4ai.actions.agent._response import (
     ResponseMessage,
     ResponseTextContent,
     ResponseToolUseContent,
+    TokenUsage,
 )
 
 if TYPE_CHECKING:
