@@ -358,6 +358,27 @@ def get_text(name: str) -> str:
     return content.decode("utf-8")
 
 
+def list_files() -> list[str]:
+    """
+    Lists all files in the current chat thread.
+
+    Returns:
+        A list of filenames in the thread.
+
+    Raises:
+        RuntimeError: If unable to get client or thread_id.
+        ValueError: If the API request fails in remote mode.
+
+    Example:
+        >>> from sema4ai.actions import chat
+        >>> files = chat.list_files()
+        >>> print(files)
+        ['document.pdf', 'data.json']
+    """
+    client, thread_id = _get_client_and_thread_id()
+    return client.list_files(thread_id)
+
+
 __all__ = [
     "JSONValue",
     "FileId",
@@ -369,4 +390,5 @@ __all__ = [
     "attach_text",
     "get_text",
     "get_file",
+    "list_files",
 ]

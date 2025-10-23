@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-## 1.6.0 - 2025-10-22
+## 1.6.0 - 2025-10-23
 
 **BREAKING CHANGES:**
 - **Table serialization schema change**: The `Table` model now includes `name` and `description` fields in serialized output (model_dump). This is a backward-incompatible change for consumers expecting the old schema. The fields are present as `null` when not set.
@@ -13,6 +13,7 @@
 - **Table validation improvement**: All rows are now validated for consistency, not just the first 5 rows. This ensures data integrity with negligible performance impact.
 - **Table metadata support**: `Table` now accepts optional `name` and `description` fields for better labeling and documentation of table data.
 - **New dataframe API functions**: Added `agent.list_data_frames()` and `agent.get_data_frame()` for programmatic access to thread dataframes. Both functions require an action execution context and are client-side only.
+- Expose `sema4ai.actions.chat.list_files` to the public interface.
 
 ## 1.5.0 - 2025-10-08
 
