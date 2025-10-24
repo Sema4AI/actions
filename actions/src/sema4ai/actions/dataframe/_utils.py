@@ -70,7 +70,7 @@ def _find_target_array_from_schema(data: dict, schema_fields: list[str]) -> str 
     ]
 
     # Count how many schema fields belong to each array
-    array_field_counts = {}
+    array_field_counts: dict[str, int] = {}
     for schema_field in schema_fields:
         for array_name in available_arrays:
             if schema_field.startswith(f"{array_name}."):
@@ -125,9 +125,9 @@ def _flatten_with_auto_detection(data: dict) -> dict[str, list]:
 
 def _extract_meta_fields(
     schema_fields: list[str], target_array: str, data: dict
-) -> list:
+) -> list[str | list[str]]:
     """Extract meta (scalar) fields from schema for json_normalize."""
-    meta_fields = []
+    meta_fields: list[str | list[str]] = []
     for schema_field in schema_fields:
         if not schema_field.startswith(f"{target_array}."):
             field_parts = schema_field.split(".")

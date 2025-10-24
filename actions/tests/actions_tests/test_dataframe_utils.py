@@ -7,6 +7,7 @@ This tests the flattening logic that converts hierarchical JSON data into tabula
 import numpy as np
 import pandas as pd
 import pytest
+
 from sema4ai.actions.dataframe import json_to_dataframe
 from sema4ai.actions.dataframe._utils import _clean_and_convert_dataframe
 
@@ -85,9 +86,9 @@ class TestJsonToDataFrame:
         )
 
         for col in result["columns"]:
-            assert not col.startswith("root."), (
-                f"Column {col!r} should not have 'root.' prefix"
-            )
+            assert not col.startswith(
+                "root."
+            ), f"Column {col!r} should not have 'root.' prefix"
 
     def test_simple_key_values(self):
         """Test: Simple key-value pairs become single row."""
