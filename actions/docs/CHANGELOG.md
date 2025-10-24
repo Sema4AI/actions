@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 1.6.1 - 2025-10-24
+
+- Add `json_to_dataframe` utility function
+
 ## 1.6.0 - 2025-10-23
 
 **BREAKING CHANGES:**

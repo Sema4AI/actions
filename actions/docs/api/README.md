@@ -9,6 +9,7 @@
 - [`sema4ai.actions.api`](./sema4ai.actions.api.md#module-sema4aiactionsapi): This module contains the public API for the actions.
 - [`sema4ai.actions.chat`](./sema4ai.actions.chat.md#module-sema4aiactionschat)
 - [`sema4ai.actions.cli`](./sema4ai.actions.cli.md#module-sema4aiactionscli)
+- [`sema4ai.actions.dataframe`](./sema4ai.actions.dataframe.md#module-sema4aiactionsdataframe)
 
 ## Classes
 
@@ -81,3 +82,4 @@
 - [`chat.get_text`](./sema4ai.actions.chat.md#function-get_text): Get the text content of a file in the current action chat.
 - [`chat.list_files`](./sema4ai.actions.chat.md#function-list_files): Lists all files in the current chat thread.
 - [`cli.main`](./sema4ai.actions.cli.md#function-main): Entry point for running actions from sema4ai-actions.
+- [`dataframe.json_to_dataframe`](./sema4ai.actions.dataframe.md#function-json_to_dataframe): Convert hierarchical JSON to DataFrame format (columns + rows).
