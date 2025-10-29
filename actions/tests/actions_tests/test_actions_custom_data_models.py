@@ -19,6 +19,31 @@ def test_actions_table_list(datadir, data_regression):
     data_regression.check(data)
 
 
+def test_table_model_dump():
+    from sema4ai.actions import Table
+    import json
+
+    table = Table(columns=["a", "b"], rows=[[1, "2"], [3, "4"]])
+    use_input = table.model_dump()
+    assert "name" not in use_input
+    assert "description" not in use_input
+
+    json_str = table.model_dump_json()
+    assert "name" not in json.loads(json_str)
+    assert "description" not in json.loads(json_str)
+
+    table = Table(
+        columns=["a", "b"], rows=[[1, "2"], [3, "4"]], name="test", description="test"
+    )
+    use_input = table.model_dump()
+    assert use_input["name"] == "test"
+    assert use_input["description"] == "test"
+
+    json_str = table.model_dump_json()
+    assert json.loads(json_str)["name"] == "test"
+    assert json.loads(json_str)["description"] == "test"
+
+
 def test_table_result(datadir, data_regression, tmpdir):
     import json
 
@@ -280,18 +305,18 @@ def test_table_serialization():
         rows=[[1, 2]],
     )
 
-    # Serialize - fields are present but set to None
+    # Serialize - fields are not present
     serialized_old = without_metadata.model_dump()
-    assert serialized_old["name"] is None  # Fields present but None
-    assert serialized_old["description"] is None  # Fields present but None
+    assert "name" not in serialized_old  # Fields present but None
+    assert "description" not in serialized_old  # Fields present but None
     assert serialized_old["columns"] == ["a", "b"]
     assert serialized_old["rows"] == [[1, 2]]
 
-    # JSON serialization includes null values
+    # JSON serialization does not include null values
     json_str_old = without_metadata.model_dump_json()
     data_old = json.loads(json_str_old)
-    assert data_old["name"] is None
-    assert data_old["description"] is None
+    assert "name" not in data_old
+    assert "description" not in data_old
 
 
 def test_custom_pydantic_type():

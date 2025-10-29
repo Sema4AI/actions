@@ -131,3 +131,17 @@ class Table(pydantic.BaseModel):
         import json
 
         return f"Table(columns={json.dumps(self.columns, indent=4)}, rows={json.dumps(self.rows, indent=4)})"
+
+    def model_dump(self, **kwargs):
+        if "exclude_none" not in kwargs:
+            # i.e.: keep backward compatibility with old behavior by default
+            # as name and description were added.
+            kwargs["exclude_none"] = True
+        return super().model_dump(**kwargs)
+
+    def model_dump_json(self, **kwargs):
+        if "exclude_none" not in kwargs:
+            # i.e.: keep backward compatibility with old behavior by default
+            # as name and description were added.
+            kwargs["exclude_none"] = True
+        return super().model_dump_json(**kwargs)

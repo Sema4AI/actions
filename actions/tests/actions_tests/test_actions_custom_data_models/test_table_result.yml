@@ -3,8 +3,6 @@ result:
   columns:
   - a
   - b
-  description: null
-  name: null
   rows:
   - - 1
     - '2'
