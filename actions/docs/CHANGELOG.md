@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-## 1.6.0 - 2025-10-23
+## 1.6.0 - 2025-10-29
 
 **BREAKING CHANGES:**
 - **Table serialization schema change**: The `Table` model now includes `name` and `description` fields in serialized output (model_dump). This is a backward-incompatible change for consumers expecting the old schema. The fields are present as `null` when not set.
