@@ -638,6 +638,26 @@ An iterator over the rows of the table as dictionaries.
 iter_as_dicts() → Iterator[dict[str, str | int | float | bool | list | dict | None]]
 ```
 
+______________________________________________________________________
+
+### `model_dump`
+
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/_table.py#L135)
+
+```python
+model_dump(**kwargs)
+```
+
+______________________________________________________________________
+
+### `model_dump_json`
+
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/_table.py#L142)
+
+```python
+model_dump_json(**kwargs)
+```
+
 # Exceptions
 
 ______________________________________________________________________

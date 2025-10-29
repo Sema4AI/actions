@@ -2,7 +2,12 @@
 
 ## Unreleased
 
-## 1.6.0 - 2025-10-29
+## 1.6.1 - 2025-10-29
+
+- `name` and `description` fields are now no longer serialized in the `Table` model when calling `model_dump` or `model_dump_json`
+  (they can still be serialized by calling `exclude_none=False` if required). Fixes the breaking change introduced in `1.6.0`.
+
+## 1.6.0 - 2025-10-29 (note: yanked due to breaking change)
 
 **BREAKING CHANGES:**
 - **Table serialization schema change**: The `Table` model now includes `name` and `description` fields in serialized output (model_dump). This is a backward-incompatible change for consumers expecting the old schema. The fields are present as `null` when not set.
