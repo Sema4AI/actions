@@ -20,8 +20,9 @@ def test_actions_table_list(datadir, data_regression):
 
 
 def test_table_model_dump():
-    from sema4ai.actions import Table
     import json
+
+    from sema4ai.actions import Table
 
     table = Table(columns=["a", "b"], rows=[[1, "2"], [3, "4"]])
     use_input = table.model_dump()
