@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 2.16.4 - 2025-11-04
+
+- CVE fixes
+- `sema4ai-actions` 1.6.3d
+
 ## 2.16.3 - 2025-10-14
 
 - Expose version field in /api/actionPackages api route

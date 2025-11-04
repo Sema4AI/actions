@@ -2742,18 +2742,18 @@ files = [
 
 [[package]]
 name = "sema4ai-actions"
-version = "1.6.1"
+version = "1.6.2"
 description = "Sema4AI Actions"
 optional = false
 python-versions = "<4.0,>=3.10"
 groups = ["main", "dev"]
 files = [
-    {file = "sema4ai_actions-1.6.1-py3-none-any.whl", hash = "sha256:e4513683bf6c96702d26eaa857e82a214d0e8d64b9c14c88e334423e3c2b61d7"},
-    {file = "sema4ai_actions-1.6.1.tar.gz", hash = "sha256:7288292b8d23c973d04f7370a380af8f643efd9c5a0848aaf1dc3679e66f353d"},
+    {file = "sema4ai_actions-1.6.2-py3-none-any.whl", hash = "sha256:292b2865608ad4afd7d417531cedd966e8a08cf8965494850737ef9e39fd349f"},
+    {file = "sema4ai_actions-1.6.2.tar.gz", hash = "sha256:5027327da060b48de72257f42415f4dd6d6333bcc5bba3f6678ca0282b2ac7ff"},
 ]
 
 [package.dependencies]
-cryptography = ">=44.0.1,<45.0.0"
+cryptography = ">=44.0.1"
 docstring_parser_fork = ">=0.0.5,<0.0.6"
 psutil = ">=5.0,<8.0"
 pydantic = ">=2.11.7,<3.0.0"
