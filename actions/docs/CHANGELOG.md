@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.6.2 - 2025-11-04
+
 - Fixed issue where it was looking for `@DataSourceSpec` instead of `DataSourceSpec` in the files to decide whether to automatically
   load the module when collecting definitions.
 - Cryptography dependency updated to `>=44.0.1` to support newer changes in dependencies.
