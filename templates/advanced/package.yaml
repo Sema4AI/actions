@@ -11,11 +11,11 @@ version: 0.0.1
 
 dependencies:
   conda-forge:
-    - python=3.11.14
+    - python=3.12.12
     - uv=0.8.17
   pypi:
+
     - sema4ai-actions=1.6.2
-    - pydantic=2.12.3
     - requests=2.32.5
 
 dev-dependencies:
