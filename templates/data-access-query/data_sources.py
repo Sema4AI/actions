@@ -20,12 +20,12 @@ PostgresCustomersDataSource = Annotated[
     DataSourceSpec(
         name="public_demo",
         engine="postgres",
-        description="Contains DEMO customer information", # This will be visible for other configuring the connection
-    )
+        description="Contains DEMO customer information",  # This will be visible for other configuring the connection
+    ),
 ]
 
 # DEMO POSTGRES CONNECTION DETAILS
-# 
+#
 # NAME:     public_demo
 # HOST:     data-access-public-demo-instance-1.chai8y6e2qqq.us-east-2.rds.amazonaws.com
 # PORT:     5432

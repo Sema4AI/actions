@@ -2,8 +2,11 @@ from sema4ai.actions import Response, Table
 from sema4ai.data import query
 from data_sources import PostgresCustomersDataSource
 
+
 @query
-def search_customers_per_country_substring(search_string: str, datasource: PostgresCustomersDataSource) -> Response[Table]:
+def search_customers_per_country_substring(
+    search_string: str, datasource: PostgresCustomersDataSource
+) -> Response[Table]:
     """
     Search for customers in a country containing the search string.
 

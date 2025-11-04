@@ -11,11 +11,27 @@ version: 0.0.3
 
 dependencies:
   conda-forge:
-    - python=3.11.11
-    - uv=0.6.11
+    - python=3.12.12
+    - uv=0.8.17
   pypi:
-    - sema4ai-actions=1.4.1
-    - sema4ai-data=1.0.7
+    - sema4ai-actions=1.6.2
+    - sema4ai-data=1.2.1
+
+dev-dependencies:
+  conda-forge:
+    - pytest=8.4.2
+    - types-requests=2.32.4.20250913
+    - ruff=0.14.3
+    - mypy=1.18.2
+
+dev-tasks:
+  test: pytest tests
+  lint: |
+    ruff check .
+    ruff format --check .
+  typecheck: mypy --follow-imports=silent --strict .
+  prettify: |
+    ruff format .
 
 packaging:
   # By default, all files and folders in this directory are packaged when uploaded.
