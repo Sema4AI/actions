@@ -11,18 +11,18 @@ version: 0.0.1
 
 dependencies:
   conda-forge:
-    - python=3.11.11
-    - uv=0.6.11
+    - python=3.12.12
+    - uv=0.8.17
   pypi:
-    - sema4ai-actions=1.4.1
+    - sema4ai-actions=1.6.2
     - robocorp-browser=2.3.5
 
 dev-dependencies:
   conda-forge:
-    - pytest=8.4.1
-    - types-requests=2.32.4.20250611
-    - ruff=0.12.8
-    - mypy=1.17.1
+    - pytest=8.4.2
+    - types-requests=2.32.4.20250913
+    - ruff=0.14.3
+    - mypy=1.18.2
 
 dev-tasks:
   test: pytest tests

@@ -1,19 +1,21 @@
 {
-  "inputs": [
-    {
-      "inputName": "Summarize Wikipedia Intelligence",
-      "inputValue": {
-        "article_url": "https://en.wikipedia.org/wiki/Intelligence"
-      }
-    }
-  ],
-  "metadata": {
-    "actionName": "get_wikipedia_article_summary",
-    "actionRelativePath": "actions.py",
-    "schemaDescription": [
-      "article_url: string: URL of the article to get the summary of."
+    "inputs": [
+        {
+            "inputName": "Summarize Wikipedia Intelligence",
+            "inputValue": {
+                "article_url": "https://en.wikipedia.org/wiki/Intelligence"
+            }
+        }
     ],
-    "managedParamsSchemaDescription": {},
-    "inputFileVersion": "v2"
-  }
+    "metadata": {
+        "actionName": "get_wikipedia_article_summary",
+        "actionRelativePath": "actions.py",
+        "schemaDescription": [
+            "article_url: string: URL of the article to get the summary of."
+        ],
+        "managedParamsSchemaDescription": {},
+        "inputFileVersion": "v3",
+        "kind": "action",
+        "actionSignature": "action/args: 'article_url: str'"
+    }
 }
