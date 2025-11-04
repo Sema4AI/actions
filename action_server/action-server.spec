@@ -5,8 +5,6 @@ import os
 import pprint
 import sys
 
-import pkg_resources
-
 # Prevent PyInstaller from using the NLTK runtime hook
 import PyInstaller.config
 from PyInstaller.building.api import COLLECT, EXE, PYZ

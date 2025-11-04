@@ -54,8 +54,8 @@ types-psutil = "^5"
 pyoxidizer = "^0.24.0"
 types-jsonschema = "^4.22.0"
 sema4ai-data = "^0.0.5"
-pyinstaller = "6.12.0" # Upgrading to 6.13.0 broke the build on Mac (it seemed to complete but the build didn't finish).
-pyinstaller-hooks-contrib = "2025.2"
+pyinstaller = "6.16.0"
+pyinstaller-hooks-contrib = "2025.9"
 sema4ai-mcp = { path = "../mcp/", develop = true }
 
 [tool.mypy]
