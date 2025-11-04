@@ -11,7 +11,7 @@ version: 0.0.1
 
 dependencies:
   conda-forge:
-    - python=3.12.12
+    - python=3.11.14
     - uv=0.8.17
   pypi:
     - sema4ai-actions=1.6.2

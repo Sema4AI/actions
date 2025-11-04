@@ -11,11 +11,11 @@ version: 1.0.0
 
 dependencies:
   conda-forge:
-  - python=3.11.11
-  - uv=0.6.11
+  - python=3.11.14
+  - uv=0.8.17
   pypi:
-  - sema4ai-actions=1.4.1
-  - sema4ai-data=1.0.7
+  - sema4ai-actions=1.6.2
+  - sema4ai-data=1.2.1
 
 packaging:
   # By default, all files and folders in this directory are packaged when uploaded.
