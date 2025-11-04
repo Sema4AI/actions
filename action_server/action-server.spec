@@ -5,8 +5,6 @@ import os
 import pprint
 import sys
 
-import pkg_resources
-
 # Prevent PyInstaller from using the NLTK runtime hook
 import PyInstaller.config
 from PyInstaller.building.api import COLLECT, EXE, PYZ
@@ -70,7 +68,7 @@ a = Analysis(
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=[],
+    excludes=["pandas", "pyarrow"],  # Exclude to avoid NumPy 2.x compatibility errors during analysis
     noarchive=False,
     optimize=0,
 )

@@ -4,7 +4,7 @@
 SCRIPT_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$SCRIPT_PATH"
 
-PROJECT_NAME="doc-intel"
+PROJECT_NAME="action-server"
 RCC_PATH="$SCRIPT_PATH/rcc"
 CONDA_YAML="$SCRIPT_PATH/develop.yaml"
 ACTIVATE_PATH="$SCRIPT_PATH/activate.sh"
@@ -12,7 +12,7 @@ ACTIVATE_PATH="$SCRIPT_PATH/activate.sh"
 echo
 
 # Get RCC binary based on platform
-RCC_URL="https://cdn.sema4.ai/rcc/releases/v20.1.2"
+RCC_URL="https://cdn.sema4.ai/rcc/releases/v20.3.3"
 if [[ "$(uname)" == "Darwin" ]]; then
     RCC_URL="$RCC_URL/macos-arm64/rcc"
 else
@@ -34,15 +34,17 @@ if [ -f "$ACTIVATE_PATH" ]; then
     read -p "Do you want to create a clean environment? [y/N] " response
     if [[ "$response" =~ ^[Yy]$ ]]; then
         echo "Creating a clean environment..."
+        echo "command: $RCC_PATH ht vars $CONDA_YAML --space $PROJECT_NAME --sema4ai > $ACTIVATE_PATH"
         "$RCC_PATH" ht vars "$CONDA_YAML" --space "$PROJECT_NAME" --sema4ai > "$ACTIVATE_PATH"
     fi
 else
     echo "Creating a clean environment..."
+    echo "command: $RCC_PATH ht vars $CONDA_YAML --space $PROJECT_NAME --sema4ai > $ACTIVATE_PATH"
     "$RCC_PATH" ht vars "$CONDA_YAML" --space "$PROJECT_NAME" --sema4ai > "$ACTIVATE_PATH"
 fi
 
-# Activate the virtual environment
-echo "Calling: source $ACTIVATE_PATH"
+# Activate the virtual environment and install dependencies everytime.
+echo "calling: source $ACTIVATE_PATH"
 chmod +x "$ACTIVATE_PATH"
 source "$ACTIVATE_PATH"
 
