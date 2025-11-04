@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 1.6.2 - 2025-11-04
+
+- Fixed issue where it was looking for `@DataSourceSpec` instead of `DataSourceSpec` in the files to decide whether to automatically
+  load the module when collecting definitions.
+- Cryptography dependency updated to `>=44.0.1` to support newer changes in dependencies.
+
 ## 1.6.1 - 2025-10-29
 
 - `name` and `description` fields are now no longer serialized in the `Table` model when calling `model_dump` or `model_dump_json`
