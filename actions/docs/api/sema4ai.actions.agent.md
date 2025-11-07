@@ -18,7 +18,7 @@ Get the thread ID from the action context or the request headers.
 
 > This will raise an ActionError if the thread ID cannot be found. This is expected when calling this function directly from VSCode unless the `x-invoked_for_thread_id` header is set in the request in configured inputs.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L202)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L203)
 
 ```python
 get_thread_id() → str
@@ -34,7 +34,7 @@ Get the agent ID from the action context or the request headers.
 
 > This will raise an ActionError if the agent ID cannot be found. This is expected when calling this function directly from VSCode unless the `x-invoked_by_assistant_id` header is set in the request in configured inputs.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L213)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L214)
 
 ```python
 get_agent_id() → str
@@ -61,7 +61,7 @@ Gives a prompt to an agent.
 **Returns:**
 JSON representation of the response from the agent.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L224)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L225)
 
 ```python
 prompt_generate(
@@ -95,7 +95,7 @@ List of DataFrameInfo objects containing:
 
 > This function requires the agent-server to support the dataframes API endpoint. If the endpoint is not available, this will raise an ActionError.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L279)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L280)
 
 ```python
 list_data_frames() → list[DataFrameInfo]
@@ -130,7 +130,7 @@ Table object with the data frame contents, including:
 
 > This function requires the agent-server to support the dataframes API endpoint. If the endpoint is not available, this will raise an ActionError.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L314)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/agent/__init__.py#L315)
 
 ```python
 get_data_frame(
