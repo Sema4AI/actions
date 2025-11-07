@@ -350,7 +350,7 @@ def get_data_frame(
     client = _AgentAPIClient()
 
     try:
-        query_params = {"limit": limit, "offset": offset}
+        query_params: dict[str, int] = {"limit": limit, "offset": offset}
 
         if column_names:
             query_params["column_names"] = ",".join(column_names)
