@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 1.6.3 - 2025-11-07
+
+- Fix `agent.list_data_frames` and `agent.get_data_frame` to hit the right endpoint
+
 ## 1.6.2 - 2025-11-04
 
 - Fixed issue where it was looking for `@DataSourceSpec` instead of `DataSourceSpec` in the files to decide whether to automatically

@@ -2,7 +2,6 @@ import logging
 from typing import TYPE_CHECKING
 
 from pydantic import BaseModel
-
 from sema4ai.actions._response import ActionError
 from sema4ai.actions.agent._client import _AgentAPIClient
 from sema4ai.actions.agent._models import (
@@ -311,9 +310,8 @@ def list_data_frames() -> list[DataFrameInfo]:
 
     try:
         response = client.request(
-            "data-frames",
+            f"threads/{thread_id}/data-frames",
             method="GET",
-            query_params={"thread_id": thread_id},
         )
         return response.json()
     except AgentApiClientException as e:
@@ -380,7 +378,7 @@ def get_data_frame(
     client = _AgentAPIClient()
 
     try:
-        query_params = {"thread_id": thread_id, "limit": limit, "offset": offset}
+        query_params = {"limit": limit, "offset": offset}
 
         if column_names:
             query_params["column_names"] = ",".join(column_names)
@@ -389,15 +387,14 @@ def get_data_frame(
 
         # Request Parquet format if PyArrow is available, otherwise JSON
         requested_format = "parquet" if _is_pyarrow_available() else "json"
-        query_params["format"] = requested_format
+        query_params["output_format"] = requested_format
 
         response = client.request(
-            f"data-frames/{name}",
+            f"threads/{thread_id}/data-frames/{name}",
             method="GET",
             query_params=query_params,
         )
 
-        # Parse response based on requested format
         if requested_format == "parquet":
             data = _parse_dataframe_response_from_parquet(response)
         else:

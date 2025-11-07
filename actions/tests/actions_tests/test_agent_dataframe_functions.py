@@ -19,9 +19,9 @@ def test_list_data_frames_api(agent_dummy_server):
     from sema4ai.actions.agent import list_data_frames
 
     # Set the environment variable to point to our dummy server
-    os.environ[
-        "SEMA4AI_AGENTS_SERVICE_URL"
-    ] = f"http://localhost:{agent_dummy_server.get_port()}"
+    os.environ["SEMA4AI_AGENTS_SERVICE_URL"] = (
+        f"http://localhost:{agent_dummy_server.get_port()}"
+    )
 
     # Mock get_thread_id to return a test thread ID
     from unittest.mock import patch
@@ -35,7 +35,7 @@ def test_list_data_frames_api(agent_dummy_server):
         assert agent_dummy_server.last_request["thread_id"] == "test-thread-123"
         assert (
             agent_dummy_server.last_request["path"]
-            == "/api/v2/data-frames?thread_id=test-thread-123"
+            == "/api/v2/threads/test-thread-123/data-frames"
         )
         assert agent_dummy_server.last_request["method"] == "GET"
 
@@ -54,9 +54,9 @@ def test_get_data_frame_api(agent_dummy_server):
     from sema4ai.actions.agent import get_data_frame
 
     # Set the environment variable to point to our dummy server
-    os.environ[
-        "SEMA4AI_AGENTS_SERVICE_URL"
-    ] = f"http://localhost:{agent_dummy_server.get_port()}"
+    os.environ["SEMA4AI_AGENTS_SERVICE_URL"] = (
+        f"http://localhost:{agent_dummy_server.get_port()}"
+    )
 
     # Mock PyArrow as unavailable to force JSON format
     with patch("sema4ai.actions.agent._is_pyarrow_available", return_value=False):
@@ -89,9 +89,9 @@ def test_get_data_frame_not_found(agent_dummy_server):
     from sema4ai.actions.agent import get_data_frame
 
     # Set the environment variable to point to our dummy server
-    os.environ[
-        "SEMA4AI_AGENTS_SERVICE_URL"
-    ] = f"http://localhost:{agent_dummy_server.get_port()}"
+    os.environ["SEMA4AI_AGENTS_SERVICE_URL"] = (
+        f"http://localhost:{agent_dummy_server.get_port()}"
+    )
 
     # Mock get_thread_id
     with patch("sema4ai.actions.agent.get_thread_id", return_value="test-thread-789"):
@@ -136,9 +136,9 @@ def test_data_frame_api_with_limit(agent_dummy_server):
     from sema4ai.actions.agent import get_data_frame
 
     # Set the environment variable to point to our dummy server
-    os.environ[
-        "SEMA4AI_AGENTS_SERVICE_URL"
-    ] = f"http://localhost:{agent_dummy_server.get_port()}"
+    os.environ["SEMA4AI_AGENTS_SERVICE_URL"] = (
+        f"http://localhost:{agent_dummy_server.get_port()}"
+    )
 
     # Mock PyArrow as unavailable to force JSON format
     with patch("sema4ai.actions.agent._is_pyarrow_available", return_value=False):
@@ -167,9 +167,9 @@ def test_get_data_frame_with_additional_parameters(agent_dummy_server):
     from sema4ai.actions.agent import get_data_frame
 
     # Set the environment variable to point to our dummy server
-    os.environ[
-        "SEMA4AI_AGENTS_SERVICE_URL"
-    ] = f"http://localhost:{agent_dummy_server.get_port()}"
+    os.environ["SEMA4AI_AGENTS_SERVICE_URL"] = (
+        f"http://localhost:{agent_dummy_server.get_port()}"
+    )
 
     # Mock PyArrow as unavailable to force JSON format
     with patch("sema4ai.actions.agent._is_pyarrow_available", return_value=False):
@@ -209,9 +209,9 @@ def test_get_data_frame_requests_json_format_when_pyarrow_unavailable(
     from sema4ai.actions.agent import get_data_frame
 
     # Set the environment variable to point to our dummy server
-    os.environ[
-        "SEMA4AI_AGENTS_SERVICE_URL"
-    ] = f"http://localhost:{agent_dummy_server.get_port()}"
+    os.environ["SEMA4AI_AGENTS_SERVICE_URL"] = (
+        f"http://localhost:{agent_dummy_server.get_port()}"
+    )
 
     # Mock PyArrow as unavailable
     with patch("sema4ai.actions.agent._is_pyarrow_available", return_value=False):
@@ -222,7 +222,7 @@ def test_get_data_frame_requests_json_format_when_pyarrow_unavailable(
 
             # Verify JSON format was requested
             assert agent_dummy_server.last_request is not None
-            assert agent_dummy_server.last_request["format"] == "json"
+            assert agent_dummy_server.last_request["output_format"] == "json"
             assert result.name == "test_data"
 
 
@@ -239,9 +239,9 @@ def test_get_data_frame_requests_parquet_format_when_pyarrow_available(
     from sema4ai.actions.agent import get_data_frame
 
     # Set the environment variable to point to our dummy server
-    os.environ[
-        "SEMA4AI_AGENTS_SERVICE_URL"
-    ] = f"http://localhost:{agent_dummy_server.get_port()}"
+    os.environ["SEMA4AI_AGENTS_SERVICE_URL"] = (
+        f"http://localhost:{agent_dummy_server.get_port()}"
+    )
 
     # Mock PyArrow as available and mock the parquet parsing function
     # to avoid trying to parse JSON as Parquet
@@ -265,7 +265,7 @@ def test_get_data_frame_requests_parquet_format_when_pyarrow_available(
 
                 # Verify Parquet format was requested
                 assert agent_dummy_server.last_request is not None
-                assert agent_dummy_server.last_request["format"] == "parquet"
+                assert agent_dummy_server.last_request["output_format"] == "parquet"
 
                 # Verify the parquet parser was called
                 assert mock_parse.called
