@@ -462,7 +462,7 @@ class Prompt(BaseModel):
             "These will be converted to the proper message types "
             "when the prompt is formatted",
         ),
-    ] = []
+    ]
 
     tools: Annotated[
         list[ToolDefinition],
@@ -470,7 +470,7 @@ class Prompt(BaseModel):
             default_factory=list,
             description="Definitions of the tools provided to the model for use when generating responses",
         ),
-    ] = []
+    ]
 
     tool_choice: Annotated[
         Literal["auto", "any"] | str,

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 1.6.4 - 2025-11-07
+
+- Fix Pydantic 2.12.4+ compatibility issue in `agent._models.Prompt` class where both `default_factory` and explicit defaults were specified
+
 ## 1.6.3 - 2025-11-07
 
 - Fix `agent.list_data_frames` and `agent.get_data_frame` to hit the right endpoint
