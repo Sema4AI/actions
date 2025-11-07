@@ -42,16 +42,16 @@ class _AgentDummyServer(BaseHTTPRequestHandler):
             )
             return
 
-        # Handle /api/v2/data-frames endpoint (list dataframes)
+        # Handle /api/v2/threads/{tid}/data-frames endpoint (list dataframes)
         elif (
-            len(path_parts) == 3
+            len(path_parts) == 5
             and path_parts[0] == "api"
             and path_parts[1] == "v2"
-            and path_parts[2] == "data-frames"
+            and path_parts[2] == "threads"
+            and path_parts[4] == "data-frames"
         ):
-            # Extract query parameters
-            query_params = urllib.parse.parse_qs(parsed_path.query)
-            thread_id = query_params.get("thread_id", [None])[0]
+            # Extract thread_id from path
+            thread_id = path_parts[3]
 
             # Store the request for testing
             self._server.last_request = {
@@ -85,23 +85,25 @@ class _AgentDummyServer(BaseHTTPRequestHandler):
             )
             return
 
-        # Handle /api/v2/data-frames/{name} endpoint (get specific dataframe)
+        # Handle /api/v2/threads/{tid}/data-frames/{name} endpoint (get specific dataframe)
         elif (
-            len(path_parts) == 4
+            len(path_parts) == 6
             and path_parts[0] == "api"
             and path_parts[1] == "v2"
-            and path_parts[2] == "data-frames"
+            and path_parts[2] == "threads"
+            and path_parts[4] == "data-frames"
         ):
-            dataframe_name = path_parts[3]
+            # Extract thread_id and dataframe_name from path
+            thread_id = path_parts[3]
+            dataframe_name = path_parts[5]
 
             # Extract query parameters
             query_params = urllib.parse.parse_qs(parsed_path.query)
-            thread_id = query_params.get("thread_id", [None])[0]
             limit = int(query_params.get("limit", [10000])[0])
             offset = int(query_params.get("offset", [0])[0])
             column_names = query_params.get("column_names", [None])[0]
             order_by = query_params.get("order_by", [None])[0]
-            format_type = query_params.get("format", ["json"])[0]
+            format_type = query_params.get("output_format", ["json"])[0]
 
             # Store the request for testing
             self._server.last_request = {
@@ -113,7 +115,7 @@ class _AgentDummyServer(BaseHTTPRequestHandler):
                 "offset": offset,
                 "column_names": column_names,
                 "order_by": order_by,
-                "format": format_type,
+                "output_format": format_type,
             }
 
             # Handle 404 case for non-existent dataframes

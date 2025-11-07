@@ -35,7 +35,7 @@ def test_list_data_frames_api(agent_dummy_server):
         assert agent_dummy_server.last_request["thread_id"] == "test-thread-123"
         assert (
             agent_dummy_server.last_request["path"]
-            == "/api/v2/data-frames?thread_id=test-thread-123"
+            == "/api/v2/threads/test-thread-123/data-frames"
         )
         assert agent_dummy_server.last_request["method"] == "GET"
 
@@ -222,7 +222,7 @@ def test_get_data_frame_requests_json_format_when_pyarrow_unavailable(
 
             # Verify JSON format was requested
             assert agent_dummy_server.last_request is not None
-            assert agent_dummy_server.last_request["format"] == "json"
+            assert agent_dummy_server.last_request["output_format"] == "json"
             assert result.name == "test_data"
 
 
@@ -265,7 +265,7 @@ def test_get_data_frame_requests_parquet_format_when_pyarrow_available(
 
                 # Verify Parquet format was requested
                 assert agent_dummy_server.last_request is not None
-                assert agent_dummy_server.last_request["format"] == "parquet"
+                assert agent_dummy_server.last_request["output_format"] == "parquet"
 
                 # Verify the parquet parser was called
                 assert mock_parse.called

@@ -291,15 +291,6 @@ def list_data_frames() -> list[DataFrameInfo]:
     Raises:
         ActionError: If called outside of an action context or if unable to fetch dataframes.
 
-    Example:
-        >>> from sema4ai.actions import action, agent
-        >>>
-        >>> @action
-        >>> def list_available_data() -> str:
-        >>>     '''List all dataframes in the current conversation.'''
-        >>>     dfs = agent.list_data_frames()
-        >>>     return f"Found {len(dfs)} dataframes: {[df['name'] for df in dfs]}"
-
     Note:
         This function requires the agent-server to support the dataframes API endpoint.
         If the endpoint is not available, this will raise an ActionError.
@@ -311,9 +302,8 @@ def list_data_frames() -> list[DataFrameInfo]:
 
     try:
         response = client.request(
-            "data-frames",
+            f"threads/{thread_id}/data-frames",
             method="GET",
-            query_params={"thread_id": thread_id},
         )
         return response.json()
     except AgentApiClientException as e:
@@ -334,14 +324,11 @@ def get_data_frame(
     Args:
         name: Name of the data frame to retrieve
         limit: Maximum number of rows to fetch (default: 1000).
-               For very large dataframes, consider using SQL to filter
-               data before fetching.
+            For very large dataframes, consider using SQL to filter data before fetching.
         offset: Number of rows to skip from the beginning (default: 0).
-                Useful for pagination when combined with limit.
-        column_names: List of specific column names to retrieve (default: None).
-                     If None, all columns are returned.
-        order_by: Column name to sort by (default: None).
-                 If None, no specific ordering is applied.
+            Useful for pagination when combined with limit.
+        column_names: List of specific column names to retrieve. If not provided, all columns are returned.
+        order_by: Column name to sort by.
 
     Returns:
         Table object with the data frame contents, including:
@@ -351,23 +338,7 @@ def get_data_frame(
         - description: str | None
 
     Raises:
-        ActionError: If called outside of an action context.
-        ValueError: If data frame with given name not found.
-
-    Example:
-        >>> from sema4ai.actions import action, agent
-        >>>
-        >>> @action
-        >>> def analyze_sales(dataframe_name: str) -> str:
-        >>>     '''Analyze sales data from a dataframe.'''
-        >>>     # Get first 100 rows, sorted by revenue
-        >>>     sales_data = agent.get_data_frame(
-        >>>         dataframe_name,
-        >>>         limit=100,
-        >>>         order_by="revenue"
-        >>>     )
-        >>>     total = sum(row[1] for row in sales_data.rows)
-        >>>     return f"Total sales: ${total:,.2f}"
+        ActionError: If called outside of an action context or if unable to fetch data frame.
 
     Note:
         This function requires the agent-server to support the dataframes API endpoint.
@@ -380,7 +351,7 @@ def get_data_frame(
     client = _AgentAPIClient()
 
     try:
-        query_params = {"thread_id": thread_id, "limit": limit, "offset": offset}
+        query_params: dict[str, int | str] = {"limit": limit, "offset": offset}
 
         if column_names:
             query_params["column_names"] = ",".join(column_names)
@@ -389,15 +360,14 @@ def get_data_frame(
 
         # Request Parquet format if PyArrow is available, otherwise JSON
         requested_format = "parquet" if _is_pyarrow_available() else "json"
-        query_params["format"] = requested_format
+        query_params["output_format"] = requested_format
 
         response = client.request(
-            f"data-frames/{name}",
+            f"threads/{thread_id}/data-frames/{name}",
             method="GET",
             query_params=query_params,
         )
 
-        # Parse response based on requested format
         if requested_format == "parquet":
             data = _parse_dataframe_response_from_parquet(response)
         else:
