@@ -257,7 +257,6 @@ class McpServerSetupHelper:
         import json
 
         from mcp.types import ToolAnnotations
-        from typing import Literal
 
         if not action.options:
             options = {}
