@@ -1,6 +1,8 @@
 from sema4ai.actions._secret import Secret
 
 from sema4ai import mcp
+from sema4ai.actions import Table
+from sema4ai.actions import Response
 
 
 @mcp.tool()
@@ -66,6 +68,24 @@ async def long_running_tool(duration: float) -> str:
 
     await asyncio.sleep(duration)
     return "ok"
+
+
+@mcp.tool()
+def get_structured_data() -> Response[Table]:
+    """
+    Get structured data as a table.
+
+    Returns:
+        A table with the structured data.
+    """
+    return Response(
+        result=Table(
+            columns=["name", "age"],
+            rows=[["Jorge", 30], ["Maria", 25]],
+            name="people",
+            description="People in the database",
+        )
+    )
 
 
 @mcp.prompt()

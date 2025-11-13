@@ -1,0 +1,12 @@
+error: null
+result:
+  columns:
+  - name
+  - age
+  description: People in the database
+  name: people
+  rows:
+  - - Jorge
+    - 30
+  - - Maria
+    - 25
