@@ -491,6 +491,43 @@ def test_mcp_integration_with_actions_in_no_conda_mcp(
 
 
 @pytest.mark.integration_test
+def test_mcp_integration_with_structured_output(
+    action_server_process: ActionServerProcess,
+) -> None:
+    from functools import partial
+
+    from action_server_tests.fixtures import get_in_resources
+
+    root_dir = get_in_resources("no_conda", "mcp")
+
+    action_server_process.start(
+        db_file="server.db",
+        cwd=str(root_dir),
+        actions_sync=True,
+        timeout=60 * 10,
+    )
+
+    async def check_with_structured_output():
+        from mcp.client.streamable_http import streamablehttp_client
+
+        client_protocol = streamablehttp_client
+
+        async with client_protocol(
+            f"http://localhost:{action_server_process.port}/mcp", headers={}
+        ) as connection_info:
+            read_stream, write_stream = connection_info[:2]
+            async with ClientSession(read_stream, write_stream) as session:
+                await session.initialize()
+                tools_list = await session.list_tools()
+                tools = tools_list.tools
+                print(tools)
+
+        return "ok"
+
+    assert run_async_in_new_thread(partial(check_with_structured_output)) == "ok"
+
+
+@pytest.mark.integration_test
 @pytest.mark.parametrize("scenario", ["env_var", "request_header"])
 def test_mcp_integration_secrets(
     action_server_process: ActionServerProcess,
