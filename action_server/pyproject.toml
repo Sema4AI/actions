@@ -1,10 +1,10 @@
 [tool.poetry]
 name = "sema4ai-action-server"
-version = "2.16.4"
+version = "2.17.0"
 description = """Sema4AI Action Server"""
 authors = [
 	"Sema4.ai, Inc. <dev@sema4.ai>",
-	"Fabio Z. <fabio@robocorp.com>"
+	"Fabio Z. <fabio@sema4.ai>"
 ]
 readme = "README.md"
 repository = "https://github.com/sema4ai/actions/"
@@ -22,27 +22,27 @@ action-server = "sema4ai.action_server.cli:main"
 
 
 [tool.poetry.dependencies]
-aiohttp = "^3.11.16"
-fastapi-slim = "^0.116.1"
+aiohttp = "^3.13.2"
+fastapi-slim = "^0.121.1"
 jsonschema = "^4.23.0"
 # This one needs a `_fix_jsonschema_specifications` hack
 # See: https://github.com/python-jsonschema/jsonschema-specifications/issues/61
 jsonschema-specifications = "^2024.10.1"
-msgspec = "^0.18"
-psutil = ">=5.0,<7.0"
-pydantic = "^2.9.2"
-pyyaml = "^6"
+msgspec = "^0.19"
+psutil = ">=5.0,<8.0"
+pydantic = "^2.12.4"
+pyyaml = "^6.0.3"
 python = ">=3.12,<3.14"
 requests = "^2"
-sema4ai-actions = "^1.6.0"
-termcolor = "^2.4.0"
-uvicorn = "^0.34.0"
-websockets = "^13.1"
-cryptography = "^44.0.1"
+sema4ai-actions = "^1.6.4"
+termcolor = "^3.2.0"
+uvicorn = "^0.38.0"
+websockets = "^15.0.1"
+cryptography = "^46.0.3"
 requests_oauthlib = "^2.0"
-watchfiles = "^0.24.0"
+watchfiles = "^1.1.1"
 sema4ai-common = "^0.2.1"
-mcp = "^1.10.0"
+mcp = "^1.21.0"
 
 [tool.poetry.group.dev.dependencies]
 sema4ai-devutils = { path = "../devutils/", develop = true }
@@ -50,10 +50,9 @@ sema4ai-build-common = { path = "../build_common/", develop = true }
 types-requests = "^2"
 types-PyYAML = "^6"
 robocorp-log-pytest = "^0.0.2"
-types-psutil = "^5"
-pyoxidizer = "^0.24.0"
+types-psutil = "^7"
 types-jsonschema = "^4.22.0"
-sema4ai-data = "^0.0.5"
+sema4ai-data = "^1.2.1"
 pyinstaller = "6.16.0"
 pyinstaller-hooks-contrib = "2025.9"
 sema4ai-mcp = { path = "../mcp/", develop = true }

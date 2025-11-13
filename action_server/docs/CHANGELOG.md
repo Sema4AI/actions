@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## 2.17.0 - 2025-11-13
+
+- Dependency updates
+- MCP: When a non-string result is returned, it's now returned in the `structuredContent` field (a string is returned in a `TextContent` object).
+  - Note: dictionaries are returned as is, so, the `structuredContent` field will be a dictionary, other objects such as arrays
+    will be wrapped in a dictionary with a `result` property with the object as the value.
+
 ## 2.16.4 - 2025-11-04
 
 - CVE fixes

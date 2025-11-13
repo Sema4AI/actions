@@ -2,12 +2,10 @@ import logging
 import re
 import typing
 from dataclasses import dataclass
-from typing import Any, Callable
+from typing import Any, Callable, Literal
 
 from mcp.types import (
-    EmbeddedResource,
     GetPromptResult,
-    ImageContent,
     Prompt,
     PromptArgument,
     PromptMessage,
@@ -23,6 +21,8 @@ if typing.TYPE_CHECKING:
 
 log = logging.getLogger(__name__)
 
+OutputSchemaKind = Literal["string", "object", "wrap-in-result-object"]
+
 
 @dataclass
 class ActionInfo:
@@ -30,6 +30,7 @@ class ActionInfo:
     action: "Action"
     display_name: str
     doc_desc: str
+    output_schema_kind: OutputSchemaKind
 
 
 class McpResponseHandler:
@@ -91,9 +92,7 @@ class McpServerSetupHelper:
         async def call_tool(
             name: str,
             arguments: dict[str, Any],
-        ) -> list[TextContent | ImageContent | EmbeddedResource]:
-            import json
-
+        ) -> tuple[Any, Any]:
             try:
                 from sema4ai.action_server._actions_run import IInternalFuncAPI
 
@@ -106,10 +105,20 @@ class McpServerSetupHelper:
                     headers=headers,
                     cookies=cookies,
                 )
-                if isinstance(result, str):
-                    return [TextContent(type="text", text=result)]
+
+                # mcp lib expects a tuple[unstructured_content, structured_content] as the result.
+                if action_info.output_schema_kind == "string":
+                    return ([TextContent(type="text", text=result)], None)
+                elif action_info.output_schema_kind == "object":
+                    return [], result
+                elif action_info.output_schema_kind == "wrap-in-result-object":
+                    return [], {
+                        "result": result,
+                    }
                 else:
-                    return [TextContent(type="text", text=json.dumps(result, indent=2))]
+                    raise ValueError(
+                        f"Unknown output schema kind: {action_info.output_schema_kind}"
+                    )
             except Exception as e:
                 log.exception("Error calling tool %s", name)
                 raise e
@@ -285,6 +294,7 @@ class McpServerSetupHelper:
                     action=action,
                     display_name=display_name,
                     doc_desc=doc_desc,
+                    output_schema_kind="string",
                 )
             else:
                 url = AnyUrl(uri)
@@ -301,6 +311,7 @@ class McpServerSetupHelper:
                     action=action,
                     display_name=display_name,
                     doc_desc=doc_desc,
+                    output_schema_kind="string",
                 )
 
         elif kind == "prompt":
@@ -329,6 +340,7 @@ class McpServerSetupHelper:
                 action=action,
                 display_name=display_name,
                 doc_desc=doc_desc,
+                output_schema_kind="string",
             )
 
         else:
@@ -337,11 +349,34 @@ class McpServerSetupHelper:
             if not title:
                 title = display_name
 
+            output_schema = json.loads(action.output_schema)
+
+            output_schema_kind: OutputSchemaKind
+
+            if output_schema.get("type") == "string":
+                use_output_schema = None
+                output_schema_kind = "string"
+            elif output_schema.get("type") == "object":
+                # if it's an object we can use as is, otherwise we need to create
+                # a schema with a 'result' property with the current schema as the value
+                use_output_schema = output_schema
+                output_schema_kind = "object"
+            else:
+                output_schema_kind = "wrap-in-result-object"
+                use_output_schema = {
+                    "type": "object",
+                    "properties": {
+                        "result": output_schema,
+                    },
+                    "required": ["result"],
+                }
+
             self._tools.append(
                 Tool(
                     name=action.name,
                     description=doc_desc,
                     inputSchema=json.loads(action.input_schema),
+                    outputSchema=use_output_schema,
                     annotations=ToolAnnotations(
                         title=title,
                         readOnlyHint=options.get("read_only_hint", False),
@@ -353,7 +388,11 @@ class McpServerSetupHelper:
             )
 
             self._tool_name_to_action_info[action.name] = ActionInfo(
-                func=func, action=action, display_name=display_name, doc_desc=doc_desc
+                func=func,
+                action=action,
+                display_name=display_name,
+                doc_desc=doc_desc,
+                output_schema_kind=output_schema_kind,
             )
 
     def unregister_actions(self):
