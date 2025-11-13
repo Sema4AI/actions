@@ -1,8 +1,7 @@
+from sema4ai.actions import Response, Table
 from sema4ai.actions._secret import Secret
 
 from sema4ai import mcp
-from sema4ai.actions import Table
-from sema4ai.actions import Response
 
 
 @mcp.tool()
