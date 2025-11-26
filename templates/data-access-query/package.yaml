@@ -14,7 +14,7 @@ dependencies:
     - python=3.12.12
     - uv=0.8.17
   pypi:
-    - sema4ai-actions=1.6.2
+    - sema4ai-actions=1.6.4
     - sema4ai-data=1.2.1
 
 dev-dependencies:
@@ -49,5 +49,6 @@ packaging:
     - ./**/.env
     - ./**/__MACOSX
     - ./**/__pycache__
+    - ./**/*_cache/**
     - ./**/.git
     - ./node_modules/**
