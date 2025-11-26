@@ -302,7 +302,7 @@ async def listen_for_requests(
         async with aiohttp.ClientSession(connector=connector) as session:
             async for ws in websockets.connect(
                 use_url,
-                extra_headers=headers,
+                additional_headers=headers,
                 logger=log,
                 open_timeout=2,
                 close_timeout=0,
