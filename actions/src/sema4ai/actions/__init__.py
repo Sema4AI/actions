@@ -42,7 +42,7 @@ from ._response import ActionError, Response
 from ._secret import OAuth2Secret, Secret, SecretSpec
 from ._table import Row, RowValue, Table
 
-__version__ = "1.6.4"
+__version__ = "1.6.5"
 version_info = [int(x) for x in __version__.split(".")]
 
 
