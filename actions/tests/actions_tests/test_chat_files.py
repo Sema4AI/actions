@@ -255,17 +255,27 @@ class TestFilenameValidationWindows:
     @pytest.mark.parametrize(
         "filename",
         [
-            'report<draft>.txt',
-            'output>final.log',
-            'meeting:notes.doc',
+            "report<draft>.txt",
+            "output>final.log",
+            "meeting:notes.doc",
             'project"alpha".json',
-            'docs/readme.txt',
-            'path\\to\\file.pdf',
-            'data|backup.csv',
-            'query?results.xml',
-            'search*.txt',
+            "docs/readme.txt",
+            "path\\to\\file.pdf",
+            "data|backup.csv",
+            "query?results.xml",
+            "search*.txt",
         ],
-        ids=['less-than', 'greater-than', 'colon', 'quote', 'forward-slash', 'backslash', 'pipe', 'question', 'asterisk']
+        ids=[
+            "less-than",
+            "greater-than",
+            "colon",
+            "quote",
+            "forward-slash",
+            "backslash",
+            "pipe",
+            "question",
+            "asterisk",
+        ],
     )
     @patch("platform.system", return_value="Windows")
     def test_invalid_characters(self, mock_platform, filename):
@@ -288,11 +298,34 @@ class TestFilenameValidationWindows:
     @pytest.mark.parametrize(
         "invalid_name",
         [
-            "CON", "PRN", "AUX", "NUL",
-            "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
-            "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
-            "CON.txt", "PRN.doc", "LPT1.pdf", "filename.txt ", "filename.txt.",
-        ]
+            "CON",
+            "PRN",
+            "AUX",
+            "NUL",
+            "COM1",
+            "COM2",
+            "COM3",
+            "COM4",
+            "COM5",
+            "COM6",
+            "COM7",
+            "COM8",
+            "COM9",
+            "LPT1",
+            "LPT2",
+            "LPT3",
+            "LPT4",
+            "LPT5",
+            "LPT6",
+            "LPT7",
+            "LPT8",
+            "LPT9",
+            "CON.txt",
+            "PRN.doc",
+            "LPT1.pdf",
+            "filename.txt ",
+            "filename.txt.",
+        ],
     )
     @patch("platform.system", return_value="Windows")
     def test_invalid_names(self, mock_platform, invalid_name):
@@ -352,7 +385,7 @@ class TestFilenameValidationUnix:
             "LPT8",
             "LPT9",
             "file:with:colons.txt",
-        ]
+        ],
     )
     @patch("platform.system", return_value="Linux")
     def test_valid_unix_names(self, mock_platform, valid_name):
@@ -361,13 +394,12 @@ class TestFilenameValidationUnix:
 
         _check_that_name_is_valid_in_filesystem(valid_name)  # Should not raise
 
-
     @pytest.mark.parametrize(
         "invalid_name",
         [
             "file/name.txt",
             "file\0name.txt",
-        ]
+        ],
     )
     @patch("platform.system", return_value="Linux")
     def test_invalid_unix_names(self, mock_platform, invalid_name):
