@@ -1,6 +1,6 @@
 import logging
 import os
-import platform
+import sys
 import typing
 from functools import lru_cache
 from pathlib import Path
@@ -80,7 +80,7 @@ def _check_that_name_is_valid_in_filesystem(name: str):
     if not name or name in (".", ".."):
         raise ValueError(f"Name '{name}' is not valid.")
 
-    is_windows = platform.system() == "Windows"
+    is_windows = sys.platform == "win32"
 
     if is_windows:
         _check_windows_filename(name)
