@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 1.6.5 - 2025-12-03
+
+- Fix: Websockets api connect expects additional_headers instead of extra_headers in action-server --expose
+- Separate file name validations on windows vs. unix
+
 ## 1.6.4 - 2025-11-07
 
 - Fix Pydantic 2.12.4+ compatibility issue in `agent._models.Prompt` class where both `default_factory` and explicit defaults were specified
