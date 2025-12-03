@@ -1,4 +1,5 @@
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
@@ -229,3 +230,209 @@ def test_actions_with_agent_headers_call_with_invocation_context(datadir: Path):
     # assert json_output.read_text() == "value-in-header"
     output = result.stdout.decode("utf-8")
     assert "thread_id: thread-id-123" in output
+
+
+class TestFilenameValidationWindows:
+    """Test filename validation on Windows platform."""
+
+    @patch("platform.system", return_value="Windows")
+    def test_valid_names(self, mock_platform):
+        """Test valid filenames that should pass on Windows."""
+        from sema4ai.actions.chat import _check_that_name_is_valid_in_filesystem
+
+        valid_names = [
+            "valid_name.txt",
+            "my-file.json",
+            "file123.pdf",
+            "file_with_underscores.doc",
+            "file-with-dashes.txt",
+            "CaseSensitive.TXT",
+            "unicode_文件.txt",
+        ]
+        for name in valid_names:
+            _check_that_name_is_valid_in_filesystem(name)  # Should not raise
+
+    @pytest.mark.parametrize(
+        "filename",
+        [
+            'report<draft>.txt',
+            'output>final.log',
+            'meeting:notes.doc',
+            'project"alpha".json',
+            'docs/readme.txt',
+            'path\\to\\file.pdf',
+            'data|backup.csv',
+            'query?results.xml',
+            'search*.txt',
+        ],
+        ids=['less-than', 'greater-than', 'colon', 'quote', 'forward-slash', 'backslash', 'pipe', 'question', 'asterisk']
+    )
+    @patch("platform.system", return_value="Windows")
+    def test_invalid_characters(self, mock_platform, filename):
+        """Test rejection of invalid characters on Windows."""
+        from sema4ai.actions.chat import _check_that_name_is_valid_in_filesystem
+
+        with pytest.raises(ValueError, match="invalid characters"):
+            _check_that_name_is_valid_in_filesystem(filename)
+
+    @patch("platform.system", return_value="Windows")
+    def test_control_characters(self, mock_platform):
+        """Test rejection of control characters on Windows."""
+        from sema4ai.actions.chat import _check_that_name_is_valid_in_filesystem
+
+        # Test various control characters
+        for i in range(32):
+            with pytest.raises(ValueError, match="control characters"):
+                _check_that_name_is_valid_in_filesystem(f"file{chr(i)}name.txt")
+
+    @pytest.mark.parametrize(
+        "invalid_name",
+        [
+            "CON", "PRN", "AUX", "NUL",
+            "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
+            "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
+            "CON.txt", "PRN.doc", "LPT1.pdf", "filename.txt ", "filename.txt.",
+        ]
+    )
+    @patch("platform.system", return_value="Windows")
+    def test_invalid_names(self, mock_platform, invalid_name):
+        """Test rejection of Windows invalid names."""
+        from sema4ai.actions.chat import _check_that_name_is_valid_in_filesystem
+
+        # Test uppercase
+        with pytest.raises(ValueError):
+            _check_that_name_is_valid_in_filesystem(invalid_name)
+
+        # Test lowercase
+        with pytest.raises(ValueError):
+            _check_that_name_is_valid_in_filesystem(invalid_name.lower())
+
+        # Test mixed case
+        with pytest.raises(ValueError):
+            _check_that_name_is_valid_in_filesystem(invalid_name.capitalize())
+
+
+class TestFilenameValidationUnix:
+    """Test filename validation on Unix-like platforms (Linux, macOS)."""
+
+    @pytest.mark.parametrize(
+        "valid_name",
+        [
+            "valid_name.txt",
+            "file:with:colons.txt",
+            "file*with*stars.txt",
+            "file?with?questions.txt",
+            "file<with>brackets.txt",
+            'file"with"quotes.txt',
+            "file|with|pipes.txt",
+            "filename ",
+            "filename.txt ",
+            "filename.",
+            "filename.txt.",
+            "CON",
+            "PRN",
+            "AUX",
+            "NUL",
+            "COM1",
+            "COM2",
+            "COM3",
+            "COM4",
+            "COM5",
+            "COM6",
+            "COM7",
+            "COM8",
+            "COM9",
+            "LPT1",
+            "LPT2",
+            "LPT3",
+            "LPT4",
+            "LPT5",
+            "LPT6",
+            "LPT7",
+            "LPT8",
+            "LPT9",
+            "file:with:colons.txt",
+        ]
+    )
+    @patch("platform.system", return_value="Linux")
+    def test_valid_unix_names(self, mock_platform, valid_name):
+        """Test that Unix allows characters restricted on Windows."""
+        from sema4ai.actions.chat import _check_that_name_is_valid_in_filesystem
+
+        _check_that_name_is_valid_in_filesystem(valid_name)  # Should not raise
+
+
+    @pytest.mark.parametrize(
+        "invalid_name",
+        [
+            "file/name.txt",
+            "file\0name.txt",
+        ]
+    )
+    @patch("platform.system", return_value="Linux")
+    def test_invalid_unix_names(self, mock_platform, invalid_name):
+        """Test rejection of forward slash on Unix."""
+        from sema4ai.actions.chat import _check_that_name_is_valid_in_filesystem
+
+        with pytest.raises(ValueError):
+            _check_that_name_is_valid_in_filesystem(invalid_name)
+
+
+class TestFilenameValidationEdgeCases:
+    """Test edge cases for filename validation."""
+
+    @patch("platform.system", return_value="Linux")
+    def test_empty_string(self, mock_platform):
+        """Test rejection of empty string."""
+        from sema4ai.actions.chat import _check_that_name_is_valid_in_filesystem
+
+        with pytest.raises(ValueError, match="is not valid"):
+            _check_that_name_is_valid_in_filesystem("")
+
+    @patch("platform.system", return_value="Linux")
+    def test_current_directory_dot(self, mock_platform):
+        """Test rejection of current directory reference."""
+        from sema4ai.actions.chat import _check_that_name_is_valid_in_filesystem
+
+        with pytest.raises(ValueError, match="is not valid"):
+            _check_that_name_is_valid_in_filesystem(".")
+
+    @patch("platform.system", return_value="Linux")
+    def test_parent_directory_dotdot(self, mock_platform):
+        """Test rejection of parent directory reference."""
+        from sema4ai.actions.chat import _check_that_name_is_valid_in_filesystem
+
+        with pytest.raises(ValueError, match="is not valid"):
+            _check_that_name_is_valid_in_filesystem("..")
+
+    @patch("platform.system", return_value="Linux")
+    def test_unicode_characters(self, mock_platform):
+        """Test that Unicode characters are allowed."""
+        from sema4ai.actions.chat import _check_that_name_is_valid_in_filesystem
+
+        unicode_names = [
+            "文件.txt",
+            "файл.pdf",
+            "αρχείο.doc",
+            "ファイル.json",
+            "🎉celebration.txt",
+        ]
+        for name in unicode_names:
+            _check_that_name_is_valid_in_filesystem(name)  # Should not raise
+
+    @patch("platform.system", return_value="Linux")
+    def test_very_long_name(self, mock_platform):
+        """Test very long filename (most filesystems have limits, but we don't enforce them)."""
+        from sema4ai.actions.chat import _check_that_name_is_valid_in_filesystem
+
+        # Most filesystems limit to 255 bytes, but we don't enforce that
+        long_name = "a" * 300 + ".txt"
+        _check_that_name_is_valid_in_filesystem(long_name)  # Should not raise
+
+    @patch("platform.system", return_value="Windows")
+    def test_windows_backslash_rejected(self, mock_platform):
+        """Test that backslash is rejected on Windows."""
+        from sema4ai.actions.chat import _check_that_name_is_valid_in_filesystem
+
+        with pytest.raises(ValueError, match="invalid characters"):
+            _check_that_name_is_valid_in_filesystem("file\\name.txt")
