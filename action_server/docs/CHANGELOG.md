@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 2.17.1 - 2025-12-04
+
+- CVE updates
+
 ## 2.17.0 - 2025-11-13
 
 - Dependency updates
