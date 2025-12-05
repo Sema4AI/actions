@@ -43,6 +43,7 @@ def _verify_oauth2_settings() -> Path:
     return yaml_location
 
 
+@pytest.mark.integration_test
 def manual_test_oauth2_vscode(
     action_server_process: ActionServerProcess, client: ActionServerClient, tmpdir
 ):
@@ -157,6 +158,7 @@ def manual_test_oauth2_vscode(
     assert not provider_to_status, "It should be empty as we've logged out already!"
 
 
+@pytest.mark.integration_test
 def manual_test_oauth2_action_server_ui(
     action_server_process: ActionServerProcess, client: ActionServerClient
 ):

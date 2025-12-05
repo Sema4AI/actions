@@ -30,11 +30,11 @@ def get_current_time_as_iso() -> str:
     return datetime_to_iso(datetime.datetime.now())
 
 
-def datetime_to_iso(d: datetime.datetime | float) -> str:
+def datetime_to_iso(d: datetime.datetime | float | int) -> str:
     """
     Accepts a datetime or a float with seconds from epoch.
     """
-    if isinstance(d, float):
+    if isinstance(d, float | int):
         d = datetime.datetime.fromtimestamp(d)
     return d.isoformat()
 

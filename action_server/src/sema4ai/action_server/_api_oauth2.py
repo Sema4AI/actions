@@ -545,19 +545,23 @@ def _update_db_with_token(
         log.info(
             f"No `refresh_token` provided when authenticating with provider: {provider} (a refresh will not be possible)."
         )
-    expires_at = token.get("expires_at", "")
-    if expires_at:
-        expires_at = datetime_to_iso(expires_at)
-    else:
-        log.info(
-            f"No `expires_at` provided when authenticating with provider: {provider} (a refresh will not be possible)."
-        )
-
-        # TODO: Allow users to configure in config file if not available?
+    expires_in = token.get("expires_in", "")
+    if expires_in:
         # https://www.rfc-editor.org/rfc/rfc6749.html says:
         # expires_in: RECOMMENDED.
         # If omitted, the authorization server SHOULD provide the
         # expiration time via other means or document the default value
+        expires_at = datetime_to_iso(
+            datetime.datetime.now() + datetime.timedelta(seconds=expires_in)
+        )
+    else:
+        expires_at = token.get("expires_at", "")
+        if expires_at:
+            expires_at = datetime_to_iso(expires_at)
+        else:
+            log.info(
+                f"No `expires_at` provided when authenticating with provider: {provider} (a refresh will not be possible)."
+            )
 
     token_type = token.get("token_type")
 
