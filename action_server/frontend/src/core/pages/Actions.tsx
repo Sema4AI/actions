@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import { Badge } from '@/core/components/ui/Badge';
 import { Button } from '@/core/components/ui/Button';
 import {
   Dialog,
@@ -10,7 +11,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/core/components/ui/Dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/core/components/ui/DropdownMenu';
+import { ErrorBanner } from '@/core/components/ui/ErrorBanner';
 import { Input } from '@/core/components/ui/Input';
+import { Loading } from '@/core/components/ui/Loading';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/core/components/ui/Table';
 import { Textarea } from '@/core/components/ui/Textarea';
 import type { OpenAPIV3_1 } from 'openapi-types';
@@ -21,7 +31,6 @@ import { Action, ActionPackage, Run, RunStatus, ServerConfig } from '@/shared/ty
 import { formDataToPayload, propertiesToFormData } from '@/shared/utils/formData';
 import { prettyPrint } from '@/shared/utils/helpers';
 import { cn } from '@/shared/utils/cn';
-import { Badge } from '@/core/components/ui/Badge';
 
 type RunResult = {
   runId: string;
@@ -55,6 +64,38 @@ const buildInitialPayload = (action: Action): string => {
     return JSON.stringify(payload, null, 2);
   } catch {
     return '{}';
+  }
+};
+
+type SchemaProperty = {
+  name: string;
+  type: string;
+  description?: string;
+  required: boolean;
+  default?: unknown;
+};
+
+const parseInputSchema = (action: Action): SchemaProperty[] => {
+  try {
+    if (!action.input_schema) {
+      return [];
+    }
+    const schema = JSON.parse(action.input_schema) as OpenAPIV3_1.SchemaObject;
+    const properties = schema.properties || {};
+    const required = schema.required || [];
+
+    return Object.entries(properties).map(([name, prop]) => {
+      const propSchema = prop as OpenAPIV3_1.SchemaObject;
+      return {
+        name,
+        type: propSchema.type as string || 'string',
+        description: propSchema.description,
+        required: required.includes(name),
+        default: propSchema.default,
+      };
+    });
+  } catch {
+    return [];
   }
 };
 
@@ -186,6 +227,8 @@ export const ActionsPage = () => {
   const { loadedActions, loadedRuns, loadedServerConfig } = useActionServerContext();
   const [selectedActionId, setSelectedActionId] = useState<string | null>(null);
   const [isRunDialogOpen, setRunDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [actionToDelete, setActionToDelete] = useState<Action | null>(null);
   const [runPayload, setRunPayload] = useState<string>('{}');
   const [runResult, setRunResult] = useState<RunResult | null>(null);
   const [runError, setRunError] = useState<string | null>(null);
@@ -193,6 +236,8 @@ export const ActionsPage = () => {
   const [contactEmail, setContactEmail] = useState<string>('');
   const [contactEmailError, setContactEmailError] = useState<string | null>(null);
   const [apiKey, setApiKey] = useLocalStorage<string>('action-server-api-key', '');
+  const [useAdvancedMode, setUseAdvancedMode] = useState(false);
+  const [formValues, setFormValues] = useState<Record<string, string>>({});
   const { mutateAsync: runAction, isPending: isRunning } = useActionRunMutation();
 
   const actions = useMemo(() => {
@@ -229,9 +274,45 @@ export const ActionsPage = () => {
       setRunPayload(buildInitialPayload(action));
       setRunResult(null);
       setRunError(null);
+      setUseAdvancedMode(false);
+
+      // Initialize form values with defaults
+      const properties = parseInputSchema(action);
+      const initialValues: Record<string, string> = {};
+      properties.forEach((prop) => {
+        if (prop.default !== undefined) {
+          initialValues[prop.name] = String(prop.default);
+        } else {
+          initialValues[prop.name] = '';
+        }
+      });
+      setFormValues(initialValues);
+
       setRunDialogOpen(true);
     },
     [setRunDialogOpen],
+  );
+
+  const openDeleteDialog = useCallback(
+    (action: Action) => {
+      setActionToDelete(action);
+      setDeleteDialogOpen(true);
+    },
+    [],
+  );
+
+  const handleDelete = useCallback(
+    async () => {
+      if (!actionToDelete) {
+        return;
+      }
+      // TODO: Implement actual delete API call
+      // Example: await deleteAction(actionToDelete.id);
+      console.log('Delete action:', actionToDelete.name);
+      setDeleteDialogOpen(false);
+      setActionToDelete(null);
+    },
+    [actionToDelete],
   );
 
   const handleRunSubmit = useCallback(
@@ -241,12 +322,43 @@ export const ActionsPage = () => {
         return;
       }
       let parsedPayload: unknown;
-      try {
-        parsedPayload = JSON.parse(runPayload || '{}');
+
+      if (useAdvancedMode) {
+        // Use JSON payload from textarea
+        try {
+          parsedPayload = JSON.parse(runPayload || '{}');
+          setJsonPayloadError(null);
+        } catch (err) {
+          setJsonPayloadError('Invalid JSON payload. Please fix any syntax issues and try again.');
+          return;
+        }
+      } else {
+        // Build payload from form values
+        const properties = parseInputSchema(selectedAction);
+        const payload: Record<string, unknown> = {};
+
+        properties.forEach((prop) => {
+          const value = formValues[prop.name];
+          if (value !== undefined && value !== '') {
+            // Convert value based on type
+            if (prop.type === 'number' || prop.type === 'integer') {
+              payload[prop.name] = Number(value);
+            } else if (prop.type === 'boolean') {
+              payload[prop.name] = value === 'true';
+            } else if (prop.type === 'array' || prop.type === 'object') {
+              try {
+                payload[prop.name] = JSON.parse(value);
+              } catch {
+                payload[prop.name] = value;
+              }
+            } else {
+              payload[prop.name] = value;
+            }
+          }
+        });
+
+        parsedPayload = payload;
         setJsonPayloadError(null);
-      } catch (err) {
-        setJsonPayloadError('Invalid JSON payload. Please fix any syntax issues and try again.');
-        return;
       }
 
       try {
@@ -263,7 +375,7 @@ export const ActionsPage = () => {
         setRunError(message);
       }
     },
-    [apiKey, runAction, runPayload, selectedAction, selectedPackage],
+    [apiKey, runAction, runPayload, selectedAction, selectedPackage, useAdvancedMode, formValues],
   );
 
   if (loadedActions.isPending) {
@@ -337,7 +449,9 @@ export const ActionsPage = () => {
                     <TableRow
                       key={action.id}
                       className={cn(
-                        'cursor-pointer transition-colors',
+                        'cursor-pointer transition-all duration-200',
+                        'hover:scale-[1.02]',
+                        'motion-reduce:transform-none motion-reduce:transition-none',
                         isSelected && 'bg-blue-50 hover:bg-blue-50',
                       )}
                       onClick={() => setSelectedActionId(action.id)}
@@ -362,7 +476,14 @@ export const ActionsPage = () => {
           <div className="space-y-6">
             {selectedAction && selectedPackage ? (
               <>
-                <div className="flex flex-col gap-4 rounded-md border border-gray-200 bg-gray-50 p-6 shadow-sm">
+                <div
+                  className={cn(
+                    'flex flex-col gap-4 rounded-md border border-gray-200 bg-gray-50 p-6 shadow-sm',
+                    'transition-transform duration-200',
+                    'hover:scale-[1.02]',
+                    'motion-reduce:transform-none motion-reduce:transition-none',
+                  )}
+                >
                   <div>
                     <div className="flex flex-wrap items-center gap-3">
                       <h2 className="text-xl font-semibold text-gray-900">
@@ -385,13 +506,46 @@ export const ActionsPage = () => {
                     <Button onClick={() => openRunDialog(selectedAction)} disabled={!selectedAction.enabled}>
                       Run action
                     </Button>
-                    <Button variant="ghost" onClick={() => navigate(`/runs?search=${selectedAction.name}`)}>
-                      View related runs
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <span className="sr-only">Open action menu</span>
+                          <svg
+                            className="h-4 w-4"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 16 16"
+                            fill="currentColor"
+                          >
+                            <circle cx="8" cy="2" r="1.5" />
+                            <circle cx="8" cy="8" r="1.5" />
+                            <circle cx="8" cy="14" r="1.5" />
+                          </svg>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => openRunDialog(selectedAction)}>
+                          Run action
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate(`/runs?search=${selectedAction.name}`)}>
+                          View logs
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem destructive onClick={() => openDeleteDialog(selectedAction)}>
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
 
-                <div className="rounded-md border border-gray-200 bg-white p-6 shadow-sm">
+                <div
+                  className={cn(
+                    'rounded-md border border-gray-200 bg-white p-6 shadow-sm',
+                    'transition-transform duration-200',
+                    'hover:scale-[1.02]',
+                    'motion-reduce:transform-none motion-reduce:transition-none',
+                  )}
+                >
                   <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500">
                     Recent runs
                   </h3>
@@ -404,7 +558,12 @@ export const ActionsPage = () => {
                       {recentRuns.map((run) => (
                         <li
                           key={run.id}
-                          className="flex items-center justify-between rounded-md border border-gray-200 bg-gray-50 px-3 py-2"
+                          className={cn(
+                            'flex items-center justify-between rounded-md border border-gray-200 bg-gray-50 px-3 py-2',
+                            'transition-transform duration-200',
+                            'hover:scale-[1.02]',
+                            'motion-reduce:transform-none motion-reduce:transition-none',
+                          )}
                         >
                           <div>
                             <p className="font-medium text-gray-900">
@@ -419,7 +578,14 @@ export const ActionsPage = () => {
                   )}
                 </div>
 
-                <div className="rounded-md border border-gray-200 bg-white p-6 shadow-sm">
+                <div
+                  className={cn(
+                    'rounded-md border border-gray-200 bg-white p-6 shadow-sm',
+                    'transition-transform duration-200',
+                    'hover:scale-[1.02]',
+                    'motion-reduce:transform-none motion-reduce:transition-none',
+                  )}
+                >
                   {documentationSection(selectedAction)}
                 </div>
               </>
@@ -481,29 +647,125 @@ export const ActionsPage = () => {
               )}
             </div>
 
-            <div className="grid gap-2">
-              <label htmlFor="payload" className="text-sm font-medium text-gray-700">
-                Payload (JSON)
-              </label>
-              <Textarea
-                id="payload"
-                spellCheck={false}
-                value={runPayload}
-                error={!!jsonPayloadError}
-                onChange={(event) => {
-                  setRunPayload(event.target.value);
-                  if (jsonPayloadError) {
-                    setJsonPayloadError(null);
+            <div className="flex items-center justify-between border-t border-gray-200 pt-4">
+              <h3 className="text-sm font-semibold text-gray-700">Action Parameters</h3>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setUseAdvancedMode(!useAdvancedMode);
+                  if (!useAdvancedMode) {
+                    // Switching to advanced mode - sync form values to JSON
+                    const properties = parseInputSchema(selectedAction!);
+                    const payload: Record<string, unknown> = {};
+                    properties.forEach((prop) => {
+                      const value = formValues[prop.name];
+                      if (value !== undefined && value !== '') {
+                        if (prop.type === 'number' || prop.type === 'integer') {
+                          payload[prop.name] = Number(value);
+                        } else if (prop.type === 'boolean') {
+                          payload[prop.name] = value === 'true';
+                        } else if (prop.type === 'array' || prop.type === 'object') {
+                          try {
+                            payload[prop.name] = JSON.parse(value);
+                          } catch {
+                            payload[prop.name] = value;
+                          }
+                        } else {
+                          payload[prop.name] = value;
+                        }
+                      }
+                    });
+                    setRunPayload(JSON.stringify(payload, null, 2));
                   }
                 }}
-              />
-              <p className="text-xs text-gray-500">
-                The payload must be valid JSON matching the action input schema.
-              </p>
-              {jsonPayloadError && (
-                <p className="mt-2 text-sm text-red-700">{jsonPayloadError}</p>
-              )}
+              >
+                {useAdvancedMode ? 'Use Form Mode' : 'Use JSON Mode'}
+              </Button>
             </div>
+
+            {useAdvancedMode ? (
+              <div className="grid gap-2">
+                <label htmlFor="payload" className="text-sm font-medium text-gray-700">
+                  Payload (JSON)
+                </label>
+                <Textarea
+                  id="payload"
+                  spellCheck={false}
+                  value={runPayload}
+                  error={!!jsonPayloadError}
+                  onChange={(event) => {
+                    setRunPayload(event.target.value);
+                    if (jsonPayloadError) {
+                      setJsonPayloadError(null);
+                    }
+                  }}
+                />
+                <p className="text-xs text-gray-500">
+                  The payload must be valid JSON matching the action input schema.
+                </p>
+                {jsonPayloadError && (
+                  <p className="mt-2 text-sm text-red-700">{jsonPayloadError}</p>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {selectedAction && parseInputSchema(selectedAction).length > 0 ? (
+                  parseInputSchema(selectedAction).map((param) => (
+                    <div key={param.name} className="grid gap-2">
+                      <label htmlFor={`param-${param.name}`} className="text-sm font-medium text-gray-700">
+                        {param.name}
+                        {param.required && <span className="text-red-500 ml-1">*</span>}
+                      </label>
+                      {param.description && (
+                        <p className="text-xs text-gray-500">{param.description}</p>
+                      )}
+                      {param.type === 'array' || param.type === 'object' ? (
+                        <Textarea
+                          id={`param-${param.name}`}
+                          value={formValues[param.name] || ''}
+                          placeholder={
+                            param.type === 'array'
+                              ? '["item1", "item2"]'
+                              : '{"key": "value"}'
+                          }
+                          required={param.required}
+                          onChange={(event) => {
+                            setFormValues({
+                              ...formValues,
+                              [param.name]: event.target.value,
+                            });
+                          }}
+                        />
+                      ) : (
+                        <Input
+                          id={`param-${param.name}`}
+                          type={
+                            param.type === 'number' || param.type === 'integer'
+                              ? 'number'
+                              : 'text'
+                          }
+                          value={formValues[param.name] || ''}
+                          placeholder={`Enter ${param.name}`}
+                          required={param.required}
+                          onChange={(event) => {
+                            setFormValues({
+                              ...formValues,
+                              [param.name]: event.target.value,
+                            });
+                          }}
+                        />
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    This action does not require any parameters.
+                  </p>
+                )}
+              </div>
+            )}
 
             {runError && (
               <div className="mb-3">
@@ -541,6 +803,25 @@ export const ActionsPage = () => {
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Action</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete "{actionToDelete?.name}"? This cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDelete}>
+              Delete
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

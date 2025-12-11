@@ -19,8 +19,8 @@ const Loading = React.forwardRef<HTMLDivElement, LoadingProps>(({ className, tex
   }
 
   return (
-    <div ref={ref} className={cn('flex h-full items-center justify-center', className)} {...props}>
-      <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600" aria-hidden />
+    <div ref={ref} role="status" aria-live="polite" aria-label={text || 'Loading'} className={cn('flex h-full items-center justify-center', className)} {...props}>
+      <div className="h-8 w-8 animate-spin motion-reduce:animate-none rounded-full border-4 border-gray-200 border-t-blue-600" aria-hidden />
       {text && <span className="ml-3 text-sm text-gray-600">{text}</span>}
     </div>
   );

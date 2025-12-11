@@ -35,3 +35,24 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Page transition animations */
+.page-transition-wrapper {
+  animation: fadeIn 200ms ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .page-transition-wrapper {
+    animation: none;
+  }
+}

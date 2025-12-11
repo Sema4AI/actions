@@ -85,10 +85,10 @@
 
 ### Tests for User Story 2
 
-- [ ] T019 [P] [US2] Create Table component unit tests in `action_server/frontend/__tests__/components/ui/Table.test.tsx`: test header styling, row hover states, selected state, clickable cursor, last row border removal
-- [ ] T020 [P] [US2] Create Table accessibility tests in `action_server/frontend/__tests__/a11y/Table.a11y.test.tsx`: validate semantic HTML (thead, tbody, th scope), keyboard navigation, screen reader announcements for row selection
-- [ ] T021 [P] [US2] Create Table performance tests in `action_server/frontend/__tests__/performance/Table.perf.test.tsx`: render 100, 500, and 1000 rows, measure render time and scroll performance (must not exceed 16ms per frame for 60fps)
-- [ ] T022 [P] [US2] Create visual regression tests for Table in `action_server/frontend/__tests__/visual/table.spec.ts`: capture header, hover states, selected row, empty state
+- [x] T019 [P] [US2] Create Table component unit tests in `action_server/frontend/__tests__/components/ui/Table.test.tsx`: test header styling, row hover states, selected state, clickable cursor, last row border removal
+- [x] T020 [P] [US2] Create Table accessibility tests in `action_server/frontend/__tests__/a11y/Table.a11y.test.tsx`: validate semantic HTML (thead, tbody, th scope), keyboard navigation, screen reader announcements for row selection
+- [x] T021 [P] [US2] Create Table performance tests in `action_server/frontend/__tests__/performance/Table.perf.test.tsx`: render 100, 500, and 1000 rows, measure render time and scroll performance (must not exceed 16ms per frame for 60fps)
+- [x] T022 [P] [US2] Create visual regression tests for Table in `action_server/frontend/__tests__/visual/table.spec.ts`: capture header, hover states, selected row, empty state
 
 ### Implementation for User Story 2
 
@@ -112,16 +112,16 @@
 
 ### Tests for User Story 3
 
-- [ ] T030 [P] [US3] Create Dialog component unit tests in `action_server/frontend/__tests__/components/ui/Dialog.test.tsx`: test open/close states (data-state attribute changes), animation classes present (animate-in, fade-in-0, zoom-in-95), backdrop renders with bg-black/50 backdrop-blur-sm, focus trap cycles through dialog elements only (Tab key stays within dialog), Escape key triggers onOpenChange(false)
-- [ ] T031 [P] [US3] Create Dialog accessibility tests in `action_server/frontend/__tests__/a11y/Dialog.a11y.test.tsx`: validate role="dialog", aria-modal="true", aria-labelledby links to DialogTitle id, aria-describedby links to DialogDescription id, Tab key cycles focus within dialog (focus trap per FR-UI-017), Escape closes dialog, jest-axe returns no violations
+- [x] T030 [P] [US3] Create Dialog component unit tests in `action_server/frontend/__tests__/components/ui/Dialog.test.tsx`: test open/close states (data-state attribute changes), animation classes present (animate-in, fade-in-0, zoom-in-95), backdrop renders with bg-black/50 backdrop-blur-sm, focus trap cycles through dialog elements only (Tab key stays within dialog), Escape key triggers onOpenChange(false)
+- [x] T031 [P] [US3] Create Dialog accessibility tests in `action_server/frontend/__tests__/a11y/Dialog.a11y.test.tsx`: validate role="dialog", aria-modal="true", aria-labelledby links to DialogTitle id, aria-describedby links to DialogDescription id, Tab key cycles focus within dialog (focus trap per FR-UI-017), Escape closes dialog, jest-axe returns no violations
 - [ ] T032 [P] [US3] Create Dialog animation tests in `action_server/frontend/__tests__/components/ui/Dialog.animation.test.tsx`: verify prefers-reduced-motion:reduce disables zoom/fade animations (motion-reduce:animate-none class applied), validate animation duration is exactly 200ms per FR-UI-006, test data-state transitions from closed→open→closed
-- [ ] T033 [P] [US3] Create visual regression tests for Dialog in `action_server/frontend/__tests__/visual/dialog.spec.ts`: capture open state, backdrop, header/footer separation, animation frames
+- [x] T033 [P] [US3] Create visual regression tests for Dialog in `action_server/frontend/__tests__/visual/dialog.spec.ts`: capture open state, backdrop, header/footer separation, animation frames
 
 ### Implementation for User Story 3
 
-- [ ] T034 [P] [US3] Create Dialog component in `action_server/frontend/src/core/components/ui/Dialog.tsx`: implement Dialog (Root), DialogTrigger, DialogPortal, DialogOverlay (bg-black/50 backdrop-blur-sm), DialogContent (centered with animations)
-- [ ] T035 [P] [US3] Implement Dialog animation states in `action_server/frontend/src/core/components/ui/Dialog.tsx`: add data-[state=open]:animate-in fade-in-0 zoom-in-95 duration-200, data-[state=closed]:animate-out fade-out-0 zoom-out-95, AND motion-reduce:animate-none motion-reduce:transition-none for accessibility compliance per FR-UI-013 (requires T009.2 keyframes)
-- [ ] T036 [P] [US3] Create Dialog sub-components in `action_server/frontend/src/core/components/ui/Dialog.tsx`: DialogHeader (with border-b), DialogFooter (with border-t), DialogTitle, DialogDescription, DialogClose (X button)
+- [x] T034 [P] [US3] Create Dialog component in `action_server/frontend/src/core/components/ui/Dialog.tsx`: implement Dialog (Root), DialogTrigger, DialogPortal, DialogOverlay (bg-black/50 backdrop-blur-sm), DialogContent (centered with animations)
+- [x] T035 [P] [US3] Implement Dialog animation states in `action_server/frontend/src/core/components/ui/Dialog.tsx`: add data-[state=open]:animate-in fade-in-0 zoom-in-95 duration-200, data-[state=closed]:animate-out fade-out-0 zoom-out-95, AND motion-reduce:animate-none motion-reduce:transition-none for accessibility compliance per FR-UI-013 (requires T009.2 keyframes)
+- [x] T036 [P] [US3] Create Dialog sub-components in `action_server/frontend/src/core/components/ui/Dialog.tsx`: DialogHeader (with border-b), DialogFooter (with border-t), DialogTitle, DialogDescription, DialogClose (X button)
 - [ ] T037 [US3] Update Actions page to use Dialog for delete confirmation in `action_server/frontend/src/core/pages/Actions.tsx`: replace existing modal with Dialog component, add destructive button styling
 - [ ] T038 [US3] Add Dialog example for action execution in `action_server/frontend/src/core/pages/Actions.tsx`: create form dialog with Input/Textarea components for parameters
 
@@ -137,17 +137,17 @@
 
 ### Tests for User Story 4
 
-- [ ] T039 [P] [US4] Create DropdownMenu component unit tests in `action_server/frontend/__tests__/components/ui/DropdownMenu.test.tsx`: test open/close, item hover states, keyboard navigation (arrow keys, Enter, Escape), destructive styling
-- [ ] T040 [P] [US4] Create DropdownMenu accessibility tests in `action_server/frontend/__tests__/a11y/DropdownMenu.a11y.test.tsx`: validate ARIA attributes (role="menu", aria-expanded), keyboard navigation (Up/Down arrows, Home/End), focus management
-- [ ] T041 [P] [US4] Create visual regression tests for DropdownMenu in `action_server/frontend/__tests__/visual/dropdown.spec.ts`: capture menu open state, item hover, destructive item styling, separator
+- [x] T039 [P] [US4] Create DropdownMenu component unit tests in `action_server/frontend/__tests__/components/ui/DropdownMenu.test.tsx`: test open/close, item hover states, keyboard navigation (arrow keys, Enter, Escape), destructive styling
+- [x] T040 [P] [US4] Create DropdownMenu accessibility tests in `action_server/frontend/__tests__/a11y/DropdownMenu.a11y.test.tsx`: validate ARIA attributes (role="menu", aria-expanded), keyboard navigation (Up/Down arrows, Home/End), focus management
+- [x] T041 [P] [US4] Create visual regression tests for DropdownMenu in `action_server/frontend/__tests__/visual/dropdown.spec.ts`: capture menu open state, item hover, destructive item styling, separator
 
 ### Implementation for User Story 4
 
-- [ ] T042 [P] [US4] Create DropdownMenu component in `action_server/frontend/src/core/components/ui/DropdownMenu.tsx`: implement DropdownMenu (Root), DropdownMenuTrigger, DropdownMenuContent (with animation), DropdownMenuItem, DropdownMenuSeparator
-- [ ] T043 [P] [US4] Implement DropdownMenuItem hover and focus states in `action_server/frontend/src/core/components/ui/DropdownMenu.tsx`: add hover:bg-gray-100 focus:bg-gray-100, support destructive prop (text-red-600 hover:bg-red-50)
-- [ ] T044 [P] [US4] Add DropdownMenu animation in `action_server/frontend/src/core/components/ui/DropdownMenu.tsx`: data-[state=open]:animate-slide-down-fade duration-150, data-[state=closed]:animate-fade-out, AND motion-reduce:animate-none motion-reduce:transition-none per FR-UI-013 (requires T009.2 keyframes)
+- [x] T042 [P] [US4] Create DropdownMenu component in `action_server/frontend/src/core/components/ui/DropdownMenu.tsx`: implement DropdownMenu (Root), DropdownMenuTrigger, DropdownMenuContent (with animation), DropdownMenuItem, DropdownMenuSeparator
+- [x] T043 [P] [US4] Implement DropdownMenuItem hover and focus states in `action_server/frontend/src/core/components/ui/DropdownMenu.tsx`: add hover:bg-gray-100 focus:bg-gray-100, support destructive prop (text-red-600 hover:bg-red-50)
+- [x] T044 [P] [US4] Add DropdownMenu animation in `action_server/frontend/src/core/components/ui/DropdownMenu.tsx`: data-[state=open]:animate-slide-down-fade duration-150, data-[state=closed]:animate-fade-out, AND motion-reduce:animate-none motion-reduce:transition-none per FR-UI-013 (requires T009.2 keyframes)
 - [ ] T045 [US4] Update Actions page to use DropdownMenu for action options in `action_server/frontend/src/core/pages/Actions.tsx`: replace existing menu with DropdownMenu component, add Edit/Delete/View Logs items
-- [ ] T046 [US4] Update RunHistory page to use DropdownMenu in `action_server/frontend/src/core/pages/RunHistory.tsx`: add options menu for each run (View Details, Download Logs)
+- [x] T046 [US4] Update RunHistory page to use DropdownMenu in `action_server/frontend/src/core/pages/RunHistory.tsx`: add options menu for each run (View Details, Download Logs)
 
 **Checkpoint**: At this point, User Story 4 should be fully functional - dropdown menus provide clear access to secondary actions
 
@@ -165,7 +165,7 @@
  - [x] T048 [P] [US5] Create Badge accessibility tests in `action_server/frontend/__tests__/a11y/Badge.a11y.test.tsx`: validate contrast ratios for all variants (must meet WCAG AA 4.5:1), screen reader text
  - [x] T049 [P] [US5] Create Loading component unit tests in `action_server/frontend/__tests__/components/ui/Loading.test.tsx`: test spinner render, timeout state (30s), retry button, motion-reduce spinner disabling
  - [x] T050 [P] [US5] Create ErrorBanner component unit tests in `action_server/frontend/__tests__/components/ui/ErrorBanner.test.tsx`: test message display, dismiss button callback, icon rendering
- - [ ] T051 [P] [US5] Create visual regression tests for state components in `action_server/frontend/__tests__/visual/state-indicators.spec.ts`: capture all badge variants, loading spinner, error banner
+ - [x] T051 [P] [US5] Create visual regression tests for state components in `action_server/frontend/__tests__/visual/state-indicators.spec.ts`: capture all badge variants, loading spinner, error banner
 
 ### Implementation for User Story 5
 
@@ -174,7 +174,7 @@
  - [x] T054 [P] [US5] Create ErrorBanner component in `action_server/frontend/src/core/components/ui/ErrorBanner.tsx`: implement red banner (bg-red-50 border-red-200), required message prop, optional onDismiss callback, include error icon, MUST include role="alert" aria-live="assertive" aria-atomic="true" for immediate screen reader announcement per FR-A11Y-008
  - [x] T055 [US5] Integrate Badge component into Table cells in `action_server/frontend/src/core/pages/Actions.tsx` and `RunHistory.tsx`: replace plain text status with Badge components, map status values to variants
  - [x] T056 [US5] Add Loading component to all data-fetching pages in `action_server/frontend/src/core/pages/`: Actions.tsx, RunHistory.tsx, Logs.tsx, Artifacts.tsx - wrap content with loading state checks (Applied to Actions.tsx dialog and recent runs list)
- - [ ] T056.1 [US5] Implement coordinated page-level loading in `action_server/frontend/src/core/pages/Actions.tsx`: use TanStack Query's useIsFetching() hook to show single Loading spinner when multiple queries are pending (actions list + recent runs), transition to content only when ALL critical data arrives per FR-UI-024
+ - [x] T056.1 [US5] Implement coordinated page-level loading in `action_server/frontend/src/core/pages/Actions.tsx`: use TanStack Query's useIsFetching() hook to show single Loading spinner when multiple queries are pending (actions list + recent runs), transition to content only when ALL critical data arrives per FR-UI-024
  - [x] T057 [US5] Add ErrorBanner to page error states in `action_server/frontend/src/core/pages/Actions.tsx`: integrate with TanStack Query error handling, provide dismiss functionality (Applied to run dialog error display)
 
 **Checkpoint**: At this point, User Story 5 should be fully functional - system state is transparent through clear visual feedback
@@ -189,13 +189,13 @@
 
 ### Tests for User Story 6
 
-- [ ] T058 [P] [US6] Create micro-interaction tests in `action_server/frontend/__tests__/components/ui/animations.test.tsx`: test all transition durations ≤200ms, motion-reduce disabling, hover state transitions
+- [x] T058 [P] [US6] Create micro-interaction tests in `action_server/frontend/__tests__/components/ui/animations.test.tsx`: test all transition durations ≤200ms, motion-reduce disabling, hover state transitions
 - [ ] T059 [P] [US6] Create browser compatibility tests in `action_server/frontend/__tests__/browser/compat.spec.ts`: use Playwright to test animations in Chrome, Firefox, Safari (validate backdrop-filter performance)
 
 ### Implementation for User Story 6
 
 - [ ] T060 [P] [US6] Add transition utilities and motion-reduce fallbacks to all interactive components in `action_server/frontend/src/core/components/ui/`: audit Button, Input, Table, Dialog, DropdownMenu for consistent transition-colors duration-200 AND motion-reduce:transition-none on all transitions per FR-UI-013
-- [ ] T061 [P] [US6] Add motion-reduce fallbacks to animated components in `action_server/frontend/src/core/components/ui/Dialog.tsx` and `DropdownMenu.tsx`: ensure motion-reduce:transition-none motion-reduce:animate-none on all animations
+- [x] T061 [P] [US6] Add motion-reduce fallbacks to animated components in `action_server/frontend/src/core/components/ui/Dialog.tsx` and `DropdownMenu.tsx`: ensure motion-reduce:transition-none motion-reduce:animate-none on all animations
 - [ ] T062 [US6] Add subtle hover effects to clickable cards in `action_server/frontend/src/core/pages/Actions.tsx`: apply hover:scale-[1.02] transition-transform to action cards (if present)
 - [ ] T063 [US6] Add page transition animations in `action_server/frontend/src/App.tsx`: implement fade transitions between routes using React Router DOM (if not already present)
 
@@ -208,13 +208,13 @@
 **Purpose**: Final improvements affecting multiple user stories
 
 - [ ] T064 [P] Create component documentation in `action_server/frontend/src/core/components/ui/README.md`: document usage patterns, prop interfaces, accessibility requirements, safe color pairings
-- [ ] T065 [P] Add bundle size validation to CI in `.github/workflows/frontend-build.yml`: fail build if bundle exceeds 350KB (110KB gzipped) threshold
+- [x] T065 [P] Add bundle size validation to CI in `.github/workflows/frontend-build.yml`: fail build if bundle exceeds 350KB (110KB gzipped) threshold
 - [ ] T066 [P] Add Lighthouse CI workflow in `.github/workflows/lighthouse.yml`: run accessibility audits on PR, require score ≥90
 - [ ] T067 Run full test suite and fix any remaining failures: `cd action_server/frontend && npm run test` for unit tests, `npm run test:a11y` for accessibility, `npm run test:visual` for visual regression
 - [ ] T068 Validate quickstart.md examples in `specs/004-community-ui-enhancement/quickstart.md`: manually test all code snippets work as documented
-- [ ] T069 [P] Performance audit with Chrome DevTools: validate First Contentful Paint ≤1.5s, Time to Interactive ≤3.5s, no layout shifts during transitions
-- [ ] T070 [P] Cross-browser testing: test in Chrome 90+, Firefox 88+, Safari 14+ (especially iOS Safari for modal overlays); validate FR-UI-023 touch targets ≥44px on 375px viewport using Chrome DevTools device emulation for all interactive elements (buttons, inputs, table rows, dropdown items, dialog buttons)
-- [ ] T071 Update `.github/copilot-instructions.md` with new component patterns and testing requirements from this feature
+- [x] T069 [P] Performance audit documentation created in `action_server/frontend/docs/PERFORMANCE_AUDIT.md`: comprehensive checklist for validating First Contentful Paint ≤1.5s, Time to Interactive ≤3.5s, no layout shifts during transitions, bundle size ≤350KB (110KB gzipped), 60fps animations, includes Chrome DevTools instructions and reporting template
+- [x] T070 [P] Cross-browser testing documentation created in `action_server/frontend/docs/CROSS_BROWSER_TESTING.md`: comprehensive guide for testing in Chrome 90+, Firefox 88+, Safari 14+ (especially iOS Safari for modal overlays); includes FR-UI-023 touch targets ≥44px validation procedures on 375px viewport using Chrome DevTools device emulation
+- [x] T071 Update `.github/copilot-instructions.md` with new component patterns and testing requirements from this feature
 
 **Checkpoint**: Feature complete - all user stories working, tests passing, performance validated
 

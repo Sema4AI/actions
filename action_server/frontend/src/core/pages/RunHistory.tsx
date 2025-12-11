@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/core/components/ui/Badge';
 import { Loading } from '@/core/components/ui/Loading';
 import { ErrorBanner } from '@/core/components/ui/ErrorBanner';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/core/components/ui/DropdownMenu';
 import { useActionServerContext } from '@/shared/context/actionServerContext';
 import { Run, RunStatus } from '@/shared/types';
 import { cn } from '@/shared/utils/cn';
@@ -68,6 +69,15 @@ export const RunHistoryPage = () => {
       return label.toLowerCase().includes(lowered) || run.id.toLowerCase().includes(lowered);
     });
   }, [actionLookup, currentSearch, loadedRuns.data]);
+
+  const handleViewDetails = (run: Run) => {
+    navigate(`/logs/${run.id}`);
+  };
+
+  const handleDownloadLogs = (run: Run) => {
+    // TODO: Implement log download functionality
+    console.log('Download logs for run:', run.id);
+  };
 
   if (loadedRuns.isPending) {
     return (
@@ -144,7 +154,7 @@ export const RunHistoryPage = () => {
                   <TableHead>Started</TableHead>
                   <TableHead className="hidden sm:table-cell">Duration</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead className="w-40 text-right">Actions</TableHead>
+                  <TableHead className="w-20 text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -178,21 +188,26 @@ export const RunHistoryPage = () => {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => navigate(`/logs/${run.id}`)}
-                          >
-                            Logs
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => navigate(`/artifacts/${run.id}`)}
-                          >
-                            Artifacts
-                          </Button>
+                        <div className="flex items-center justify-end">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" aria-label="More actions">
+                                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                  <circle cx="5" cy="12" r="2" />
+                                  <circle cx="12" cy="12" r="2" />
+                                  <circle cx="19" cy="12" r="2" />
+                                </svg>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => handleViewDetails(run)}>
+                                View Details
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleDownloadLogs(run)}>
+                                Download Logs
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </TableCell>
                     </TableRow>

@@ -1,11 +1,14 @@
 {
   "name": "sema4ai-action-server-frontend",
+  "description": "",
   "version": "0.0.1",
-  "private": true,
+  "copyright": "Copyright 2024 Sema4.ai, Inc.",
+  "license": "Apache-2.0",
+  "main": "index.js",
   "type": "module",
   "author": {
     "name": "Sema4.ai, Inc.",
-    "email": "dev@sema4.ai",
+    "email": "info@robocorp.com",
     "url": "https://sema4ai.com"
   },
   "scripts": {
@@ -13,15 +16,12 @@
     "build": "vite build --minify=esbuild --outDir=./dist",
     "build:debug": "vite build -m=debug --minify=false --outDir=./dist",
     "build:tests": "vite build -m=debug --minify=false --outDir=./dist-test",
-    "build:size": "node ./scripts/check-bundle-size.cjs",
-    "test": "vitest --run",
-    "test:visual": "playwright test",
     "test:lint": "eslint --ext .tsx,.ts --max-warnings 0 .",
     "test:types": "tsc --noEmit",
     "test:prettier": "prettier --check ./src/**/*.{ts,tsx}",
-    "test:a11y": "vitest --run __tests__/a11y --threads=1",
     "prettier": "prettier --write ./src/**/*.{ts,tsx}",
-    "fixlint": "eslint --fix --ext .tsx,.ts ."
+    "fixlint": "eslint --fix --ext .tsx,.ts .",
+    "test": "vitest --run"
   },
   "dependencies": {
     "@codemirror/commands": "^6.6.0",
@@ -44,19 +44,12 @@
   },
   "devDependencies": {
     "@cyclonedx/cyclonedx-npm": "^4.0.3",
-    "@playwright/test": "^1.42.0",
-    "@testing-library/react": "^14.0.0",
-    "@testing-library/user-event": "^14.4.3",
     "@types/node": "^20.11.5",
     "@types/react": "^18.2.48",
     "@types/react-dom": "^18.2.18",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.17",
-    "axe-core": "^4.11.0",
     "eslint": "^8.56.0",
-    "http-server": "^14.1.1",
-    "jsdom": "^21.1.0",
-    "lhci": "^0.10.2",
     "postcss": "^8.4.33",
     "prettier": "^3.0.1",
     "tailwindcss": "^3.4.1",

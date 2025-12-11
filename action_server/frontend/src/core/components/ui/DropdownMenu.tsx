@@ -62,7 +62,9 @@ const DropdownMenuContent = React.forwardRef<
       sideOffset={sideOffset}
       className={cn(
         'z-50 min-w-[10rem] overflow-hidden rounded-md border border-gray-200 bg-white p-1 shadow-md',
-        'data-[side=bottom]:animate-slide-down data-[side=top]:animate-slide-up',
+        'data-[state=open]:animate-fade-in-0 data-[state=open]:animate-slide-in-from-top-2',
+        'data-[state=closed]:animate-fade-out-0',
+        'motion-reduce:animate-none motion-reduce:transition-none',
         className,
       )}
       {...props}
@@ -71,17 +73,26 @@ const DropdownMenuContent = React.forwardRef<
 ));
 DropdownMenuContent.displayName = DropdownMenuPrimitive.Content.displayName;
 
+export interface DropdownMenuItemProps
+  extends React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Item> {
+  /** Show destructive styling (red text/icon) */
+  destructive?: boolean;
+  inset?: boolean;
+}
+
 const DropdownMenuItem = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Item>,
-  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Item> & {
-    inset?: boolean;
-  }
->(({ className, inset, ...props }, ref) => (
+  DropdownMenuItemProps
+>(({ className, destructive, inset, ...props }, ref) => (
   <DropdownMenuPrimitive.Item
     ref={ref}
     className={cn(
-      'relative flex cursor-pointer select-none items-center rounded-sm px-2 py-2 text-sm outline-none',
-      'focus:bg-gray-100 focus:text-gray-900 data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+      'relative flex cursor-pointer select-none items-center rounded-md px-3 py-2 text-sm',
+      'focus:outline-none',
+      destructive
+        ? 'text-red-600 hover:bg-red-50 focus:bg-red-50'
+        : 'text-gray-900 hover:bg-gray-100 focus:bg-gray-100',
+      'data-[disabled]:opacity-50 data-[disabled]:cursor-not-allowed data-[disabled]:pointer-events-none',
       inset && 'pl-8',
       className,
     )}

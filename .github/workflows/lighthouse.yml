@@ -1,0 +1,115 @@
+name: Lighthouse CI
+
+on:
+  pull_request:
+    branches: [master]
+    paths:
+      - 'action_server/frontend/**'
+      - '.github/workflows/lighthouse.yml'
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: ./action_server/frontend
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Frontend
+        run: npm run build
+
+      - name: Serve and Run Lighthouse CI
+        run: |
+          # Start http-server in background
+          npx http-server ./dist -p 8085 -c-1 --silent &
+          SERVER_PID=$!
+
+          # Wait for server to be ready
+          echo "Waiting for server to start..."
+          for i in {1..30}; do
+            if curl -s http://localhost:8085 > /dev/null; then
+              echo "Server is ready"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "Server failed to start"
+              kill $SERVER_PID 2>/dev/null || true
+              exit 1
+            fi
+            sleep 1
+          done
+
+          # Run Lighthouse CI
+          npx lhci autorun
+
+          # Capture exit code
+          LHCI_EXIT_CODE=$?
+
+          # Cleanup
+          kill $SERVER_PID 2>/dev/null || true
+
+          # Exit with Lighthouse CI exit code
+          exit $LHCI_EXIT_CODE
+
+      - name: Upload Lighthouse Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-results-${{ github.sha }}
+          path: |
+            action_server/frontend/.lighthouseci/
+            !action_server/frontend/.lighthouseci/**/*.json
+          retention-days: 30
+
+      - name: Job Summary
+        if: always()
+        run: |
+          JOB_STATUS=${{ job.status }}
+
+          echo "## Lighthouse CI Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Attribute | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Status** | ${JOB_STATUS} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Commit** | ${{ github.sha }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Required Score** | 90% |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${JOB_STATUS}" != "success" ]; then
+            echo "### Accessibility Score Below Threshold" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Remediation:**" >> $GITHUB_STEP_SUMMARY
+            echo "- Review Lighthouse report in the artifacts" >> $GITHUB_STEP_SUMMARY
+            echo "- Check for missing ARIA labels and semantic HTML" >> $GITHUB_STEP_SUMMARY
+            echo "- Ensure proper color contrast ratios" >> $GITHUB_STEP_SUMMARY
+            echo "- Verify keyboard navigation works correctly" >> $GITHUB_STEP_SUMMARY
+            echo "- Test with screen readers if possible" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Run locally with:" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+            echo "cd action_server/frontend" >> $GITHUB_STEP_SUMMARY
+            echo "npm ci && npm run build" >> $GITHUB_STEP_SUMMARY
+            echo "npx http-server ./dist -p 8085 &" >> $GITHUB_STEP_SUMMARY
+            echo "npx lhci autorun" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### Accessibility Requirements Met" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "The frontend meets the minimum accessibility score of 90%." >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Review the full Lighthouse report in the artifacts for detailed metrics." >> $GITHUB_STEP_SUMMARY
+          fi

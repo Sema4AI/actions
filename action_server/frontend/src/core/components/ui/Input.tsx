@@ -17,7 +17,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         type={type}
         aria-invalid={error ? true : undefined}
         className={cn(
-          'flex h-10 w-full rounded-md px-3 py-2 text-sm transition-colors duration-200',
+          'flex h-10 w-full rounded-md px-3 py-2 text-sm transition-colors duration-200 motion-reduce:transition-none',
           'bg-white placeholder:text-gray-400',
           'focus-visible:outline-none focus-visible:ring-2',
           'focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',

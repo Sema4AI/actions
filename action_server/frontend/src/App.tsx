@@ -191,65 +191,71 @@ const ActionServerProvider = ({ children }: { children: React.ReactNode }) => {
   return <ActionServerContext.Provider value={value}>{children}</ActionServerContext.Provider>;
 };
 
-const AppRoutes = () => (
-  <Routes>
-    <Route path="/" element={<Navigate to="/actions" replace />} />
-    <Route path="/actions" element={<ActionsPage />} />
-    <Route path="/runs" element={<RunHistoryPage />} />
-    <Route path="/logs/:runId" element={<LogsPage />} />
-    <Route path="/artifacts/:runId" element={<ArtifactsPage />} />
+const AppRoutes = () => {
+  const location = useLocation();
 
-    <Route
-      path="/knowledge-base"
-      element={
-        isEnterpriseTier && EnterpriseKnowledgeBasePage ? (
-          <Suspense fallback={<div>Loading enterprise module…</div>}>
-            <EnterpriseKnowledgeBasePage />
-          </Suspense>
-        ) : (
-          <FeatureUnavailable feature="Knowledge Base" />
-        )
-      }
-    />
-    <Route
-      path="/analytics"
-      element={
-        isEnterpriseTier && EnterpriseAnalyticsPage ? (
-          <Suspense fallback={<div>Loading enterprise module…</div>}>
-            <EnterpriseAnalyticsPage />
-          </Suspense>
-        ) : (
-          <FeatureUnavailable feature="Analytics" />
-        )
-      }
-    />
-    <Route
-      path="/org-management"
-      element={
-        isEnterpriseTier && EnterpriseOrgManagementPage ? (
-          <Suspense fallback={<div>Loading enterprise module…</div>}>
-            <EnterpriseOrgManagementPage />
-          </Suspense>
-        ) : (
-          <FeatureUnavailable feature="Organization Management" />
-        )
-      }
-    />
-    <Route
-      path="/sso"
-      element={
-        isEnterpriseTier && EnterpriseSsoPage ? (
-          <Suspense fallback={<div>Loading enterprise module…</div>}>
-            <EnterpriseSsoPage />
-          </Suspense>
-        ) : (
-          <FeatureUnavailable feature="SSO" />
-        )
-      }
-    />
-    <Route path="*" element={<Navigate to="/actions" replace />} />
-  </Routes>
-);
+  return (
+    <div key={location.pathname} className="page-transition-wrapper">
+      <Routes location={location}>
+        <Route path="/" element={<Navigate to="/actions" replace />} />
+        <Route path="/actions" element={<ActionsPage />} />
+        <Route path="/runs" element={<RunHistoryPage />} />
+        <Route path="/logs/:runId" element={<LogsPage />} />
+        <Route path="/artifacts/:runId" element={<ArtifactsPage />} />
+
+        <Route
+          path="/knowledge-base"
+          element={
+            isEnterpriseTier && EnterpriseKnowledgeBasePage ? (
+              <Suspense fallback={<div>Loading enterprise module…</div>}>
+                <EnterpriseKnowledgeBasePage />
+              </Suspense>
+            ) : (
+              <FeatureUnavailable feature="Knowledge Base" />
+            )
+          }
+        />
+        <Route
+          path="/analytics"
+          element={
+            isEnterpriseTier && EnterpriseAnalyticsPage ? (
+              <Suspense fallback={<div>Loading enterprise module…</div>}>
+                <EnterpriseAnalyticsPage />
+              </Suspense>
+            ) : (
+              <FeatureUnavailable feature="Analytics" />
+            )
+          }
+        />
+        <Route
+          path="/org-management"
+          element={
+            isEnterpriseTier && EnterpriseOrgManagementPage ? (
+              <Suspense fallback={<div>Loading enterprise module…</div>}>
+                <EnterpriseOrgManagementPage />
+              </Suspense>
+            ) : (
+              <FeatureUnavailable feature="Organization Management" />
+            )
+          }
+        />
+        <Route
+          path="/sso"
+          element={
+            isEnterpriseTier && EnterpriseSsoPage ? (
+              <Suspense fallback={<div>Loading enterprise module…</div>}>
+                <EnterpriseSsoPage />
+              </Suspense>
+            ) : (
+              <FeatureUnavailable feature="SSO" />
+            )
+          }
+        />
+        <Route path="*" element={<Navigate to="/actions" replace />} />
+      </Routes>
+    </div>
+  );
+};
 
 export const App = () => {
   return (

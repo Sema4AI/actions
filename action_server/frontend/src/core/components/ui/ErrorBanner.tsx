@@ -9,7 +9,7 @@ export interface ErrorBannerProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const ErrorBanner = React.forwardRef<HTMLDivElement, ErrorBannerProps>(({ className, message, onDismiss, ...props }, ref) => {
   return (
-    <div ref={ref} className={cn('bg-red-50 border border-red-200 rounded-md p-4 flex items-start gap-3', className)} {...props}>
+    <div ref={ref} role="alert" aria-live="assertive" aria-atomic="true" className={cn('bg-red-50 border border-red-200 rounded-md p-4 flex items-start gap-3', className)} {...props}>
       <svg className="h-5 w-5 text-red-600" viewBox="0 0 24 24" fill="none" aria-hidden>
         <path d="M12 9v4" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
         <path d="M12 17h.01" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
@@ -18,7 +18,7 @@ const ErrorBanner = React.forwardRef<HTMLDivElement, ErrorBannerProps>(({ classN
       <p className="text-sm text-red-700 flex-1">{message}</p>
 
       {onDismiss && (
-        <button onClick={onDismiss} aria-label="Dismiss" className="text-red-500 hover:bg-red-100 rounded-md p-1"> 
+        <button onClick={onDismiss} aria-label="Dismiss" className="text-red-500 hover:bg-red-100 transition-colors duration-200 motion-reduce:transition-none rounded-md p-1"> 
           <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden>
             <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
           </svg>
