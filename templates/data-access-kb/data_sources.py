@@ -11,7 +11,7 @@ KnowledgeBaseStorageDataSource = Annotated[
         name="my_kb_storage",  # Change this to your PGVector Database name
         engine="pgvector",
         description="Data source for storing knowledge base content embeddings",
-    )
+    ),
 ]
 
 KnowledgeBaseDataSource = Annotated[
@@ -19,14 +19,14 @@ KnowledgeBaseDataSource = Annotated[
     DataSourceSpec(
         name="my_kb",  # Change this to your knowledge Base name
         engine="sema4_knowledge_base",
-        description="Data source for knowledge base."
-    )
+        description="Data source for knowledge base.",
+    ),
 ]
 ########################################################
-# To add the knowledge base data source, you need to 
+# To add the knowledge base data source, you need to
 # provide the following information:
 # 1. The embedding model to use for generating the content embeddings
-# 2. The reranking model to use for determining the relevance of the 
+# 2. The reranking model to use for determining the relevance of the
 #    serach results
 # 3. The pgvctor table to use for storing knowledge base content embeddings.
 #    The table name should be prefixed with pgvector data source name.

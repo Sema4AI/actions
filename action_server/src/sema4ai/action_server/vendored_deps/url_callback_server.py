@@ -106,6 +106,13 @@ def _wrap_socket(
         raise ValueError("certfile must be specified")
     context = SSLContext(ssl.PROTOCOL_TLS_SERVER)
     context.verify_mode = ssl.VerifyMode.CERT_NONE
+    # Ensure only TLSv1.2 and newer are accepted
+    if hasattr(context, "minimum_version"):
+        context.minimum_version = ssl.TLSVersion.TLSv1_2
+    else:
+        # Fallback for older Python: explicitly disable TLSv1 and TLSv1_1
+        context.options |= getattr(ssl, "OP_NO_TLSv1", 0)
+        context.options |= getattr(ssl, "OP_NO_TLSv1_1", 0)
     if certfile:
         context.load_cert_chain(certfile, keyfile)
     return context.wrap_socket(

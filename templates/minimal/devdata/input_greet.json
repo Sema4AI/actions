@@ -10,6 +10,8 @@
         "actionRelativePath": "actions.py",
         "schemaDescription": [],
         "managedParamsSchemaDescription": {},
-        "inputFileVersion": "v2"
+        "inputFileVersion": "v3",
+        "kind": "action",
+        "actionSignature": "action/args: ''"
     }
 }

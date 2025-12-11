@@ -3,12 +3,17 @@
   "version": "0.0.1",
   "private": true,
   "type": "module",
+  "author": {
+    "name": "Sema4.ai, Inc.",
+    "email": "dev@sema4.ai",
+    "url": "https://sema4ai.com"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build --minify=esbuild --outDir=./dist",
     "build:debug": "vite build -m=debug --minify=false --outDir=./dist",
     "build:tests": "vite build -m=debug --minify=false --outDir=./dist-test",
-  "build:size": "node ./scripts/check-bundle-size.cjs",
+    "build:size": "node ./scripts/check-bundle-size.cjs",
     "test": "vitest --run",
     "test:visual": "playwright test",
     "test:lint": "eslint --ext .tsx,.ts --max-warnings 0 .",
@@ -58,8 +63,7 @@
     "typescript": "^5.3.3",
     "vite": "^6.1.0",
     "vite-plugin-singlefile": "^2.1.0",
-    "vitest": "^3.1.3",
-    "@cyclonedx/cyclonedx-npm": "^4.0.3"
+    "vitest": "^3.1.3"
   },
   "prettier": "prettier"
 }

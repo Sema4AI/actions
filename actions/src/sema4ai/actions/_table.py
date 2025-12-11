@@ -15,12 +15,22 @@ class Table(pydantic.BaseModel):
 
     columns: list[str]
     rows: list[Row]
+    name: str | None = None
+    description: str | None = None
 
-    def __init__(self, columns: list[str], rows: list[Row]):
+    def __init__(
+        self,
+        columns: list[str],
+        rows: list[Row],
+        name: str | None = None,
+        description: str | None = None,
+    ):
         """
         Args:
             columns: The columns of the table.
             rows: The rows of the table.
+            name: Optional name for the table (e.g., "sales_data").
+            description: Optional description (e.g., "Sales records for Q1 2024").
         """
         if not isinstance(columns, list):
             raise ValueError("'columns' passed to Table constructor must be a list")
@@ -34,9 +44,7 @@ class Table(pydantic.BaseModel):
         if not isinstance(rows, list):
             raise ValueError("'rows' passed to Table constructor must be a list")
 
-        for i in range(
-            min(len(rows), 5)
-        ):  # Validate the first 5 rows (not all of them due to performance)
+        for i in range(len(rows)):  # Validate all rows
             row = rows[i]
             if not isinstance(row, list):
                 raise ValueError(f"Row {i} is not a list: {row}")
@@ -46,7 +54,7 @@ class Table(pydantic.BaseModel):
                     f"Row {i} has {len(row)} columns, expected {len(columns)}"
                 )
 
-        super().__init__(columns=columns, rows=rows)
+        super().__init__(columns=columns, rows=rows, name=name, description=description)
 
     def iter_as_dicts(self) -> Iterator[dict[str, RowValue]]:
         """
@@ -123,3 +131,17 @@ class Table(pydantic.BaseModel):
         import json
 
         return f"Table(columns={json.dumps(self.columns, indent=4)}, rows={json.dumps(self.rows, indent=4)})"
+
+    def model_dump(self, **kwargs):
+        if "exclude_none" not in kwargs:
+            # i.e.: keep backward compatibility with old behavior by default
+            # as name and description were added.
+            kwargs["exclude_none"] = True
+        return super().model_dump(**kwargs)
+
+    def model_dump_json(self, **kwargs):
+        if "exclude_none" not in kwargs:
+            # i.e.: keep backward compatibility with old behavior by default
+            # as name and description were added.
+            kwargs["exclude_none"] = True
+        return super().model_dump_json(**kwargs)

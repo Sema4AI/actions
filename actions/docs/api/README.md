@@ -66,7 +66,9 @@
 - [`_fixtures.setup`](./sema4ai.actions._fixtures.md#function-setup): Run code before any actions start, or before each separate action.
 - [`_fixtures.teardown`](./sema4ai.actions._fixtures.md#function-teardown): Run code after actions have been run, or after each separate action.
 - [`agent.get_agent_id`](./sema4ai.actions.agent.md#function-get_agent_id): Get the agent ID from the action context or the request headers.
+- [`agent.get_data_frame`](./sema4ai.actions.agent.md#function-get_data_frame): Get a data frame by name from the current thread.
 - [`agent.get_thread_id`](./sema4ai.actions.agent.md#function-get_thread_id): Get the thread ID from the action context or the request headers.
+- [`agent.list_data_frames`](./sema4ai.actions.agent.md#function-list_data_frames): List all data frames available in the current thread.
 - [`agent.prompt_generate`](./sema4ai.actions.agent.md#function-prompt_generate): Gives a prompt to an agent.
 - [`api.collect_lint_errors`](./sema4ai.actions.api.md#function-collect_lint_errors): Provides lint errors from the contents of a file containing the `@action`s.
 - [`chat.attach_file`](./sema4ai.actions.chat.md#function-attach_file): Attaches a file to the current chat.
@@ -77,4 +79,5 @@
 - [`chat.get_file_content`](./sema4ai.actions.chat.md#function-get_file_content): Get the content of a file in the current action chat.
 - [`chat.get_json`](./sema4ai.actions.chat.md#function-get_json): Get the JSON content of a file in the current action chat.
 - [`chat.get_text`](./sema4ai.actions.chat.md#function-get_text): Get the text content of a file in the current action chat.
+- [`chat.list_files`](./sema4ai.actions.chat.md#function-list_files): Lists all files in the current chat thread.
 - [`cli.main`](./sema4ai.actions.cli.md#function-main): Entry point for running actions from sema4ai-actions.

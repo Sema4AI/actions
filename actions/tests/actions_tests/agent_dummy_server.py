@@ -19,6 +19,8 @@ class _AgentDummyServer(BaseHTTPRequestHandler):
         if body:
             if isinstance(body, str):
                 self.wfile.write(body.encode("utf-8"))
+            elif isinstance(body, bytes):
+                self.wfile.write(body)
             else:
                 self.wfile.write(json.dumps(body).encode("utf-8"))
 
@@ -39,6 +41,125 @@ class _AgentDummyServer(BaseHTTPRequestHandler):
                 body={"status": "ok"},
             )
             return
+
+        # Handle /api/v2/threads/{tid}/data-frames endpoint (list dataframes)
+        elif (
+            len(path_parts) == 5
+            and path_parts[0] == "api"
+            and path_parts[1] == "v2"
+            and path_parts[2] == "threads"
+            and path_parts[4] == "data-frames"
+        ):
+            # Extract thread_id from path
+            thread_id = path_parts[3]
+
+            # Store the request for testing
+            self._server.last_request = {
+                "path": self.path,
+                "thread_id": thread_id,
+                "method": "GET",
+            }
+
+            # Return mock dataframe list
+            response = [
+                {
+                    "name": "sales_data",
+                    "description": "Q1 sales records",
+                    "num_rows": 100,
+                    "num_columns": 5,
+                    "column_headers": ["date", "product", "quantity", "price", "total"],
+                },
+                {
+                    "name": "customer_data",
+                    "description": None,
+                    "num_rows": 50,
+                    "num_columns": 3,
+                    "column_headers": ["id", "name", "email"],
+                },
+            ]
+
+            self._send_response(
+                200,
+                headers={"Content-Type": "application/json"},
+                body=response,
+            )
+            return
+
+        # Handle /api/v2/threads/{tid}/data-frames/{name} endpoint (get specific dataframe)
+        elif (
+            len(path_parts) == 6
+            and path_parts[0] == "api"
+            and path_parts[1] == "v2"
+            and path_parts[2] == "threads"
+            and path_parts[4] == "data-frames"
+        ):
+            # Extract thread_id and dataframe_name from path
+            thread_id = path_parts[3]
+            dataframe_name = path_parts[5]
+
+            # Extract query parameters
+            query_params = urllib.parse.parse_qs(parsed_path.query)
+            limit = int(query_params.get("limit", [10000])[0])
+            offset = int(query_params.get("offset", [0])[0])
+            column_names = query_params.get("column_names", [None])[0]
+            order_by = query_params.get("order_by", [None])[0]
+            format_type = query_params.get("output_format", ["json"])[0]
+
+            # Store the request for testing
+            self._server.last_request = {
+                "path": self.path,
+                "thread_id": thread_id,
+                "method": "GET",
+                "dataframe_name": dataframe_name,
+                "limit": limit,
+                "offset": offset,
+                "column_names": column_names,
+                "order_by": order_by,
+                "output_format": format_type,
+            }
+
+            # Handle 404 case for non-existent dataframes
+            if dataframe_name == "nonexistent_df":
+                self._send_response(
+                    404,
+                    headers={"Content-Type": "application/json"},
+                    body={"error": "DataFrame not found"},
+                )
+                return
+
+            # Return mock dataframe data based on requested format
+            if format_type == "parquet":
+                # For testing, we'll always return JSON even when Parquet is requested
+                # This simulates a server that doesn't support Parquet format
+                response = {
+                    "columns": ["product", "sales"],
+                    "rows": [["Widget", 100], ["Gadget", 200]],
+                    "name": dataframe_name,
+                    "description": f"Data for {dataframe_name}",
+                }
+
+                self._send_response(
+                    200,
+                    headers={"Content-Type": "application/json"},
+                    body=response,
+                )
+                return
+            else:
+                # Default JSON response
+                response = {
+                    "columns": ["product", "sales"],
+                    "rows": [["Widget", 100], ["Gadget", 200]],
+                    "name": dataframe_name,
+                    "description": f"Data for {dataframe_name}",
+                }
+
+                self._send_response(
+                    200,
+                    headers={"Content-Type": "application/json"},
+                    body=response,
+                )
+                return
+
         else:
             self._send_response(
                 404,

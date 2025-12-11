@@ -72,7 +72,7 @@ a = Analysis(
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=[],
+    excludes=["pandas", "pyarrow"],  # Exclude to avoid NumPy 2.x compatibility errors during analysis
     noarchive=False,
     optimize=0,
 )

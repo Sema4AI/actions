@@ -96,7 +96,7 @@ async def forward_request_async(
 
 
 async def handle_ping_pong(
-    ws: "websockets.WebSocketClientProtocol",
+    ws: "websockets.ClientConnection",
     pong_queue: asyncio.Queue,
     ping_interval: int,
 ):
@@ -138,7 +138,7 @@ def handle_session_payload(
 async def handle_body_payload(
     session: "ClientSession",
     get_ws_coro: Coroutine[
-        Any, Any, Union["websockets.WebSocketClientProtocol", Literal["FINISH"]]
+        Any, Any, Union["websockets.ClientConnection", Literal["FINISH"]]
     ],
     payload: BodyPayload,
     base_url: str,
@@ -198,7 +198,7 @@ class ServerEvent:
 
 @dataclass
 class EventConnected(ServerEvent):
-    ws: "websockets.WebSocketClientProtocol"
+    ws: "websockets.ClientConnection"
 
 
 @dataclass
@@ -253,14 +253,10 @@ async def listen_for_requests(
     else:
         use_url = expose_url
 
-    use_ws: Optional[
-        Union["websockets.WebSocketClientProtocol", Literal["FINISH"]]
-    ] = None
+    use_ws: Optional[Union["websockets.ClientConnection", Literal["FINISH"]]] = None
     use_ws_event = asyncio.Event()
 
-    async def get_ws_coro() -> (
-        Union["websockets.WebSocketClientProtocol", Literal["FINISH"]]
-    ):
+    async def get_ws_coro() -> Union["websockets.ClientConnection", Literal["FINISH"]]:
         nonlocal use_ws
         nonlocal use_ws_event
 
@@ -302,11 +298,11 @@ async def listen_for_requests(
 
                 connector = aiohttp.TCPConnector(ssl=ctx)
 
-        ws: websockets.WebSocketClientProtocol
+        ws: websockets.ClientConnection
         async with aiohttp.ClientSession(connector=connector) as session:
             async for ws in websockets.connect(
                 use_url,
-                extra_headers=headers,
+                additional_headers=headers,
                 logger=log,
                 open_timeout=2,
                 close_timeout=0,
