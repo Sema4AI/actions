@@ -43,8 +43,8 @@
 - [x] T007 Validate `action_server/frontend/src/shared/utils/cn.ts` utility exists and exports cn() function (className merger using clsx + tailwind-merge)
 - [x] T008 Document safe color contrast pairings in `action_server/frontend/src/core/components/ui/README.md` (from data-model.md validation table)
 - [x] T009 Create accessibility test suite base in `action_server/frontend/__tests__/a11y/setup.ts` with jest-axe configuration and custom matchers
-- [ ] T009.1 [P] Add motion-reduce utility support to `action_server/frontend/tailwind.config.js`: verify motion-reduce: prefix works, add @media (prefers-reduced-motion: reduce) support if needed for all component files
-- [ ] T009.2 [P] Add animation keyframes to `action_server/frontend/tailwind.config.js`: configure keyframes for dialog animations (fadeIn, fadeOut, zoomIn-95, zoomOut-95 at 200ms), dropdown animations (slideDownAndFade at 150ms), and corresponding animation utilities (animate-in, animate-out, fade-in-0, fade-out-0, zoom-in-95, zoom-out-95, slide-in-from-top-2) per FR-UI-006 and FR-UI-011
+- [x] T009.1 [P] Add motion-reduce utility support to `action_server/frontend/tailwind.config.js`: verify motion-reduce: prefix works, add @media (prefers-reduced-motion: reduce) support if needed for all component files
+- [x] T009.2 [P] Add animation keyframes to `action_server/frontend/tailwind.config.js`: configure keyframes for dialog animations (fadeIn, fadeOut, zoomIn-95, zoomOut-95 at 200ms), dropdown animations (slideDownAndFade at 150ms), and corresponding animation utilities (animate-in, animate-out, fade-in-0, fade-out-0, zoom-in-95, zoom-out-95, slide-in-from-top-2) per FR-UI-006 and FR-UI-011
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -174,6 +174,7 @@
  - [x] T054 [P] [US5] Create ErrorBanner component in `action_server/frontend/src/core/components/ui/ErrorBanner.tsx`: implement red banner (bg-red-50 border-red-200), required message prop, optional onDismiss callback, include error icon, MUST include role="alert" aria-live="assertive" aria-atomic="true" for immediate screen reader announcement per FR-A11Y-008
  - [x] T055 [US5] Integrate Badge component into Table cells in `action_server/frontend/src/core/pages/Actions.tsx` and `RunHistory.tsx`: replace plain text status with Badge components, map status values to variants
  - [x] T056 [US5] Add Loading component to all data-fetching pages in `action_server/frontend/src/core/pages/`: Actions.tsx, RunHistory.tsx, Logs.tsx, Artifacts.tsx - wrap content with loading state checks (Applied to Actions.tsx dialog and recent runs list)
+ - [ ] T056.1 [US5] Implement coordinated page-level loading in `action_server/frontend/src/core/pages/Actions.tsx`: use TanStack Query's useIsFetching() hook to show single Loading spinner when multiple queries are pending (actions list + recent runs), transition to content only when ALL critical data arrives per FR-UI-024
  - [x] T057 [US5] Add ErrorBanner to page error states in `action_server/frontend/src/core/pages/Actions.tsx`: integrate with TanStack Query error handling, provide dismiss functionality (Applied to run dialog error display)
 
 **Checkpoint**: At this point, User Story 5 should be fully functional - system state is transparent through clear visual feedback
@@ -212,7 +213,7 @@
 - [ ] T067 Run full test suite and fix any remaining failures: `cd action_server/frontend && npm run test` for unit tests, `npm run test:a11y` for accessibility, `npm run test:visual` for visual regression
 - [ ] T068 Validate quickstart.md examples in `specs/004-community-ui-enhancement/quickstart.md`: manually test all code snippets work as documented
 - [ ] T069 [P] Performance audit with Chrome DevTools: validate First Contentful Paint ≤1.5s, Time to Interactive ≤3.5s, no layout shifts during transitions
-- [ ] T070 [P] Cross-browser testing: test in Chrome 90+, Firefox 88+, Safari 14+ (especially iOS Safari for modal overlays)
+- [ ] T070 [P] Cross-browser testing: test in Chrome 90+, Firefox 88+, Safari 14+ (especially iOS Safari for modal overlays); validate FR-UI-023 touch targets ≥44px on 375px viewport using Chrome DevTools device emulation for all interactive elements (buttons, inputs, table rows, dropdown items, dialog buttons)
 - [ ] T071 Update `.github/copilot-instructions.md` with new component patterns and testing requirements from this feature
 
 **Checkpoint**: Feature complete - all user stories working, tests passing, performance validated
