@@ -2,6 +2,43 @@
 
 ## Unreleased
 
+## 1.6.5 - 2025-12-03
+
+- Fix: Websockets api connect expects additional_headers instead of extra_headers in action-server --expose
+- Separate file name validations on windows vs. unix
+
+## 1.6.4 - 2025-11-07
+
+- Fix Pydantic 2.12.4+ compatibility issue in `agent._models.Prompt` class where both `default_factory` and explicit defaults were specified
+
+## 1.6.3 - 2025-11-07
+
+- Fix `agent.list_data_frames` and `agent.get_data_frame` to hit the right endpoint
+
+## 1.6.2 - 2025-11-04
+
+- Fixed issue where it was looking for `@DataSourceSpec` instead of `DataSourceSpec` in the files to decide whether to automatically
+  load the module when collecting definitions.
+- Cryptography dependency updated to `>=44.0.1` to support newer changes in dependencies.
+
+## 1.6.1 - 2025-10-29
+
+- `name` and `description` fields are now no longer serialized in the `Table` model when calling `model_dump` or `model_dump_json`
+  (they can still be serialized by calling `exclude_none=False` if required). Fixes the breaking change introduced in `1.6.0`.
+
+## 1.6.0 - 2025-10-29 (note: yanked due to breaking change)
+
+**BREAKING CHANGES:**
+- **Table serialization schema change**: The `Table` model now includes `name` and `description` fields in serialized output (model_dump). This is a backward-incompatible change for consumers expecting the old schema. The fields are present as `null` when not set.
+
+**New Features:**
+- **Enhanced error handling**: `AgentApiClientException` now exposes `status_code` attribute for robust error checking instead of string matching.
+- **Improved type safety**: `agent.list_data_frames()` now returns `list[DataFrameInfo]` instead of `list[dict]` for better type hints and IDE support.
+- **Table validation improvement**: All rows are now validated for consistency, not just the first 5 rows. This ensures data integrity with negligible performance impact.
+- **Table metadata support**: `Table` now accepts optional `name` and `description` fields for better labeling and documentation of table data.
+- **New dataframe API functions**: Added `agent.list_data_frames()` and `agent.get_data_frame()` for programmatic access to thread dataframes. Both functions require an action execution context and are client-side only.
+- Expose `sema4ai.actions.chat.list_files` to the public interface.
+
 ## 1.5.0 - 2025-10-08
 
 - Added `SecretSpec` class for tagging secrets with metadata that can be used by external clients for special handling.

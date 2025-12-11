@@ -235,3 +235,55 @@ files will be stored to or accessed from."""
             )
 
         return file_id
+
+    def list_files(self, thread_id: str) -> list[str]:
+        """
+        Lists all files in the specified thread.
+
+        Args:
+            thread_id: The thread identifier.
+
+        Returns:
+            A list of filenames in the thread.
+
+        Raises:
+            ValueError: If the API request fails in remote mode.
+        """
+        from pathlib import Path
+
+        if self.is_local_mode():
+            # In local mode, list files from the filesystem
+            local_path = self._local_path
+            if not local_path:
+                raise RuntimeError("Local path is not set in client")
+
+            path = Path(local_path)
+            files = []
+
+            if path.exists() and path.is_dir():
+                for file_path in path.iterdir():
+                    if file_path.is_file():
+                        files.append(file_path.name)
+
+            return files
+        else:
+            # In remote mode, call the file management server API
+            import sema4ai_http
+
+            url = f"{self._url}/threads/{thread_id}/files"
+            headers = {
+                "Content-Type": "application/json",
+                "x-action-invocation-context": get_x_action_invocation_context(),
+            }
+
+            response = sema4ai_http.get(url, headers=headers)
+            self._raise_for_status(
+                f"Failed to list files from thread {thread_id}.", response, (200,)
+            )
+
+            response_data = response.json()
+            files = []
+            for entry in response_data:
+                files.append(entry["file_ref"])
+
+            return files

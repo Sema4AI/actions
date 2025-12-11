@@ -24,7 +24,7 @@ Set the content of a file to be used in the current chat.
 
 > The way that the contents are stored may depend on how the action is being run. If the action is being run locally it could be saved in the local filesystem, whereas when running in the cloud it could be saved in a different place, such as an S3 bucket.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/chat/__init__.py#L172)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/chat/__init__.py#L204)
 
 ```python
 attach_file_content(
@@ -51,7 +51,7 @@ Raw content of the file
 
 - <b>`Exception`</b>: If the file does not exist (or if it was not possible to retrieve it).
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/chat/__init__.py#L202)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/chat/__init__.py#L234)
 
 ```python
 get_file_content(name: str) → bytes
@@ -73,7 +73,7 @@ Attaches a file to the current chat.
 
 > The way that the contents are stored may depend on how the action is being run. If the action is being run locally it could be saved in the local filesystem, whereas when running in the cloud it could be saved in a different place, such as an S3 bucket.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/chat/__init__.py#L218)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/chat/__init__.py#L250)
 
 ```python
 attach_file(
@@ -98,7 +98,7 @@ Attach a file with JSON content to the current chat.
 
 > The way that the contents are stored may depend on how the action is being run. If the action is being run locally it could be saved in the local filesystem, whereas when running in the cloud it could be saved in a different place, such as an S3 bucket.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/chat/__init__.py#L281)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/chat/__init__.py#L313)
 
 ```python
 attach_json(
@@ -128,7 +128,7 @@ Deserialized JSON content.
 
 - <b>`Exception`</b>: If the file does not exist (or if it was not possible to retrieve itor if the content is not valid JSON).
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/chat/__init__.py#L301)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/chat/__init__.py#L333)
 
 ```python
 get_json(
@@ -151,7 +151,7 @@ Attach a file with text content to the current chat.
 
 > The way that the contents are stored may depend on how the action is being run. If the action is being run locally it could be saved in the local filesystem, whereas when running in the cloud it could be saved in a different place, such as an S3 bucket.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/chat/__init__.py#L327)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/chat/__init__.py#L359)
 
 ```python
 attach_text(name: str, contents: str) → None
@@ -174,7 +174,7 @@ Text content of the file.
 
 - <b>`Exception`</b>: If the file does not exist (or if it was not possible to retrieve itor if the content is not valid UTF-8).
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/chat/__init__.py#L344)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/chat/__init__.py#L376)
 
 ```python
 get_text(name: str) → str
@@ -197,8 +197,35 @@ Raw content of the file
 
 - <b>`Exception`</b>: If the file does not exist.
 
-[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/chat/__init__.py#L258)
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/chat/__init__.py#L290)
 
 ```python
 get_file(name: str) → Path
+```
+
+______________________________________________________________________
+
+## `list_files`
+
+Lists all files in the current chat thread.
+
+**Returns:**
+A list of filenames in the thread.
+
+**Raises:**
+
+- <b>`RuntimeError`</b>: If unable to get client or thread_id.
+- <b>`ValueError`</b>: If the API request fails in remote mode.
+
+**Example:**
+
+` from sema4ai.actions import chat`
+` files = chat.list_files()`
+` print(files)`
+['document.pdf', 'data.json']
+
+[**Link to source**](https://github.com/sema4ai/actions/tree/master/actions/src/sema4ai/actions/chat/__init__.py#L393)
+
+```python
+list_files() → list[str]
 ```

@@ -1,5 +1,6 @@
 import logging
 import os
+import sys
 import typing
 from functools import lru_cache
 from pathlib import Path
@@ -13,19 +14,25 @@ if typing.TYPE_CHECKING:
     from ._client import _Client
 
 
-def _check_that_name_is_valid_in_filesystem(name: str):
+def _check_windows_filename(name: str):
+    """Validate filename for Windows."""
+    # Invalid characters on Windows
     invalid_characters = r'<>:"/\|?*'
     if any(char in name for char in invalid_characters):
         raise ValueError(
-            f"Name {name} contains invalid characters: {invalid_characters}"
+            f"Name '{name}' contains invalid characters: {invalid_characters}"
         )
 
-    # Reserved names:
+    # Control characters (0-31) are also invalid on Windows
+    if any(ord(char) < 32 for char in name):
+        raise ValueError(f"Name '{name}' contains control characters.")
+
+    # Reserved device names (case-insensitive on Windows)
     # CON, PRN, AUX, NUL
     # COM1, COM2, COM3, COM4, COM5, COM6, COM7, COM8, COM9
     # LPT1, LPT2, LPT3, LPT4, LPT5, LPT6, LPT7, LPT8, LPT9
-    name_without_extension = os.path.splitext(name)[0]
-    if name_without_extension in [
+    name_without_extension = os.path.splitext(name)[0].upper()
+    reserved_names = {
         "CON",
         "PRN",
         "AUX",
@@ -48,12 +55,37 @@ def _check_that_name_is_valid_in_filesystem(name: str):
         "LPT7",
         "LPT8",
         "LPT9",
-    ]:
-        raise ValueError(f"Name {name} is reserved and cannot be used.")
+    }
+    if name_without_extension in reserved_names:
+        raise ValueError(f"Name '{name}' is a reserved Windows device name.")
 
-    # Filenames cannot end in a space or dot.
+    # Cannot end in space or dot on Windows
     if name.endswith(" ") or name.endswith("."):
-        raise ValueError(f"Name {name} cannot end in a space or dot.")
+        raise ValueError(f"Name '{name}' cannot end in a space or dot on Windows.")
+
+
+def _check_unix_filename(name: str):
+    """Validate filename for Unix-like systems (Linux, macOS)."""
+    # Only / and null byte are invalid on Unix
+    if "/" in name:
+        raise ValueError(f"Name '{name}' cannot contain '/' character.")
+
+    if "\0" in name:
+        raise ValueError(f"Name '{name}' cannot contain null byte.")
+
+
+def _check_that_name_is_valid_in_filesystem(name: str):
+    """Validate that a name is safe for filesystem use on the current platform."""
+    # Common checks: empty name or relative path indicators
+    if not name or name in (".", ".."):
+        raise ValueError(f"Name '{name}' is not valid.")
+
+    is_windows = sys.platform == "win32"
+
+    if is_windows:
+        _check_windows_filename(name)
+    else:
+        _check_unix_filename(name)
 
 
 def _get_thread_id_from_action_context(action_context) -> str:
@@ -358,6 +390,27 @@ def get_text(name: str) -> str:
     return content.decode("utf-8")
 
 
+def list_files() -> list[str]:
+    """
+    Lists all files in the current chat thread.
+
+    Returns:
+        A list of filenames in the thread.
+
+    Raises:
+        RuntimeError: If unable to get client or thread_id.
+        ValueError: If the API request fails in remote mode.
+
+    Example:
+        >>> from sema4ai.actions import chat
+        >>> files = chat.list_files()
+        >>> print(files)
+        ['document.pdf', 'data.json']
+    """
+    client, thread_id = _get_client_and_thread_id()
+    return client.list_files(thread_id)
+
+
 __all__ = [
     "JSONValue",
     "FileId",
@@ -369,4 +422,5 @@ __all__ = [
     "attach_text",
     "get_text",
     "get_file",
+    "list_files",
 ]

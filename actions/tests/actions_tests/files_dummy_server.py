@@ -29,6 +29,39 @@ class _SimpleFileServer(BaseHTTPRequestHandler):
         parsed_path = urllib.parse.urlparse(self.path)
         path_parts = parsed_path.path.split("/")[1:]
 
+        # /threads/:threadId/files
+        if (
+            len(path_parts) == 3
+            and path_parts[0] == "threads"
+            and path_parts[2] == "files"
+        ):
+            if not self._check_action_invocation_context_header():
+                self._send_response(
+                    400,
+                    headers={"Content-Type": "application/json"},
+                    body=json.dumps(
+                        {"error": "Missing x-action-invocation-context header"}
+                    ),
+                )
+                return
+
+            # List all files in the thread directory
+            files = []
+            if self.files_path.exists() and self.files_path.is_dir():
+                for file_path in self.files_path.iterdir():
+                    if file_path.is_file():
+                        files.append(
+                            {"file_id": file_path.name, "file_ref": file_path.name}
+                        )
+
+            response_body = json.dumps(files)
+            self._send_response(
+                200,
+                headers={"Content-Type": "application/json"},
+                body=response_body,
+            )
+            return
+
         # /threads/:threadId/file-by-ref?file_ref=fileRef
         if (
             len(path_parts) == 3
