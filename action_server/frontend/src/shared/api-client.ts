@@ -370,3 +370,13 @@ export const cancelRun = async (runId?: string, requestId?: string) => {
   const data = await loadAsync(`${baseUrl}/api/runs/${useRunId}/cancel`, 'POST');
   return data;
 };
+
+// Fetch runs with optional run_type filter
+export const fetchRuns = async (runType?: string): Promise<Run[]> => {
+  let url = `${baseUrl}/api/runs`;
+  if (runType && runType !== 'all') {
+    url += `?run_type=${encodeURIComponent(runType)}`;
+  }
+  const result = await loadAsync<Run[]>(url, 'GET');
+  return result.data || [];
+};

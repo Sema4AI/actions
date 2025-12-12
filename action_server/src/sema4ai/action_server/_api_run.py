@@ -9,19 +9,22 @@ from fastapi.params import Param
 from fastapi.routing import APIRouter
 from starlette.responses import FileResponse
 
-from sema4ai.action_server._models import Run
+from sema4ai.action_server._models import Run, RunListItemModel, RunDetailModel
 
 log = logging.getLogger(__name__)
 run_api_router = APIRouter(prefix="/api/runs")
 
 
-@run_api_router.get("", response_model=list[Run])
-def list_runs():
+@run_api_router.get("", response_model=List[RunListItemModel])
+def list_runs(run_type: Optional[str] = fastapi.Query(default=None, description="Filter by run type (e.g., 'action', 'robot')")):
     from ._runs_state_cache import get_global_runs_state
 
     global_runs_state = get_global_runs_state()
     with global_runs_state.semaphore:
-        return global_runs_state.get_current_run_state()
+        runs = global_runs_state.get_current_run_state()
+        if run_type:
+            runs = [r for r in runs if getattr(r, "run_type", "action") == run_type]
+        return [RunListItemModel(**r.__dict__) for r in runs]
 
 
 def get_run_by_id(run_id: str) -> Run:
@@ -41,10 +44,10 @@ def get_run_by_id(run_id: str) -> Run:
         ) from err
 
 
-@run_api_router.get("/{run_id}", response_model=Run)
+@run_api_router.get("/{run_id}", response_model=RunDetailModel)
 def show_run(run_id: str = fastapi.Path(title="ID for run")):
-    # Note that we want to use
-    return get_run_by_id(run_id)
+    run = get_run_by_id(run_id)
+    return RunDetailModel(**run.__dict__)
 
 
 @run_api_router.get("/{run_id}/fields", response_model=dict)

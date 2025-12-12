@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Iterator, Optional, Union
 
 from pydantic.dataclasses import dataclass
+from pydantic import BaseModel, Field
 
 from sema4ai.action_server._database import DBRules
 
@@ -88,27 +89,25 @@ class Run:
     _db_rules.foreign_keys.add("Run.action_id")
     _db_rules.indexes.add("Run.action_id")
 
-    start_time: str  # The time that the action started running (empty means it hasn't started yet).
-    # The time to run the action (in seconds).
-    # Does not include the time the run spent queued waiting for the
-    # process to be available.
-    run_time: Optional[float]
-    inputs: str  # The json content with the variables used as an input
-    result: Optional[str]  # The json content of the output that the run generated
-    error_message: Optional[str]  # If the status=failed, this may have an error message
+    start_time: str  # The time that the action started running
+    run_time: Optional[float]  # Duration in seconds
+    inputs: str  # JSON input data
+    result: Optional[str]  # JSON output data
+    error_message: Optional[str]  # Error message if failed
 
-    # The path (relative to the datadir) of the artifacts generated in the run
     relative_artifacts_dir: str
-
-    # We could've made this the primary key, but in theory when (if)
-    # we ever have workspaces then this id would need to be scoped to the
-    # workspace while the other one would be global.
     numbered_id: int
     _db_rules.unique_indexes.add("Run.numbered_id")
 
-    # The request id that this run is associated with (if any).
-    request_id: str = ""
+    request_id: str = ""  # Request ID if any
     _db_rules.indexes.add("Run.request_id")
+
+    run_type: str = "action"  # 'action' or 'robot'
+    _db_rules.indexes.add("Run.run_type")
+
+    robot_package_path: Optional[str] = None  # Path to robot package if run_type='robot'
+    robot_task_name: Optional[str] = None  # Name of robot task if run_type='robot' 
+    robot_env_hash: Optional[str] = None  # RCC environment hash if run_type='robot'
 
 
 @dataclass
@@ -281,3 +280,32 @@ def get_action_package_from_action(action: Action) -> ActionPackage:
         "SELECT * FROM action_package WHERE id = ?",
         [action.action_package_id],
     )
+
+
+class RunListItemModel(BaseModel):
+    id: str
+    status: int
+    action_id: str
+    start_time: str
+    run_time: Optional[float]
+    inputs: str
+    result: Optional[str]
+    error_message: Optional[str]
+    relative_artifacts_dir: str
+    numbered_id: int
+    request_id: str = ""
+    run_type: str = "action"
+    action_name: Optional[str] = None
+    robot_package_path: Optional[str] = None
+    robot_task_name: Optional[str] = None
+    robot_env_hash: Optional[str] = None
+    stdout: Optional[str] = None
+    stderr: Optional[str] = None
+
+    class Config:
+        orm_mode = True
+
+
+class RunDetailModel(RunListItemModel):
+    # Inherit all fields, but can be extended for more details if needed
+    pass

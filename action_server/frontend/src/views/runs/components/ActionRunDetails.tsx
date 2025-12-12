@@ -29,9 +29,7 @@ export const ActionRunDetails: FC = () => {
       if (!run) {
         return '';
       }
-
       const output = Object.entries(JSON.parse(run.inputs));
-
       if (output.length === 0) {
         return 'No inputs sent';
       }
@@ -46,10 +44,15 @@ export const ActionRunDetails: FC = () => {
     return '';
   }
 
+  const isRobot = run.run_type === 'robot';
+  const title = isRobot
+    ? `Robot Task Run: ${run.robot_task_name} (${run.robot_package_path})`
+    : `Action Run: ${run.action_name}`;
+
   return (
     <Drawer onClose={onClose} width={760} open>
       <Drawer.Header>
-        <Drawer.Header.Title title={run.action?.name} />
+        <Drawer.Header.Title title={title} />
         <Drawer.Header.Description>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <StatusBadge status={run.status} size="medium" />
@@ -62,6 +65,22 @@ export const ActionRunDetails: FC = () => {
           <Header.Title title="Run information" />
         </Header>
         <DefinitionList>
+          {isRobot && (
+            <>
+              <DefinitionList.Key>Robot Package:</DefinitionList.Key>
+              <DefinitionList.Value>{run.robot_package_path}</DefinitionList.Value>
+              <DefinitionList.Key>Task Name:</DefinitionList.Key>
+              <DefinitionList.Value>{run.robot_task_name}</DefinitionList.Value>
+              <DefinitionList.Key>Environment Hash:</DefinitionList.Key>
+              <DefinitionList.Value>{run.robot_env_hash}</DefinitionList.Value>
+            </>
+          )}
+          {!isRobot && (
+            <>
+              <DefinitionList.Key>Action Name:</DefinitionList.Key>
+              <DefinitionList.Value>{run.action_name}</DefinitionList.Value>
+            </>
+          )}
           <DefinitionList.Key>Started at:</DefinitionList.Key>
           <DefinitionList.Value>
             <Timestamp timestamp={run.start_time} />
@@ -77,12 +96,33 @@ export const ActionRunDetails: FC = () => {
         </Header>
         <Code lang="json" aria-label="Run input" value={inputs} />
 
-        {run.result && (
+        {!isRobot && run.result && (
           <>
             <Header size="small">
               <Header.Title title="Run result" />
             </Header>
             <Code aria-label="Run result" value={run.result || ''} />
+          </>
+        )}
+
+        {isRobot && (
+          <>
+            {run.stdout && (
+              <>
+                <Header size="small">
+                  <Header.Title title="Robot Stdout" />
+                </Header>
+                <Code aria-label="Robot stdout" value={run.stdout} />
+              </>
+            )}
+            {run.stderr && (
+              <>
+                <Header size="small">
+                  <Header.Title title="Robot Stderr" />
+                </Header>
+                <Code aria-label="Robot stderr" value={run.stderr} />
+              </>
+            )}
           </>
         )}
 
@@ -98,7 +138,6 @@ export const ActionRunDetails: FC = () => {
         <Header size="small">
           <Header.Title title="Console output" />
         </Header>
-
         <ActionRunConsole runId={run.id} />
         <Link href={`${baseUrl}/api/runs/${run.id}/log.html`} icon={IconFileText}>
           Open Log
@@ -107,3 +146,8 @@ export const ActionRunDetails: FC = () => {
     </Drawer>
   );
 };
+
+// Rename component for unified run details
+export const ActionRunDetails = RunDetails;
+// For compatibility, keep the old export for now
+export { ActionRunDetails as RunDetails };
