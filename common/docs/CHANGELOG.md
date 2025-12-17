@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 0.2.2 - 2025-12-17
+
+- CVE fixes
+
 ## 0.2.1 - 2025-08-21
 
 - CVE fixes
