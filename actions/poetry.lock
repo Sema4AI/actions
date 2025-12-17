@@ -1371,14 +1371,14 @@ url = "../devutils"
 
 [[package]]
 name = "sema4ai-http-helper"
-version = "2.1.1"
+version = "2.1.2"
 description = "HTTP library that enables the use of OS certificate stores when working behind MITM firewalls"
 optional = false
 python-versions = "<4.0,>=3.10"
 groups = ["main"]
 files = [
-    {file = "sema4ai_http_helper-2.1.1-py3-none-any.whl", hash = "sha256:feabdfc6f54eb0ef8c642d3a3d79997f96b42ae9389d9797b99c7f0cd2cb5d9e"},
-    {file = "sema4ai_http_helper-2.1.1.tar.gz", hash = "sha256:085adc960a259b3bda7f451307d1326ce56685b3a2136ce6d5af6d4795601f83"},
+    {file = "sema4ai_http_helper-2.1.2-py3-none-any.whl", hash = "sha256:254e2959c83b7dee5ea186a14b110419a6c9424daed4bd9688deafe27de4efb3"},
+    {file = "sema4ai_http_helper-2.1.2.tar.gz", hash = "sha256:fa78eadcc0006d8e4955a96ea34cc4c48c5ced7f0fb1ef6f04ae65df15da7a6e"},
 ]
 
 [package.dependencies]
