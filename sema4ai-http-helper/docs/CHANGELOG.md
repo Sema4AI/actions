@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 2.1.2 - 2025-12-17
+
+- CVE fix (urllib3 >= 2.6.2)
+
 ## 2.1.1 - 2025-08-21
 
 - CVE fix (urllib3 >= 2.5.0)

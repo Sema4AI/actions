@@ -23,7 +23,7 @@ from typing import Callable, overload
 from sema4ai.actions._hooks import after_collect_actions as _after_collect_actions
 from sema4ai.actions._protocols import IAction
 
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 version_info = [int(x) for x in __version__.split(".")]
 
 
