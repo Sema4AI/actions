@@ -47,6 +47,7 @@ def start_server(
     from ._api_action_package import action_package_api_router
     from ._api_action_routes import _ActionRoutes
     from ._api_oauth2 import oauth2_api_router
+    from ._api_robots import robots_api_router
     from ._api_run import run_api_router
     from ._api_secrets import secrets_api_router
     from ._app import get_app
@@ -112,6 +113,7 @@ def start_server(
     app.include_router(
         action_package_api_router, include_in_schema=settings.full_openapi_spec
     )
+    app.include_router(robots_api_router, include_in_schema=settings.full_openapi_spec)
     app.include_router(websocket_api_router)
     app.include_router(secrets_api_router, include_in_schema=settings.full_openapi_spec)
     app.include_router(oauth2_api_router, include_in_schema=settings.full_openapi_spec)
