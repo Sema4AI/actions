@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 1.6.6 - 2025-12-17
+
+- CVE updates
+
 ## 1.6.5 - 2025-12-03
 
 - Fix: Websockets api connect expects additional_headers instead of extra_headers in action-server --expose

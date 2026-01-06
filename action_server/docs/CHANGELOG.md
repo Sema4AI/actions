@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 2.17.2 - 2025-12-17
+
+- CVE updates
+
 ## 2.17.1 - 2025-12-04
 
 - CVE updates
