@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2.17.3 - 2026-01-07
+
 - A lock is now used to download RCC (to avoid issues when multiple instances of the Action Server are running and trying to download RCC at the same time).
     - A default timeout of 300 seconds is used, but it can be overridden by setting the `SEMA4AI_ACTION_SERVER_RCC_DOWNLOAD_TIMEOUT` environment variable (to another number of seconds).
 
