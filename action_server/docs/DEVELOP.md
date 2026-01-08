@@ -135,15 +135,28 @@ uv run build
 # Build frontend assets
 uv run build-frontend
 
-# Build PyInstaller executable
+# Build PyInstaller executable (output: dist/action-server/)
 uv run build-exe
+
+# Build with Go wrapper (output: dist/final/)
+uv run build-exe --go-wrapper
 
 # Build with signing
 uv run build-exe --sign
 
-# Build Go wrapper
+# Build Go wrapper only (output: go-wrapper/action-server-unsigned.exe)
 uv run build-go
 ```
+
+### Build output locations
+
+| Command | Output location |
+|---------|-----------------|
+| `uv run build-exe` | `dist/action-server/action-server.exe` |
+| `uv run build-exe --go-wrapper` | `dist/final/action-server.exe` |
+| `uv run build-go` | `go-wrapper/action-server-unsigned.exe` |
+
+**Note:** The `test-binary` and `test-run-in-parallel` commands expect the executable at `dist/final/action-server.exe`, which requires building with `--go-wrapper`.
 
 ## Release process
 

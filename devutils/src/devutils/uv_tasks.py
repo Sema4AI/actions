@@ -51,14 +51,25 @@ def get_tag(tag_prefix: str) -> str:
         The full tag string (e.g., 'sema4ai-action-server-3.0.0')
     """
     cmd = f"git describe --tags --abbrev=0 --match {tag_prefix}-[0-9]*"
-    proc = subprocess.run(shlex.split(cmd), capture_output=True, text=True)
+    # Use shell=True on Windows to match invoke's behavior (handles glob patterns)
+    proc = subprocess.run(
+        shlex.split(cmd) if sys.platform != "win32" else cmd,
+        capture_output=True,
+        text=True,
+        shell=sys.platform == "win32",
+    )
     return proc.stdout.strip()
 
 
 def get_all_tags(tag_prefix: str) -> List[str]:
     """Get all tags matching a prefix."""
     cmd = "git tag"
-    proc = subprocess.run(shlex.split(cmd), capture_output=True, text=True)
+    proc = subprocess.run(
+        shlex.split(cmd) if sys.platform != "win32" else cmd,
+        capture_output=True,
+        text=True,
+        shell=sys.platform == "win32",
+    )
     tags = proc.stdout.strip().splitlines()
     regex = re.compile(rf"{tag_prefix}-[\d.]+$")
     return [tag for tag in tags if regex.match(tag)]
