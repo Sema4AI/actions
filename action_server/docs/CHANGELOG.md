@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-## 2.17.4 - 2026-01-08
+## 3.0.0 - 2026-01-08
 
 - Removed support for macos x86_64 (only macos arm64 is supported).
 
