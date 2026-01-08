@@ -1,13 +1,14 @@
 """
-Important: 
+Important:
 
-sema4ai.action_server.cli.main() 
+sema4ai.action_server.cli.main()
 
 is the only public API supported from the action-server.
 
 Everything else is considered private and can be broken/changed without
 being considered a backward-incompatible change!
 """
+
 import logging
 from typing import Optional
 

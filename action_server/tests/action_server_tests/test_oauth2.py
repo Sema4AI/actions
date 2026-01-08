@@ -16,30 +16,30 @@ def _verify_oauth2_settings() -> Path:
 
     user = get_user_sema4_path()
     yaml_location = user / "oauth2_config.yaml"
-    assert (
-        yaml_location.exists()
-    ), f"Expected {yaml_location} to exist with the OAuth2 settings."
+    assert yaml_location.exists(), (
+        f"Expected {yaml_location} to exist with the OAuth2 settings."
+    )
 
     txt = yaml_location.read_text()
     contents = yaml.safe_load(txt)
-    assert (
-        "oauth2Config" in contents
-    ), f"Expected 'oauth2Config' to be defined in {yaml_location}"
+    assert "oauth2Config" in contents, (
+        f"Expected 'oauth2Config' to be defined in {yaml_location}"
+    )
     oauth2_config = contents.get("oauth2Config")
 
-    assert (
-        "providers" in oauth2_config
-    ), f"Expected 'providers' to be defined in {yaml_location}"
+    assert "providers" in oauth2_config, (
+        f"Expected 'providers' to be defined in {yaml_location}"
+    )
     providers = oauth2_config.get("providers")
 
-    assert (
-        "google" in providers
-    ), f"Expected 'providers/google' to be defined in {yaml_location}"
+    assert "google" in providers, (
+        f"Expected 'providers/google' to be defined in {yaml_location}"
+    )
     google = providers["google"]
     for key in ["clientId", "clientSecret"]:
-        assert (
-            key in google
-        ), f"Expected 'google/{key}' to be defined in {yaml_location}"
+        assert key in google, (
+            f"Expected 'google/{key}' to be defined in {yaml_location}"
+        )
     return yaml_location
 
 

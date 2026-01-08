@@ -63,9 +63,9 @@ def get_resolved_provider_settings(provider: str) -> "OAuth2ProviderSettingsReso
 
     app_settings = get_settings()
     if not app_settings.use_https:
-        os.environ[
-            "OAUTHLIB_INSECURE_TRANSPORT"
-        ] = "1"  # allow localhost `http` redirects
+        os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = (
+            "1"  # allow localhost `http` redirects
+        )
 
     oauth2_settings_file = app_settings.oauth2_settings
 
@@ -220,9 +220,9 @@ async def oauth2_login(
         if oauth2_session._pkce:
             # The code verifier is later needed to obtain tokens!
             code_verifier = oauth2_session._code_verifier
-            assert (
-                code_verifier
-            ), "Expected _code_verifier to be set in the `authorization_url` method."
+            assert code_verifier, (
+                "Expected _code_verifier to be set in the `authorization_url` method."
+            )
 
         session.set_session_data(
             f"oauth_state-${state}",
@@ -331,15 +331,15 @@ async def oauth2_status(
                 # Always pass the server if it's available.
                 metadata["server"] = settings.server
 
-            provider_to_status[
-                oauth2_user_data.provider
-            ] = OAuth2StatusResponseForProvider(
-                expires_at=oauth2_user_data.expires_at,  # may be empty
-                scopes=json.loads(oauth2_user_data.scopes)
-                if oauth2_user_data.scopes
-                else None,
-                access_token=access_token,
-                metadata=metadata,
+            provider_to_status[oauth2_user_data.provider] = (
+                OAuth2StatusResponseForProvider(
+                    expires_at=oauth2_user_data.expires_at,  # may be empty
+                    scopes=json.loads(oauth2_user_data.scopes)
+                    if oauth2_user_data.scopes
+                    else None,
+                    access_token=access_token,
+                    metadata=metadata,
+                )
             )
 
     return provider_to_status

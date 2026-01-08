@@ -77,7 +77,9 @@ def test_binary_build():
     )
 
     # Binary should be in the dist directory
-    assert target_executable.exists(), f"Binary {target_executable} does not exist. Build output:\n{build_executable_output}"
+    assert target_executable.exists(), (
+        f"Binary {target_executable} does not exist. Build output:\n{build_executable_output}"
+    )
 
     env["SEMA4AI_GO_WRAPPER_DEBUG"] = "1"
 
@@ -114,12 +116,12 @@ def test_binary_build():
                 extracted += 1
 
         full_outputs = "\n".join(outputs)
-        assert (
-            skipped == 2
-        ), f"Expected 2 skipped, got {skipped}. Full outputs:\n{full_outputs}"
-        assert (
-            extracted == 1
-        ), f"Expected 1 extracted, got {extracted}. Full outputs:\n{full_outputs}"
+        assert skipped == 2, (
+            f"Expected 2 skipped, got {skipped}. Full outputs:\n{full_outputs}"
+        )
+        assert extracted == 1, (
+            f"Expected 1 extracted, got {extracted}. Full outputs:\n{full_outputs}"
+        )
 
         assert "(ignored) Error touching" not in full_outputs, full_outputs
         assert "(ignored) Error creating" not in full_outputs, full_outputs

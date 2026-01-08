@@ -42,7 +42,7 @@ REPO_ROOT = ROOT.parent  # actions repo root
 FRONTEND_DIR = ROOT / "frontend"
 GO_WRAPPER_DIR = ROOT / "go-wrapper"
 TESTS_DIR = ROOT / "tests"
-RUFF_CONFIG = REPO_ROOT / "ruff.toml"
+RUFF_CONFIG = REPO_ROOT / "devutils" / "ruff.toml"
 TARGETS = ["src", "tests"]
 
 

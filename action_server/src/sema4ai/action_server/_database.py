@@ -232,9 +232,9 @@ class Database:
                     self._tlocal.in_transaction -= 1
                 return
 
-            assert (
-                self._tlocal.in_transaction == 0
-            ), "Error transaction nesting logic not correct!"
+            assert self._tlocal.in_transaction == 0, (
+                "Error transaction nesting logic not correct!"
+            )
 
             self._tlocal.in_transaction += 1
             try:
@@ -248,9 +248,9 @@ class Database:
                 conn.commit()
             finally:
                 self._tlocal.in_transaction -= 1
-                assert (
-                    self._tlocal.in_transaction == 0
-                ), "Error transaction nesting logic not correct!"
+                assert self._tlocal.in_transaction == 0, (
+                    "Error transaction nesting logic not correct!"
+                )
 
     def where(self, instance, keys: Sequence[str]) -> tuple[str, list[Any]]:
         """
@@ -759,7 +759,7 @@ CREATE INDEX {table_name}_{column}_non_unique_index ON {table_name}({column});
                         f"(for field: {name})"
                     )
                 foreign_keys.append(
-                    f"FOREIGN KEY ({name}) " f"REFERENCES {foreign_table}(id)"
+                    f"FOREIGN KEY ({name}) REFERENCES {foreign_table}(id)"
                 )
 
         fields.extend(foreign_keys)
@@ -789,16 +789,16 @@ CREATE TABLE IF NOT EXISTS {table_name}(
         else:
             not_null = True
 
-        if field_cls == int:
+        if field_cls is int:
             use = "INTEGER"
 
-        elif field_cls == str:
+        elif field_cls is str:
             use = "TEXT"
 
-        elif field_cls == bool and not not_null:
+        elif field_cls is bool and not not_null:
             use = "INTEGER"
 
-        elif field_cls == bool and not_null:
+        elif field_cls is bool and not_null:
             try:
                 default_value = getattr(cls, name)
                 if default_value:
@@ -815,7 +815,7 @@ CREATE TABLE IF NOT EXISTS {table_name}(
                 "use str and use utility functions to convert back and forth."
             )
 
-        elif field_cls == float:
+        elif field_cls is float:
             use = "REAL"
 
         else:
@@ -823,7 +823,7 @@ CREATE TABLE IF NOT EXISTS {table_name}(
 
         use = f"{name} {use}"
 
-        if not_null and field_cls != bool:
+        if not_null and field_cls is not bool:
             use = f"{use} NOT NULL"
 
         try:
@@ -831,7 +831,7 @@ CREATE TABLE IF NOT EXISTS {table_name}(
         except AttributeError:
             pass
         else:
-            if field_cls == str:
+            if field_cls is str:
                 use = f"{use} DEFAULT {default_value!r}"
 
         if primary_key:

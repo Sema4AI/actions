@@ -72,9 +72,9 @@ def fix_openapi_json(openapi: dict) -> dict:
     assert info is not None, "Expected info to be in the openapi.json"
     version = info.get("version")
     assert version is not None, "Expected info/version to be in the openapi.json"
-    assert (
-        version == __version__
-    ), f"Expected version to be the sema4.ai version ({__version__}) instead of: {version}"
+    assert version == __version__, (
+        f"Expected version to be the sema4.ai version ({__version__}) instead of: {version}"
+    )
 
     info["version"] = "<removed-for-compare>"
 

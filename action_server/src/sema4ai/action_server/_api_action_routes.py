@@ -308,9 +308,9 @@ class _ActionRoutes:
             openapi_extra[OPENAPI_SPEC_OPERATION_KIND] = action_kind
 
             route_name = build_url_api_run(action_package.name, action.name)
-            assert (
-                route_name not in registered_route_names
-            ), f"Route: {route_name} already registered."
+            assert route_name not in registered_route_names, (
+                f"Route: {route_name} already registered."
+            )
             app.add_api_route(
                 route_name,
                 func_fast_api,

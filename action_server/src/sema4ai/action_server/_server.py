@@ -149,9 +149,9 @@ def start_server(
             )
 
             if expose_session_payload:
-                payload[
-                    "expose_url"
-                ] = f"https://{expose_session_payload.sessionId}.{settings.expose_url}"
+                payload["expose_url"] = (
+                    f"https://{expose_session_payload.sessionId}.{settings.expose_url}"
+                )
         return payload
 
     if start_args.auto_reload:

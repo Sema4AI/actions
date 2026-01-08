@@ -27,7 +27,7 @@ class OAuth2ProviderSettings:
             value = getattr(self, field_name)
 
             field_type = field_info.type
-            if field_type == str:
+            if field_type is str:
                 ret[field_name] = value
             else:
                 ret[field_name] = copy.copy(value)

@@ -58,9 +58,9 @@ class ActionServerProcess:
         if not self.started:
             self.start()
 
-        assert (
-            self._host
-        ), "The action server was not properly started (no host available)"
+        assert self._host, (
+            "The action server was not properly started (no host available)"
+        )
         return self._host
 
     @property
@@ -68,16 +68,16 @@ class ActionServerProcess:
         if not self.started:
             self.start()
 
-        assert (
-            self._port > 0
-        ), "The action server was not properly started (no port available)"
+        assert self._port > 0, (
+            "The action server was not properly started (no port available)"
+        )
         return self._port
 
     @property
     def process(self) -> "Process":
-        assert (
-            self._process is not None
-        ), "The action server was not properly started (process is None)."
+        assert self._process is not None, (
+            "The action server was not properly started (process is None)."
+        )
         return self._process
 
     def start(
@@ -112,9 +112,9 @@ class ActionServerProcess:
 
         if "SEMA4AI_INTEGRATION_TEST_ACTION_SERVER_EXECUTABLE" in os.environ:
             executable = os.environ["SEMA4AI_INTEGRATION_TEST_ACTION_SERVER_EXECUTABLE"]
-            assert os.path.isfile(
-                executable
-            ), f"Expected executable to exist: {executable}"
+            assert os.path.isfile(executable), (
+                f"Expected executable to exist: {executable}"
+            )
             base_args = [executable]
         elif is_frozen():
             base_args = [sys.executable]
@@ -457,9 +457,9 @@ def sema4ai_action_server_run(
     if "SEMA4AI_INTEGRATION_TEST_ACTION_SERVER_EXECUTABLE" in os.environ or is_frozen():
         if "SEMA4AI_INTEGRATION_TEST_ACTION_SERVER_EXECUTABLE" in os.environ:
             executable = os.environ["SEMA4AI_INTEGRATION_TEST_ACTION_SERVER_EXECUTABLE"]
-            assert os.path.isfile(
-                executable
-            ), f"Expected executable to exist: {executable}"
+            assert os.path.isfile(executable), (
+                f"Expected executable to exist: {executable}"
+            )
             base_args = [executable]
         else:
             # i.e.: The entry point is our own executable.
