@@ -274,6 +274,8 @@ Build more `@actions` and be awesome! We'd love to hear and see what have you bu
 
 ## Contributing and issues
 
+[![GitHub repo Good Issues for newbies](https://img.shields.io/github/issues/Sema4AI/actions/good%20first%20issue?style=flat&logo=github&logoColor=green&label=Good%20First%20issues)](https://github.com/Sema4AI/actions/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22) [![GitHub Help Wanted issues](https://img.shields.io/github/issues/Sema4AI/actions/help%20wanted?style=flat&logo=github&logoColor=b545d1&label=%22Help%20Wanted%22%20issues)](https://github.com/Sema4AI/actions/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22) [![GitHub Help Wanted PRs](https://img.shields.io/github/issues-pr/Sema4AI/actions/help%20wanted?style=flat&logo=github&logoColor=b545d1&label=%22Help%20Wanted%22%20PRs)](https://github.com/Sema4AI/actions/pulls?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22) [![GitHub repo Issues](https://img.shields.io/github/issues/Sema4AI/actions?style=flat&logo=github&logoColor=red&label=Issues)](https://github.com/Sema4AI/actions/issues?q=is%3Aopen)
+
 > ⭐️ First, please star the repo - your support is highly appreciated!
 
 - 🚩 Issues – our [GitHub Issues](https://github.com/Sema4AI/actions/issues) is kept up to date with bugs, improvements, and feature requests
