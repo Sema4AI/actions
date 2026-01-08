@@ -186,7 +186,6 @@ class BaseWorkflow:
             "os": [
                 UBUNTU_VERSION,
                 "windows-2022",
-                "macos-13",  # used for the x86_64 binary
                 "macos-15",  # used for the arm64 binary
             ],
             "include": [
@@ -205,11 +204,6 @@ class BaseWorkflow:
                     "python": pyversion,
                     "asset_path": "action_server/dist/final/action-server",
                 },
-                {
-                    "os": "macos-13",
-                    "python": pyversion,
-                    "asset_path": "action_server/dist/final/action-server",
-                },
             ],
         }
 
@@ -219,7 +213,6 @@ class BaseWorkflow:
             "os": [
                 UBUNTU_VERSION,
                 "windows-2022",
-                # "macos-13",  skipped (cibuildwheel is having some issue with it).
                 "macos-15",  # used for the arm64 binary
             ],
             "include": [
@@ -822,10 +815,6 @@ while true; do
                     },
                     {
                         "uses": "actions/download-artifact@v4",
-                        "with": {"name": "action-server-macos-13", "path": "macos64/"},
-                    },
-                    {
-                        "uses": "actions/download-artifact@v4",
                         "with": {
                             "name": "action-server-macos-15",
                             "path": "macos-arm64/",
@@ -846,9 +835,6 @@ while true; do
           echo "Windows64:"
           cd windows64
           ls -l
-          cd ../macos64
-          echo "MacOS64:"
-          ls -l
           cd ../macos-arm64
           echo "MacOS-arm64:"
           ls -l
@@ -866,17 +852,6 @@ while true; do
                             "repo_token": "${{ secrets.GITHUB_TOKEN }}",
                             "file": "./linux64/action-server",
                             "asset_name": "$tag-linux64",
-                            "tag": "${{ github.ref }}",
-                            "overwrite": True,
-                        },
-                    },
-                    {
-                        "name": "Upload MacOS binary",
-                        "uses": "svenstaro/upload-release-action@04733e069f2d7f7f0b4aebc4fbdbce8613b03ccd",  # v2
-                        "with": {
-                            "repo_token": "${{ secrets.GITHUB_TOKEN }}",
-                            "file": "./macos64/action-server",
-                            "asset_name": "$tag-macos64",
                             "tag": "${{ github.ref }}",
                             "overwrite": True,
                         },
@@ -934,7 +909,6 @@ while true; do
         ret = []
         for os, path in [
             ("windows-2022", "windows64"),
-            ("macos-13", "macos64"),
             ("macos-15", "macos-arm64"),
             (UBUNTU_VERSION, "linux64"),
         ]:
@@ -981,7 +955,6 @@ pwd
 ls -l build
 mkdir s3-drop
 mv build/version.txt s3-drop/
-mv build/macos64 s3-drop/
 mv build/macos-arm64 s3-drop/
 mv build/linux64 s3-drop/
 mv build/windows64 s3-drop/
@@ -1022,7 +995,6 @@ else
   S3_BASE_URL="s3://downloads.robocorp.com/action-server/beta"
   aws s3 cp s3-drop/version.txt $S3_BASE_URL/version.txt --cache-control max-age=120 --content-type "text/plain"
   aws s3 cp s3-drop/windows64/action-server.exe $S3_BASE_URL/windows64/action-server.exe --cache-control max-age=120 --content-type "application/octet-stream"
-  aws s3 cp s3-drop/macos64/action-server $S3_BASE_URL/macos64/action-server --cache-control max-age=120 --content-type "application/octet-stream"
   aws s3 cp s3-drop/macos-arm64/action-server $S3_BASE_URL/macos-arm64/action-server --cache-control max-age=120 --content-type "application/octet-stream"
   aws s3 cp s3-drop/linux64/action-server $S3_BASE_URL/linux64/action-server --cache-control max-age=120 --content-type "application/octet-stream"
 fi

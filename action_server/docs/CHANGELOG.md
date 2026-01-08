@@ -2,10 +2,13 @@
 
 ## Unreleased
 
+- Removed support for macos x86_64 (only macos arm64 is supported).
+
 ## 2.17.3 - 2026-01-07
 
 - A lock is now used to download RCC (to avoid issues when multiple instances of the Action Server are running and trying to download RCC at the same time).
     - A default timeout of 300 seconds is used, but it can be overridden by setting the `SEMA4AI_ACTION_SERVER_RCC_DOWNLOAD_TIMEOUT` environment variable (to another number of seconds).
+Note: build not complete (due to removal of macos x86_64 in CI, a new build will be done removing the macos x86_64 support completely).
 
 ## 2.17.2 - 2025-12-17
 

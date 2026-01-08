@@ -56,7 +56,7 @@ def download_rcc(
         if machine == "arm64":
             relative_path = "/macos-arm64/rcc"
         else:
-            relative_path = "/macos64/rcc"
+            raise RuntimeError("Unsupported platform (macos x86_64)")
 
     else:
         if is_64:
