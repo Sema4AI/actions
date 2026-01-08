@@ -93,7 +93,6 @@ ENTRY = """
 <p>Release date: %(when)s</p>
 <ul>
 <li>Windows: <a href="%(windows)s">%(windows)s</a></li>
-<li>MacOS X86_64: <a href="%(macos)s">%(macos)s</a></li>
 <li>MacOS ARM 64: <a href="%(macos_arm64)s">%(macos_arm64)s</a></li>
 <li>Linux: <a href="%(linux)s">%(linux)s</a></li>
 </ul>
