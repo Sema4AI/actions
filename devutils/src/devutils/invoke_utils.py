@@ -176,7 +176,14 @@ def build_common_tasks(
     DIST = root / "dist"
     CONDA_ENV_NAME = package_name.replace(".", "-").replace("_", "-")
     TARGETS = " ".join(source_directories)
-    RUFF_ARGS = f"--config {ROOT / 'ruff.toml'} {ruff_format_arguments}".strip()
+    def _quote_if_needed(value: str | Path) -> str:
+        text = str(value)
+        if any(ch.isspace() for ch in text):
+            return f'"{text}"'
+        return text
+
+    ruff_config = _quote_if_needed(ROOT / "ruff.toml")
+    RUFF_ARGS = f"--config {ruff_config} {ruff_format_arguments}".strip()
 
     def run(
         ctx,

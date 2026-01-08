@@ -157,13 +157,8 @@ def _path_is_excluded(path: str, exclusion_patterns: list[str]) -> bool:
         return False
 
     normalized_path = path.replace("\\", "/")
-    path_parts = [part for part in normalized_path.split("/") if part]
-    ancestors = ["/".join(path_parts[:idx]) for idx in range(1, len(path_parts))]
-    candidates = [normalized_path, *ancestors]
-
     for pattern in exclusion_patterns:
         normalized_pattern = _normalize_pattern(pattern)
-        for candidate in candidates:
-            if _glob_matches_path(candidate, normalized_pattern):
-                return True
+        if _glob_matches_path(normalized_path, normalized_pattern):
+            return True
     return False

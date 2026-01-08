@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 0.3.0 - 2026-01-08
+
+- Copy PackageExcludeHandler into commons and add a new interface to it for filtering relative paths
+
 ## 0.2.2 - 2025-12-17
 
 - CVE fixes

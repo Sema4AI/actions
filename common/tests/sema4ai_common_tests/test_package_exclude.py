@@ -23,6 +23,7 @@ def test_collect_files_excluding_patterns(tmp_path: Path) -> None:
     _touch(tmp_path / "another" / "not_ok.txt")
     _touch(tmp_path / "another" / "ok.txt")
     _touch(tmp_path / "another" / "no.foo")
+    _touch(tmp_path / "foo" / "keep.txt")
     _touch(tmp_path / "folder" / "dont_ignore")
     _touch(tmp_path / "folder" / "ignore_only_at_root")
     _touch(tmp_path / "hello_action.py")
@@ -31,7 +32,7 @@ def test_collect_files_excluding_patterns(tmp_path: Path) -> None:
 
     handler = PackageExcludeHandler()
     handler.fill_exclude_patterns(
-        ["ignore/**", "not_ok.txt", "*.foo", "./ignore_only_at_root"]
+        ["ignore/**", "not_ok.txt", "*.foo", "./ignore_only_at_root", "foo"]
     )
 
     found = {
@@ -41,6 +42,7 @@ def test_collect_files_excluding_patterns(tmp_path: Path) -> None:
 
     assert found == {
         "another/ok.txt",
+        "foo/keep.txt",
         "folder/dont_ignore",
         "folder/ignore_only_at_root",
         "hello_action.py",
@@ -61,7 +63,14 @@ def test_invalid_exclusion_patterns() -> None:
 def test_filter_relative_paths_excluding_patterns() -> None:
     handler = PackageExcludeHandler()
     handler.fill_exclude_patterns(
-        ["ignore/**", "not_ok.txt", "*.foo", "./ignore_only_at_root", "/root_only.txt"]
+        [
+            "ignore/**",
+            "not_ok.txt",
+            "*.foo",
+            "./ignore_only_at_root",
+            "/root_only.txt",
+            "foo",
+        ]
     )
 
     paths = [
@@ -69,6 +78,8 @@ def test_filter_relative_paths_excluding_patterns() -> None:
         "another/not_ok.txt",
         "another/ok.txt",
         "another/no.foo",
+        "foo",
+        "foo/keep.txt",
         "folder/dont_ignore",
         "folder/ignore_only_at_root",
         "hello_action.py",
@@ -81,6 +92,7 @@ def test_filter_relative_paths_excluding_patterns() -> None:
 
     assert handler.filter_relative_paths_excluding_patterns(paths) == [
         "another/ok.txt",
+        "foo/keep.txt",
         "folder/dont_ignore",
         "folder/ignore_only_at_root",
         "hello_action.py",
