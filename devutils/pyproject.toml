@@ -26,11 +26,14 @@ dependencies = [
     "pylint>=2.17.4",
 ]
 
+[project.scripts]
+update-workflows = "devutils.uv_tasks:run_update_workflows"
+
 # =============================================================================
-# UV configuration
+# Development dependencies (PEP 735)
 # =============================================================================
-[tool.uv]
-dev-dependencies = []
+[dependency-groups]
+dev = []
 
 # =============================================================================
 # Poetry configuration (kept for backward compatibility)

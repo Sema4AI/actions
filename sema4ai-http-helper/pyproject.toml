@@ -24,13 +24,16 @@ Homepage = "https://github.com/sema4ai/actions/"
 Repository = "https://github.com/sema4ai/actions/"
 
 # =============================================================================
-# UV configuration
+# Development dependencies (PEP 735)
 # =============================================================================
-[tool.uv]
-dev-dependencies = [
+[dependency-groups]
+dev = [
     "sema4ai-devutils",
 ]
 
+# =============================================================================
+# UV configuration
+# =============================================================================
 [tool.uv.sources]
 sema4ai-devutils = { workspace = true }
 

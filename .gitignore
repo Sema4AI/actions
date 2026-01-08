@@ -16,6 +16,7 @@ __pycache__/
 
 # VS Code
 .vscode/settings.json
+.claude/
 
 # Eclipse / PyDev
 # Please keep these as they contain instructions for Eclipse/PyDev to

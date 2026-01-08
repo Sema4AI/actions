@@ -354,3 +354,15 @@ def run_make_release(root: Path, tag_prefix: str, module_version: str) -> None:
 def run_publish(root: Path) -> None:
     """Publish to PyPI using uv."""
     _run_cmd(["uv", "publish"], cwd=root)
+
+
+def run_update_workflows() -> None:
+    """Regenerate GitHub Actions workflow files from _gen_workflows.py."""
+    workflows_dir = REPO_ROOT / ".github" / "workflows"
+    gen_script = workflows_dir / "_gen_workflows.py"
+
+    if not gen_script.exists():
+        print(f"Error: {gen_script} does not exist")
+        sys.exit(1)
+
+    _run_cmd([sys.executable, str(gen_script)], cwd=workflows_dir)

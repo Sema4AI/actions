@@ -12,6 +12,9 @@
 #
 # =============================================================================
 
+[tool.uv]
+required-version = "==0.9.18"
+
 [tool.uv.workspace]
 members = [
     "action_server",

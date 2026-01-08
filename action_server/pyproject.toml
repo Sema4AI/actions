@@ -69,10 +69,10 @@ Homepage = "https://github.com/sema4ai/actions/"
 Repository = "https://github.com/sema4ai/actions/"
 
 # =============================================================================
-# UV configuration
+# Development dependencies (PEP 735)
 # =============================================================================
-[tool.uv]
-dev-dependencies = [
+[dependency-groups]
+dev = [
     "types-requests>=2",
     "types-PyYAML>=6",
     "robocorp-log-pytest>=0.0.2",
@@ -91,6 +91,9 @@ dev-dependencies = [
     "sema4ai-mcp",
 ]
 
+# =============================================================================
+# UV configuration
+# =============================================================================
 [tool.uv.sources]
 sema4ai-actions = { workspace = true }
 sema4ai-common = { workspace = true }
