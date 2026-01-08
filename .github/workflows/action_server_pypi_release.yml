@@ -45,14 +45,14 @@ jobs:
       with:
         enable-cache: true
         python-version: ${{ matrix.python }}
-    - name: Install project (uv sync)
+    - name: Install project (uv sync --locked)
       if: contains(matrix.name, '-devmode') == false
-      run: uv sync
+      run: uv sync --locked
       env:
         ACTION_SERVER_SKIP_DOWNLOAD_IN_BUILD: 'true'
-    - name: Install project with workspace (uv sync --all-packages)
+    - name: Install project with workspace (uv sync --locked --all-packages)
       if: contains(matrix.name, '-devmode')
-      run: uv sync --all-packages
+      run: uv sync --locked --all-packages
       env:
         ACTION_SERVER_SKIP_DOWNLOAD_IN_BUILD: 'true'
     - name: Setup node

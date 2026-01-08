@@ -74,9 +74,9 @@ class ActionServerUVMixin:
 
     def install_with_devmode(self, env: dict | None = None):
         ret = {
-            "name": "Install project (uv sync)",
+            "name": "Install project (uv sync --locked)",
             "if": "contains(matrix.name, '-devmode') == false",
-            "run": "uv sync",
+            "run": "uv sync --locked",
         }
         if env:
             ret["env"] = env.copy()
@@ -84,9 +84,9 @@ class ActionServerUVMixin:
 
     def install_without_devmode(self, env: dict | None = None):
         ret = {
-            "name": "Install project with workspace (uv sync --all-packages)",
+            "name": "Install project with workspace (uv sync --locked --all-packages)",
             "if": "contains(matrix.name, '-devmode')",
-            "run": "uv sync --all-packages",
+            "run": "uv sync --locked --all-packages",
         }
         if env:
             ret["env"] = env.copy()
