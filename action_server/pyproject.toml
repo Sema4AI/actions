@@ -117,7 +117,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/sema4ai"]
+packages = ["src/sema4ai", "scripts"]
 artifacts = [
     "src/sema4ai/action_server/_static_contents.py",
     "src/sema4ai/action_server/_oauth2_config.py",
