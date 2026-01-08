@@ -5,6 +5,7 @@
 __pycache__/
 *.py[cod]
 *.whl
+*.egg-info/
 
 # Python tooling caches
 .ruff_cache/
