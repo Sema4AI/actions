@@ -34,7 +34,6 @@ jobs:
         os:
         - ubuntu-22.04
         - windows-2022
-        - macos-13
         - macos-15
         include:
         - os: ubuntu-22.04
@@ -44,9 +43,6 @@ jobs:
           python: '3.12'
           asset_path: action_server/dist/final/action-server.exe
         - os: macos-15
-          python: '3.12'
-          asset_path: action_server/dist/final/action-server
-        - os: macos-13
           python: '3.12'
           asset_path: action_server/dist/final/action-server
     steps:
@@ -172,11 +168,6 @@ jobs:
       with:
         name: action-server-windows-2022
         path: action_server/build/windows64/
-    - name: Download artifact macos-13
-      uses: actions/download-artifact@v4
-      with:
-        name: action-server-macos-13
-        path: action_server/build/macos64/
     - name: Download artifact macos-15
       uses: actions/download-artifact@v4
       with:
@@ -204,8 +195,6 @@ jobs:
         mkdir s3-drop
 
         mv build/version.txt s3-drop/
-
-        mv build/macos64 s3-drop/
 
         mv build/macos-arm64 s3-drop/
 
@@ -238,8 +227,6 @@ jobs:
         \n  aws s3 cp s3-drop/version.txt $S3_BASE_URL/version.txt --cache-control\
         \ max-age=120 --content-type \"text/plain\"\n  aws s3 cp s3-drop/windows64/action-server.exe\
         \ $S3_BASE_URL/windows64/action-server.exe --cache-control max-age=120 --content-type\
-        \ \"application/octet-stream\"\n  aws s3 cp s3-drop/macos64/action-server\
-        \ $S3_BASE_URL/macos64/action-server --cache-control max-age=120 --content-type\
         \ \"application/octet-stream\"\n  aws s3 cp s3-drop/macos-arm64/action-server\
         \ $S3_BASE_URL/macos-arm64/action-server --cache-control max-age=120 --content-type\
         \ \"application/octet-stream\"\n  aws s3 cp s3-drop/linux64/action-server\
@@ -297,10 +284,6 @@ jobs:
         path: windows64/
     - uses: actions/download-artifact@v4
       with:
-        name: action-server-macos-13
-        path: macos64/
-    - uses: actions/download-artifact@v4
-      with:
         name: action-server-macos-15
         path: macos-arm64/
     - uses: actions/download-artifact@v4
@@ -309,25 +292,16 @@ jobs:
         path: linux64/
     - name: Print contents
       run: "\n          pwd\n          ls -l\n          echo \"Windows64:\"\n    \
-        \      cd windows64\n          ls -l\n          cd ../macos64\n          echo\
-        \ \"MacOS64:\"\n          ls -l\n          cd ../macos-arm64\n          echo\
-        \ \"MacOS-arm64:\"\n          ls -l\n          cd ../linux64\n          echo\
-        \ \"Linux64:\"\n          ls -l\n          cd ..\n          echo \"GitHub\
-        \ ref: ${{ github.ref }}\"\n          "
+        \      cd windows64\n          ls -l\n          cd ../macos-arm64\n      \
+        \    echo \"MacOS-arm64:\"\n          ls -l\n          cd ../linux64\n   \
+        \       echo \"Linux64:\"\n          ls -l\n          cd ..\n          echo\
+        \ \"GitHub ref: ${{ github.ref }}\"\n          "
     - name: Upload Linux binary
       uses: svenstaro/upload-release-action@04733e069f2d7f7f0b4aebc4fbdbce8613b03ccd
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         file: ./linux64/action-server
         asset_name: $tag-linux64
-        tag: ${{ github.ref }}
-        overwrite: true
-    - name: Upload MacOS binary
-      uses: svenstaro/upload-release-action@04733e069f2d7f7f0b4aebc4fbdbce8613b03ccd
-      with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: ./macos64/action-server
-        asset_name: $tag-macos64
         tag: ${{ github.ref }}
         overwrite: true
     - name: Upload MacOS arm binary
