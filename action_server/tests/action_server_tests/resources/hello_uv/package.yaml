@@ -1,4 +1,4 @@
-version: 1
+version: 0.0.1
 dependencies:
   conda-forge:
     - python=3.11.11
