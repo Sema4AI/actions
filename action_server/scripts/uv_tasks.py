@@ -196,9 +196,24 @@ def typecheck():
 # Testing
 # =============================================================================
 
+def _download_rcc_internal():
+    """Internal helper to download RCC if needed.
+
+    This is called by test functions and build_executable to ensure RCC
+    is available before running tests or building the binary.
+    """
+    env = os.environ.copy()
+    curr_pythonpath = env.get("PYTHONPATH", "")
+    env["PYTHONPATH"] = curr_pythonpath + os.pathsep + str(ROOT / "src")
+    _run(sys.executable, "-m", "sema4ai.action_server", "download-rcc", env=env)
+
+
 def test():
     """Run all tests with pytest."""
     _print_help("test", "Run all tests with pytest")
+
+    # Ensure RCC is downloaded before running tests (required by test fixtures)
+    _download_rcc_internal()
 
     with chdir(ROOT):
         _run(
@@ -212,6 +227,9 @@ def test():
 def test_unit():
     """Run non-integration tests."""
     _print_help("test-unit", "Run non-integration tests")
+
+    # Ensure RCC is downloaded before running tests (required by test fixtures)
+    _download_rcc_internal()
 
     with chdir(TESTS_DIR):
         _run(
@@ -385,6 +403,9 @@ def build_executable():
     """Build PyInstaller executable."""
     _print_help("build-exe", "Build PyInstaller executable")
 
+    # Ensure RCC is downloaded before building (required for PyInstaller to include it)
+    _download_rcc_internal()
+
     # Import here to avoid issues when packages aren't installed yet
     from sema4ai.build_common.root_dir import get_root_dir
     from sema4ai.build_common.workflows import build_and_sign_executable
@@ -440,12 +461,7 @@ def dev_frontend():
 def download_rcc():
     """Download RCC binary."""
     _print_help("download-rcc", "Download RCC binary")
-
-    env = os.environ.copy()
-    curr_pythonpath = env.get("PYTHONPATH", "")
-    env["PYTHONPATH"] = curr_pythonpath + os.pathsep + str(ROOT / "src")
-
-    _run(sys.executable, "-m", "sema4ai.action_server", "download-rcc", env=env)
+    _download_rcc_internal()
 
 
 def clean():

@@ -35,6 +35,7 @@ venv
 
 # Project generated files
 dist/
+*.log
 
 # Removed old files
 /examples/

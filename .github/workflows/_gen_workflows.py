@@ -738,7 +738,7 @@ class ActionServerTests(ActionServerUVMixin, BaseTests):
     def run_tests(self):
         return [
             # As we want to run the tests in the binary, we do the following:
-            # 1. Build the binary
+            # 1. Build the binary (also downloads RCC via RC_ACTION_SERVER_FORCE_DOWNLOAD_RCC env var)
             # 2. Run the unit-tests (not integration) in the current environment
             # 3. Run the integration-tests in the binary
             self.build_action_server_binary(),
