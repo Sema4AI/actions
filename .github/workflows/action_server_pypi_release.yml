@@ -32,31 +32,27 @@ jobs:
       fail-fast: true
       matrix:
         name:
-        - ubuntu-py3.12
+        - ubuntu-py3.12.12
         include:
-        - name: ubuntu-py3.12
-          python: '3.12'
+        - name: ubuntu-py3.12.12
+          python: 3.12.12
           os: ubuntu-22.04
     steps:
     - name: Checkout repository and submodules
       uses: actions/checkout@v5
-    - name: Install the latest version of uv
+    - name: Install uv and Python ${{ matrix.python }}
       uses: astral-sh/setup-uv@v5
       with:
         enable-cache: true
-    - name: Install Python 3.12
-      run: uv python install 3.12
-    - name: Install devutils requirements
-      run: uv run --no-project --python ${{ matrix.python }}  python -m pip install
-        --break-system-packages -r ../devutils/requirements.txt
-    - name: Install project (not dev)
+        python-version: ${{ matrix.python }}
+    - name: Install project (uv sync)
       if: contains(matrix.name, '-devmode') == false
-      run: uv run --no-project --python ${{ matrix.python }} inv install
+      run: uv sync
       env:
         ACTION_SERVER_SKIP_DOWNLOAD_IN_BUILD: 'true'
-    - name: Install project (dev)
+    - name: Install project with workspace (uv sync --all-packages)
       if: contains(matrix.name, '-devmode')
-      run: uv run --no-project --python ${{ matrix.python }} inv devinstall
+      run: uv sync --all-packages
       env:
         ACTION_SERVER_SKIP_DOWNLOAD_IN_BUILD: 'true'
     - name: Setup node
@@ -66,15 +62,15 @@ jobs:
         registry-url: https://npm.pkg.github.com
         scope: '@robocorp'
     - name: Check tag version
-      run: uv run --no-project --python ${{ matrix.python }} poetry run inv check-tag-version
+      run: uv run check-tag-version
       if: ${{ !endsWith(github.ref_name, '-beta') }}
     - name: Build frontend
-      run: uv run --no-project --python ${{ matrix.python }} inv build-frontend
+      run: uv run build-frontend
       env:
         CI: true
         NODE_AUTH_TOKEN: ${{ secrets.GH_PAT_READ_PACKAGES }}
     - name: Build OAuth2 config
-      run: uv run --no-project --python ${{ matrix.python }} inv build-oauth2-config
+      run: uv run build-oauth2-config
       env:
         GH_TOKEN: ${{ secrets.GH_PAT_GHA_TO_ANOTHER_REPO }}
     - name: Build sdist
@@ -86,7 +82,7 @@ jobs:
 
         # Just sdist here, wheels are built in the manylinux job.
 
-        uv run --no-project --python ${{ matrix.python }} poetry build -f sdist
+        uv build --sdist
 
         '
       env:
@@ -100,16 +96,9 @@ jobs:
         name: action-server-dist
         path: action_server/dist/*
     - name: Upload to PyPI
-      run: '
-
-        uv run --no-project --python ${{ matrix.python }} poetry config pypi-token.pypi  ${{
-        secrets.PYPI_TOKEN_SEMA4AI_ACTION_SERVER }}
-
-        uv run --no-project --python ${{ matrix.python }} poetry publish
-
-        '
+      run: uv publish
       env:
-        ACTION_SERVER_SKIP_DOWNLOAD_IN_BUILD: true
+        UV_PUBLISH_TOKEN: ${{ secrets.PYPI_TOKEN_SEMA4AI_ACTION_SERVER }}
       if: ${{ !endsWith(github.ref_name, '-beta') }}
 
 

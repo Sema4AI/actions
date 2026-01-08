@@ -37,32 +37,28 @@ jobs:
         - macos-15
         include:
         - os: ubuntu-22.04
-          python: '3.12'
+          python: 3.12.12
           asset_path: action_server/dist/final/action-server
         - os: windows-2022
-          python: '3.12'
+          python: 3.12.12
           asset_path: action_server/dist/final/action-server.exe
         - os: macos-15
-          python: '3.12'
+          python: 3.12.12
           asset_path: action_server/dist/final/action-server
     steps:
     - name: Checkout repository and submodules
       uses: actions/checkout@v5
-    - name: Install the latest version of uv
+    - name: Install uv and Python ${{ matrix.python }}
       uses: astral-sh/setup-uv@v5
       with:
         enable-cache: true
-    - name: Install Python 3.12
-      run: uv python install 3.12
-    - name: Install devutils requirements
-      run: uv run --no-project --python ${{ matrix.python }}  python -m pip install
-        --break-system-packages -r ../devutils/requirements.txt
-    - name: Install project (not dev)
+        python-version: ${{ matrix.python }}
+    - name: Install project (uv sync)
       if: contains(matrix.name, '-devmode') == false
-      run: uv run --no-project --python ${{ matrix.python }} inv install
-    - name: Install project (dev)
+      run: uv sync
+    - name: Install project with workspace (uv sync --all-packages)
       if: contains(matrix.name, '-devmode')
-      run: uv run --no-project --python ${{ matrix.python }} inv devinstall
+      run: uv sync --all-packages
     - name: Setup node
       uses: actions/setup-node@v4
       with:
@@ -74,24 +70,24 @@ jobs:
       with:
         go-version: '1.23'
     - name: Check tag version
-      run: uv run --no-project --python ${{ matrix.python }} poetry run inv check-tag-version
+      run: uv run check-tag-version
       if: ${{ !endsWith(github.ref_name, '-beta') }}
     - name: Build frontend
-      run: uv run --no-project --python ${{ matrix.python }} inv build-frontend
+      run: uv run build-frontend
       env:
         CI: true
         NODE_AUTH_TOKEN: ${{ secrets.GH_PAT_READ_PACKAGES }}
     - name: Build OAuth2 config
-      run: uv run --no-project --python ${{ matrix.python }} inv build-oauth2-config
+      run: uv run build-oauth2-config
       env:
         GH_TOKEN: ${{ secrets.GH_PAT_GHA_TO_ANOTHER_REPO }}
     - name: Set version
       run: '
 
-        uv run --no-project --python ${{ matrix.python }} poetry version | awk ''{print
-        $2}'' > version.txt
+        VERSION=$(grep ''^version = '' pyproject.toml | head -1 | sed ''s/version
+        = "\(.*\)"/\1/'')
 
-        VERSION=$(cat version.txt)
+        echo "$VERSION" > version.txt
 
 
         echo "Version: $VERSION"
@@ -122,8 +118,7 @@ jobs:
         GITHUB_EVENT_NAME: ${{ github.event_name }}
         GITHUB_REF_NAME: ${{ github.ref_name }}
         GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
-      run: uv run --no-project --python ${{ matrix.python }} poetry run inv build-executable
-        --sign --go-wrapper
+      run: uv run build-exe --sign --go-wrapper
     - name: 'Upload artifact: action_server/dist/final/'
       uses: actions/upload-artifact@v4
       with:

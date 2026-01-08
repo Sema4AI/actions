@@ -60,12 +60,11 @@ jobs:
     steps:
     - name: Checkout repository and submodules
       uses: actions/checkout@v5
-    - name: Install the latest version of uv
+    - name: Install uv and Python ${{ matrix.python }}
       uses: astral-sh/setup-uv@v5
       with:
         enable-cache: true
-    - name: Install Python 3.11
-      run: uv python install 3.11
+        python-version: ${{ matrix.python }}
     - name: Install devutils requirements
       run: uv run --no-project --python ${{ matrix.python }}  python -m pip install
         --break-system-packages -r ../devutils/requirements.txt
