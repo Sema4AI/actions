@@ -61,15 +61,12 @@ def test_binary_build():
     version = f"test_binary_build-local-{os.getpid()}"
     build_executable_output = subprocess.check_output(
         [
-            sys.executable,
-            "-m",
-            "invoke",
-            "build-executable",
+            "uv",
+            "run",
+            "build-exe",
             "--go-wrapper",
-            "--version",
-            version,
-            "--go-wrapper-name",
-            go_wrapper_name,
+            f"--version={version}",
+            f"--go-wrapper-name={go_wrapper_name}",
         ],
         cwd=action_server_dir,
         env=env,

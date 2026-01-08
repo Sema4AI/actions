@@ -394,9 +394,12 @@ def build_executable():
     go_wrapper = "--go-wrapper" in sys.argv
 
     version = None
+    go_wrapper_name = None
     for arg in sys.argv:
         if arg.startswith("--version="):
             version = arg.split("=", 1)[1]
+        if arg.startswith("--go-wrapper-name="):
+            go_wrapper_name = arg.split("=", 1)[1]
 
     if version is None:
         from sema4ai.action_server import __version__
@@ -412,7 +415,7 @@ def build_executable():
         sign=sign,
         go_wrapper=go_wrapper,
         version=version,
-        go_wrapper_name=None,
+        go_wrapper_name=go_wrapper_name,
     )
 
 

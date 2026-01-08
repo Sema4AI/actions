@@ -1,5 +1,5 @@
 metadata:
-  action_package_version: '1'
+  action_package_version: 0.0.1
   data:
     datasources:
     - created_table: churn
