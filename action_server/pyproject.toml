@@ -99,71 +99,6 @@ sema4ai-build-common = { workspace = true }
 sema4ai-mcp = { workspace = true }
 sema4ai-http-helper = { workspace = true }
 
-# =============================================================================
-# Poetry configuration (kept for backward compatibility)
-# =============================================================================
-[tool.poetry]
-name = "sema4ai-action-server"
-version = "3.0.0"
-description = """Sema4AI Action Server"""
-authors = [
-	"Sema4.ai, Inc. <dev@sema4.ai>",
-	"Fabio Z. <fabio@sema4.ai>"
-]
-readme = "README.md"
-repository = "https://github.com/sema4ai/actions/"
-license = "Apache-2.0"
-packages = [
-	{ include = "sema4ai", from = "src" },
-	{ include = "scripts", from = "." },
-]
-include = [
-	"src/sema4ai/action_server/_static_contents.py",
-	"src/sema4ai/action_server/_oauth2_config.py",
-	"src/sema4ai/action_server/bin/rcc*",
-]
-homepage = "https://github.com/sema4ai/actions/"
-
-[tool.poetry.scripts]
-action-server = "sema4ai.action_server.cli:main"
-
-
-[tool.poetry.dependencies]
-aiohttp = "^3.13.2"
-fastapi-slim = "^0.121.1"
-jsonschema = "^4.23.0"
-# This one needs a `_fix_jsonschema_specifications` hack
-# See: https://github.com/python-jsonschema/jsonschema-specifications/issues/61
-jsonschema-specifications = "^2024.10.1"
-msgspec = "^0.19"
-psutil = ">=5.0,<8.0"
-pydantic = "^2.12.4"
-pyyaml = "^6.0.3"
-python = ">=3.12,<3.14"
-requests = "^2"
-sema4ai-actions = "^1.6.4"
-termcolor = "^3.2.0"
-uvicorn = "^0.38.0"
-websockets = "^15.0.1"
-cryptography = "^46.0.3"
-requests_oauthlib = "^2.0"
-watchfiles = "^1.1.1"
-sema4ai-common = "^0.2.1"
-mcp = "^1.21.0"
-
-[tool.poetry.group.dev.dependencies]
-sema4ai-devutils = { path = "../devutils/", develop = true }
-sema4ai-build-common = { path = "../build_common/", develop = true }
-types-requests = "^2"
-types-PyYAML = "^6"
-robocorp-log-pytest = "^0.0.2"
-types-psutil = "^7"
-types-jsonschema = "^4.22.0"
-sema4ai-data = "^1.2.1"
-pyinstaller = "6.16.0"
-pyinstaller-hooks-contrib = "2025.9"
-sema4ai-mcp = { path = "../mcp/", develop = true }
-
 [tool.mypy]
 mypy_path = "src:tests"
 
@@ -175,12 +110,23 @@ skip-magic-trailing-comma = false
 profile = "black"
 
 [build-system]
-requires = ["poetry-core", "setuptools"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.poetry.build]
-script = "build.py"
-generate-setup-file = true
+[tool.hatch.build.targets.wheel]
+packages = ["src/sema4ai"]
+artifacts = [
+    "src/sema4ai/action_server/_static_contents.py",
+    "src/sema4ai/action_server/_oauth2_config.py",
+    "src/sema4ai/action_server/bin/rcc*",
+]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/scripts",
+    "/build.py",
+]
 
 [tool.pytest.ini_options]
 norecursedirs = "tests/action_server_tests/test_devenv/* dist build build-binary"
