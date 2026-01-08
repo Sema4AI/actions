@@ -36,20 +36,33 @@ dependencies = [
 [project.scripts]
 action-server = "sema4ai.action_server.cli:main"
 # UV task commands (uv run <command>)
-list = "sema4ai.action_server._scripts.tasks:list_tasks"
-lint = "sema4ai.action_server._scripts.tasks:lint"
-format = "sema4ai.action_server._scripts.tasks:format"
-typecheck = "sema4ai.action_server._scripts.tasks:typecheck"
-test = "sema4ai.action_server._scripts.tasks:test"
-test-unit = "sema4ai.action_server._scripts.tasks:test_unit"
-test-binary = "sema4ai.action_server._scripts.tasks:test_binary"
-build-frontend = "sema4ai.action_server._scripts.tasks:build_frontend"
-build-oauth2-config = "sema4ai.action_server._scripts.tasks:build_oauth2_config"
-build-exe = "sema4ai.action_server._scripts.tasks:build_executable"
-build-go = "sema4ai.action_server._scripts.tasks:build_go_wrapper"
-dev-frontend = "sema4ai.action_server._scripts.tasks:dev_frontend"
-download-rcc = "sema4ai.action_server._scripts.tasks:download_rcc"
-clean = "sema4ai.action_server._scripts.tasks:clean"
+list = "scripts.uv_tasks:list_tasks"
+lint = "scripts.uv_tasks:lint"
+format = "scripts.uv_tasks:format"
+typecheck = "scripts.uv_tasks:typecheck"
+test = "scripts.uv_tasks:test"
+test-unit = "scripts.uv_tasks:test_unit"
+test-binary = "scripts.uv_tasks:test_binary"
+test-run-in-parallel = "scripts.uv_tasks:test_run_in_parallel"
+build = "scripts.uv_tasks:build"
+build-frontend = "scripts.uv_tasks:build_frontend"
+build-oauth2-config = "scripts.uv_tasks:build_oauth2_config"
+build-exe = "scripts.uv_tasks:build_executable"
+build-go = "scripts.uv_tasks:build_go_wrapper"
+dev-frontend = "scripts.uv_tasks:dev_frontend"
+download-rcc = "scripts.uv_tasks:download_rcc"
+clean = "scripts.uv_tasks:clean"
+# Project-specific tasks
+set-rcc-version = "scripts.uv_tasks:set_rcc_version"
+print-env = "scripts.uv_tasks:print_env"
+# Common tasks (from devutils)
+docs = "scripts.uv_tasks:docs"
+doctest = "scripts.uv_tasks:doctest"
+check-all = "scripts.uv_tasks:check_all"
+make-release = "scripts.uv_tasks:make_release"
+set-version = "scripts.uv_tasks:set_version"
+check-tag-version = "scripts.uv_tasks:check_tag_version"
+publish = "scripts.uv_tasks:publish"
 
 [project.urls]
 Homepage = "https://github.com/sema4ai/actions/"
@@ -73,7 +86,18 @@ dev-dependencies = [
     "mypy>=1.8.0",
     "pytest>=7.4.0",
     "pytest-xdist>=3.5.0",
+    "sema4ai-devutils",
+    "sema4ai-build-common",
+    "sema4ai-mcp",
 ]
+
+[tool.uv.sources]
+sema4ai-actions = { workspace = true }
+sema4ai-common = { workspace = true }
+sema4ai-devutils = { workspace = true }
+sema4ai-build-common = { workspace = true }
+sema4ai-mcp = { workspace = true }
+sema4ai-http-helper = { workspace = true }
 
 # =============================================================================
 # Poetry configuration (kept for backward compatibility)
@@ -89,7 +113,10 @@ authors = [
 readme = "README.md"
 repository = "https://github.com/sema4ai/actions/"
 license = "Apache-2.0"
-packages = [{ include = "sema4ai", from = "src" }]
+packages = [
+	{ include = "sema4ai", from = "src" },
+	{ include = "scripts", from = "." },
+]
 include = [
 	"src/sema4ai/action_server/_static_contents.py",
 	"src/sema4ai/action_server/_oauth2_config.py",

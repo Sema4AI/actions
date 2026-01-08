@@ -5,19 +5,27 @@ These functions are exposed as [project.scripts] entry points in pyproject.toml,
 allowing commands like `uv run lint`, `uv run test`, `uv run build-frontend`.
 
 Usage:
-    uv run list           # List all available tasks
-    uv run lint           # Run linting checks
-    uv run format         # Auto-format code
-    uv run typecheck      # Run type checking
-    uv run test           # Run all tests
-    uv run test-unit      # Run non-integration tests
-    uv run test-binary    # Run integration tests against binary
-    uv run build          # Build wheel
-    uv run build-frontend # Build frontend assets
-    uv run build-exe      # Build PyInstaller executable
-    uv run build-go       # Build Go wrapper
-    uv run dev-frontend   # Run frontend dev server
-    uv run clean          # Clean build artifacts
+    uv run list             # List all available tasks
+    uv run lint             # Run linting checks
+    uv run format           # Auto-format code
+    uv run typecheck        # Run type checking
+    uv run test             # Run all tests
+    uv run test-unit        # Run non-integration tests
+    uv run test-binary      # Run integration tests against binary
+    uv run build            # Build wheel
+    uv run build-frontend   # Build frontend assets
+    uv run build-exe        # Build PyInstaller executable
+    uv run build-go         # Build Go wrapper
+    uv run dev-frontend     # Run frontend dev server
+    uv run download-rcc     # Download RCC binary
+    uv run clean            # Clean build artifacts
+    uv run set-rcc-version  # Set RCC version in source files
+    uv run print-env        # Print environment variables
+    uv run docs             # Build API documentation
+    uv run make-release     # Create a release tag
+    uv run set-version      # Set project version
+    uv run check-tag-version # Check if tag matches version
+    uv run publish          # Publish to PyPI
 """
 
 import os
@@ -27,12 +35,9 @@ from contextlib import contextmanager
 from pathlib import Path
 
 # Project paths
-# __file__ is at src/sema4ai/action_server/_scripts/tasks.py
-# action_server project root is 5 levels up
+# __file__ is at action_server/scripts/uv_tasks.py
 _SCRIPTS_DIR = Path(__file__).parent.resolve()
-_ACTION_SERVER_PKG = _SCRIPTS_DIR.parent  # src/sema4ai/action_server
-_SRC_DIR = _ACTION_SERVER_PKG.parent.parent  # src/
-ROOT = _SRC_DIR.parent  # action_server project root
+ROOT = _SCRIPTS_DIR.parent  # action_server project root
 REPO_ROOT = ROOT.parent  # actions repo root
 FRONTEND_DIR = ROOT / "frontend"
 GO_WRAPPER_DIR = ROOT / "go-wrapper"
@@ -59,7 +64,9 @@ def chdir(path: Path):
 def _run(*args: str, check: bool = True, cwd: Path | None = None, env: dict | None = None) -> int:
     """Run a command and return the exit code."""
     print(f"Running: {' '.join(args)}")
-    result = subprocess.run(args, cwd=cwd, env=env)
+    # On Windows, npm/node are batch files that need shell=True to be found
+    use_shell = sys.platform == "win32" and args and args[0] in ("npm", "node", "npx")
+    result = subprocess.run(args, cwd=cwd, env=env, shell=use_shell)
     if check and result.returncode != 0:
         sys.exit(result.returncode)
     return result.returncode
@@ -84,6 +91,7 @@ TASKS = {
     "test": "Run all tests with pytest",
     "test-unit": "Run non-integration tests",
     "test-binary": "Run integration tests against built binary",
+    "test-run-in-parallel": "Run action server 3 times in parallel (lock file testing)",
     "build": "Build wheel distribution",
     "build-frontend": "Build frontend static assets",
     "build-oauth2-config": "Fetch and embed OAuth2 configs",
@@ -92,6 +100,16 @@ TASKS = {
     "dev-frontend": "Run frontend dev server (vite)",
     "download-rcc": "Download RCC binary",
     "clean": "Clean build artifacts",
+    "set-rcc-version": "Set RCC version in source files",
+    "print-env": "Print environment variables",
+    # Common tasks (from devutils)
+    "docs": "Build API documentation",
+    "doctest": "Validate code examples in docs",
+    "check-all": "Run all checks (lint, typecheck, test, docs)",
+    "make-release": "Create a release tag",
+    "set-version": "Set project version in files",
+    "check-tag-version": "Check if tag matches module version",
+    "publish": "Publish to PyPI",
 }
 
 
@@ -242,6 +260,26 @@ def test_binary():
         args.extend(["-k", test_filter])
 
     _run(*args, env=env, cwd=TESTS_DIR)
+
+
+def test_run_in_parallel():
+    """Run action server 3 times in parallel (for lock file testing)."""
+    _print_help("test-run-in-parallel", "Run action server 3 times in parallel")
+
+    action_server_executable = (
+        ROOT / "dist" / "final" / ("action-server" + (".exe" if sys.platform == "win32" else ""))
+    )
+
+    if not action_server_executable.exists():
+        print(f"Error: Expected {action_server_executable} to exist.")
+        print("Build the executable first with: uv run build-exe")
+        sys.exit(1)
+
+    # Launch 3 instances in parallel
+    subprocess.Popen([str(action_server_executable), "-h"])
+    subprocess.Popen([str(action_server_executable), "-h"])
+    subprocess.Popen([str(action_server_executable), "-h"])
+    print("Launched 3 action-server instances in parallel")
 
 
 # =============================================================================
@@ -415,6 +453,173 @@ def clean():
     from sema4ai.build_common.workflows import clean_common_build_artifacts
 
     clean_common_build_artifacts(get_root_dir())
+
+
+# =============================================================================
+# Project-specific tasks
+# =============================================================================
+
+def set_rcc_version():
+    """Set RCC version in build.py and _download_rcc.py files."""
+    import re
+
+    _print_help("set-rcc-version", "Set RCC version in source files")
+
+    if len(sys.argv) < 2:
+        print("Usage: uv run set-rcc-version <version>")
+        print("Example: uv run set-rcc-version 19.2.1")
+        sys.exit(1)
+
+    version = sys.argv[1]
+
+    files_to_update = [
+        ROOT / "build.py",
+        ROOT / "src" / "sema4ai" / "action_server" / "_download_rcc.py",
+    ]
+
+    for file_path in files_to_update:
+        if not file_path.exists():
+            print(f"Warning: {file_path} does not exist, skipping...")
+            continue
+
+        with open(file_path, "r", encoding="utf-8", newline="\n") as f:
+            content = f.read()
+
+        pattern = r'RCC_VERSION = "[^"]*"'
+        replacement = f'RCC_VERSION = "{version}"'
+        new_content = re.sub(pattern, replacement, content)
+
+        if new_content != content:
+            with open(file_path, "w", encoding="utf-8", newline="\n") as f:
+                f.write(new_content)
+            print(f"Updated {file_path} with RCC version {version}")
+        else:
+            print(f"No RCC_VERSION found in {file_path}")
+
+
+def print_env():
+    """Print environment variables."""
+    _print_help("print-env", "Print environment variables")
+
+    print(" ============== ENV ============== ")
+    for key, value in os.environ.items():
+        if len(value) > 100:
+            print(f"{key}:")
+            parts = value.split(os.pathsep)
+            for part in parts:
+                print(f"  {part}")
+        else:
+            print(f"{key}={value}")
+    print(" ============== END ENV ============== ")
+
+
+# =============================================================================
+# Common tasks (delegating to devutils.uv_tasks)
+# =============================================================================
+
+# Constants for this project
+PACKAGE_NAME = "sema4ai.action_server"
+TAG_PREFIX = "sema4ai-action-server"
+
+
+def docs():
+    """Build API documentation."""
+    _print_help("docs", "Build API documentation")
+
+    from devutils.uv_tasks import run_docs
+
+    check = "--check" in sys.argv
+    validate = "--validate" in sys.argv
+
+    run_docs(
+        root=ROOT,
+        package_name=PACKAGE_NAME,
+        output_path=ROOT / "docs" / "api",
+        check=check,
+        validate=validate,
+    )
+
+
+def doctest():
+    """Validate code examples in docs."""
+    _print_help("doctest", "Validate code examples in docs")
+
+    from devutils.uv_tasks import run_doctest
+
+    run_doctest(ROOT)
+
+
+def check_all():
+    """Run all checks (lint, typecheck, test, docs --check)."""
+    _print_help("check-all", "Run all checks")
+
+    # Run lint
+    print("\n=== Running lint ===")
+    lint()
+
+    # Run typecheck
+    print("\n=== Running typecheck ===")
+    typecheck()
+
+    # Run tests
+    print("\n=== Running tests ===")
+    test()
+
+    # Run docs --check
+    print("\n=== Running docs --check ===")
+    from devutils.uv_tasks import run_docs
+    run_docs(
+        root=ROOT,
+        package_name=PACKAGE_NAME,
+        output_path=ROOT / "docs" / "api",
+        check=True,
+    )
+
+    print("\n=== All checks passed! ===")
+
+
+def make_release():
+    """Create a release tag."""
+    _print_help("make-release", "Create a release tag")
+
+    from devutils.uv_tasks import run_make_release
+    from sema4ai.action_server import __version__
+
+    run_make_release(ROOT, TAG_PREFIX, __version__)
+
+
+def set_version():
+    """Set project version in files."""
+    _print_help("set-version", "Set project version in files")
+
+    from devutils.uv_tasks import run_set_version
+
+    if len(sys.argv) < 2:
+        print("Usage: uv run set-version <version>")
+        print("Example: uv run set-version 3.1.0")
+        sys.exit(1)
+
+    version = sys.argv[1]
+    run_set_version(ROOT, PACKAGE_NAME, version)
+
+
+def check_tag_version():
+    """Check if tag matches module version."""
+    _print_help("check-tag-version", "Check if tag matches module version")
+
+    from devutils.uv_tasks import run_check_tag_version
+    from sema4ai.action_server import __version__
+
+    run_check_tag_version(TAG_PREFIX, __version__)
+
+
+def publish():
+    """Publish to PyPI."""
+    _print_help("publish", "Publish to PyPI")
+
+    from devutils.uv_tasks import run_publish
+
+    run_publish(ROOT)
 
 
 # =============================================================================

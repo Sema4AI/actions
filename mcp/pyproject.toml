@@ -1,3 +1,39 @@
+# =============================================================================
+# PEP 621 project metadata (used by uv)
+# =============================================================================
+[project]
+name = "sema4ai-mcp"
+version = "0.0.3"
+description = "Sema4AI Model Context Protocol (MCP)"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.10"
+authors = [
+    { name = "Sema4.ai, Inc.", email = "dev@sema4.ai" },
+]
+dependencies = [
+    "sema4ai-actions>=1.6.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/Sema4AI/actions/"
+Repository = "https://github.com/Sema4AI/actions/"
+
+# =============================================================================
+# UV configuration
+# =============================================================================
+[tool.uv]
+dev-dependencies = [
+    "sema4ai-devutils",
+]
+
+[tool.uv.sources]
+sema4ai-actions = { workspace = true }
+sema4ai-devutils = { workspace = true }
+
+# =============================================================================
+# Poetry configuration (kept for backward compatibility)
+# =============================================================================
 [tool.poetry]
 name = "sema4ai-mcp"
 version = "0.0.3"

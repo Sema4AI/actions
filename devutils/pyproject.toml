@@ -1,11 +1,48 @@
+# =============================================================================
+# PEP 621 project metadata (used by uv)
+# =============================================================================
+[project]
+name = "sema4ai-devutils"
+version = "0.0.1"
+description = "Utilities for development in monorepo."
+readme = "README.md"
+requires-python = ">=3.8"
+authors = [
+    { name = "Sema4.ai Engineering", email = "engineering@sema4.ai"},
+    { name = "Fabio Z.", email = "fabio@sema4.ai" },
+    { name = "Ovidiu R.", email = "ovidiu@sema4.ai" },
+]
+dependencies = [
+    "ruff>=0.1.14",
+    "mypy>=1.1.1",
+    "pytest>=8.0",
+    "pytest-xdist>=3.2.1",
+    "pytest-regressions>=1.0.6",
+    "isort>=5.12.0",
+    "types-invoke>=2.0",
+    "invoke>=2.2.0",
+    "tomlkit>=0.11.8",
+    "semver>=3.0.0",
+    "pylint>=2.17.4",
+]
+
+# =============================================================================
+# UV configuration
+# =============================================================================
+[tool.uv]
+dev-dependencies = []
+
+# =============================================================================
+# Poetry configuration (kept for backward compatibility)
+# =============================================================================
 [tool.poetry]
 name = "sema4ai-devutils"
 version = "0.0.1"
 description = "Utilities for development in monorepo."
 authors = [
-	"Fabio Z. <fabio@robocorp.com>",
-	"Cosmin P. <cosmin@robocorp.com>",
-	"Ovidiu R. <ovidiu@robocorp.com>",
+    "Sema4.ai Engineering <engineering@sema4.ai>",
+	"Fabio Z. <fabio@sema4.ai>",
+	"Ovidiu R. <ovidiu@sema4.ai>",
 ]
 readme = "README.md"
 packages = [{include = "devutils", from="src"}]
