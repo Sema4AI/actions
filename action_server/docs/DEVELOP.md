@@ -4,30 +4,23 @@ This document describes the UV-based development workflow.
 
 ## Requirements
 
-- [uv](https://github.com/astral-sh/uv) v0.9.18 or later - [installation](https://docs.astral.sh/uv/getting-started/installation/) | [changelog](https://github.com/astral-sh/uv/blob/main/CHANGELOG.md)
+- [uv](https://github.com/astral-sh/uv)
+  - Exact version specified in [root pyproject.toml](../../pyproject.toml) 
+  - [installation](https://docs.astral.sh/uv/getting-started/installation/)
+  - [changelog](https://github.com/astral-sh/uv/blob/main/CHANGELOG.md)
 - Python 3.12 or later (uv will use system Python if available, or download a managed version)
 
 ## Setup
 
 ### First-time setup
 
-Run the bootstrap script from the repository root:
+From the repository root, run:
 
 ```bash
-# Linux/macOS
-cd devutils/bin
-./develop-uv.sh
-
-# Windows
-cd devutils\bin
-develop-uv.bat
+uv sync --all-packages
 ```
 
-This will:
-1. Check that uv is installed (error if not)
-2. Run `uv sync --all-packages` from repo root (installs all workspace packages)
-
-uv automatically uses system Python 3.12 if available, or downloads a managed version (isolated, doesn't affect OS Python).
+This installs all workspace packages in development mode. UV automatically uses system Python 3.12 if available, or downloads a managed version (isolated, doesn't affect OS Python).
 
 ### Workspace structure
 
@@ -41,24 +34,14 @@ This repository uses a UV workspace defined in the root `pyproject.toml`. All pa
 - `mcp` - Model Context Protocol support
 - `sema4ai-http-helper` - HTTP helper library
 
-### Alternative setup options
+### Pre-project tooling
 
-```bash
-# From repo root - install all packages (recommended)
-uv sync --all-packages
+Run `uv run list` to list all available commands.
 
-# From action_server/ - install just action_server deps
-cd action_server
-uv sync
+The project-specific scripts are in /action-server/scripts/uv-tasks.py
+The repo common ones are at: /devutils/src/uv-tasks.py
+Commands are defined in `pyproject.toml > [project.scripts]`
 
-# From action_server/ - install all workspace packages
-cd action_server
-uv sync --all-packages
-```
-
-## Available commands
-
-Run `uv run list` to list all available commands:
 
 ```
   list                 List all available tasks
@@ -87,26 +70,6 @@ Run `uv run list` to list all available commands:
   check-tag-version    Check if tag matches module version
   publish              Publish to PyPI
 ```
-
-### Command comparison (invoke vs uv)
-
-| invoke | uv |
-|--------|-----|
-| `inv -l` | `uv run list` |
-| `inv install` | `uv sync` |
-| `inv devinstall` | `uv sync --all-packages` |
-| `inv lint` | `uv run lint` |
-| `inv pretty` | `uv run format` |
-| `inv typecheck` | `uv run typecheck` |
-| `inv test` | `uv run test` |
-| `inv docs` | `uv run docs` |
-| `inv build-frontend` | `uv run build-frontend` |
-| `inv build-executable` | `uv run build-exe` |
-| `inv build-go-wrapper` | `uv run build-go` |
-| `inv set-version X.Y.Z` | `uv run set-version X.Y.Z` |
-| `inv make-release` | `uv run make-release` |
-| `inv check-tag-version` | `uv run check-tag-version` |
-| `inv publish` | `uv run publish` |
 
 ## Running tests
 
@@ -158,14 +121,37 @@ uv run build-go
 
 **Note:** The `test-binary` and `test-run-in-parallel` commands expect the executable at `dist/final/action-server.exe`, which requires building with `--go-wrapper`.
 
+## Dependency management
+
+### Updating dependencies
+
+**For direct dependencies:**
+1. Edit version constraints in `pyproject.toml`
+2. Regenerate the lock file: `uv lock`
+3. Install updates: `uv sync`
+
+**For transitive dependencies:**
+```bash
+uv lock --upgrade                        # Update all transitive dependencies
+uv lock --upgrade-package <package-name>  # Update specific package only
+uv sync                                  # Install updates
+```
+
+**Testing after updates:**
+```bash
+uv run test-unit  # Run unit tests
+uv run test       # Run all tests
+```
+
 ## Release process
 
 To release a new version (in the `/action_server` directory):
 
-1. **Check for CVE updates**
-   - Review dependabot alerts for fixable items
-   - Update direct deps in `pyproject.toml`
-   - Run `uv lock --upgrade` to bump transient deps in `uv.lock`
+1. **Check for dependency updates**
+   - Review Dependabot alerts for CVEs
+   - Update direct dependencies in `pyproject.toml` if needed
+   - Run `uv lock --upgrade` to update transitive dependencies
+   - Run `uv sync` and test changes
 
 2. **Update CHANGELOG.md**
    - Ensure changes are documented under `## Unreleased` section
@@ -207,19 +193,6 @@ To create a beta release:
 - **Linux:** `https://cdn.sema4.ai/action-server/beta/linux64/action-server`
 - **macOS:** `https://cdn.sema4.ai/action-server/beta/mac64/action-server`
 - **Version:** `https://cdn.sema4.ai/action-server/beta/version.txt`
-
-## Updating dependencies
-
-```bash
-# Update all dependencies to latest compatible versions
-uv lock --upgrade
-
-# Update a specific package
-uv lock --upgrade-package <package-name>
-
-# Sync after updating lock file
-uv sync
-```
 
 ## Adding new task commands
 

@@ -27,8 +27,6 @@ This document describes the completed UV migration for the `action_server` proje
 | `action_server/docs/DEVELOP.md` | NEW - UV development documentation |
 | `devutils/src/devutils/uv_tasks.py` | NEW - Common task implementations |
 | `devutils/pyproject.toml` | Updated - Added `[project]` section |
-| `devutils/bin/develop-uv.sh` | NEW - Bootstrap script (Linux/macOS) |
-| `devutils/bin/develop-uv.bat` | NEW - Bootstrap script (Windows) |
 | `actions/pyproject.toml` | Updated - Added `[project]`, `[tool.uv]` sections |
 | `build_common/pyproject.toml` | Updated - Added `[project]`, `[tool.uv]` sections |
 | `common/pyproject.toml` | Updated - Added `[project]`, `[tool.uv]` sections |
@@ -49,9 +47,6 @@ repo-root/
 │
 ├── devutils/
 │   ├── pyproject.toml          # [project] + [tool.uv] sections added
-│   ├── bin/
-│   │   ├── develop-uv.sh       # Bootstrap script (Linux/macOS)
-│   │   └── develop-uv.bat      # Bootstrap script (Windows)
 │   └── src/devutils/
 │       ├── invoke_utils.py     # KEEP - invoke backward compat
 │       └── uv_tasks.py         # NEW - common pure Python functions
@@ -360,20 +355,6 @@ def run_check_tag_version(tag_prefix: str, module_version: str) -> None:
 ## Setup Instructions
 
 ### First-time Setup
-
-```bash
-# Linux/macOS
-cd devutils/bin
-./develop-uv.sh
-
-# Windows
-cd devutils\bin
-develop-uv.bat
-```
-
-This runs `uv sync --all-packages` from repo root.
-
-### Alternative Setup
 
 ```bash
 # From repo root - install all packages (recommended)
