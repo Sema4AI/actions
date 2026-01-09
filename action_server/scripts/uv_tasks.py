@@ -202,6 +202,14 @@ def _download_rcc_internal():
     This is called by test functions and build_executable to ensure RCC
     is available before running tests or building the binary.
     """
+    # Check if RCC already exists - if so, skip download
+    from sema4ai.action_server._download_rcc import get_default_rcc_location
+    rcc_path = get_default_rcc_location()
+    if rcc_path.exists():
+        print(f"RCC already exists at {rcc_path}, skipping download")
+        return
+
+    # RCC doesn't exist, download it
     env = os.environ.copy()
     curr_pythonpath = env.get("PYTHONPATH", "")
     env["PYTHONPATH"] = curr_pythonpath + os.pathsep + str(ROOT / "src")
