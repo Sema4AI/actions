@@ -14,7 +14,7 @@ authors = [
 ]
 dependencies = [
     "aiohttp>=3.13.2",
-    "fastapi-slim>=0.121.1",
+    "fastapi-slim>=0.128.0,<0.129",
     "jsonschema>=4.23.0",
     "jsonschema-specifications>=2024.10.1",
     "msgspec>=0.19",

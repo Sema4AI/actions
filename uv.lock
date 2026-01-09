@@ -1518,7 +1518,7 @@ dev = [
 requires-dist = [
     { name = "aiohttp", specifier = ">=3.13.2" },
     { name = "cryptography", specifier = ">=46.0.3" },
-    { name = "fastapi-slim", specifier = ">=0.121.1" },
+    { name = "fastapi-slim", specifier = ">=0.128.0,<0.129" },
     { name = "jsonschema", specifier = ">=4.23.0" },
     { name = "jsonschema-specifications", specifier = ">=2024.10.1" },
     { name = "mcp", specifier = ">=1.21.0" },

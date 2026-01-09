@@ -686,7 +686,9 @@ def test_auth_routes(action_server_process: ActionServerProcess, data_regression
     spec = json.loads(openapi_json)
     data_regression.check(fix_openapi_json(spec))
 
-    client.post_error("api/actions/greeter/greet/run", 403)
+    # FastAPI 0.122+ returns 401 (Unauthorized) instead of 403 (Forbidden)
+    # when authentication is required but credentials are missing
+    client.post_error("api/actions/greeter/greet/run", 401)
 
     found = client.post_get_str(
         "api/actions/greeter/greet/run",
