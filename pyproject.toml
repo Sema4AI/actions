@@ -1,0 +1,27 @@
+# =============================================================================
+# UV Workspace Configuration for Sema4.ai Actions Monorepo
+# =============================================================================
+#
+# This file defines a UV workspace that includes all packages in the monorepo.
+# Use `uv sync --all-packages` from the repo root to install all packages in
+# development mode (similar to the old `inv devinstall`).
+#
+# From individual project directories, you can use:
+#   uv sync                 # Install just that project's dependencies
+#   uv sync --all-packages  # Install all workspace packages
+#
+# =============================================================================
+
+[tool.uv]
+required-version = "==0.9.18"
+
+[tool.uv.workspace]
+members = [
+    "action_server",
+    "actions",
+    "build_common",
+    "common",
+    "devutils",
+    "mcp",
+    "sema4ai-http-helper",
+]

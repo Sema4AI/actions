@@ -25,24 +25,21 @@ class IHookOnActionsListCallback(typing.Protocol):
         action_package: "ActionPackage",
         actions_list_result: list["ActionsListActionTypedDict"],
         data_package_metadata: dict | None,
-    ):
-        ...
+    ): ...
 
 
 class IHookOnActionsList(typing.Protocol):
     def register(
         self,
         callback: IHookOnActionsListCallback,
-    ) -> OnExitContextManager:
-        ...
+    ) -> OnExitContextManager: ...
 
     def __call__(
         self,
         action_package: "ActionPackage",
         actions_list_result: list["ActionsListActionTypedDict"],
         data_package_metadata: dict | None,
-    ):
-        ...
+    ): ...
 
 
 # Called as: hook_on_actions_list(action_package, actions_list_result, data_package_metadata)
@@ -215,7 +212,7 @@ def _get_actions_version(
     msg = f"""Unable to get {libname} version.
 
 This usually means that `{libname}` is not installed in the python
-environment (make sure that `{libname.replace('.', '-')}`
+environment (make sure that `{libname.replace(".", "-")}`
 is defined in your `package.yaml`).
 
 Python executable being used:

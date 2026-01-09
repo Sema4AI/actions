@@ -50,9 +50,9 @@ def test_server_async_api_requests_while_waiting_for_action_to_complete(
     assert response.json() == "async-return"
 
     # Check for the message we received saying it's an async compute.
-    assert (
-        headers.get(HEADER_ACTION_ASYNC_COMPLETION) == "1"
-    ), f"Failed to get {HEADER_ACTION_ASYNC_COMPLETION}. Headers: {headers}"
+    assert headers.get(HEADER_ACTION_ASYNC_COMPLETION) == "1", (
+        f"Failed to get {HEADER_ACTION_ASYNC_COMPLETION}. Headers: {headers}"
+    )
 
     def run_id_from_request_id_available():
         response = client.get_get_response(
@@ -142,12 +142,12 @@ def test_server_async_api(
     assert headers
 
     # Check for the message we received saying it's an async compute.
-    assert (
-        headers.get(HEADER_ACTION_ASYNC_COMPLETION) == "1"
-    ), f"Failed to get {HEADER_ACTION_ASYNC_COMPLETION}. Headers: {headers}"
-    assert (
-        headers.get(HEADER_ACTION_SERVER_RUN_ID) is not None
-    ), f"Failed to get {HEADER_ACTION_SERVER_RUN_ID}. Headers: {headers}"
+    assert headers.get(HEADER_ACTION_ASYNC_COMPLETION) == "1", (
+        f"Failed to get {HEADER_ACTION_ASYNC_COMPLETION}. Headers: {headers}"
+    )
+    assert headers.get(HEADER_ACTION_SERVER_RUN_ID) is not None, (
+        f"Failed to get {HEADER_ACTION_SERVER_RUN_ID}. Headers: {headers}"
+    )
 
     assert found == '"async-return"', f"{found} != '\"async-return\"'"
 
@@ -156,9 +156,9 @@ def test_server_async_api(
     assert result["body"] == '"Hello Mr. Foo."'
     headers = result["headers"]
     assert headers
-    assert (
-        headers.get(HEADER_ACTIONS_REQUEST_ID) == "123"
-    ), f"Failed to get {HEADER_ACTIONS_REQUEST_ID}. Headers: {headers}"
+    assert headers.get(HEADER_ACTIONS_REQUEST_ID) == "123", (
+        f"Failed to get {HEADER_ACTIONS_REQUEST_ID}. Headers: {headers}"
+    )
 
     run_id = headers.get(HEADER_ACTION_SERVER_RUN_ID)
     assert run_id

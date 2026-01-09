@@ -206,8 +206,7 @@ class IInternalFuncAPI(Protocol):
         inputs: dict,
         headers: dict,
         cookies: dict,
-    ) -> Any:
-        ...
+    ) -> Any: ...
 
 
 class _ActionsRunner:

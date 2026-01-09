@@ -24,6 +24,7 @@ updates:
   - dependency-type: all
 - package-ecosystem: pip
   directories:
+  - .
   - action_server
   - actions
   - build_common

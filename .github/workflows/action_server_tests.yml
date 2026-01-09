@@ -52,37 +52,33 @@ jobs:
       fail-fast: false
       matrix:
         name:
-        - ubuntu-py3.12-devmode
-        - windows-py3.12-devmode
-        - macos-py3.12-devmode
+        - ubuntu-py3.12.12-devmode
+        - windows-py3.12.12-devmode
+        - macos-py3.12.12-devmode
         include:
-        - name: ubuntu-py3.12-devmode
-          python: '3.12'
+        - name: ubuntu-py3.12.12-devmode
+          python: 3.12.12
           os: ubuntu-22.04
-        - name: windows-py3.12-devmode
-          python: '3.12'
+        - name: windows-py3.12.12-devmode
+          python: 3.12.12
           os: windows-2022
-        - name: macos-py3.12-devmode
+        - name: macos-py3.12.12-devmode
           os: macos-15
-          python: '3.12'
+          python: 3.12.12
     steps:
     - name: Checkout repository and submodules
       uses: actions/checkout@v5
-    - name: Install the latest version of uv
+    - name: Install uv and Python ${{ matrix.python }}
       uses: astral-sh/setup-uv@v5
       with:
         enable-cache: true
-    - name: Install Python 3.12
-      run: uv python install 3.12
-    - name: Install devutils requirements
-      run: uv run --no-project --python ${{ matrix.python }}  python -m pip install
-        --break-system-packages -r ../devutils/requirements.txt
-    - name: Install project (not dev)
+        python-version: ${{ matrix.python }}
+    - name: Install project (uv sync --locked)
       if: contains(matrix.name, '-devmode') == false
-      run: uv run --no-project --python ${{ matrix.python }} inv install
-    - name: Install project (dev)
+      run: uv sync --locked
+    - name: Install project with workspace (uv sync --locked --all-packages)
       if: contains(matrix.name, '-devmode')
-      run: uv run --no-project --python ${{ matrix.python }} inv devinstall
+      run: uv sync --locked --all-packages
     - name: Setup go
       uses: actions/setup-go@v5
       with:
@@ -94,12 +90,12 @@ jobs:
         registry-url: https://npm.pkg.github.com
         scope: '@robocorp'
     - name: Build frontend
-      run: uv run --no-project --python ${{ matrix.python }} inv build-frontend
+      run: uv run build-frontend
       env:
         CI: true
         NODE_AUTH_TOKEN: ${{ secrets.GH_PAT_READ_PACKAGES }}
     - name: Build OAuth2 config
-      run: uv run --no-project --python ${{ matrix.python }} inv build-oauth2-config
+      run: uv run build-oauth2-config
       env:
         GH_TOKEN: ${{ secrets.GH_PAT_GHA_TO_ANOTHER_REPO }}
     - name: Build binary
@@ -123,8 +119,7 @@ jobs:
         GITHUB_EVENT_NAME: ${{ github.event_name }}
         GITHUB_REF_NAME: ${{ github.ref_name }}
         GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
-      run: uv run --no-project --python ${{ matrix.python }} poetry run inv build-executable
-        --sign --go-wrapper
+      run: uv run build-exe --sign --go-wrapper
     - name: 'Upload artifact: action_server/dist/final/'
       uses: actions/upload-artifact@v4
       with:
@@ -138,7 +133,7 @@ jobs:
         ACTION_SERVER_TEST_ACCESS_CREDENTIALS: ${{ secrets.ACTION_SERVER_TEST_ACCESS_CREDENTIALS
           }}
         ACTION_SERVER_TEST_HOSTNAME: ${{ secrets.ACTION_SERVER_TEST_HOSTNAME }}
-      run: uv run --no-project --python ${{ matrix.python }} poetry run inv test-not-integration
+      run: uv run test-unit
     - name: Test (integration)
       env:
         GITHUB_ACTIONS_MATRIX_NAME: ${{ matrix.name }}
@@ -147,17 +142,16 @@ jobs:
         ACTION_SERVER_TEST_ACCESS_CREDENTIALS: ${{ secrets.ACTION_SERVER_TEST_ACCESS_CREDENTIALS
           }}
         ACTION_SERVER_TEST_HOSTNAME: ${{ secrets.ACTION_SERVER_TEST_HOSTNAME }}
-      run: uv run --no-project --python ${{ matrix.python }} poetry run inv test-binary
-        --jobs 0
-    - name: '`inv lint`, potentially fixed with `inv pretty`'
+      run: uv run test-binary --jobs 0
+    - name: '`uv run lint`'
       if: always()
-      run: uv run --no-project --python ${{ matrix.python }} inv lint
-    - name: '`inv typecheck`'
+      run: uv run lint
+    - name: '`uv run typecheck`'
       if: always()
-      run: uv run --no-project --python ${{ matrix.python }} inv typecheck
-    - name: '`inv docs` with checking on files changed'
+      run: uv run typecheck
+    - name: '`uv run docs --check`'
       if: always()
-      run: uv run --no-project --python ${{ matrix.python }} inv docs --check
+      run: uv run docs --check
 
 
 # Important!!

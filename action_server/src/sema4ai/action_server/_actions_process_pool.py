@@ -836,7 +836,9 @@ class ActionsProcessPool:
                         if n_running < self.max_processes:
                             self._create_process(action)
                             processes = self._idle_processes.get(key)
-                            assert processes, f"Expected idle processes bound to key: {key} at this point!"
+                            assert processes, (
+                                f"Expected idle processes bound to key: {key} at this point!"
+                            )
                             process_handle = processes.pop()
                             log.debug(
                                 f"Process Pool: Created process ({process_handle.pid})."

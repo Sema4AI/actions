@@ -272,9 +272,9 @@ class SessionScopeContext(_BaseScopeContext):
 def session_scope(request: Request) -> Iterator[SessionScopeContext]:
     scope = SessionScopeContext(request)
     yield scope
-    assert (
-        scope.response is not None
-    ), "The response must be set to set the cookie (if it was just created)."
+    assert scope.response is not None, (
+        "The response must be set to set the cookie (if it was just created)."
+    )
 
 
 @contextmanager

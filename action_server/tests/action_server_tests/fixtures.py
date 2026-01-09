@@ -72,9 +72,9 @@ def fix_openapi_json(openapi: dict) -> dict:
     assert info is not None, "Expected info to be in the openapi.json"
     version = info.get("version")
     assert version is not None, "Expected info/version to be in the openapi.json"
-    assert (
-        version == __version__
-    ), f"Expected version to be the sema4.ai version ({__version__}) instead of: {version}"
+    assert version == __version__, (
+        f"Expected version to be the sema4.ai version ({__version__}) instead of: {version}"
+    )
 
     info["version"] = "<removed-for-compare>"
 
@@ -107,9 +107,8 @@ def disable_feedback(temp_directory_session, rcc_config_location) -> None:
     if not os.path.exists(rcc_location):
         raise RuntimeError(
             f"{rcc_location} does not exist.\n"
-            "Note: 'inv install' or 'inv devinstall' must be called to run\n"
-            "action_server/build.py, which downloads RCC to the proper location\n"
-            "as a part of the build process."
+            "Note: 'uv run download-rcc' must be called to download RCC\n"
+            "to the proper location before running tests."
         )
     rcc = Rcc(rcc_location, sema4ai_home)
     result = rcc._run_rcc(
