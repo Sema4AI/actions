@@ -2,6 +2,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useMutation } from '@tanstack/react-query';
 
+// Convert string to kebab-case (matches backend URL format)
+const toKebabCase = (str: string): string => {
+  return str.replace(/[\s_]+/g, '-').toLowerCase();
+};
+
 export type ActionRunPayload = {
   actionPackageName: string;
   actionName: string;
@@ -40,7 +45,7 @@ export const useActionRunMutation = () => {
         headers['x-actions-request-id'] = requestId;
       }
 
-      const request = await fetch(`/api/actions/${actionPackageName}/${actionName}/run`, {
+      const request = await fetch(`/api/actions/${toKebabCase(actionPackageName)}/${toKebabCase(actionName)}/run`, {
         method: 'POST',
         headers,
         body: JSON.stringify(args),

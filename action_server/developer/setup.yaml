@@ -1,0 +1,49 @@
+# Action Server Development Environment
+#
+# This defines the conda environment for building action-server.
+# RCC uses this to create an isolated, reproducible build environment.
+#
+# Note: Version pins should match CI workflow and pyproject.toml requirements.
+
+channels:
+  - conda-forge
+
+dependencies:
+  # Python runtime - must be 3.12+ for action-server
+  - python=3.12
+
+  # Package management and build tools
+  - pip=25.0
+  - uv=0.5.14
+
+  # Task runner for invoke tasks
+  - invoke=2.2.0
+
+  # Python dependency management
+  - poetry=2.1.1
+
+  # Node.js for frontend build (LTS version) - npm is bundled with nodejs
+  - nodejs=20.18.0
+
+  # Git for version control operations
+  - git=2.46.0
+
+  # Go compiler for building the Go wrapper (CGO_ENABLED=0, no C compiler needed)
+  - go=1.23.6
+
+  # Additional Python tools for development
+  - semver=3.0.2
+  - tomlkit=0.12.4
+  - ruff=0.8.6
+  - pytest=8.3.4
+  - mypy=1.14.1
+
+  # Build tools (must match action_server/pyproject.toml)
+  - pyinstaller=6.16.0
+
+  # Install local packages in editable mode (paths relative to actions/ root where rcc is run)
+  - pip:
+    - -e ./build_common
+    - -e ./devutils
+    - -e ./common
+    - -e ./action_server

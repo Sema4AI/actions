@@ -39,7 +39,7 @@ export const ArtifactsPage = () => {
 
   if (!runId) {
     return (
-      <div className="flex h-full items-center justify-center text-sm text-gray-600">
+      <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
         Select a run from the history to inspect artifacts.
       </div>
     );
@@ -47,7 +47,7 @@ export const ArtifactsPage = () => {
 
   if (loadedRuns.isPending) {
     return (
-      <div className="flex h-full items-center justify-center text-sm text-gray-600">
+      <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
         Loading run metadata…
       </div>
     );
@@ -56,8 +56,8 @@ export const ArtifactsPage = () => {
   if (!run) {
     return (
       <div className="flex h-full items-center justify-center">
-        <div className="max-w-md rounded-md border border-red-200 bg-red-50 p-6 text-center text-sm text-red-700">
-          Run <span className="font-mono text-red-900">{runId}</span> could not be found.
+        <div className="max-w-md rounded-md border border-destructive/20 bg-destructive/5 p-6 text-center text-sm text-destructive">
+          Run <span className="font-mono font-semibold">{runId}</span> could not be found.
           <div className="mt-4">
             <Button variant="secondary" onClick={() => navigate('/runs')}>
               Back to run history
@@ -72,8 +72,8 @@ export const ArtifactsPage = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Artifacts</h1>
-          <p className="mt-1 text-sm text-gray-600">
+          <h1 className="text-2xl font-semibold text-foreground">Artifacts</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
             Download generated files or reports produced during the run execution.
           </p>
         </div>
@@ -82,28 +82,28 @@ export const ArtifactsPage = () => {
         </Button>
       </div>
 
-      <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
-        <div className="border-b border-gray-200 p-4 text-sm text-gray-600">
-          <span className="font-medium text-gray-900">Run #{run.numbered_id}</span>
-          <span className="mx-2 text-gray-400">•</span>
+      <div className="rounded-lg border border-border bg-card shadow-sm">
+        <div className="border-b border-border p-4 text-sm text-muted-foreground">
+          <span className="font-medium text-card-foreground">Run #{run.numbered_id}</span>
+          <span className="mx-2 text-muted-foreground/50">•</span>
           {new Date(run.start_time).toLocaleString()}
         </div>
         <div className="p-6">
           {artifactState.isPending ? (
-            <div className="text-sm text-gray-600">Loading artifact list…</div>
+            <div className="text-sm text-muted-foreground">Loading artifact list…</div>
           ) : artifactState.errorMessage ? (
             <div className="mb-4">
               <ErrorBanner message={`Unable to load artifacts: ${artifactState.errorMessage}`} />
             </div>
           ) : !artifactState.data || artifactState.data.length === 0 ? (
-            <div className="rounded-md border border-dashed border-gray-300 bg-gray-50 p-12 text-center text-sm text-gray-500">
+            <div className="rounded-md border border-dashed border-border bg-muted/50 p-12 text-center text-sm text-muted-foreground">
               This run did not produce artifacts.
             </div>
           ) : (
-            <div className="rounded-md border border-gray-200">
+            <div className="rounded-md border border-border">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-gray-50">
+                  <TableRow>
                     <TableHead>Name</TableHead>
                     <TableHead className="w-40 text-right">Size</TableHead>
                     <TableHead className="w-32 text-right">Download</TableHead>
@@ -111,11 +111,11 @@ export const ArtifactsPage = () => {
                 </TableHeader>
                 <TableBody>
                   {artifactState.data.map((artifact) => (
-                    <TableRow key={artifact.name}>
-                      <TableCell className="font-mono text-sm text-gray-900">
+                    <TableRow key={artifact.name} className="hover:bg-muted/50 transition-colors">
+                      <TableCell className="font-mono text-sm text-foreground">
                         {artifact.name}
                       </TableCell>
-                      <TableCell className="text-right text-sm text-gray-600">
+                      <TableCell className="text-right text-sm text-muted-foreground">
                         {formatBytes(artifact.size_in_bytes)}
                       </TableCell>
                       <TableCell className="text-right">

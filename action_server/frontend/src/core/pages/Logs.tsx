@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { Button } from '@/core/components/ui/Button';
+import { Loading } from '@/core/components/ui/Loading';
+import { ErrorBanner } from '@/core/components/ui/ErrorBanner';
 import { useActionServerContext } from '@/shared/context/actionServerContext';
 import { baseUrl, collectRunArtifacts } from '@/shared/api-client';
 import { AsyncLoaded, Run } from '@/shared/types';
@@ -32,7 +34,7 @@ export const LogsPage = () => {
 
   if (!runId) {
     return (
-      <div className="flex h-full items-center justify-center text-sm text-gray-600">
+      <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
         Select a run from the history to inspect logs.
       </div>
     );
@@ -40,7 +42,7 @@ export const LogsPage = () => {
 
   if (loadedRuns.isPending) {
     return (
-      <div className="flex h-full items-center justify-center text-sm text-gray-600">
+      <div className="flex h-full items-center justify-center">
         <Loading text="Loading run details…" />
       </div>
     );
@@ -49,7 +51,7 @@ export const LogsPage = () => {
   if (!run) {
     return (
       <div className="flex h-full items-center justify-center">
-        <div className="max-w-md rounded-md border border-red-200 bg-red-50 p-6 text-center text-sm text-red-700">
+        <div className="max-w-md rounded-md p-6 text-center">
           <ErrorBanner message={`Run ${runId} was not found in the local cache.`} />
           <div className="mt-4">
             <Button variant="secondary" onClick={() => navigate('/runs')}>
@@ -70,8 +72,8 @@ export const LogsPage = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Logs</h1>
-          <p className="mt-1 text-sm text-gray-600">
+          <h1 className="text-2xl font-semibold text-foreground">Logs</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
             Inspect the streamed console output captured during the run.
           </p>
         </div>
@@ -90,17 +92,17 @@ export const LogsPage = () => {
         </div>
       </div>
 
-      <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
-        <div className="border-b border-gray-200 p-4 text-sm text-gray-600">
-          <span className="font-medium text-gray-900">Run #{run.numbered_id}</span>
-          <span className="mx-2 text-gray-400">•</span>
+      <div className="rounded-lg border border-border bg-card shadow-sm">
+        <div className="border-b border-border p-4 text-sm text-muted-foreground">
+          <span className="font-medium text-card-foreground">Run #{run.numbered_id}</span>
+          <span className="mx-2 text-muted-foreground/50">•</span>
           {new Date(run.start_time).toLocaleString()}
         </div>
         <div className="max-h-[70vh] overflow-auto p-4">
           {artifactsState.isPending ? (
-            <div className="text-sm text-gray-600">Loading log output…</div>
+            <div className="text-sm text-muted-foreground">Loading log output…</div>
           ) : (
-            <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed text-gray-900">
+            <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed text-foreground">
               {logContent}
             </pre>
           )}

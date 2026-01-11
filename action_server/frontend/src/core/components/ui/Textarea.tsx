@@ -9,21 +9,32 @@ export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextArea
 
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(({ className, error = false, ...props }, ref) => {
   const isCode = props.spellCheck === false;
-  const errorClass = error ? 'border-red-500 hover:border-red-500' : 'border-gray-300 hover:border-gray-400';
-  const focusRing = error ? 'focus-visible:ring-red-500' : 'focus-visible:ring-blue-500';
+  const errorClass = error ? 'border-destructive hover:border-destructive' : 'border-input hover:border-input/80';
+  const focusRing = error ? 'focus-visible:ring-destructive' : 'focus-visible:ring-ring';
 
   return (
     <textarea
       ref={ref}
       aria-invalid={error ? true : undefined}
       className={cn(
-        'w-full rounded-md px-3 py-2 text-sm transition-colors duration-200 motion-reduce:transition-none',
-        'min-h-[80px] resize-y',
-        'bg-white placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2',
-        'focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
-        errorClass,
-        focusRing,
+        // Layout
+        'w-full min-h-[80px] resize-y px-3 py-2',
+        // Typography
+        'text-sm',
         isCode && 'font-mono',
+        // Style
+        'rounded-md border',
+        // Colors
+        'bg-background text-foreground placeholder:text-muted-foreground',
+        errorClass,
+        // Focus states
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+        focusRing,
+        // Disabled states
+        'disabled:cursor-not-allowed disabled:opacity-50',
+        // Animations
+        'transition-colors duration-200',
+        'motion-reduce:transition-none',
         className,
       )}
       {...props}

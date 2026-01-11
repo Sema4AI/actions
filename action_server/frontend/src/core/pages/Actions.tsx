@@ -31,6 +31,8 @@ import { Action, ActionPackage, Run, RunStatus, ServerConfig } from '@/shared/ty
 import { formDataToPayload, propertiesToFormData } from '@/shared/utils/formData';
 import { prettyPrint } from '@/shared/utils/helpers';
 import { cn } from '@/shared/utils/cn';
+import { getStaggerDelay, animationClasses } from '@/shared/utils/animations';
+import { ActionsIcon } from '@/shared/components/Icons';
 
 type RunResult = {
   runId: string;
@@ -135,7 +137,7 @@ const renderPackageBadge = (pkg: ActionPackage | undefined) => {
     return null;
   }
   return (
-    <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600">
+    <span className="inline-flex items-center rounded-full bg-muted px-2 py-1 text-xs font-medium text-muted-foreground">
       {pkg.name}
     </span>
   );
@@ -144,24 +146,24 @@ const renderPackageBadge = (pkg: ActionPackage | undefined) => {
 const documentationSection = (action: Action) => (
   <div className="space-y-4">
     <div>
-      <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500">
+      <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
         Documentation
       </h3>
-      <pre className="mt-2 max-h-64 overflow-auto rounded-md border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700">
+      <pre className="mt-2 max-h-64 overflow-auto rounded-md border border-border bg-muted/50 p-4 text-sm text-foreground">
         {action.docs || 'No documentation available for this action yet.'}
       </pre>
     </div>
     <div>
-      <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Input Schema</h3>
-      <pre className="mt-2 max-h-64 overflow-auto rounded-md border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700">
+      <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Input Schema</h3>
+      <pre className="mt-2 max-h-64 overflow-auto rounded-md border border-border bg-muted/50 p-4 text-sm text-foreground">
         {prettyPrint(action.input_schema)}
       </pre>
     </div>
     <div>
-      <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500">
+      <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
         Output Schema
       </h3>
-      <pre className="mt-2 max-h-64 overflow-auto rounded-md border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700">
+      <pre className="mt-2 max-h-64 overflow-auto rounded-md border border-border bg-muted/50 p-4 text-sm text-foreground">
         {prettyPrint(action.output_schema)}
       </pre>
     </div>
@@ -189,12 +191,12 @@ const VersionMismatchBanner = ({ serverConfig }: { serverConfig: ServerConfig | 
   }
 
   return (
-    <div className="flex items-start justify-between rounded-md border border-yellow-300 bg-yellow-50 p-4">
+    <div className="flex items-start justify-between rounded-md border border-yellow-500/30 bg-yellow-500/10 p-4">
       <div>
-        <p className="text-sm font-medium text-yellow-800">
+        <p className="text-sm font-medium text-yellow-600 dark:text-yellow-400">
           Action Server backend version changed!
         </p>
-        <p className="mt-1 text-sm text-yellow-700">
+        <p className="mt-1 text-sm text-yellow-700 dark:text-yellow-300/80">
           Reload to ensure the UI is using the latest schema and resources. If you&apos;re in the
           middle of editing request data you can ignore this warning, but the current session may be
           unstable.
@@ -380,7 +382,7 @@ export const ActionsPage = () => {
 
   if (loadedActions.isPending) {
     return (
-      <div className="flex h-full items-center justify-center text-sm text-gray-600">
+      <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
         Loading actions…
       </div>
     );
@@ -388,7 +390,7 @@ export const ActionsPage = () => {
 
   if (loadedActions.errorMessage) {
     return (
-      <div className="rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+      <div className="rounded-md border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
         Unable to load action packages: {loadedActions.errorMessage}
       </div>
     );
@@ -396,14 +398,17 @@ export const ActionsPage = () => {
 
   if (actions.length === 0) {
     return (
-      <div className="space-y-4">
+      <div className="h-full space-y-4 p-6 animate-fadeInUp">
         <VersionMismatchBanner serverConfig={loadedServerConfig.data} />
-        <div className="rounded-md border border-dashed border-gray-300 bg-gray-50 p-12 text-center">
-          <h2 className="text-lg font-semibold text-gray-700">No actions available yet</h2>
-          <p className="mt-2 text-sm text-gray-500">
+        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/30 p-12 text-center min-h-[400px]">
+          <div className="mb-4 rounded-full bg-primary/10 p-4">
+            <ActionsIcon className="h-8 w-8 text-primary" />
+          </div>
+          <h2 className="text-lg font-semibold text-foreground">No actions available yet</h2>
+          <p className="mt-2 max-w-sm text-sm text-muted-foreground">
             Install an action package or create one to start running automated workflows.
           </p>
-          <Button className="mt-4" onClick={() => navigate('/runs')}>
+          <Button className="mt-6" onClick={() => navigate('/runs')}>
             Review run history
           </Button>
         </div>
@@ -412,28 +417,28 @@ export const ActionsPage = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="h-full space-y-6 p-6 animate-fadeInUp">
       <VersionMismatchBanner serverConfig={loadedServerConfig.data} />
 
-      <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
-        <div className="flex flex-col gap-4 border-b border-gray-200 p-6 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold text-gray-900">Action Packages</h1>
-            <p className="mt-1 text-sm text-gray-600">
+      <div className="rounded-lg border border-border bg-card shadow-sm">
+        <div className="flex flex-col gap-4 border-b border-border p-6 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-1">
+            <h1 className="text-2xl font-semibold text-card-foreground">Action Packages</h1>
+            <p className="text-sm text-muted-foreground">
               Actions available on this Action Server instance. Select one to inspect its schema or
               execute it with custom parameters.
             </p>
           </div>
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-muted-foreground whitespace-nowrap">
             {loadedActions.data?.length || 0} packages • {actions.length} enabled actions
           </div>
         </div>
 
         <div className="grid gap-6 p-6 lg:grid-cols-[2fr,3fr]">
-          <div className="rounded-md border border-gray-200">
+          <div className="rounded-md border border-border">
             <Table>
               <TableHeader>
-                <TableRow className="bg-gray-50">
+                <TableRow className="bg-muted/50">
                   <TableHead>Action</TableHead>
                   <TableHead>Package</TableHead>
                   <TableHead>Location</TableHead>
@@ -441,7 +446,7 @@ export const ActionsPage = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {actions.map((action) => {
+                {actions.map((action, index) => {
                   const pkg = findPackageForAction(loadedActions.data, action.id);
                   const runs = getRunsForAction(loadedRuns.data, action.id);
                   const isSelected = selectedActionId === action.id;
@@ -449,20 +454,34 @@ export const ActionsPage = () => {
                     <TableRow
                       key={action.id}
                       className={cn(
-                        'cursor-pointer transition-all duration-200',
-                        'hover:scale-[1.02]',
-                        'motion-reduce:transform-none motion-reduce:transition-none',
-                        isSelected && 'bg-blue-50 hover:bg-blue-50',
+                        // Base styles
+                        'cursor-pointer',
+                        // Colors and states
+                        'hover:bg-muted/50',
+                        isSelected && 'bg-primary/10 hover:bg-primary/15 border-l-2 border-l-primary',
+                        // Animations
+                        animationClasses.transitionWithMotionSafe,
+                        animationClasses.fadeInWithMotionSafe,
                       )}
+                      style={getStaggerDelay(index)}
                       onClick={() => setSelectedActionId(action.id)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setSelectedActionId(action.id);
+                        }
+                      }}
+                      aria-selected={isSelected}
                     >
-                      <TableCell className="font-medium">{action.name}</TableCell>
+                      <TableCell className="font-medium text-card-foreground">{action.name}</TableCell>
                       <TableCell>{renderPackageBadge(pkg)}</TableCell>
-                      <TableCell className="text-xs text-gray-500">
+                      <TableCell className="text-xs text-muted-foreground font-mono">
                         {action.file}:{action.lineno}
                       </TableCell>
                       <TableCell>
-                        <span className="rounded-md bg-gray-100 px-2 py-1 text-xs text-gray-600">
+                        <span className="inline-flex items-center justify-center rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground font-medium min-w-[2rem]">
                           {runs.length}
                         </span>
                       </TableCell>
@@ -478,25 +497,30 @@ export const ActionsPage = () => {
               <>
                 <div
                   className={cn(
-                    'flex flex-col gap-4 rounded-md border border-gray-200 bg-gray-50 p-6 shadow-sm',
-                    'transition-transform duration-200',
-                    'hover:scale-[1.02]',
-                    'motion-reduce:transform-none motion-reduce:transition-none',
+                    // Layout
+                    'flex flex-col gap-4 p-6',
+                    // Style
+                    'rounded-md border border-border bg-gradient-to-br from-card to-muted/20 shadow-sm',
+                    // Hover effects
+                    'hover:shadow-md hover:border-border/60',
+                    // Animations
+                    'transition-all duration-300',
+                    animationClasses.fadeInWithMotionSafe,
                   )}
                 >
                   <div>
                     <div className="flex flex-wrap items-center gap-3">
-                      <h2 className="text-xl font-semibold text-gray-900">
+                      <h2 className="text-xl font-semibold text-card-foreground">
                         {selectedAction.name}
                       </h2>
                       {!selectedAction.enabled && (
-                        <span className="rounded-full bg-yellow-100 px-2 py-1 text-xs font-medium text-yellow-700">
+                        <Badge variant="warning">
                           Not available
-                        </span>
+                        </Badge>
                       )}
                       {renderPackageBadge(selectedPackage)}
                     </div>
-                    <p className="mt-2 text-sm text-gray-600">
+                    <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
                       {selectedAction.docs
                         ? selectedAction.docs.split('\n')[0]
                         : 'This action does not provide description text yet.'}
@@ -508,13 +532,14 @@ export const ActionsPage = () => {
                     </Button>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0" aria-label="Open action menu">
                           <span className="sr-only">Open action menu</span>
                           <svg
                             className="h-4 w-4"
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 16 16"
                             fill="currentColor"
+                            aria-hidden="true"
                           >
                             <circle cx="8" cy="2" r="1.5" />
                             <circle cx="8" cy="8" r="1.5" />
@@ -540,36 +565,55 @@ export const ActionsPage = () => {
 
                 <div
                   className={cn(
-                    'rounded-md border border-gray-200 bg-white p-6 shadow-sm',
-                    'transition-transform duration-200',
-                    'hover:scale-[1.02]',
-                    'motion-reduce:transform-none motion-reduce:transition-none',
+                    // Layout & style
+                    'p-6 rounded-md border border-border bg-card shadow-sm',
+                    // Hover effects
+                    'hover:shadow-md hover:border-border/60',
+                    // Animations
+                    'transition-all duration-300',
+                    animationClasses.fadeInWithMotionSafe,
                   )}
+                  style={{ animationDelay: '100ms' }}
                 >
-                  <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500">
+                  <h3 className="section-header">
                     Recent runs
                   </h3>
                   {recentRuns.length === 0 ? (
-                    <p className="mt-3 text-sm text-gray-500">
+                    <p className="mt-3 text-sm text-muted-foreground">
                       This action has not been executed yet.
                     </p>
                   ) : (
-                    <ul className="mt-3 space-y-2 text-sm text-gray-700">
-                      {recentRuns.map((run) => (
+                    <ul className="mt-3 space-y-2 text-sm">
+                      {recentRuns.map((run, index) => (
                         <li
                           key={run.id}
                           className={cn(
-                            'flex items-center justify-between rounded-md border border-gray-200 bg-gray-50 px-3 py-2',
-                            'transition-transform duration-200',
-                            'hover:scale-[1.02]',
-                            'motion-reduce:transform-none motion-reduce:transition-none',
+                            // Layout
+                            'flex items-center justify-between px-3 py-2.5',
+                            // Style
+                            'rounded-md border border-border bg-muted/30 cursor-pointer',
+                            // Hover effects
+                            'hover:bg-muted/50 hover:border-border/60',
+                            // Animations
+                            animationClasses.fadeInWithMotionSafe,
+                            'transition-all duration-200',
                           )}
+                          style={getStaggerDelay(index + 1, 50)}
+                          onClick={() => navigate(`/logs/${run.id}`)}
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              navigate(`/logs/${run.id}`);
+                            }
+                          }}
                         >
                           <div>
-                            <p className="font-medium text-gray-900">
+                            <p className="font-medium text-card-foreground">
                               {new Date(run.start_time).toLocaleString()}
                             </p>
-                            <p className="text-xs text-gray-500">Run #{run.numbered_id}</p>
+                            <p className="text-xs text-muted-foreground font-mono">Run #{run.numbered_id}</p>
                           </div>
                           {renderStatusBadge(run.status)}
                         </li>
@@ -580,17 +624,19 @@ export const ActionsPage = () => {
 
                 <div
                   className={cn(
-                    'rounded-md border border-gray-200 bg-white p-6 shadow-sm',
-                    'transition-transform duration-200',
-                    'hover:scale-[1.02]',
-                    'motion-reduce:transform-none motion-reduce:transition-none',
+                    'rounded-md border border-border bg-card p-6 shadow-sm',
+                    'transition-all duration-300',
+                    'hover:shadow-md hover:border-border/60',
+                    'animate-fadeInUp',
+                    'motion-reduce:transform-none motion-reduce:transition-none motion-reduce:animate-none',
                   )}
+                  style={{ animationDelay: '200ms' }}
                 >
                   {documentationSection(selectedAction)}
                 </div>
               </>
             ) : (
-              <div className="flex h-full items-center justify-center rounded-md border border-dashed border-gray-300 bg-gray-50 p-12 text-sm text-gray-500">
+              <div className="flex h-full items-center justify-center rounded-md border border-dashed border-border bg-muted/50 p-12 text-sm text-muted-foreground">
                 Select an action to view details
               </div>
             )}
@@ -611,20 +657,22 @@ export const ActionsPage = () => {
           </DialogHeader>
 
           <form className="space-y-4" onSubmit={handleRunSubmit}>
-            <div className="grid gap-2">
-              <label htmlFor="api-key" className="text-sm font-medium text-gray-700">
-                API Key (optional)
-              </label>
-              <Input
-                id="api-key"
-                value={apiKey}
-                placeholder="Provide an API key when required by the action"
-                onChange={(event) => setApiKey(event.target.value)}
-              />
-            </div>
+            {loadedServerConfig.data?.auth_enabled && (
+              <div className="grid gap-2">
+                <label htmlFor="api-key" className="text-sm font-medium text-foreground">
+                  API Key
+                </label>
+                <Input
+                  id="api-key"
+                  value={apiKey}
+                  placeholder="Bearer key required for authentication"
+                  onChange={(event) => setApiKey(event.target.value)}
+                />
+              </div>
+            )}
 
             <div className="grid gap-2">
-              <label htmlFor="contact-email" className="text-sm font-medium text-gray-700">
+              <label htmlFor="contact-email" className="text-sm font-medium text-foreground">
                 Contact email (optional)
               </label>
               <Input
@@ -643,12 +691,12 @@ export const ActionsPage = () => {
                 }}
               />
               {contactEmailError && (
-                <p className="mt-1 text-sm text-red-600">{contactEmailError}</p>
+                <p className="mt-1 text-sm text-destructive">{contactEmailError}</p>
               )}
             </div>
 
-            <div className="flex items-center justify-between border-t border-gray-200 pt-4">
-              <h3 className="text-sm font-semibold text-gray-700">Action Parameters</h3>
+            <div className="flex items-center justify-between border-t border-border pt-4">
+              <h3 className="text-sm font-semibold text-foreground">Action Parameters</h3>
               <Button
                 type="button"
                 variant="ghost"
@@ -687,7 +735,7 @@ export const ActionsPage = () => {
 
             {useAdvancedMode ? (
               <div className="grid gap-2">
-                <label htmlFor="payload" className="text-sm font-medium text-gray-700">
+                <label htmlFor="payload" className="text-sm font-medium text-foreground">
                   Payload (JSON)
                 </label>
                 <Textarea
@@ -702,11 +750,11 @@ export const ActionsPage = () => {
                     }
                   }}
                 />
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-muted-foreground">
                   The payload must be valid JSON matching the action input schema.
                 </p>
                 {jsonPayloadError && (
-                  <p className="mt-2 text-sm text-red-700">{jsonPayloadError}</p>
+                  <p className="mt-2 text-sm text-destructive">{jsonPayloadError}</p>
                 )}
               </div>
             ) : (
@@ -714,12 +762,12 @@ export const ActionsPage = () => {
                 {selectedAction && parseInputSchema(selectedAction).length > 0 ? (
                   parseInputSchema(selectedAction).map((param) => (
                     <div key={param.name} className="grid gap-2">
-                      <label htmlFor={`param-${param.name}`} className="text-sm font-medium text-gray-700">
+                      <label htmlFor={`param-${param.name}`} className="text-sm font-medium text-foreground">
                         {param.name}
                         {param.required && <span className="text-red-500 ml-1">*</span>}
                       </label>
                       {param.description && (
-                        <p className="text-xs text-gray-500">{param.description}</p>
+                        <p className="text-xs text-muted-foreground">{param.description}</p>
                       )}
                       {param.type === 'array' || param.type === 'object' ? (
                         <Textarea
@@ -760,7 +808,7 @@ export const ActionsPage = () => {
                     </div>
                   ))
                 ) : (
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-muted-foreground">
                     This action does not require any parameters.
                   </p>
                 )}
@@ -774,20 +822,20 @@ export const ActionsPage = () => {
             )}
 
             {isRunning && (
-              <div className="rounded-md border border-gray-200 bg-gray-50 p-4">
+              <div className="rounded-md border border-border bg-muted/50 p-4">
                 <Loading text="Running action…" />
               </div>
             )}
             {runResult && (
-              <div className="rounded-md border border-gray-200 bg-gray-50 p-4">
-                <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500">
+              <div className="rounded-md border border-border bg-muted/50 p-4">
+                <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
                   Run result
                 </h3>
-                <div className="mt-2 text-sm text-gray-700">
+                <div className="mt-2 text-sm text-foreground">
                   <p>
                     Run ID: {runResult.runId}
                   </p>
-                  <pre className="mt-3 max-h-64 overflow-auto rounded-md border border-gray-200 bg-white p-3 text-xs text-gray-800">
+                  <pre className="mt-3 max-h-64 overflow-auto rounded-md border border-border bg-card p-3 text-xs text-foreground">
                     {runResult.response}
                   </pre>
                 </div>

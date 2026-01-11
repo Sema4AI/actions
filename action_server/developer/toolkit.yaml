@@ -1,0 +1,24 @@
+# Action Server Developer Toolkit
+#
+# Build action-server using RCC for isolated, reproducible builds.
+#
+# Usage:
+#   rcc run -r developer/toolkit.yaml -t community
+#   rcc run -r developer/toolkit.yaml -t enterprise
+
+tasks:
+  community:
+    shell: python call_invoke.py build-community
+
+  enterprise:
+    shell: python call_invoke.py build-enterprise
+
+environmentConfigs:
+  - setup.yaml
+
+artifactsDir: tmp
+
+PATH:
+PYTHONPATH:
+ignoreFiles:
+  - .gitignore

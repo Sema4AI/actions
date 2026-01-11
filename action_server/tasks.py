@@ -242,6 +242,32 @@ def build_frontend_enterprise(ctx: Context, debug: bool = False, install: bool =
 
 
 @task
+def build_community(ctx: Context, debug: bool = False, install: bool = True, go_wrapper: bool = True):
+    """Build full action-server with community tier (frontend + executable + go wrapper).
+
+    Args:
+        debug: Build in debug mode
+        install: Run npm ci before build
+        go_wrapper: Build Go wrapper for final distributable (default: True)
+    """
+    build_frontend(ctx, debug=debug, install=install, tier="community", json_output=False)
+    build_executable(ctx, debug=debug, go_wrapper=go_wrapper)
+
+
+@task
+def build_enterprise(ctx: Context, debug: bool = False, install: bool = True, go_wrapper: bool = True):
+    """Build full action-server with enterprise tier (frontend + executable + go wrapper).
+
+    Args:
+        debug: Build in debug mode
+        install: Run npm ci before build
+        go_wrapper: Build Go wrapper for final distributable (default: True)
+    """
+    build_frontend(ctx, debug=debug, install=install, tier="enterprise", json_output=False)
+    build_executable(ctx, debug=debug, go_wrapper=go_wrapper)
+
+
+@task
 def validate_imports(ctx: Context, tier: str = "community", json_output: bool = False):
     """Validate that community artifacts have no enterprise imports.
     

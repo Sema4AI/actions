@@ -7,7 +7,7 @@ const Table = React.forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableE
     <div className="w-full overflow-auto">
       <table
         ref={ref}
-        className={cn('w-full caption-bottom text-sm text-gray-900', className)}
+        className={cn('w-full caption-bottom text-sm', className)}
         {...props}
       />
     </div>
@@ -21,7 +21,7 @@ const TableHeader = React.forwardRef<
 >(({ className, ...props }, ref) => (
   // Ensure header rows receive a light background and bottom border so header cells are
   // visually distinct for screen and visual tests.
-  <thead ref={ref} className={cn('[&_tr]:border-b [&_tr]:bg-gray-50', className)} {...props} />
+  <thead ref={ref} className={cn('[&_tr]:border-b [&_tr]:border-border [&_tr]:bg-muted/50', className)} {...props} />
 ));
 TableHeader.displayName = 'TableHeader';
 
@@ -38,7 +38,7 @@ const TableFooter = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
 >(({ className, ...props }, ref) => (
-  <tfoot ref={ref} className={cn('bg-gray-100 font-medium text-gray-900', className)} {...props} />
+  <tfoot ref={ref} className={cn('bg-muted font-medium text-card-foreground', className)} {...props} />
 ));
 TableFooter.displayName = 'TableFooter';
 
@@ -51,9 +51,16 @@ const TableRow = React.forwardRef<HTMLTableRowElement, TableRowProps>(({ classNa
     ref={ref}
     data-state={selected ? 'selected' : undefined}
     className={cn(
-      'border-b transition-colors duration-200 motion-reduce:transition-none hover:bg-gray-50 last:border-0',
-      selected && 'bg-blue-50',
+      // Base styles
+      'border-b border-border last:border-0',
+      // Hover states
+      'hover:bg-muted/50',
+      // State variants
+      selected && 'bg-primary/8',
       clickable && 'cursor-pointer',
+      // Animations
+      'transition-colors duration-200',
+      'motion-reduce:transition-none',
       className,
     )}
     {...props}
@@ -66,7 +73,12 @@ const TableHead = React.forwardRef<HTMLTableCellElement, TableHeadProps>(({ clas
   <th
     ref={ref}
     className={cn(
-      'h-11 px-4 text-left align-middle text-xs font-medium uppercase tracking-wide text-gray-500 bg-gray-50 border-b',
+      // Layout
+      'h-11 px-4 text-left align-middle',
+      // Typography
+      'text-xs font-medium uppercase tracking-wide',
+      // Colors & style
+      'text-muted-foreground bg-muted/50 border-b border-border',
       className,
     )}
     {...props}
@@ -78,7 +90,7 @@ const TableCell = React.forwardRef<HTMLTableCellElement, React.TdHTMLAttributes<
   ({ className, ...props }, ref) => (
     <td
       ref={ref}
-      className={cn('p-4 align-middle text-sm text-gray-700', className)}
+      className={cn('p-4 align-middle text-sm text-card-foreground', className)}
       {...props}
     />
   ),
@@ -89,7 +101,7 @@ const TableCaption = React.forwardRef<
   HTMLTableCaptionElement,
   React.HTMLAttributes<HTMLTableCaptionElement>
 >(({ className, ...props }, ref) => (
-  <caption ref={ref} className={cn('mt-4 text-sm text-gray-500', className)} {...props} />
+  <caption ref={ref} className={cn('mt-4 text-sm text-muted-foreground', className)} {...props} />
 ));
 TableCaption.displayName = 'TableCaption';
 
@@ -105,7 +117,7 @@ export {
 };
 
 const TableEmptyState = ({ className, children }: { className?: string; children?: React.ReactNode }) => (
-  <div className={cn('flex items-center justify-center p-12 text-center text-sm text-gray-500', className)}>
+  <div className={cn('flex items-center justify-center p-12 text-center text-sm text-muted-foreground', className)}>
     {children}
   </div>
 );

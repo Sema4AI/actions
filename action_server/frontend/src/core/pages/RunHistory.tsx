@@ -11,14 +11,9 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { useActionServerContext } from '@/shared/context/actionServerContext';
 import { Run, RunStatus } from '@/shared/types';
 import { cn } from '@/shared/utils/cn';
+import { baseUrl } from '@/shared/api-client';
 
-const statusStyles: Record<RunStatus, string> = {
-  [RunStatus.NOT_RUN]: 'bg-gray-100 text-gray-600',
-  [RunStatus.RUNNING]: 'bg-blue-100 text-blue-700',
-  [RunStatus.PASSED]: 'bg-green-100 text-green-700',
-  [RunStatus.FAILED]: 'bg-red-100 text-red-700',
-  [RunStatus.CANCELLED]: 'bg-yellow-100 text-yellow-700',
-};
+// Status styles are now handled by Badge component variants
 
 const statusLabel: Record<RunStatus, string> = {
   [RunStatus.NOT_RUN]: 'Not run',
@@ -75,13 +70,19 @@ export const RunHistoryPage = () => {
   };
 
   const handleDownloadLogs = (run: Run) => {
-    // TODO: Implement log download functionality
-    console.log('Download logs for run:', run.id);
+    // Create a temporary anchor element to trigger the download
+    const link = document.createElement('a');
+    link.href = `${baseUrl}/api/runs/${run.id}/log.html`;
+    link.download = `run-${run.numbered_id}-log.html`;
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   if (loadedRuns.isPending) {
     return (
-      <div className="flex h-full items-center justify-center text-sm text-gray-600">
+      <div className="flex h-full items-center justify-center">
         <Loading text="Loading run history…" />
       </div>
     );
@@ -97,14 +98,24 @@ export const RunHistoryPage = () => {
 
   if (filteredRuns.length === 0) {
     return (
-      <div className="space-y-4">
-        <div className="flex flex-col items-center justify-center rounded-md border border-dashed border-gray-300 bg-gray-50 p-12 text-center">
-          <h2 className="text-lg font-semibold text-gray-700">No runs recorded yet</h2>
-          <p className="mt-2 text-sm text-gray-500">
+      <div className="h-full space-y-4 p-6 animate-fadeInUp">
+        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/30 p-12 text-center min-h-[400px]">
+          <div className="mb-4 rounded-full bg-primary/10 p-4">
+            <svg className="h-8 w-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="8" x2="21" y1="6" y2="6" />
+              <line x1="8" x2="21" y1="12" y2="12" />
+              <line x1="8" x2="21" y1="18" y2="18" />
+              <line x1="3" x2="3.01" y1="6" y2="6" />
+              <line x1="3" x2="3.01" y1="12" y2="12" />
+              <line x1="3" x2="3.01" y1="18" y2="18" />
+            </svg>
+          </div>
+          <h2 className="text-lg font-semibold text-foreground">No runs recorded yet</h2>
+          <p className="mt-2 max-w-sm text-sm text-muted-foreground">
             Trigger an action run to populate the history. Use the Actions page to test your
             automation flows.
           </p>
-          <Button className="mt-4" onClick={() => navigate('/actions')}>
+          <Button className="mt-6" onClick={() => navigate('/actions')}>
             Go to actions
           </Button>
         </div>
@@ -113,12 +124,12 @@ export const RunHistoryPage = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
-        <div className="flex flex-col gap-4 border-b border-gray-200 p-6 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold text-gray-900">Run History</h1>
-            <p className="mt-1 text-sm text-gray-600">
+    <div className="h-full space-y-6 p-6 animate-fadeInUp">
+      <div className="rounded-lg border border-border bg-card shadow-sm">
+        <div className="flex flex-col gap-4 border-b border-border p-6 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-1">
+            <h1 className="text-2xl font-semibold text-card-foreground">Run History</h1>
+            <p className="text-sm text-muted-foreground">
               Monitor the latest executions across all action packages. Use the filters to narrow by
               action or run identifier.
             </p>
@@ -127,6 +138,7 @@ export const RunHistoryPage = () => {
             <Input
               value={currentSearch}
               placeholder="Filter by action or run id"
+              className="transition-all duration-200 focus:scale-[1.02] motion-reduce:focus:scale-100"
               onChange={(event) => {
                 const value = event.target.value;
                 if (!value) {
@@ -145,10 +157,10 @@ export const RunHistoryPage = () => {
         </div>
 
         <div className="p-6">
-          <div className="rounded-md border border-gray-200">
+          <div className="rounded-md border border-border">
             <Table>
               <TableHeader>
-                <TableRow className="bg-gray-50">
+                <TableRow>
                   <TableHead className="w-20">Run #</TableHead>
                   <TableHead>Action</TableHead>
                   <TableHead>Started</TableHead>
@@ -158,24 +170,35 @@ export const RunHistoryPage = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredRuns.map((run) => {
+                {filteredRuns.map((run, index) => {
                   const label = actionLookup.get(run.action_id) || run.action_id;
                   return (
-                    <TableRow key={run.id}>
-                      <TableCell className="font-mono text-sm text-gray-700">
+                    <TableRow
+                      key={run.id}
+                      className={cn(
+                        'hover:bg-muted/50 transition-all duration-200 cursor-pointer',
+                        'animate-fadeInUp',
+                        'motion-reduce:animate-none'
+                      )}
+                      style={{ animationDelay: `${index * 30}ms` }}
+                      onClick={() => handleViewDetails(run)}
+                    >
+                      <TableCell className="font-mono text-sm text-foreground">
                         {run.numbered_id}
                       </TableCell>
                       <TableCell>
-                        <div className="flex flex-col">
-                          <span className="font-medium text-gray-900">{label}</span>
-                          <span className="text-xs text-gray-500">{run.id}</span>
+                        <div className="flex flex-col gap-0.5">
+                          <span className="font-medium text-card-foreground">{label}</span>
+                          <span className="text-xs text-muted-foreground font-mono">{run.id}</span>
                         </div>
                       </TableCell>
-                      <TableCell className="whitespace-nowrap text-sm text-gray-600">
+                      <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
                         {new Date(run.start_time).toLocaleString()}
                       </TableCell>
-                      <TableCell className="hidden whitespace-nowrap text-sm text-gray-600 sm:table-cell">
-                        {formatDuration(run)}
+                      <TableCell className="hidden whitespace-nowrap text-sm text-muted-foreground sm:table-cell">
+                        <span className="inline-flex items-center gap-1.5">
+                          {formatDuration(run)}
+                        </span>
                       </TableCell>
                       <TableCell>
                         <Badge variant={
@@ -191,7 +214,12 @@ export const RunHistoryPage = () => {
                         <div className="flex items-center justify-end">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" aria-label="More actions">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                aria-label="More actions"
+                                onClick={(e) => e.stopPropagation()}
+                              >
                                 <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                                   <circle cx="5" cy="12" r="2" />
                                   <circle cx="12" cy="12" r="2" />
@@ -200,10 +228,16 @@ export const RunHistoryPage = () => {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => handleViewDetails(run)}>
+                              <DropdownMenuItem onClick={(e) => {
+                                e.stopPropagation();
+                                handleViewDetails(run);
+                              }}>
                                 View Details
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleDownloadLogs(run)}>
+                              <DropdownMenuItem onClick={(e) => {
+                                e.stopPropagation();
+                                handleDownloadLogs(run);
+                              }}>
                                 Download Logs
                               </DropdownMenuItem>
                             </DropdownMenuContent>

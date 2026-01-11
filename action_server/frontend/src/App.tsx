@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useMemo, useState, useContext } from 'react';
 import {
   BrowserRouter,
   Link,
@@ -19,6 +19,7 @@ import {
   defaultActionServerState,
 } from '@/shared/context/actionServerContext';
 import { useLocalStorage } from '@/shared/hooks/useLocalStorage';
+import { useTheme } from '@/shared/hooks/useTheme';
 import {
   startTrackActions,
   startTrackRuns,
@@ -48,47 +49,207 @@ if (isEnterpriseTier) {
   EnterpriseSsoPage = lazy(() => import('@/enterprise/pages/SSO'));
 }
 
+// ============================================================================
+// Icons
+// ============================================================================
+
+const LogoIcon = () => (
+  <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="16" cy="16" r="14" stroke="currentColor" strokeWidth="2.5" className="text-primary" />
+    <circle cx="16" cy="16" r="6" fill="currentColor" className="text-primary" />
+    <path d="M16 2C16 2 20 8 20 16C20 24 16 30 16 30" stroke="currentColor" strokeWidth="2" className="text-primary/60" />
+    <path d="M16 2C16 2 12 8 12 16C12 24 16 30 16 30" stroke="currentColor" strokeWidth="2" className="text-primary/60" />
+  </svg>
+);
+
+const Sema4Logo = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="currentColor" className="text-primary/80" />
+    <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary/60" />
+    <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary/40" />
+  </svg>
+);
+
+const ActionsIcon = ({ className }: { className?: string }) => (
+  <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+  </svg>
+);
+
+const RunsIcon = ({ className }: { className?: string }) => (
+  <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="8" x2="21" y1="6" y2="6" />
+    <line x1="8" x2="21" y1="12" y2="12" />
+    <line x1="8" x2="21" y1="18" y2="18" />
+    <line x1="3" x2="3.01" y1="6" y2="6" />
+    <line x1="3" x2="3.01" y1="12" y2="12" />
+    <line x1="3" x2="3.01" y1="18" y2="18" />
+  </svg>
+);
+
+const OpenApiIcon = ({ className }: { className?: string }) => (
+  <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+    <polyline points="14 2 14 8 20 8" />
+    <path d="M10 12h4" />
+    <path d="M10 16h4" />
+  </svg>
+);
+
+const LockIcon = ({ className }: { className?: string }) => (
+  <svg className={className} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+  </svg>
+);
+
+const SunIcon = ({ className }: { className?: string }) => (
+  <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2v2" />
+    <path d="M12 20v2" />
+    <path d="m4.93 4.93 1.41 1.41" />
+    <path d="m17.66 17.66 1.41 1.41" />
+    <path d="M2 12h2" />
+    <path d="M20 12h2" />
+    <path d="m6.34 17.66-1.41 1.41" />
+    <path d="m19.07 4.93-1.41 1.41" />
+  </svg>
+);
+
+const MoonIcon = ({ className }: { className?: string }) => (
+  <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+  </svg>
+);
+
+const MonitorIcon = ({ className }: { className?: string }) => (
+  <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect width="20" height="14" x="2" y="3" rx="2" />
+    <line x1="8" x2="16" y1="21" y2="21" />
+    <line x1="12" x2="12" y1="17" y2="21" />
+  </svg>
+);
+
+const SettingsIcon = ({ className }: { className?: string }) => (
+  <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="3" />
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+  </svg>
+);
+
+// ============================================================================
+// Navigation Items Configuration
+// ============================================================================
+
 type NavItem = {
   label: string;
   path: string;
   tier: 'core' | 'enterprise';
+  icon: React.ComponentType<{ className?: string }>;
   exact?: boolean;
 };
 
 const NAV_ITEMS: NavItem[] = [
-  { label: 'Actions', path: '/actions', tier: 'core' },
-  { label: 'Run History', path: '/runs', tier: 'core' },
-  { label: 'Knowledge Base', path: '/knowledge-base', tier: 'enterprise' },
-  { label: 'Analytics', path: '/analytics', tier: 'enterprise' },
-  { label: 'Org Management', path: '/org-management', tier: 'enterprise' },
-  { label: 'SSO', path: '/sso', tier: 'enterprise' },
+  { label: 'Actions', path: '/actions', tier: 'core', icon: ActionsIcon },
+  { label: 'Runs', path: '/runs', tier: 'core', icon: RunsIcon },
+  { label: 'OpenAPI spec', path: '/openapi', tier: 'core', icon: OpenApiIcon },
 ];
+
+const ENTERPRISE_NAV_ITEMS: NavItem[] = [
+  { label: 'Knowledge Base', path: '/knowledge-base', tier: 'enterprise', icon: ActionsIcon },
+  { label: 'Analytics', path: '/analytics', tier: 'enterprise', icon: RunsIcon },
+  { label: 'Org Management', path: '/org-management', tier: 'enterprise', icon: SettingsIcon },
+  { label: 'SSO', path: '/sso', tier: 'enterprise', icon: LockIcon },
+];
+
+// ============================================================================
+// Theme Toggle Component
+// ============================================================================
+
+const ThemeToggle = () => {
+  const { theme, cycleTheme } = useTheme();
+
+  const getThemeIcon = () => {
+    switch (theme) {
+      case 'dark':
+        return <MoonIcon />;
+      case 'system':
+        return <MonitorIcon />;
+      default:
+        return <SunIcon />;
+    }
+  };
+
+  return (
+    <button
+      onClick={cycleTheme}
+      className={cn(
+        // Layout
+        'flex h-9 w-9 items-center justify-center',
+        // Style
+        'rounded-lg',
+        // Colors
+        'text-sidebar-foreground/70 hover:bg-sidebar-accent/20 hover:text-sidebar-foreground',
+        // Focus states
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+        'focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar',
+        // Animations
+        'transition-all duration-200 active:scale-95',
+        'motion-reduce:transition-none motion-reduce:active:scale-100',
+      )}
+      aria-label={`Toggle theme (current: ${theme})`}
+      title={`Theme: ${theme}`}
+    >
+      <span className="transition-transform duration-200 hover:rotate-12 motion-reduce:hover:rotate-0">
+        {getThemeIcon()}
+      </span>
+    </button>
+  );
+};
+
+// ============================================================================
+// Sidebar Navigation
+// ============================================================================
 
 const Navigation = () => {
   const location = useLocation();
+  const { loadedServerConfig } = useActionServerContext();
+
+  const handleOpenApiClick = () => {
+    window.open('/openapi.json', '_blank');
+  };
 
   return (
-    <aside className="flex w-64 flex-col border-r border-gray-200 bg-white">
-      <div className="border-b border-gray-200 p-6">
-        <h1 className="text-xl font-semibold text-gray-900">Action Server</h1>
-        <p className="mt-2 text-sm text-gray-500 capitalize">{__TIER__} tier</p>
+    <aside className="sidebar flex w-56 flex-col">
+      {/* Header with Logo */}
+      <div className="flex h-14 items-center justify-between px-4">
+        <div className="flex items-center gap-3">
+          <LogoIcon />
+          <span className="text-sm font-semibold text-sidebar-foreground">Action Server</span>
+        </div>
+        <ThemeToggle />
       </div>
-      <nav className="flex-1 space-y-1 p-4">
+
+      {/* Navigation Links */}
+      <nav className="flex-1 space-y-1 px-3 py-2">
         {NAV_ITEMS.map((item) => {
           const isActive = item.exact
             ? location.pathname === item.path
             : location.pathname.startsWith(item.path);
-          const available = item.tier === 'core' || isEnterpriseTier;
+          const Icon = item.icon;
 
-          if (!available) {
+          // Special handling for OpenAPI spec link
+          if (item.path === '/openapi') {
             return (
-              <div
+              <button
                 key={item.path}
-                className="group flex items-center justify-between rounded-md px-3 py-2 text-sm text-gray-400"
+                onClick={handleOpenApiClick}
+                className="sidebar-nav-item animate-slide-in w-full"
               >
+                <Icon className="h-4 w-4 flex-shrink-0" />
                 <span>{item.label}</span>
-                <span className="text-xs uppercase tracking-wide text-gray-300">Locked</span>
-              </div>
+              </button>
             );
           }
 
@@ -97,54 +258,143 @@ const Navigation = () => {
               key={item.path}
               to={item.path}
               className={cn(
-                'flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors',
-                isActive
-                  ? 'bg-blue-50 text-blue-700'
-                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900',
+                'sidebar-nav-item animate-slide-in',
+                isActive && 'active',
               )}
             >
-              {item.label}
+              <Icon className="h-4 w-4 flex-shrink-0" />
+              <span>{item.label}</span>
             </Link>
           );
         })}
+
+        {/* Enterprise Features Section - Only show in enterprise tier */}
+        {isEnterpriseTier && ENTERPRISE_NAV_ITEMS.length > 0 && (
+          <div className="pt-4">
+            <div className="px-3 py-2">
+              <span className="text-xs font-medium uppercase tracking-wider text-sidebar-foreground/40">
+                Enterprise
+              </span>
+            </div>
+            {ENTERPRISE_NAV_ITEMS.map((item) => {
+              const isActive = item.exact
+                ? location.pathname === item.path
+                : location.pathname.startsWith(item.path);
+              const Icon = item.icon;
+
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={cn(
+                    'sidebar-nav-item animate-slide-in',
+                    isActive && 'active',
+                  )}
+                >
+                  <Icon className="h-4 w-4 flex-shrink-0" />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+        )}
       </nav>
-      <div className="border-t border-gray-200 p-4 text-xs text-gray-400">
-        Build {new Date().getFullYear()}
+
+      {/* Footer */}
+      <div className="border-t border-sidebar-accent/20 px-4 py-3">
+        {loadedServerConfig.data?.version && (
+          <div className="text-xs text-sidebar-foreground/40">
+            v{loadedServerConfig.data.version}
+          </div>
+        )}
       </div>
     </aside>
   );
 };
 
+// ============================================================================
+// Context Hook (needed by Navigation)
+// ============================================================================
+
+const useActionServerContext = () => {
+  const context = useContext(ActionServerContext);
+  if (!context) {
+    throw new Error('useActionServerContext must be used within ActionServerProvider');
+  }
+  return context;
+};
+
+// ============================================================================
+// Feature Unavailable Placeholder
+// ============================================================================
+
 const FeatureUnavailable = ({ feature }: { feature: string }) => (
   <div className="flex h-full items-center justify-center">
-    <div className="max-w-md rounded-md border border-gray-200 bg-white p-8 text-center shadow-sm">
-      <h2 className="text-lg font-semibold text-gray-900">{feature}</h2>
-      <p className="mt-3 text-sm text-gray-600">
-        This feature is available in the Enterprise edition of Action Server. Upgrade or contact the
-        Sema4.ai team to explore enterprise capabilities.
+    <div className="max-w-md rounded-xl border border-border bg-card p-8 text-center shadow-lg">
+      <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+        <LockIcon className="h-6 w-6 text-primary" />
+      </div>
+      <h2 className="text-lg font-semibold text-card-foreground">{feature}</h2>
+      <p className="mt-3 text-sm text-muted-foreground">
+        This feature is available in the Enterprise edition of Action Server.
       </p>
-      <Button
-        asChild
-        className="mt-6"
-        variant="secondary"
-      >
+      <Button asChild className="mt-6" variant="default">
         <a href="https://sema4.ai" target="_blank" rel="noreferrer">
-          Explore pricing
+          Learn more
         </a>
       </Button>
     </div>
   </div>
 );
 
-const Layout = ({ children }: { children: React.ReactNode }) => (
-  <div className="flex min-h-screen bg-gray-100">
-    <Navigation />
-    <main className="flex-1 overflow-auto p-6">{children}</main>
-  </div>
-);
+// ============================================================================
+// Enterprise Route Component
+// ============================================================================
+
+const EnterpriseRoute = ({
+  component: Component,
+  featureName
+}: {
+  component: React.LazyExoticComponent<() => JSX.Element> | null;
+  featureName: string;
+}) => {
+  if (!isEnterpriseTier || !Component) {
+    return <FeatureUnavailable feature={featureName} />;
+  }
+
+  return (
+    <Suspense fallback={
+      <div className="flex h-full items-center justify-center text-muted-foreground">
+        Loading...
+      </div>
+    }>
+      <Component />
+    </Suspense>
+  );
+};
+
+// ============================================================================
+// Layout Component
+// ============================================================================
+
+const Layout = ({ children }: { children: React.ReactNode }) => {
+  // Initialize theme on mount
+  useTheme();
+
+  return (
+    <div className="flex min-h-screen bg-background">
+      <Navigation />
+      <main className="flex-1 overflow-auto">{children}</main>
+    </div>
+  );
+};
+
+// ============================================================================
+// Context Provider
+// ============================================================================
 
 const ActionServerProvider = ({ children }: { children: React.ReactNode }) => {
-  const [viewSettings, setViewSettings] = useLocalStorage('view-settings', { theme: 'light' });
+  const [viewSettings, setViewSettings] = useLocalStorage('view-settings', { theme: 'dark' });
   const [loadedRuns, setLoadedRuns] = useState<LoadedRuns>(defaultActionServerState.loadedRuns);
   const [loadedActions, setLoadedActions] = useState<LoadedActionsPackages>(
     defaultActionServerState.loadedActions,
@@ -191,11 +441,15 @@ const ActionServerProvider = ({ children }: { children: React.ReactNode }) => {
   return <ActionServerContext.Provider value={value}>{children}</ActionServerContext.Provider>;
 };
 
+// ============================================================================
+// Routes
+// ============================================================================
+
 const AppRoutes = () => {
   const location = useLocation();
 
   return (
-    <div key={location.pathname} className="page-transition-wrapper">
+    <div key={location.pathname} className="page-transition-wrapper h-full">
       <Routes location={location}>
         <Route path="/" element={<Navigate to="/actions" replace />} />
         <Route path="/actions" element={<ActionsPage />} />
@@ -206,49 +460,25 @@ const AppRoutes = () => {
         <Route
           path="/knowledge-base"
           element={
-            isEnterpriseTier && EnterpriseKnowledgeBasePage ? (
-              <Suspense fallback={<div>Loading enterprise module…</div>}>
-                <EnterpriseKnowledgeBasePage />
-              </Suspense>
-            ) : (
-              <FeatureUnavailable feature="Knowledge Base" />
-            )
+            <EnterpriseRoute component={EnterpriseKnowledgeBasePage} featureName="Knowledge Base" />
           }
         />
         <Route
           path="/analytics"
           element={
-            isEnterpriseTier && EnterpriseAnalyticsPage ? (
-              <Suspense fallback={<div>Loading enterprise module…</div>}>
-                <EnterpriseAnalyticsPage />
-              </Suspense>
-            ) : (
-              <FeatureUnavailable feature="Analytics" />
-            )
+            <EnterpriseRoute component={EnterpriseAnalyticsPage} featureName="Analytics" />
           }
         />
         <Route
           path="/org-management"
           element={
-            isEnterpriseTier && EnterpriseOrgManagementPage ? (
-              <Suspense fallback={<div>Loading enterprise module…</div>}>
-                <EnterpriseOrgManagementPage />
-              </Suspense>
-            ) : (
-              <FeatureUnavailable feature="Organization Management" />
-            )
+            <EnterpriseRoute component={EnterpriseOrgManagementPage} featureName="Organization Management" />
           }
         />
         <Route
           path="/sso"
           element={
-            isEnterpriseTier && EnterpriseSsoPage ? (
-              <Suspense fallback={<div>Loading enterprise module…</div>}>
-                <EnterpriseSsoPage />
-              </Suspense>
-            ) : (
-              <FeatureUnavailable feature="SSO" />
-            )
+            <EnterpriseRoute component={EnterpriseSsoPage} featureName="SSO" />
           }
         />
         <Route path="*" element={<Navigate to="/actions" replace />} />
@@ -256,6 +486,10 @@ const AppRoutes = () => {
     </div>
   );
 };
+
+// ============================================================================
+// App Entry Point
+// ============================================================================
 
 export const App = () => {
   return (
