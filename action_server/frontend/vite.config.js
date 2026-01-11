@@ -55,6 +55,7 @@ export default defineConfig({
       '@/core': path.join(__dirname, 'src/core'),
       '@/enterprise': path.join(__dirname, 'src/enterprise'),
       '@/shared': path.join(__dirname, 'src/shared'),
+      '@/queries': path.join(__dirname, 'src/queries'),
     },
     mainFields: ['module', 'main', 'browser'],
   },

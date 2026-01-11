@@ -10,6 +10,7 @@ import {
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { ActionsPage } from '@/core/pages/Actions';
+import { AnalyticsPage } from '@/core/pages/Analytics';
 import { ArtifactsPage } from '@/core/pages/Artifacts';
 import { LogsPage } from '@/core/pages/Logs';
 import { RunHistoryPage } from '@/core/pages/RunHistory';
@@ -38,13 +39,11 @@ const queryClient = new QueryClient();
 const isEnterpriseTier = __TIER__ === 'enterprise';
 
 let EnterpriseKnowledgeBasePage: React.LazyExoticComponent<() => JSX.Element> | null = null;
-let EnterpriseAnalyticsPage: React.LazyExoticComponent<() => JSX.Element> | null = null;
 let EnterpriseOrgManagementPage: React.LazyExoticComponent<() => JSX.Element> | null = null;
 let EnterpriseSsoPage: React.LazyExoticComponent<() => JSX.Element> | null = null;
 
 if (isEnterpriseTier) {
   EnterpriseKnowledgeBasePage = lazy(() => import('@/enterprise/pages/KnowledgeBase'));
-  EnterpriseAnalyticsPage = lazy(() => import('@/enterprise/pages/Analytics'));
   EnterpriseOrgManagementPage = lazy(() => import('@/enterprise/pages/OrgManagement'));
   EnterpriseSsoPage = lazy(() => import('@/enterprise/pages/SSO'));
 }
@@ -84,6 +83,14 @@ const RunsIcon = ({ className }: { className?: string }) => (
     <line x1="3" x2="3.01" y1="6" y2="6" />
     <line x1="3" x2="3.01" y1="12" y2="12" />
     <line x1="3" x2="3.01" y1="18" y2="18" />
+  </svg>
+);
+
+const AnalyticsIcon = ({ className }: { className?: string }) => (
+  <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="12" y1="20" x2="12" y2="10" />
+    <line x1="18" y1="20" x2="18" y2="4" />
+    <line x1="6" y1="20" x2="6" y2="16" />
   </svg>
 );
 
@@ -153,12 +160,12 @@ type NavItem = {
 const NAV_ITEMS: NavItem[] = [
   { label: 'Actions', path: '/actions', tier: 'core', icon: ActionsIcon },
   { label: 'Runs', path: '/runs', tier: 'core', icon: RunsIcon },
+  { label: 'Analytics', path: '/analytics', tier: 'core', icon: AnalyticsIcon },
   { label: 'OpenAPI spec', path: '/openapi', tier: 'core', icon: OpenApiIcon },
 ];
 
 const ENTERPRISE_NAV_ITEMS: NavItem[] = [
   { label: 'Knowledge Base', path: '/knowledge-base', tier: 'enterprise', icon: ActionsIcon },
-  { label: 'Analytics', path: '/analytics', tier: 'enterprise', icon: RunsIcon },
   { label: 'Org Management', path: '/org-management', tier: 'enterprise', icon: SettingsIcon },
   { label: 'SSO', path: '/sso', tier: 'enterprise', icon: LockIcon },
 ];
@@ -463,12 +470,7 @@ const AppRoutes = () => {
             <EnterpriseRoute component={EnterpriseKnowledgeBasePage} featureName="Knowledge Base" />
           }
         />
-        <Route
-          path="/analytics"
-          element={
-            <EnterpriseRoute component={EnterpriseAnalyticsPage} featureName="Analytics" />
-          }
-        />
+        <Route path="/analytics" element={<AnalyticsPage />} />
         <Route
           path="/org-management"
           element={

@@ -14,7 +14,7 @@ from typing import List, Optional
 
 from fastapi.routing import APIRouter
 
-from sema4ai.action_server._models import Run, RunStatus, get_db
+from sema4ai.action_server._models import RunStatus, get_db
 
 log = logging.getLogger(__name__)
 analytics_api_router = APIRouter(prefix="/api/analytics")
@@ -52,6 +52,45 @@ class RunsByAction:
     avg_duration_ms: float
 
 
+def _empty_summary() -> AnalyticsSummary:
+    """Returns an empty analytics summary when no runs exist."""
+    return AnalyticsSummary(
+        total_runs=0,
+        success_rate=0.0,
+        avg_duration_ms=0.0,
+        runs_today=0,
+    )
+
+
+def _calculate_summary_metrics(row: tuple) -> AnalyticsSummary:
+    """Calculates summary metrics from database row."""
+    total_runs, passed_runs, failed_runs, avg_duration, runs_today = row
+
+    # Calculate success rate from completed runs only
+    passed_runs = passed_runs or 0
+    failed_runs = failed_runs or 0
+    completed_runs = passed_runs + failed_runs
+
+    success_rate = 0.0
+    if completed_runs > 0:
+        success_rate = (passed_runs / completed_runs) * 100
+
+    # Convert duration from seconds to milliseconds
+    avg_duration_ms = (avg_duration * 1000) if avg_duration else 0.0
+
+    return AnalyticsSummary(
+        total_runs=total_runs,
+        success_rate=round(success_rate, 1),
+        avg_duration_ms=round(avg_duration_ms, 1),
+        runs_today=runs_today or 0,
+    )
+
+
+def _seconds_to_milliseconds(seconds: float | None) -> float:
+    """Converts seconds to milliseconds, returning 0.0 for None."""
+    return (seconds * 1000) if seconds else 0.0
+
+
 @analytics_api_router.get("/summary", response_model=AnalyticsSummary)
 def get_analytics_summary() -> AnalyticsSummary:
     """
@@ -63,69 +102,39 @@ def get_analytics_summary() -> AnalyticsSummary:
     db = get_db()
     with db.connect():
         with db.cursor() as cursor:
-            # Get total runs count
-            db.execute_query(cursor, "SELECT COUNT(*) FROM run")
-            total_runs = cursor.fetchone()[0]
-
-            if total_runs == 0:
-                return AnalyticsSummary(
-                    total_runs=0,
-                    success_rate=0.0,
-                    avg_duration_ms=0.0,
-                    runs_today=0,
-                )
-
-            # Get passed runs count
-            db.execute_query(
-                cursor,
-                "SELECT COUNT(*) FROM run WHERE status = ?",
-                [RunStatus.PASSED],
-            )
-            passed_runs = cursor.fetchone()[0]
-
-            # Get average duration (only for completed runs)
+            # Get all statistics in a single query for better performance
             db.execute_query(
                 cursor,
                 """
-                SELECT AVG(run_time) FROM run
-                WHERE run_time IS NOT NULL AND status IN (?, ?)
+                SELECT
+                    COUNT(*) as total_runs,
+                    SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as passed_runs,
+                    SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as failed_runs,
+                    AVG(CASE
+                        WHEN run_time IS NOT NULL AND status IN (?, ?)
+                        THEN run_time
+                        ELSE NULL
+                    END) as avg_duration,
+                    SUM(CASE
+                        WHEN start_time >= date('now', 'start of day')
+                        THEN 1
+                        ELSE 0
+                    END) as runs_today
+                FROM run
                 """,
-                [RunStatus.PASSED, RunStatus.FAILED],
-            )
-            avg_duration_result = cursor.fetchone()[0]
-            avg_duration_ms = (
-                (avg_duration_result * 1000) if avg_duration_result else 0.0
-            )
-
-            # Get runs today count
-            today_start = datetime.now().replace(
-                hour=0, minute=0, second=0, microsecond=0
-            ).isoformat()
-            db.execute_query(
-                cursor,
-                "SELECT COUNT(*) FROM run WHERE start_time >= ?",
-                [today_start],
-            )
-            runs_today = cursor.fetchone()[0]
-
-            # Calculate success rate (passed / (passed + failed))
-            db.execute_query(
-                cursor,
-                "SELECT COUNT(*) FROM run WHERE status = ?",
-                [RunStatus.FAILED],
-            )
-            failed_runs = cursor.fetchone()[0]
-            completed_runs = passed_runs + failed_runs
-            success_rate = (
-                (passed_runs / completed_runs * 100) if completed_runs > 0 else 0.0
+                [
+                    RunStatus.PASSED,
+                    RunStatus.FAILED,
+                    RunStatus.PASSED,
+                    RunStatus.FAILED,
+                ],
             )
 
-            return AnalyticsSummary(
-                total_runs=total_runs,
-                success_rate=round(success_rate, 1),
-                avg_duration_ms=round(avg_duration_ms, 1),
-                runs_today=runs_today,
-            )
+            row = cursor.fetchone()
+            if not row or row[0] == 0:
+                return _empty_summary()
+
+            return _calculate_summary_metrics(row)
 
 
 @analytics_api_router.get("/runs-by-day", response_model=List[RunsByDay])
@@ -142,12 +151,7 @@ def get_runs_by_day(days: int = 30) -> List[RunsByDay]:
     db = get_db()
     with db.connect():
         with db.cursor() as cursor:
-            # Calculate start date
-            start_date = (datetime.now() - timedelta(days=days)).replace(
-                hour=0, minute=0, second=0, microsecond=0
-            ).isoformat()
-
-            # Get all runs in the date range
+            # Use SQLite date functions for cleaner date handling
             db.execute_query(
                 cursor,
                 """
@@ -157,26 +161,22 @@ def get_runs_by_day(days: int = 30) -> List[RunsByDay]:
                     SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as passed,
                     SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as failed
                 FROM run
-                WHERE start_time >= ?
+                WHERE start_time >= date('now', ? || ' days')
                 GROUP BY date(start_time)
                 ORDER BY run_date ASC
                 """,
-                [RunStatus.PASSED, RunStatus.FAILED, start_date],
+                [RunStatus.PASSED, RunStatus.FAILED, -days],
             )
 
-            results = []
-            for row in cursor.fetchall():
-                run_date, total, passed, failed = row
-                results.append(
-                    RunsByDay(
-                        date=run_date,
-                        total=total,
-                        passed=passed or 0,
-                        failed=failed or 0,
-                    )
+            return [
+                RunsByDay(
+                    date=row[0],
+                    total=row[1],
+                    passed=row[2] or 0,
+                    failed=row[3] or 0,
                 )
-
-            return results
+                for row in cursor.fetchall()
+            ]
 
 
 @analytics_api_router.get("/runs-by-action", response_model=List[RunsByAction])
@@ -192,59 +192,43 @@ def get_runs_by_action() -> List[RunsByAction]:
     db = get_db()
     with db.connect():
         with db.cursor() as cursor:
-            # Get run statistics per action
+            # Get run statistics with action and package names in a single query
             db.execute_query(
                 cursor,
                 """
                 SELECT
-                    r.action_id,
+                    a.name as action_name,
+                    ap.name as package_name,
                     COUNT(*) as total,
                     SUM(CASE WHEN r.status = ? THEN 1 ELSE 0 END) as passed,
                     SUM(CASE WHEN r.status = ? THEN 1 ELSE 0 END) as failed,
-                    AVG(CASE WHEN r.run_time IS NOT NULL AND r.status IN (?, ?)
-                        THEN r.run_time ELSE NULL END) as avg_duration
+                    AVG(CASE
+                        WHEN r.run_time IS NOT NULL AND r.status IN (?, ?)
+                        THEN r.run_time
+                        ELSE NULL
+                    END) as avg_duration
                 FROM run r
-                GROUP BY r.action_id
+                JOIN action a ON r.action_id = a.id
+                JOIN action_package ap ON a.action_package_id = ap.id
+                GROUP BY a.id, a.name, ap.name
                 ORDER BY total DESC
                 """,
-                [RunStatus.PASSED, RunStatus.FAILED, RunStatus.PASSED, RunStatus.FAILED],
+                [
+                    RunStatus.PASSED,
+                    RunStatus.FAILED,
+                    RunStatus.PASSED,
+                    RunStatus.FAILED,
+                ],
             )
 
-            run_stats = {}
-            for row in cursor.fetchall():
-                action_id, total, passed, failed, avg_duration = row
-                run_stats[action_id] = {
-                    "total": total,
-                    "passed": passed or 0,
-                    "failed": failed or 0,
-                    "avg_duration": avg_duration,
-                }
-
-        # Get action and package names
-        actions = db.all(Action)
-        action_packages = db.all(ActionPackage)
-
-        # Build package lookup
-        package_lookup = {pkg.id: pkg.name for pkg in action_packages}
-
-        results = []
-        for action in actions:
-            if action.id in run_stats:
-                stats = run_stats[action.id]
-                avg_duration_ms = (
-                    (stats["avg_duration"] * 1000) if stats["avg_duration"] else 0.0
+            return [
+                RunsByAction(
+                    action_name=row[0],
+                    package_name=row[1],
+                    total=row[2],
+                    passed=row[3] or 0,
+                    failed=row[4] or 0,
+                    avg_duration_ms=round(_seconds_to_milliseconds(row[5]), 1),
                 )
-                results.append(
-                    RunsByAction(
-                        action_name=action.name,
-                        package_name=package_lookup.get(action.action_package_id, "Unknown"),
-                        total=stats["total"],
-                        passed=stats["passed"],
-                        failed=stats["failed"],
-                        avg_duration_ms=round(avg_duration_ms, 1),
-                    )
-                )
-
-        # Sort by total runs descending
-        results.sort(key=lambda x: x.total, reverse=True)
-        return results
+                for row in cursor.fetchall()
+            ]
