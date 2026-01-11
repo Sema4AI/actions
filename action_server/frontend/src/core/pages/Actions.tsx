@@ -645,7 +645,7 @@ export const ActionsPage = () => {
       </div>
 
       <Dialog open={isRunDialogOpen} onOpenChange={setRunDialogOpen}>
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {selectedAction ? `Run ${selectedAction.name}` : 'Run action'}
@@ -832,10 +832,10 @@ export const ActionsPage = () => {
                   Run result
                 </h3>
                 <div className="mt-2 text-sm text-foreground">
-                  <p>
+                  <p className="mb-3">
                     Run ID: {runResult.runId}
                   </p>
-                  <pre className="mt-3 max-h-64 overflow-auto rounded-md border border-border bg-card p-3 text-xs text-foreground">
+                  <pre className="max-h-96 overflow-auto rounded-md border border-border bg-card p-3 text-xs text-foreground whitespace-pre-wrap break-words">
                     {runResult.response}
                   </pre>
                 </div>
