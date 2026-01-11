@@ -26,6 +26,9 @@ def download_rcc(
     """
     Downloads RCC in the place where the action server expects it.
     """
+    import os
+
+    from sema4ai.common.system_mutex import timed_acquire_mutex
 
     if target:
         rcc_path = Path(target)
@@ -53,7 +56,7 @@ def download_rcc(
         if machine == "arm64":
             relative_path = "/macos-arm64/rcc"
         else:
-            relative_path = "/macos64/rcc"
+            raise RuntimeError("Unsupported platform (macos x86_64)")
 
     else:
         if is_64:
@@ -64,14 +67,29 @@ def download_rcc(
     prefix = f"https://cdn.sema4.ai/rcc/releases/v{RCC_VERSION}"
     rcc_url = prefix + relative_path
 
-    import sema4ai_http
+    timeout = 300.0
 
-    status = sema4ai_http.download_with_resume(rcc_url, rcc_path, make_executable=True)
-    if status.status in (
-        sema4ai_http.DownloadStatus.HTTP_ERROR,
-        sema4ai_http.DownloadStatus.PARTIAL,
+    if "SEMA4AI_ACTION_SERVER_RCC_DOWNLOAD_TIMEOUT" in os.environ:
+        # Users can override timeout by setting the environment variable.
+        timeout = float(os.environ["SEMA4AI_ACTION_SERVER_RCC_DOWNLOAD_TIMEOUT"])
+
+    with timed_acquire_mutex(
+        "action_server_rcc_download", timeout=timeout, raise_error_on_timeout=True
     ):
-        raise RuntimeError(f"Failed to download RCC: {status.status}")
+        if not force and rcc_path.exists():
+            # It was downloaded by some other process while we were waiting for the mutex.
+            return rcc_path
+
+        import sema4ai_http
+
+        status = sema4ai_http.download_with_resume(
+            rcc_url, rcc_path, make_executable=True, overwrite_existing=True
+        )
+        if status.status in (
+            sema4ai_http.DownloadStatus.HTTP_ERROR,
+            sema4ai_http.DownloadStatus.PARTIAL,
+        ):
+            raise RuntimeError(f"Failed to download RCC: {status.status}")
 
     return rcc_path
 
