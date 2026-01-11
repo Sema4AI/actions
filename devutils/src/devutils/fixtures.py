@@ -114,10 +114,13 @@ def _download_rcc(location: str, force: bool = False) -> None:
                 if is_64:
                     relative_path = "/windows64/rcc.exe"
                 else:
-                    relative_path = "/windows32/rcc.exe"
+                    raise RuntimeError("Unsupported platform (windows 32 bits)")
 
             elif sys.platform == "darwin":
-                relative_path = "/macos64/rcc"
+                if machine == "arm64":
+                    relative_path = "/macos-arm64/rcc"
+                else:
+                    raise RuntimeError("Unsupported platform (macos x86_64)")
 
             else:
                 if is_64:
