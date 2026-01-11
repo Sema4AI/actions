@@ -153,6 +153,8 @@ def build_frontend(
             if install:
                 if not json_output:
                     print("📦 Installing dependencies...")
+                # Restore package files from git to ensure they're not modified by external processes
+                run(ctx, "git", "checkout", "HEAD", "--", "package.json", "package-lock.json")
                 run(ctx, "npm", "ci", "--no-audit", "--no-fund")
             
             if not json_output:
