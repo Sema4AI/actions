@@ -41,7 +41,7 @@ websockets = "^15.0.1"
 cryptography = "^46.0.3"
 requests_oauthlib = "^2.0"
 watchfiles = "^1.1.1"
-sema4ai-common = "^0.2.1"
+sema4ai-common = "^0.3.0"
 mcp = "^1.21.0"
 
 [tool.poetry.group.dev.dependencies]
