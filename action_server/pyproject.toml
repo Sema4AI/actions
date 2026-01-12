@@ -1,61 +1,106 @@
-[tool.poetry]
+# =============================================================================
+# PEP 621 project metadata (used by uv)
+# =============================================================================
+[project]
 name = "sema4ai-action-server"
 version = "3.0.0"
-description = """Sema4AI Action Server"""
-authors = [
-	"Sema4.ai, Inc. <dev@sema4.ai>",
-	"Fabio Z. <fabio@sema4.ai>"
-]
+description = "Sema4AI Action Server"
 readme = "README.md"
-repository = "https://github.com/sema4ai/actions/"
 license = "Apache-2.0"
-packages = [{ include = "sema4ai", from = "src" }]
-include = [
-	"src/sema4ai/action_server/_static_contents.py",
-	"src/sema4ai/action_server/_oauth2_config.py",
-	"src/sema4ai/action_server/bin/rcc*",
+requires-python = ">=3.12,<3.14"
+authors = [
+    { name = "Sema4.ai, Inc.", email = "dev@sema4.ai" },
+    { name = "Fabio Z.", email = "fabio@sema4.ai" },
 ]
-homepage = "https://github.com/sema4ai/actions/"
+dependencies = [
+    "aiohttp>=3.13.2",
+    "fastapi-slim>=0.128.0,<0.129",
+    "jsonschema>=4.23.0",
+    "jsonschema-specifications>=2024.10.1",
+    "msgspec>=0.19",
+    "psutil>=5.0,<8.0",
+    "pydantic>=2.12.4",
+    "pyyaml>=6.0.3",
+    "requests>=2",
+    "sema4ai-actions>=1.6.4",
+    "termcolor>=3.2.0",
+    "uvicorn>=0.38.0",
+    "websockets>=15.0.1",
+    "cryptography>=46.0.3",
+    "requests_oauthlib>=2.0",
+    "watchfiles>=1.1.1",
+    "sema4ai-common>=0.2.1",
+    "mcp>=1.21.0",
+]
 
-[tool.poetry.scripts]
+[project.scripts]
 action-server = "sema4ai.action_server.cli:main"
+# UV task commands (uv run <command>)
+list = "scripts.uv_tasks:list_tasks"
+lint = "scripts.uv_tasks:lint"
+format = "scripts.uv_tasks:format"
+typecheck = "scripts.uv_tasks:typecheck"
+test = "scripts.uv_tasks:test"
+test-unit = "scripts.uv_tasks:test_unit"
+test-binary = "scripts.uv_tasks:test_binary"
+test-run-in-parallel = "scripts.uv_tasks:test_run_in_parallel"
+build = "scripts.uv_tasks:build"
+build-frontend = "scripts.uv_tasks:build_frontend"
+build-oauth2-config = "scripts.uv_tasks:build_oauth2_config"
+build-exe = "scripts.uv_tasks:build_executable"
+build-go = "scripts.uv_tasks:build_go_wrapper"
+dev-frontend = "scripts.uv_tasks:dev_frontend"
+download-rcc = "scripts.uv_tasks:download_rcc"
+clean = "scripts.uv_tasks:clean"
+# Project-specific tasks
+set-rcc-version = "scripts.uv_tasks:set_rcc_version"
+print-env = "scripts.uv_tasks:print_env"
+# Common tasks (from devutils)
+docs = "scripts.uv_tasks:docs"
+doctest = "scripts.uv_tasks:doctest"
+check-all = "scripts.uv_tasks:check_all"
+make-release = "scripts.uv_tasks:make_release"
+set-version = "scripts.uv_tasks:set_version"
+check-tag-version = "scripts.uv_tasks:check_tag_version"
+publish = "scripts.uv_tasks:publish"
 
+[project.urls]
+Homepage = "https://github.com/sema4ai/actions/"
+Repository = "https://github.com/sema4ai/actions/"
 
-[tool.poetry.dependencies]
-aiohttp = "^3.13.2"
-fastapi-slim = "^0.121.1"
-jsonschema = "^4.23.0"
-# This one needs a `_fix_jsonschema_specifications` hack
-# See: https://github.com/python-jsonschema/jsonschema-specifications/issues/61
-jsonschema-specifications = "^2024.10.1"
-msgspec = "^0.19"
-psutil = ">=5.0,<8.0"
-pydantic = "^2.12.4"
-pyyaml = "^6.0.3"
-python = ">=3.12,<3.14"
-requests = "^2"
-sema4ai-actions = "^1.6.4"
-termcolor = "^3.2.0"
-uvicorn = "^0.38.0"
-websockets = "^15.0.1"
-cryptography = "^46.0.3"
-requests_oauthlib = "^2.0"
-watchfiles = "^1.1.1"
-sema4ai-common = "^0.2.1"
-mcp = "^1.21.0"
+# =============================================================================
+# Development dependencies (PEP 735)
+# =============================================================================
+[dependency-groups]
+dev = [
+    "types-requests>=2",
+    "types-PyYAML>=6",
+    "robocorp-log-pytest>=0.0.2",
+    "types-psutil>=7",
+    "types-jsonschema>=4.22.0",
+    "sema4ai-data>=1.2.1",
+    "pyinstaller==6.16.0",
+    "pyinstaller-hooks-contrib==2025.9",
+    "ruff>=0.4.0",
+    "isort>=5.12.0",
+    "mypy>=1.8.0",
+    "pytest>=7.4.0",
+    "pytest-xdist>=3.5.0",
+    "sema4ai-devutils",
+    "sema4ai-build-common",
+    "sema4ai-mcp",
+]
 
-[tool.poetry.group.dev.dependencies]
-sema4ai-devutils = { path = "../devutils/", develop = true }
-sema4ai-build-common = { path = "../build_common/", develop = true }
-types-requests = "^2"
-types-PyYAML = "^6"
-robocorp-log-pytest = "^0.0.2"
-types-psutil = "^7"
-types-jsonschema = "^4.22.0"
-sema4ai-data = "^1.2.1"
-pyinstaller = "6.16.0"
-pyinstaller-hooks-contrib = "2025.9"
-sema4ai-mcp = { path = "../mcp/", develop = true }
+# =============================================================================
+# UV configuration
+# =============================================================================
+[tool.uv.sources]
+sema4ai-actions = { workspace = true }
+sema4ai-common = { workspace = true }
+sema4ai-devutils = { workspace = true }
+sema4ai-build-common = { workspace = true }
+sema4ai-mcp = { workspace = true }
+sema4ai-http-helper = { workspace = true }
 
 [tool.mypy]
 mypy_path = "src:tests"
@@ -68,12 +113,23 @@ skip-magic-trailing-comma = false
 profile = "black"
 
 [build-system]
-requires = ["poetry-core", "setuptools"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.poetry.build]
-script = "build.py"
-generate-setup-file = true
+[tool.hatch.build.targets.wheel]
+packages = ["src/sema4ai", "scripts"]
+artifacts = [
+    "src/sema4ai/action_server/_static_contents.py",
+    "src/sema4ai/action_server/_oauth2_config.py",
+    "src/sema4ai/action_server/bin/rcc*",
+]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/scripts",
+    "/build.py",
+]
 
 [tool.pytest.ini_options]
 norecursedirs = "tests/action_server_tests/test_devenv/* dist build build-binary"

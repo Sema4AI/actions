@@ -1,3 +1,45 @@
+# =============================================================================
+# PEP 621 project metadata (used by uv)
+# =============================================================================
+[project]
+name = "sema4ai-http-helper"
+version = "2.1.2"
+description = "HTTP library that enables the use of OS certificate stores when working behind MITM firewalls"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.10"
+authors = [
+    { name = "Sema4.ai, Inc.", email = "dev@sema4.ai" },
+    { name = "Kari H.", email = "kari@sema4.ai" },
+]
+dependencies = [
+    "truststore>=0.9.2",
+    "urllib3>=2.5.0",
+    "pyyaml>=5.0",
+    "types-PyYAML>=6.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/sema4ai/actions/"
+Repository = "https://github.com/sema4ai/actions/"
+
+# =============================================================================
+# Development dependencies (PEP 735)
+# =============================================================================
+[dependency-groups]
+dev = [
+    "sema4ai-devutils",
+]
+
+# =============================================================================
+# UV configuration
+# =============================================================================
+[tool.uv.sources]
+sema4ai-devutils = { workspace = true }
+
+# =============================================================================
+# Poetry configuration (kept for backward compatibility)
+# =============================================================================
 [tool.poetry]
 name = "sema4ai-http-helper"
 version = "2.1.2"

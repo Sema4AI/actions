@@ -9,8 +9,8 @@ I.e.:
         print('acquired')
     else:
         print('not acquired')
-    
-    
+
+
 Or to keep trying to get the mutex until a given timeout elapses:
 
     with timed_acquire_mutex('mutex_name'):

@@ -1,11 +1,11 @@
 metadata:
-  action_package_version: '1'
+  action_package_version: 0.0.1
   data:
     datasources:
     - created_table: churn
       defined_at:
         file: datasources.py
-        line: 35
+        line: 36
       description: Datasource which provides a table named 'churn' with customer churn
         data.
       engine: files
@@ -13,7 +13,7 @@ metadata:
       name: files
     - defined_at:
         file: datasources.py
-        line: 45
+        line: 46
       description: Datasource which provides a project named `simple_data_package_v1`.
       engine: custom
       name: simple_data_package_v1
@@ -21,7 +21,7 @@ metadata:
       - CREATE PROJECT IF NOT EXISTS simple_data_package_v1
     - defined_at:
         file: datasources.py
-        line: 56
+        line: 57
       description: Datasource which provides a project named `simple_data_package_v1`
         along with a table named `customer_churn_predictor`.
       engine: prediction:lightwood

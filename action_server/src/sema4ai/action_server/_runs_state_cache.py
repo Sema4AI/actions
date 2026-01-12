@@ -4,6 +4,7 @@ Note: this is easy while we're in a single process!
 If we ever change the design to support multiple processes we'd need to have a
 way to synchronize state across multiple processes.
 """
+
 import logging
 import threading
 import typing
@@ -76,9 +77,9 @@ class RunsState:
         from ._database import Database
         from ._models import Run
 
-        assert (
-            self.semaphore._value == 0
-        ), "Clients getting the current run state must acquire the semaphore."
+        assert self.semaphore._value == 0, (
+            "Clients getting the current run state must acquire the semaphore."
+        )
         db: Database = self._db
 
         with db.connect():
@@ -94,9 +95,9 @@ class RunsState:
         from ._database import Database
         from ._models import Run
 
-        assert (
-            self.semaphore._value == 0
-        ), "Clients getting the current run state must acquire the semaphore."
+        assert self.semaphore._value == 0, (
+            "Clients getting the current run state must acquire the semaphore."
+        )
         db: Database = self._db
 
         with db.connect():
@@ -110,24 +111,24 @@ class RunsState:
         from ._database import Database
         from ._models import Run
 
-        assert (
-            self.semaphore._value == 0
-        ), "Clients getting the current run state must acquire the semaphore."
+        assert self.semaphore._value == 0, (
+            "Clients getting the current run state must acquire the semaphore."
+        )
         db: Database = self._db
 
         with db.connect():
             return db.first(Run, "SELECT * FROM run WHERE request_id = ?", [request_id])
 
     def register(self, listener):
-        assert (
-            self.semaphore._value == 0
-        ), "Clients registering must acquire the semaphore."
+        assert self.semaphore._value == 0, (
+            "Clients registering must acquire the semaphore."
+        )
         self._run_listeners[listener] = 1
 
     def unregister(self, listener):
-        assert (
-            self.semaphore._value == 0
-        ), "Clients unregistering must acquire the semaphore."
+        assert self.semaphore._value == 0, (
+            "Clients unregistering must acquire the semaphore."
+        )
         self._run_listeners.pop(listener, None)
 
     def on_run_inserted(self, run: "Run"):

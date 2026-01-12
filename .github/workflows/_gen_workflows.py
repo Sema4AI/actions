@@ -44,6 +44,122 @@ AUTO_GEN_HEADER = """# Important!!
 # No need to check if it's a beta release
 NOT_BETA_IF_CLAUSE = "${{ !endsWith(github.ref_name, '-beta') }}"
 UBUNTU_VERSION = "ubuntu-22.04"
+# Pinned Python version for action_server (patch version for better caching)
+ACTION_SERVER_PYTHON_VERSION = "3.12.12"
+
+
+# =============================================================================
+# ActionServer UV Mixin - provides UV-based workflow steps for action_server
+# =============================================================================
+
+
+class ActionServerUVMixin:
+    """Mixin providing UV-based workflow steps for action_server.
+
+    This mixin overrides invoke/poetry-based methods with UV equivalents.
+    Place this mixin FIRST in the inheritance list to override base class methods.
+    """
+
+    # Override minimum_python_version with pinned patch version for better caching
+    minimum_python_version = ACTION_SERVER_PYTHON_VERSION
+
+    def install_devutils(self, additional_packages: list[str] = []):
+        """UV workspace handles devutils - only install additional packages if needed."""
+        if additional_packages:
+            return {
+                "name": "Install additional packages",
+                "run": f"uv pip install {' '.join(additional_packages)}",
+            }
+        return None  # Skip step entirely - UV workspace handles devutils
+
+    def install_with_devmode(self, env: dict | None = None):
+        ret = {
+            "name": "Install project (uv sync --locked)",
+            "if": "contains(matrix.name, '-devmode') == false",
+            "run": "uv sync --locked",
+        }
+        if env:
+            ret["env"] = env.copy()
+        return ret
+
+    def install_without_devmode(self, env: dict | None = None):
+        ret = {
+            "name": "Install project with workspace (uv sync --locked --all-packages)",
+            "if": "contains(matrix.name, '-devmode')",
+            "run": "uv sync --locked --all-packages",
+        }
+        if env:
+            ret["env"] = env.copy()
+        return ret
+
+    def run_lint(self):
+        return {
+            "name": "`uv run lint`",
+            "if": "always()",
+            "run": "uv run lint",
+        }
+
+    def run_typecheck(self):
+        return {
+            "name": "`uv run typecheck`",
+            "if": "always()",
+            "run": "uv run typecheck",
+        }
+
+    def run_docs(self):
+        return {
+            "name": "`uv run docs --check`",
+            "if": "always()",
+            "run": "uv run docs --check",
+        }
+
+    def build_frontend(self):
+        return {
+            "name": "Build frontend",
+            "run": "uv run build-frontend",
+            "env": {
+                "CI": True,
+                "NODE_AUTH_TOKEN": "${{ secrets.GH_PAT_READ_PACKAGES }}",
+            },
+        }
+
+    def build_oauth2_config(self):
+        return {
+            "name": "Build OAuth2 config",
+            "run": "uv run build-oauth2-config",
+            "env": {"GH_TOKEN": "${{ secrets.GH_PAT_GHA_TO_ANOTHER_REPO }}"},
+        }
+
+    def check_tag_version(self):
+        return {
+            "name": "Check tag version",
+            "run": "uv run check-tag-version",
+            "if": NOT_BETA_IF_CLAUSE,
+        }
+
+    def build_action_server_binary(self):
+        return {
+            "name": "Build binary",
+            "env": {
+                "RC_ACTION_SERVER_FORCE_DOWNLOAD_RCC": "true",
+                "RC_ACTION_SERVER_DO_SELFTEST": "true",
+                "MACOS_SIGNING_CERT": "${{ secrets.MACOS_SIGNING_CERT_SEMA4AI }}",
+                "MACOS_SIGNING_CERT_PASSWORD": "${{ secrets.MACOS_SIGNING_CERT_PASSWORD_SEMA4AI }}",
+                "MACOS_SIGNING_CERT_NAME": "${{ secrets.MACOS_SIGNING_CERT_NAME_SEMA4AI }}",
+                "APPLEID": "${{ secrets.MACOS_APP_ID_FOR_NOTARIZATION_SEMA4AI }}",
+                "APPLETEAMID": "${{ secrets.MACOS_TEAM_ID_FOR_NOTARIZATION_SEMA4AI }}",
+                "APPLEIDPASS": "${{ secrets.MACOS_APP_ID_PASSWORD_FOR_NOTARIZATION_SEMA4AI }}",
+                "VAULT_URL": "${{ secrets.WIN_SIGN_AZURE_KEY_VAULT_URL_SEMA4AI }}",
+                "CLIENT_ID": "${{ secrets.WIN_SIGN_AZURE_KEY_VAULT_CLIENT_ID_SEMA4AI }}",
+                "TENANT_ID": "${{ secrets.WIN_SIGN_AZURE_KEY_VAULT_TENANT_ID_SEMA4AI }}",
+                "CLIENT_SECRET": "${{ secrets.WIN_SIGN_AZURE_KEY_VAULT_CLIENT_SECRET_SEMA4AI }}",
+                "CERTIFICATE_NAME": "${{ secrets.WIN_SIGN_AZURE_KEY_VAULT_CERTIFICATE_NAME_SEMA4AI }}",
+                "GITHUB_EVENT_NAME": "${{ github.event_name }}",
+                "GITHUB_REF_NAME": "${{ github.ref_name }}",
+                "GITHUB_PR_NUMBER": "${{ github.event.pull_request.number }}",
+            },
+            "run": "uv run build-exe --sign --go-wrapper",
+        }
 
 
 def collect_deps_pyprojects(root_pyproject: Path, found=None) -> Iterator[Path]:
@@ -54,11 +170,38 @@ def collect_deps_pyprojects(root_pyproject: Path, found=None) -> Iterator[Path]:
 
     contents: dict = tomlkit.loads(root_pyproject.read_bytes().decode("utf-8"))
 
-    dependencies = list(contents["tool"]["poetry"]["dependencies"])
-    try:
-        dependencies.extend(contents["tool"]["poetry"]["group"]["dev"]["dependencies"])
-    except Exception:
-        pass  # Ignore if it's not there.
+    dependencies = []
+
+    # Try PEP 621 format first (project.dependencies)
+    if "project" in contents and "dependencies" in contents["project"]:
+        # PEP 621 dependencies are strings like "sema4ai-actions>=1.6.4"
+        for dep in contents["project"]["dependencies"]:
+            # Extract package name from dependency specifier
+            dep_name = dep.split(">=")[0].split("==")[0].split("<")[0].split("[")[0].strip()
+            dependencies.append(dep_name)
+
+    # Check PEP 735 dependency-groups.dev (preferred)
+    if "dependency-groups" in contents and "dev" in contents["dependency-groups"]:
+        for dep in contents["dependency-groups"]["dev"]:
+            dep_name = dep.split(">=")[0].split("==")[0].split("<")[0].split("[")[0].strip()
+            dependencies.append(dep_name)
+
+    # Also check UV dev-dependencies (deprecated, for backward compatibility)
+    if "tool" in contents and "uv" in contents["tool"]:
+        uv_config = contents["tool"]["uv"]
+        if "dev-dependencies" in uv_config:
+            for dep in uv_config["dev-dependencies"]:
+                dep_name = dep.split(">=")[0].split("==")[0].split("<")[0].split("[")[0].strip()
+                dependencies.append(dep_name)
+
+    # Fall back to poetry format
+    if not dependencies and "tool" in contents and "poetry" in contents["tool"]:
+        dependencies = list(contents["tool"]["poetry"]["dependencies"])
+        try:
+            dependencies.extend(contents["tool"]["poetry"]["group"]["dev"]["dependencies"])
+        except Exception:
+            pass  # Ignore if it's not there.
+
     for key in dependencies:
         if key.startswith("sema4ai-"):
             if key == "sema4ai-data":
@@ -79,23 +222,40 @@ def get_python_version(pyproject):
     import tomlkit
 
     contents: dict = tomlkit.loads(pyproject.read_bytes().decode("utf-8"))
-    dependencies = contents["tool"]["poetry"]["dependencies"]
-    for key, value in dependencies.items():
-        if key == "python":
-            version = value.strip("^")
-            assert "." in version
 
-            # Extract the first major minor from ">=3.11.0,<3.12"
-            if "," in version:
-                version = version.split(",")[0]
+    # Try PEP 621 format first (project.requires-python)
+    if "project" in contents and "requires-python" in contents["project"]:
+        version = contents["project"]["requires-python"]
+        # Extract the first major.minor from ">=3.12,<3.14"
+        if "," in version:
+            version = version.split(",")[0]
+        version = version.strip(">=")
+        assert tuple(int(x) for x in version.split(".")) > (
+            3,
+            7,
+        ), f"Bad version: {version}. pyproject: {pyproject}"
+        return version
 
-            version = version.strip(">=")
+    # Fall back to poetry format (tool.poetry.dependencies.python)
+    if "tool" in contents and "poetry" in contents["tool"]:
+        dependencies = contents["tool"]["poetry"]["dependencies"]
+        for key, value in dependencies.items():
+            if key == "python":
+                version = value.strip("^")
+                assert "." in version
 
-            assert tuple(int(x) for x in version.split(".")) > (
-                3,
-                7,
-            ), f"Bad version: {version}. pyproject: {pyproject}"
-            return version
+                # Extract the first major minor from ">=3.11.0,<3.12"
+                if "," in version:
+                    version = version.split(",")[0]
+
+                version = version.strip(">=")
+
+                assert tuple(int(x) for x in version.split(".")) > (
+                    3,
+                    7,
+                ), f"Bad version: {version}. pyproject: {pyproject}"
+                return version
+
     raise RuntimeError(f"Unable to get python version in: {pyproject}")
 
 
@@ -115,7 +275,11 @@ class BaseWorkflow:
 
         pyproject_toml_file = project_dir / "pyproject.toml"
         self.pyproject_toml_file = pyproject_toml_file
-        self.minimum_python_version = get_python_version(pyproject_toml_file)
+        # Use class attribute if set (e.g., by ActionServerUVMixin), otherwise derive from pyproject.toml
+        if not hasattr(self.__class__, "minimum_python_version") or self.__class__.minimum_python_version is None:
+            self.minimum_python_version = get_python_version(pyproject_toml_file)
+        else:
+            self.minimum_python_version = self.__class__.minimum_python_version
 
         dep_pyprojects = list(collect_deps_pyprojects(pyproject_toml_file))
         for dep_pyproject in dep_pyprojects:
@@ -132,24 +296,15 @@ class BaseWorkflow:
         self.full.update(self.jobs_part())
 
     def setup_python(self):
+        # Note: UV version is read automatically from pyproject.toml [tool.uv] required-version
         return [
-            # {
-            # "name": "Set up Python ${{ matrix.python }}",
-            # "uses": "actions/setup-python@v5",
-            # "with": {
-            #     "python-version": "${{ matrix.python }}",
-            #     "cache": "poetry",
-            # },
             {
-                "name": "Install the latest version of uv",
+                "name": "Install uv and Python ${{ matrix.python }}",
                 "uses": "astral-sh/setup-uv@v5",
                 "with": {
                     "enable-cache": True,
+                    "python-version": "${{ matrix.python }}",
                 },
-            },
-            {
-                "name": f"Install Python {self.minimum_python_version}",
-                "run": f"uv python install {self.minimum_python_version}",
             },
         ]
 
@@ -534,7 +689,7 @@ class BaseTests(BaseWorkflow):
         return steps
 
 
-class ActionServerTests(BaseTests):
+class ActionServerTests(ActionServerUVMixin, BaseTests):
     name = "Action Server Tests"
     target = "action_server_tests.yml"
     project_name = "action_server"
@@ -544,10 +699,46 @@ class ActionServerTests(BaseTests):
     require_build_oauth2_config = True
 
     @override
+    def build_steps(self) -> list[dict]:
+        steps = [self.checkout_repo()] + self.setup_python()
+
+        # UV workspace handles devutils - install_devutils returns None for UV projects
+        devutils_step = self.install_devutils()
+        if devutils_step:
+            steps.append(devutils_step)
+
+        steps.extend(self.install())
+
+        if self.require_go:
+            steps.append(self.setup_go())
+
+        if self.require_build_frontend or self.require_node:
+            steps.append(self.setup_node())
+
+        if self.require_build_frontend:
+            steps.append(self.build_frontend())
+
+        if self.require_build_oauth2_config:
+            steps.append(self.build_oauth2_config())
+
+        run_tests = self.run_tests()
+        if isinstance(run_tests, list):
+            steps.extend(run_tests)
+        else:
+            steps.append(run_tests)
+
+        steps.extend([self.run_lint(), self.run_typecheck(), self.run_docs()])
+
+        if self.validate_docstrings:
+            steps.append(self.run_docstrings_validation())
+
+        return steps
+
+    @override
     def run_tests(self):
         return [
             # As we want to run the tests in the binary, we do the following:
-            # 1. Build the binary
+            # 1. Build the binary (also downloads RCC via RC_ACTION_SERVER_FORCE_DOWNLOAD_RCC env var)
             # 2. Run the unit-tests (not integration) in the current environment
             # 3. Run the integration-tests in the binary
             self.build_action_server_binary(),
@@ -563,7 +754,7 @@ class ActionServerTests(BaseTests):
                     "ACTION_SERVER_TEST_ACCESS_CREDENTIALS": "${{ secrets.ACTION_SERVER_TEST_ACCESS_CREDENTIALS }}",
                     "ACTION_SERVER_TEST_HOSTNAME": "${{ secrets.ACTION_SERVER_TEST_HOSTNAME }}",
                 },
-                "run": f"{run_in_env}poetry run inv test-not-integration",
+                "run": "uv run test-unit",
             },
             {
                 "name": "Test (integration)",
@@ -574,12 +765,12 @@ class ActionServerTests(BaseTests):
                     "ACTION_SERVER_TEST_ACCESS_CREDENTIALS": "${{ secrets.ACTION_SERVER_TEST_ACCESS_CREDENTIALS }}",
                     "ACTION_SERVER_TEST_HOSTNAME": "${{ secrets.ACTION_SERVER_TEST_HOSTNAME }}",
                 },
-                "run": f"{run_in_env}poetry run inv test-binary --jobs 0",
+                "run": "uv run test-binary --jobs 0",
             },
         ]
 
 
-class ActionServerPyPiRelease(BaseWorkflow):
+class ActionServerPyPiRelease(ActionServerUVMixin, BaseWorkflow):
     name = "Action Server PYPI Release"
     target = "action_server_pypi_release.yml"
     project_name = "action_server"
@@ -609,11 +800,11 @@ class ActionServerPyPiRelease(BaseWorkflow):
     def build_sdist(self):
         return {
             "name": "Build sdist",
-            "run": f"""
+            "run": """
 # Make sure that we have no binaries present when doing the build.
 rm src/sema4ai/bin/rcc* -f
 # Just sdist here, wheels are built in the manylinux job.
-{run_in_env}poetry build -f sdist
+uv build --sdist
 """,
             "env": {
                 "CI": True,
@@ -631,19 +822,21 @@ rm src/sema4ai/bin/rcc* -f
     def upload_to_pypi(self):
         return {
             "name": "Upload to PyPI",
-            "run": f"""
-{run_in_env}poetry config pypi-token.pypi  ${{{{ secrets.PYPI_TOKEN_SEMA4AI_ACTION_SERVER }}}}
-{run_in_env}poetry publish
-""",
+            "run": "uv publish",
             "env": {
-                "ACTION_SERVER_SKIP_DOWNLOAD_IN_BUILD": True,
+                "UV_PUBLISH_TOKEN": "${{ secrets.PYPI_TOKEN_SEMA4AI_ACTION_SERVER }}",
             },
             "if": NOT_BETA_IF_CLAUSE,
         }
 
     @override
     def build_steps(self) -> list[dict]:
-        steps = [self.checkout_repo()] + self.setup_python() + [self.install_devutils()]
+        steps = [self.checkout_repo()] + self.setup_python()
+
+        # UV workspace handles devutils - install_devutils returns None for UV projects
+        devutils_step = self.install_devutils()
+        if devutils_step:
+            steps.append(devutils_step)
 
         steps.extend(self.install(env={"ACTION_SERVER_SKIP_DOWNLOAD_IN_BUILD": "true"}))
 
@@ -659,7 +852,7 @@ rm src/sema4ai/bin/rcc* -f
         return steps
 
 
-class ActionServerBinaryRelease(BaseWorkflow):
+class ActionServerBinaryRelease(ActionServerUVMixin, BaseWorkflow):
     name = "Action Server BINARY Release"
     target = "action_server_binary_release.yml"
     project_name = "action_server"
@@ -694,9 +887,9 @@ class ActionServerBinaryRelease(BaseWorkflow):
     def set_version_on_ubuntu(self):
         return {
             "name": "Set version",
-            "run": f"""
-{run_in_env}poetry version | awk '{{print $2}}' > version.txt
-VERSION=$(cat version.txt)
+            "run": """
+VERSION=$(grep '^version = ' pyproject.toml | head -1 | sed 's/version = "\\(.*\\)"/\\1/')
+echo "$VERSION" > version.txt
 
 echo "Version: $VERSION"
 echo "version=$VERSION" >> "$GITHUB_OUTPUT"
@@ -714,7 +907,12 @@ echo "version=$VERSION" >> "$GITHUB_OUTPUT"
         )
 
     def build_steps(self) -> list[dict]:
-        steps = [self.checkout_repo()] + self.setup_python() + [self.install_devutils()]
+        steps = [self.checkout_repo()] + self.setup_python()
+
+        # UV workspace handles devutils - install_devutils returns None for UV projects
+        devutils_step = self.install_devutils()
+        if devutils_step:
+            steps.append(devutils_step)
 
         steps.extend(self.install())
 
@@ -1005,7 +1203,7 @@ fi
         return ret
 
 
-class ActionServerManylinuxRelease(BaseWorkflow):
+class ActionServerManylinuxRelease(ActionServerUVMixin, BaseWorkflow):
     name = "Action Server MANYLINUX Release"
     target = "action_server_manylinux_release.yml"
     project_name = "action_server"
@@ -1041,7 +1239,7 @@ class ActionServerManylinuxRelease(BaseWorkflow):
         CIBW_BUILD += "cp313-*win*amd64"
         return {
             "name": "Build wheels",
-            "run": f"{run_in_env} python -m cibuildwheel --output-dir wheelhouse",
+            "run": "uv run python -m cibuildwheel --output-dir wheelhouse",
             "env": {
                 "CIBW_SKIP": "pp*",
                 "CIBW_BUILD": CIBW_BUILD,
@@ -1057,7 +1255,7 @@ class ActionServerManylinuxRelease(BaseWorkflow):
     def upload_wheels_to_pypi(self):
         return {
             "name": "Upload to PyPI .whl",
-            "run": f"{run_in_env}twine upload wheelhouse/*.whl",
+            "run": "uv run twine upload wheelhouse/*.whl",
             "if": NOT_BETA_IF_CLAUSE,
             "env": {
                 "TWINE_USERNAME": "__token__",
@@ -1069,9 +1267,15 @@ class ActionServerManylinuxRelease(BaseWorkflow):
     def build_steps(self) -> list[dict]:
         steps = [self.checkout_repo()]
         steps.extend(self.setup_python())
-        steps.append(
-            self.install_devutils(additional_packages=["cibuildwheel==2.23.1", "twine"])
+
+        # Install additional packages needed for wheel building (cibuildwheel, twine)
+        # The mixin's install_devutils handles this when additional_packages is provided
+        devutils_step = self.install_devutils(
+            additional_packages=["cibuildwheel==2.23.1", "twine"]
         )
+        if devutils_step:
+            steps.append(devutils_step)
+
         steps.extend(self.install(env={"ACTION_SERVER_SKIP_DOWNLOAD_IN_BUILD": "true"}))
         steps.append(self.check_tag_version())
         steps.append(self.setup_node())

@@ -37,38 +37,33 @@ jobs:
         - macos-15
         include:
         - os: ubuntu-22.04
-          python: '3.12'
+          python: 3.12.12
         - os: windows-2022
-          python: '3.12'
+          python: 3.12.12
         - os: macos-15
-          python: '3.12'
+          python: 3.12.12
     steps:
     - name: Checkout repository and submodules
       uses: actions/checkout@v5
-    - name: Install the latest version of uv
+    - name: Install uv and Python ${{ matrix.python }}
       uses: astral-sh/setup-uv@v5
       with:
         enable-cache: true
-    - name: Install Python 3.12
-      run: uv python install 3.12
-    - name: Install devutils requirements
-      run: 'uv run --no-project --python ${{ matrix.python }}  python -m pip install
-        --break-system-packages -r ../devutils/requirements.txt
-
-        uv run --no-project --python ${{ matrix.python }}  python -m pip install --break-system-packages
-        cibuildwheel==2.23.1 twine'
-    - name: Install project (not dev)
+        python-version: ${{ matrix.python }}
+    - name: Install additional packages
+      run: uv pip install cibuildwheel==2.23.1 twine
+    - name: Install project (uv sync --locked)
       if: contains(matrix.name, '-devmode') == false
-      run: uv run --no-project --python ${{ matrix.python }} inv install
+      run: uv sync --locked
       env:
         ACTION_SERVER_SKIP_DOWNLOAD_IN_BUILD: 'true'
-    - name: Install project (dev)
+    - name: Install project with workspace (uv sync --locked --all-packages)
       if: contains(matrix.name, '-devmode')
-      run: uv run --no-project --python ${{ matrix.python }} inv devinstall
+      run: uv sync --locked --all-packages
       env:
         ACTION_SERVER_SKIP_DOWNLOAD_IN_BUILD: 'true'
     - name: Check tag version
-      run: uv run --no-project --python ${{ matrix.python }} poetry run inv check-tag-version
+      run: uv run check-tag-version
       if: ${{ !endsWith(github.ref_name, '-beta') }}
     - name: Setup node
       uses: actions/setup-node@v4
@@ -77,17 +72,16 @@ jobs:
         registry-url: https://npm.pkg.github.com
         scope: '@robocorp'
     - name: Build frontend
-      run: uv run --no-project --python ${{ matrix.python }} inv build-frontend
+      run: uv run build-frontend
       env:
         CI: true
         NODE_AUTH_TOKEN: ${{ secrets.GH_PAT_READ_PACKAGES }}
     - name: Build OAuth2 config
-      run: uv run --no-project --python ${{ matrix.python }} inv build-oauth2-config
+      run: uv run build-oauth2-config
       env:
         GH_TOKEN: ${{ secrets.GH_PAT_GHA_TO_ANOTHER_REPO }}
     - name: Build wheels
-      run: uv run --no-project --python ${{ matrix.python }}  python -m cibuildwheel
-        --output-dir wheelhouse
+      run: uv run python -m cibuildwheel --output-dir wheelhouse
       env:
         CIBW_SKIP: pp*
         CIBW_BUILD: cp312-*macos*arm64 cp313-*macos*arm64 cp312-*manylinux*x86_64
@@ -99,7 +93,7 @@ jobs:
         name: ${{ runner.os }}-wheels
         path: action_server/wheelhouse/*
     - name: Upload to PyPI .whl
-      run: uv run --no-project --python ${{ matrix.python }} twine upload wheelhouse/*.whl
+      run: uv run twine upload wheelhouse/*.whl
       if: ${{ !endsWith(github.ref_name, '-beta') }}
       env:
         TWINE_USERNAME: __token__

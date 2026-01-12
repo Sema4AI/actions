@@ -1,3 +1,47 @@
+# =============================================================================
+# PEP 621 project metadata (used by uv)
+# =============================================================================
+[project]
+name = "sema4ai-common"
+version = "0.3.0"
+description = "Sema4AI Common"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.11"
+authors = [
+    { name = "Sema4.ai Engineering", email = "engineering@sema4.ai" },
+]
+dependencies = [
+    "psutil>=5.0,<7.0",
+    "sema4ai-http-helper>=2.0.0",
+    "pyyaml>=6.0",
+    "msgspec>=0.18",
+]
+
+[project.urls]
+Homepage = "https://github.com/Sema4AI/actions/"
+Repository = "https://github.com/Sema4AI/actions/"
+
+# =============================================================================
+# Development dependencies (PEP 735)
+# =============================================================================
+[dependency-groups]
+dev = [
+    "sema4ai-devutils",
+    "types-psutil>=5.9",
+    "types-PyYAML>=6.0",
+]
+
+# =============================================================================
+# UV configuration
+# =============================================================================
+[tool.uv.sources]
+sema4ai-http-helper = { workspace = true }
+sema4ai-devutils = { workspace = true }
+
+# =============================================================================
+# Poetry configuration (kept for backward compatibility)
+# =============================================================================
 [tool.poetry]
 name = "sema4ai-common"
 version = "0.3.0"

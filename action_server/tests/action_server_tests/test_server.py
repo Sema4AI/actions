@@ -686,7 +686,9 @@ def test_auth_routes(action_server_process: ActionServerProcess, data_regression
     spec = json.loads(openapi_json)
     data_regression.check(fix_openapi_json(spec))
 
-    client.post_error("api/actions/greeter/greet/run", 403)
+    # FastAPI 0.122+ returns 401 (Unauthorized) instead of 403 (Forbidden)
+    # when authentication is required but credentials are missing
+    client.post_error("api/actions/greeter/greet/run", 401)
 
     found = client.post_get_str(
         "api/actions/greeter/greet/run",
@@ -782,9 +784,9 @@ def test_subprocesses_killed(
     # Ok, check the logs for some output we expect to be there at startup/shutdown.
     datadir = action_server_process.datadir
     server_log_file = datadir / "server_log.txt"
-    assert (
-        server_log_file.exists()
-    ), f"File not found: {server_log_file}. Files found: {list(datadir.iterdir())}"
+    assert server_log_file.exists(), (
+        f"File not found: {server_log_file}. Files found: {list(datadir.iterdir())}"
+    )
     text = server_log_file.read_text(encoding="utf-8")
     assert text.count("Not exposing action server...") == 1
     assert text.count("Stopping action server...") == 1
