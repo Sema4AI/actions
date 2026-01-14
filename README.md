@@ -182,7 +182,7 @@ Think of this as an equivalent of the requirements.txt, but much better. 👩‍
 - Define dependencies in `package.yaml` and let our tooling do the heavy lifting.
 - You get all the content of [conda-forge](https://prefix.dev/channels/conda-forge) without any extra tooling
 
-> The environment management is provided by [RCC](https://github.com/robocorp/rcc).
+> The environment management is provided by [RCC](https://github.com/joshyorko/rcc).
 
 </details>
 <br/>

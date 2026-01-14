@@ -88,7 +88,8 @@ def sema4ai_home(tmpdir_factory) -> str:
     return str(dirname)
 
 
-RCC_VERSION = "v17.23.2"
+# Using joshyorko/rcc open-source version
+RCC_VERSION = "v18.13.1"
 
 
 def _download_rcc(location: str, force: bool = False) -> None:
@@ -110,26 +111,28 @@ def _download_rcc(location: str, force: bool = False) -> None:
             machine = platform.machine()
             is_64 = not machine or "64" in machine
 
+            # Using joshyorko/rcc GitHub releases
+            # Asset names: rcc-windows64.exe, rcc-darwin64, rcc-linux64
             if sys.platform == "win32":
                 if is_64:
-                    relative_path = "/windows64/rcc.exe"
+                    asset_name = "rcc-windows64.exe"
                 else:
                     raise RuntimeError("Unsupported platform (windows 32 bits)")
 
             elif sys.platform == "darwin":
                 if machine == "arm64":
-                    relative_path = "/macos-arm64/rcc"
+                    asset_name = "rcc-darwin64"
                 else:
                     raise RuntimeError("Unsupported platform (macos x86_64)")
 
             else:
                 if is_64:
-                    relative_path = "/linux64/rcc"
+                    asset_name = "rcc-linux64"
                 else:
-                    relative_path = "/linux32/rcc"
+                    raise RuntimeError("Unsupported platform (linux 32 bits)")
 
-            prefix = f"https://cdn.sema4.ai/rcc/releases/{RCC_VERSION}"
-            url = prefix + relative_path
+            # GitHub releases URL format
+            url = f"https://github.com/joshyorko/rcc/releases/download/{RCC_VERSION}/{asset_name}"
 
             # log.info(f"Downloading rcc from: {url} to: {location}.")
             # Cloudflare seems to be blocking "User-Agent: Python-urllib/3.9".

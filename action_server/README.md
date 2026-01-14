@@ -59,7 +59,7 @@ action-server start
 
 An `Action Package` is currently defined as a local folder that contains at least one Python file containing an action entry point (a Python function marked with `@action` -decorator from `sema4ai.actions`).
 
-The `package.yaml` file is required for specifying the Python environment and dependencies for your Action ([RCC](https://github.com/robocorp/rcc/) will be used to automatically bootstrap it and keep it updated given the `package.yaml` contents).
+The `package.yaml` file is required for specifying the Python environment and dependencies for your Action ([RCC](https://github.com/joshyorko/rcc/) will be used to automatically bootstrap it and keep it updated given the `package.yaml` contents).
 
 > Note: the `package.yaml` is optional if the action server is not being used as a standalone (i.e.: if it was pip-installed it can use the same python environment where it's installed).
 
