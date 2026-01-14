@@ -284,11 +284,75 @@ class AgentCliTool(BaseTool):
 
 class RccTool(BaseTool):
     mutex_name = "sema4ai-get-rcc"
-    base_url = "https://cdn.sema4.ai/rcc/releases"
+    base_url = "https://cdn.sema4.ai/rcc/releases"  # Kept for backward compatibility
     executable_name = "rcc"
 
     def __init__(self, target_location: str, tool_version: str):
         super().__init__(target_location, tool_version)
+
+    def download(self) -> None:
+        """
+        Custom download implementation for joshyorko/rcc GitHub releases.
+        GitHub releases use a different URL structure than the CDN.
+        """
+        import platform
+        from pathlib import Path
+
+        from sema4ai_http import download_with_resume
+
+        from sema4ai.common.system_mutex import timed_acquire_mutex
+
+        location = self._target_location
+        tool_version = self._tool_version
+
+        # Check if already downloaded and verified
+        if _verify_tool_downloaded_ok(
+            self,
+            location,
+            force=False,
+            make_run_check=self.make_run_check,
+            version=tool_version,
+        ):
+            return
+
+        with timed_acquire_mutex(self.mutex_name, timeout=300):
+            # Check again after acquiring mutex
+            if _verify_tool_downloaded_ok(
+                self,
+                location,
+                force=False,
+                make_run_check=self.make_run_check,
+                version=tool_version,
+            ):
+                return
+
+            # Determine asset name based on platform
+            sys_platform = self.force_sys_platform or sys.platform
+            machine = self.force_machine or platform.machine()
+
+            if sys_platform == "win32":
+                asset_name = "rcc-windows64.exe"
+            elif sys_platform == "darwin":
+                # joshyorko/rcc uses rcc-darwin64 for both x86_64 and arm64
+                asset_name = "rcc-darwin64"
+            else:  # Linux
+                asset_name = "rcc-linux64"
+
+            # GitHub releases URL format
+            # Remove 'v' prefix if present in version for consistency
+            version_str = tool_version.lstrip('v')
+            url = f"https://github.com/joshyorko/rcc/releases/download/v{version_str}/{asset_name}"
+
+            try:
+                download_with_resume(
+                    url,
+                    Path(location),
+                    make_executable=True,
+                )
+            except Exception:
+                raise RuntimeError(
+                    f"There was an error downloading {self.executable_name!r} to {location} from: {url!r}!"
+                )
 
 
 class DataServerTool(BaseTool):

@@ -9,7 +9,8 @@ log = logging.getLogger(__name__)
 # No real build, just download RCC at this point.
 
 # Note: referenced here and in sema4ai.action_server._download_rcc
-RCC_VERSION = "20.3.3"
+# Using joshyorko/rcc open-source version
+RCC_VERSION = "18.13.1"
 
 
 CURDIR = Path(__file__).parent.absolute()
@@ -141,26 +142,28 @@ def _download_rcc():
     machine = platform.machine()
     is_64 = not machine or "64" in machine
 
+    # Using joshyorko/rcc GitHub releases
+    # Asset names: rcc-windows64.exe, rcc-darwin64, rcc-linux64
     if sys.platform == "win32":
         if is_64:
-            relative_path = "/windows64/rcc.exe"
+            asset_name = "rcc-windows64.exe"
         else:
             raise RuntimeError("Unsupported platform (windows 32 bits)")
 
     elif sys.platform == "darwin":
         if machine == "arm64":
-            relative_path = "/macos-arm64/rcc"
+            asset_name = "rcc-darwin64"
         else:
             raise RuntimeError("Unsupported platform (macos x86_64)")
 
     else:
         if is_64:
-            relative_path = "/linux64/rcc"
+            asset_name = "rcc-linux64"
         else:
-            relative_path = "/linux32/rcc"
+            raise RuntimeError("Unsupported platform (linux 32 bits)")
 
-    prefix = f"https://cdn.sema4.ai/rcc/releases/v{RCC_VERSION}"
-    rcc_url = prefix + relative_path
+    # GitHub releases URL format
+    rcc_url = f"https://github.com/joshyorko/rcc/releases/download/v{RCC_VERSION}/{asset_name}"
 
     print(f"Downloading '{rcc_url}' to '{rcc_path}'")
     return _download_with_resume(rcc_url, rcc_path)

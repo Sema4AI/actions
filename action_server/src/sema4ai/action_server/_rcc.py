@@ -61,10 +61,13 @@ class Rcc(object):
 
         kwargs: dict = build_subprocess_kwargs(cwd, env, stderr=stderr)
         rcc_location = str(self._rcc_location)
+        # Note: --sema4ai flag was introduced in RCC v19+
+        # For older versions (like joshyorko/rcc v18.x), the flag doesn't exist
+        # Using --robocorp for backward compatibility with v18.x
         args = (
             [rcc_location]
             + args
-            + ["--controller", "action-server", "--bundled", "--sema4ai"]
+            + ["--controller", "action-server", "--bundled", "--robocorp"]
         )
 
         return args, kwargs

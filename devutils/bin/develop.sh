@@ -11,12 +11,12 @@ ACTIVATE_PATH="$SCRIPT_PATH/activate.sh"
 
 echo
 
-# Get RCC binary based on platform
-RCC_URL="https://cdn.sema4.ai/rcc/releases/v20.3.3"
+# Get RCC binary based on platform using joshyorko/rcc GitHub releases
+RCC_VERSION="v18.13.1"
 if [[ "$(uname)" == "Darwin" ]]; then
-    RCC_URL="$RCC_URL/macos-arm64/rcc"
+    RCC_URL="https://github.com/joshyorko/rcc/releases/download/$RCC_VERSION/rcc-darwin64"
 else
-    RCC_URL="$RCC_URL/linux64/rcc"
+    RCC_URL="https://github.com/joshyorko/rcc/releases/download/$RCC_VERSION/rcc-linux64"
 fi
 
 # Download RCC if it doesn't exist

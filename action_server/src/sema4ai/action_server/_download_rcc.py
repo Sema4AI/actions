@@ -7,7 +7,8 @@ from typing import Optional
 log = logging.getLogger(__name__)
 
 # Note: also referenced in action_server/build.py
-RCC_VERSION = "20.3.3"
+# Using joshyorko/rcc open-source version
+RCC_VERSION = "18.13.1"
 
 
 def get_default_rcc_location() -> Path:
@@ -46,26 +47,28 @@ def download_rcc(
     machine = platform.machine()
     is_64 = not machine or "64" in machine
 
+    # Using joshyorko/rcc GitHub releases
+    # Asset names: rcc-windows64.exe, rcc-darwin64, rcc-linux64
     if sys.platform == "win32":
         if is_64:
-            relative_path = "/windows64/rcc.exe"
+            asset_name = "rcc-windows64.exe"
         else:
             raise RuntimeError("Unsupported platform (windows 32 bits)")
 
     elif sys.platform == "darwin":
         if machine == "arm64":
-            relative_path = "/macos-arm64/rcc"
+            asset_name = "rcc-darwin64"
         else:
             raise RuntimeError("Unsupported platform (macos x86_64)")
 
     else:
         if is_64:
-            relative_path = "/linux64/rcc"
+            asset_name = "rcc-linux64"
         else:
-            relative_path = "/linux32/rcc"
+            raise RuntimeError("Unsupported platform (linux 32 bits)")
 
-    prefix = f"https://cdn.sema4.ai/rcc/releases/v{RCC_VERSION}"
-    rcc_url = prefix + relative_path
+    # GitHub releases URL format
+    rcc_url = f"https://github.com/joshyorko/rcc/releases/download/v{RCC_VERSION}/{asset_name}"
 
     timeout = 300.0
 
