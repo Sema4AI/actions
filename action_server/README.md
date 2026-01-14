@@ -63,6 +63,16 @@ The `package.yaml` file is required for specifying the Python environment and de
 
 > Note: the `package.yaml` is optional if the action server is not being used as a standalone (i.e.: if it was pip-installed it can use the same python environment where it's installed).
 
+### Community RCC Fork
+
+This Action Server uses the **joshyorko/rcc v18.13.1** community fork, which provides:
+- **Faster startup** - no proprietary cloud service calls
+- **Official sources** - downloads micromamba directly from conda-forge instead of Robocorp CDN
+- **Decoupled infrastructure** - works fully offline after initial environment bootstrap
+- **Security updates** - built with Go 1.23
+
+Environment caching means subsequent startups are near-instant once the holotree is built.
+
 ### Bootstrapping a new Action
 
 Start new projects with:

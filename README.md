@@ -182,7 +182,7 @@ Think of this as an equivalent of the requirements.txt, but much better. 👩‍
 - Define dependencies in `package.yaml` and let our tooling do the heavy lifting.
 - You get all the content of [conda-forge](https://prefix.dev/channels/conda-forge) without any extra tooling
 
-> The environment management is provided by [RCC](https://github.com/joshyorko/rcc).
+> The environment management is provided by [RCC](https://github.com/joshyorko/rcc) - a community fork that uses official conda-forge sources instead of proprietary CDNs.
 
 </details>
 <br/>
@@ -269,6 +269,43 @@ Check out these example projects for inspiration.
 - 📝 [Add files to agent conversation](https://github.com/Sema4AI/cookbook/tree/master/actions/chat-files)
 
 Build more `@actions` and be awesome! We'd love to hear and see what have you built. Join our [Slack community](https://sema4ai-users.slack.com/) to share your work.
+
+<div id="community-edition"></div>
+
+## 🌍 Community Edition
+
+This build uses the **[joshyorko/rcc](https://github.com/joshyorko/rcc)** fork (v18.13.1) - a fully open-source version of RCC with several key benefits:
+
+### Why the Community RCC Fork?
+
+| Feature | Original RCC | Community Fork |
+|---------|-------------|----------------|
+| **Micromamba Source** | Robocorp CDN | Official conda-forge (micro.mamba.pm) |
+| **Infrastructure Dependencies** | Robocorp cloud services | None - fully decoupled |
+| **Telemetry** | Robocorp telemetry | Minimal/disabled |
+| **Startup Speed** | Standard | Faster (fewer network calls) |
+| **Go Version** | Varies | 1.23 (latest security patches) |
+
+### Performance Benefits
+
+The community fork is often noticeably faster because:
+- **No proprietary network handshakes** - skips Robocorp/Sema4ai cloud checks
+- **Direct conda-forge access** - downloads from official sources, no CDN redirects
+- **Leaner initialization** - removed Robocorp-specific requirements
+- **Efficient holotree caching** - environments are cached locally and reused
+
+Once an environment is bootstrapped, subsequent startups are near-instant as the holotree cache is reused.
+
+### Environment Caching
+
+The Action Server caches Python environments based on your `package.yaml` hash:
+- **Cache location**: `~/.sema4ai/action-server/{datadir}/env-info/{hash}.json`
+- **Holotree location**: `~/.robocorp/holotree/`
+- **Invalidation**: Automatic when `package.yaml` changes or Python executable is deleted
+
+To clear caches: `action-server env clean-tools-caches`
+
+---
 
 <div id="building"></div>
 
