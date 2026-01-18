@@ -31,9 +31,9 @@ def as_str(s) -> str:
 
 
 class Rcc(object):
-    def __init__(self, rcc_location: Path, sema4ai_home: Optional[Path]):
+    def __init__(self, rcc_location: Path, rcc_home: Optional[Path]):
         self._rcc_location = rcc_location
-        self.sema4ai_home = sema4ai_home
+        self.rcc_home = rcc_home
         self.config_location = os.environ.get(
             "S4_ACTION_SERVER_RCC_CONFIG_LOCATION", ""
         )
@@ -46,8 +46,10 @@ class Rcc(object):
         env["PYTHONIOENCODING"] = "utf-8"
         env["PYTHONUNBUFFERED"] = "1"
 
-        if self.sema4ai_home:
-            env["SEMA4AI_HOME"] = str(self.sema4ai_home)
+        # Use RCC_HOME env var for holotree location
+        # This enables separate holotrees for actions and robots to avoid lock contention
+        if self.rcc_home:
+            env["RCC_HOME"] = str(self.rcc_home)
 
         return env
 
@@ -100,9 +102,9 @@ class Rcc(object):
         from sema4ai.action_server._robo_utils.process import check_output_interactive
 
         env = self._compute_env()
-        sema4ai_home = env.get("SEMA4AI_HOME")
-        if not sema4ai_home:
-            sema4ai_home = "<unset>"
+        rcc_home = env.get("RCC_HOME")
+        if not rcc_home:
+            rcc_home = "<unset>"
 
         args, kwargs = self._compute_launch_args_and_kwargs(cwd, env, args, stderr)
         cmdline = list2cmdline([str(x) for x in args])
@@ -149,7 +151,7 @@ class Rcc(object):
             stderr = as_str(e.stderr)
 
             msg = (
-                f"Error running: {cmdline}.\nSEMA4AI_HOME: {sema4ai_home}\n\n"
+                f"Error running: {cmdline}.\nRCC_HOME: {rcc_home}\n\n"
                 f"Stdout: {stdout}\nStderr: {stderr}"
             )
             if hide_in_log:
@@ -386,25 +388,77 @@ class Rcc(object):
         return self._run_rcc(args)
 
 
-_rcc: Optional["Rcc"] = None
+# Separate RCC instances for actions and robots to avoid holotree lock contention
+_rcc_actions: Optional["Rcc"] = None
+_rcc_robots: Optional["Rcc"] = None
 
 
 @contextmanager
-def initialize_rcc(rcc_location: Path, sema4ai_home: Optional[Path]) -> Iterator[Rcc]:
-    global _rcc
+def initialize_rcc_actions(rcc_location: Path, actions_home: Path) -> Iterator[Rcc]:
+    """
+    Initialize RCC instance for action executions.
+    Uses ACTIONS_HOME (defaults to ~/.actions) as RCC_HOME.
+    """
+    global _rcc_actions
 
-    if _rcc:
-        yield _rcc
+    if _rcc_actions:
+        yield _rcc_actions
         return
 
-    rcc = Rcc(rcc_location, sema4ai_home)
-    _rcc = rcc
+    rcc = Rcc(rcc_location, actions_home)
+    _rcc_actions = rcc
     try:
         yield rcc
     finally:
-        _rcc = None
+        _rcc_actions = None
+
+
+@contextmanager
+def initialize_rcc_robots(rcc_location: Path, robots_home: Path) -> Iterator[Rcc]:
+    """
+    Initialize RCC instance for robot executions.
+    Uses ROBOTS_HOME (defaults to ~/.robots) as RCC_HOME.
+    """
+    global _rcc_robots
+
+    if _rcc_robots:
+        yield _rcc_robots
+        return
+
+    rcc = Rcc(rcc_location, robots_home)
+    _rcc_robots = rcc
+    try:
+        yield rcc
+    finally:
+        _rcc_robots = None
+
+
+def get_rcc_actions() -> Rcc:
+    """Get RCC instance for action executions."""
+    assert _rcc_actions is not None, "Actions RCC not initialized"
+    return _rcc_actions
+
+
+def get_rcc_robots() -> Rcc:
+    """Get RCC instance for robot executions."""
+    assert _rcc_robots is not None, "Robots RCC not initialized"
+    return _rcc_robots
+
+
+# Legacy compatibility: initialize_rcc and get_rcc are aliases for the actions RCC
+@contextmanager
+def initialize_rcc(rcc_location: Path, rcc_home: Optional[Path]) -> Iterator[Rcc]:
+    """
+    Legacy function - initializes RCC for actions.
+    For new code, prefer initialize_rcc_actions() and initialize_rcc_robots().
+    """
+    with initialize_rcc_actions(rcc_location, rcc_home if rcc_home else Path.home() / ".actions") as rcc:
+        yield rcc
 
 
 def get_rcc() -> Rcc:
-    assert _rcc is not None, "RCC not initialized"
-    return _rcc
+    """
+    Legacy function - returns the actions RCC instance.
+    For new code, prefer get_rcc_actions() or get_rcc_robots().
+    """
+    return get_rcc_actions()

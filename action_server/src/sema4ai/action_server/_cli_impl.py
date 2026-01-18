@@ -699,70 +699,77 @@ def _main_retcode(
         download_rcc(target=download_args.file, force=True)
         return 0
 
-    from sema4ai.action_server._rcc import initialize_rcc
+    from sema4ai.action_server._rcc import initialize_rcc_actions, initialize_rcc_robots
+    from sema4ai.action_server._settings import get_actions_home, get_robots_home
+
+    rcc_location = download_rcc()
+    actions_home = get_actions_home()
+    robots_home = get_robots_home()
 
     try:
-        with initialize_rcc(download_rcc(), None) as rcc:
-            if command == "package":
-                from sema4ai.action_server.package._package_build_cli import (
-                    handle_package_command,
+        # Initialize both RCC instances with separate homes to avoid holotree lock contention
+        with initialize_rcc_actions(rcc_location, actions_home) as rcc:
+            with initialize_rcc_robots(rcc_location, robots_home):
+                if command == "package":
+                    from sema4ai.action_server.package._package_build_cli import (
+                        handle_package_command,
+                    )
+
+                    return handle_package_command(base_args)
+
+                if command == "env":
+                    from sema4ai.action_server.env import handle_env_command
+
+                    return handle_env_command(base_args, rcc)
+
+                if command == "cloud":
+                    from sema4ai.action_server._actions_cloud import handle_cloud_command
+
+                    return handle_cloud_command(base_args)
+
+                if command == "oauth2":
+                    from ._oauth2 import handle_oauth2_command
+
+                    return handle_oauth2_command(base_args)
+
+                if command == "devenv":
+                    from ._devenv import handle_devenv_command
+
+                    return handle_devenv_command(base_args)
+
+                if command not in (
+                    "migrate",
+                    "import",
+                    "start",
+                    "new",
+                    "cloud",
+                    "datadir",
+                ):
+                    log.critical(f"Unexpected command: {command}.")
+                    return 1
+
+                log.info(
+                    colored("\n  ⚡️ Starting Action Server... ", attrs=["bold"])
+                    + colored(f"v{__version__}\n", attrs=["dark"])
                 )
 
-                return handle_package_command(base_args)
+                if command == "new":
+                    from ._new_project import handle_new_command
 
-            if command == "env":
-                from sema4ai.action_server.env import handle_env_command
+                    return handle_new_command(base_args)
 
-                return handle_env_command(base_args, rcc)
-
-            if command == "cloud":
-                from sema4ai.action_server._actions_cloud import handle_cloud_command
-
-                return handle_cloud_command(base_args)
-
-            if command == "oauth2":
-                from ._oauth2 import handle_oauth2_command
-
-                return handle_oauth2_command(base_args)
-
-            if command == "devenv":
-                from ._devenv import handle_devenv_command
-
-                return handle_devenv_command(base_args)
-
-            if command not in (
-                "migrate",
-                "import",
-                "start",
-                "new",
-                "cloud",
-                "datadir",
-            ):
-                log.critical(f"Unexpected command: {command}.")
-                return 1
-
-            log.info(
-                colored("\n  ⚡️ Starting Action Server... ", attrs=["bold"])
-                + colored(f"v{__version__}\n", attrs=["dark"])
-            )
-
-            if command == "new":
-                from ._new_project import handle_new_command
-
-                return handle_new_command(base_args)
-
-            migrate_import_or_start_args = typing.cast(
-                ArgumentsNamespaceRequiringDatadir, base_args
-            )
-
-            with _basic_setup(migrate_import_or_start_args, rcc) as setup_info:
-                return _command_requiring_datadir(
-                    migrate_import_or_start_args,
-                    command,
-                    setup_info,
-                    use_db=use_db,
-                    before_start=before_start,
+                migrate_import_or_start_args = typing.cast(
+                    ArgumentsNamespaceRequiringDatadir, base_args
                 )
+
+                with _basic_setup(migrate_import_or_start_args, rcc) as setup_info:
+                    return _command_requiring_datadir(
+                        migrate_import_or_start_args,
+                        command,
+                        setup_info,
+                        use_db=use_db,
+                        before_start=before_start,
+                    )
     except ActionServerValidationError as e:
         log.critical(bold_red(str(e)))
         return 1

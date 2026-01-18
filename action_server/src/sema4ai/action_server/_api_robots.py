@@ -9,7 +9,7 @@ from sema4ai.action_server._database import datetime_to_str
 from sema4ai.action_server._models import Run, RunStatus
 from sema4ai.action_server._runs_state_cache import get_global_runs_state
 from sema4ai.action_server._settings import get_settings
-from sema4ai.action_server._rcc import get_rcc
+from sema4ai.action_server._rcc import get_rcc_robots
 
 log = logging.getLogger(__name__)
 
@@ -97,7 +97,8 @@ async def run_robot_task(
 
     # Schedule background task to execute the robot
     async def _execute_robot():
-        rcc = get_rcc()
+        # Use robots RCC instance (uses ROBOTS_HOME / ~/.robots) to avoid holotree lock contention with actions
+        rcc = get_rcc_robots()
 
         # Set up paths
         package_path = Path(request.robot_package_path)

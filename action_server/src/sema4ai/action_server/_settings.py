@@ -142,6 +142,56 @@ def get_user_sema4_path() -> Path:
     return user_sema4_path
 
 
+@lru_cache
+def get_actions_home() -> Path:
+    """
+    Get RCC home directory for action executions.
+
+    Uses ACTIONS_HOME env var if set, otherwise defaults to ~/.actions.
+    This provides a separate holotree from robots to avoid lock contention.
+    """
+    actions_home_env = os.environ.get("ACTIONS_HOME")
+    if actions_home_env:
+        home = Path(actions_home_env).expanduser()
+    else:
+        if sys.platform == "win32":
+            localappdata = os.environ.get("LOCALAPPDATA")
+            if not localappdata:
+                raise RuntimeError("Error. LOCALAPPDATA not defined in environment!")
+            home = Path(localappdata) / "actions"
+        else:
+            # Linux/Mac
+            home = Path("~/.actions").expanduser()
+
+    home.mkdir(parents=True, exist_ok=True)
+    return home
+
+
+@lru_cache
+def get_robots_home() -> Path:
+    """
+    Get RCC home directory for robot executions.
+
+    Uses ROBOTS_HOME env var if set, otherwise defaults to ~/.robots.
+    This provides a separate holotree from actions to avoid lock contention.
+    """
+    robots_home_env = os.environ.get("ROBOTS_HOME")
+    if robots_home_env:
+        home = Path(robots_home_env).expanduser()
+    else:
+        if sys.platform == "win32":
+            localappdata = os.environ.get("LOCALAPPDATA")
+            if not localappdata:
+                raise RuntimeError("Error. LOCALAPPDATA not defined in environment!")
+            home = Path(localappdata) / "robots"
+        else:
+            # Linux/Mac
+            home = Path("~/.robots").expanduser()
+
+    home.mkdir(parents=True, exist_ok=True)
+    return home
+
+
 @dataclass(slots=True, kw_only=True)
 class Settings:
     artifacts_dir: Path
