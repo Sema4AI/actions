@@ -832,7 +832,10 @@ CREATE TABLE IF NOT EXISTS {table_name}(
             pass
         else:
             if field_cls == str:
-                use = f"{use} DEFAULT {default_value!r}"
+                if default_value is None:
+                    use = f"{use} DEFAULT NULL"
+                else:
+                    use = f"{use} DEFAULT {default_value!r}"
 
         if primary_key:
             use = f"{use} PRIMARY KEY"

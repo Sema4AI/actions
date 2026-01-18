@@ -85,8 +85,7 @@ class Run:
     status: int  # 0=not run, 1=running, 2=passed, 3=failed, 4=cancelled
     _db_rules.indexes.add("Run.status")
 
-    action_id: str  # foreign key to the action
-    _db_rules.foreign_keys.add("Run.action_id")
+    action_id: str  # action ID (empty for robot runs, no FK constraint)
     _db_rules.indexes.add("Run.action_id")
 
     start_time: str  # The time that the action started running
@@ -106,7 +105,7 @@ class Run:
     _db_rules.indexes.add("Run.run_type")
 
     robot_package_path: Optional[str] = None  # Path to robot package if run_type='robot'
-    robot_task_name: Optional[str] = None  # Name of robot task if run_type='robot' 
+    robot_task_name: Optional[str] = None  # Name of robot task if run_type='robot'
     robot_env_hash: Optional[str] = None  # RCC environment hash if run_type='robot'
 
 

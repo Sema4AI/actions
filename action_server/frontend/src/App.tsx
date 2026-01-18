@@ -13,6 +13,7 @@ import { ActionsPage } from '@/core/pages/Actions';
 import { AnalyticsPage } from '@/core/pages/Analytics';
 import { ArtifactsPage } from '@/core/pages/Artifacts';
 import { LogsPage } from '@/core/pages/Logs';
+import { RobotsPage } from '@/core/pages/Robots';
 import { RunHistoryPage } from '@/core/pages/RunHistory';
 import {
   ActionServerContext,
@@ -103,6 +104,16 @@ const OpenApiIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+const RobotsIcon = ({ className }: { className?: string }) => (
+  <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="11" width="18" height="10" rx="2" />
+    <circle cx="12" cy="5" r="2" />
+    <path d="M12 7v4" />
+    <circle cx="8" cy="16" r="1" fill="currentColor" />
+    <circle cx="16" cy="16" r="1" fill="currentColor" />
+  </svg>
+);
+
 const LockIcon = ({ className }: { className?: string }) => (
   <svg className={className} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
@@ -160,6 +171,7 @@ type NavItem = {
 const NAV_ITEMS: NavItem[] = [
   { label: 'Actions', path: '/actions', tier: 'core', icon: ActionsIcon },
   { label: 'Runs', path: '/runs', tier: 'core', icon: RunsIcon },
+  { label: 'Robots', path: '/robots', tier: 'core', icon: RobotsIcon },
   { label: 'Analytics', path: '/analytics', tier: 'core', icon: AnalyticsIcon },
   { label: 'OpenAPI spec', path: '/openapi', tier: 'core', icon: OpenApiIcon },
 ];
@@ -461,6 +473,7 @@ const AppRoutes = () => {
         <Route path="/" element={<Navigate to="/actions" replace />} />
         <Route path="/actions" element={<ActionsPage />} />
         <Route path="/runs" element={<RunHistoryPage />} />
+        <Route path="/robots" element={<RobotsPage />} />
         <Route path="/logs/:runId" element={<LogsPage />} />
         <Route path="/artifacts/:runId" element={<ArtifactsPage />} />
 

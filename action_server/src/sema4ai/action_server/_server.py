@@ -116,8 +116,12 @@ def start_server(
         action_package_api_router, include_in_schema=settings.full_openapi_spec
     )
     app.include_router(robots_api_router, include_in_schema=settings.full_openapi_spec)
-    app.include_router(work_items_api_router, include_in_schema=settings.full_openapi_spec)
-    app.include_router(analytics_api_router, include_in_schema=settings.full_openapi_spec)
+    app.include_router(
+        work_items_api_router, include_in_schema=settings.full_openapi_spec
+    )
+    app.include_router(
+        analytics_api_router, include_in_schema=settings.full_openapi_spec
+    )
     app.include_router(websocket_api_router)
     app.include_router(secrets_api_router, include_in_schema=settings.full_openapi_spec)
     app.include_router(oauth2_api_router, include_in_schema=settings.full_openapi_spec)
@@ -155,9 +159,9 @@ def start_server(
             )
 
             if expose_session_payload:
-                payload[
-                    "expose_url"
-                ] = f"https://{expose_session_payload.sessionId}.{settings.expose_url}"
+                payload["expose_url"] = (
+                    f"https://{expose_session_payload.sessionId}.{settings.expose_url}"
+                )
         return payload
 
     if start_args.auto_reload:
@@ -310,7 +314,7 @@ def start_server(
         return (host, port)
 
     def expose_later(loop):
-        from sema4ai.action_server._settings import is_frozen
+        from sema4ai.action_server._settings import is_frozen, is_community_build
 
         nonlocal expose_subprocess
 
@@ -321,6 +325,13 @@ def start_server(
         (host, port) = _get_currrent_host()
         url = f"{protocol}://{host}:{port}"
 
+        # Check if we should use community expose (open source tunnels)
+        if is_community_build() or settings.expose_provider != "sema4ai":
+            # Use community expose with open source tunnel providers
+            asyncio.create_task(_start_community_expose(port, settings))
+            return
+
+        # Enterprise expose using sema4ai.link
         parent_pid = os.getpid()
 
         if is_frozen():
@@ -350,6 +361,52 @@ def start_server(
             {"use_https": settings.use_https, "ssl_certfile": settings.ssl_certfile}
         )
         expose_subprocess = subprocess.Popen(args, env=env)
+
+    # Community expose task holder
+    community_tunnel_manager = None
+
+    async def _start_community_expose(port: int, settings):
+        """Start community expose using open source tunnel providers."""
+        nonlocal community_tunnel_manager
+
+        from ._community_expose import TunnelManager, TunnelProvider
+
+        # Map settings.expose_provider to TunnelProvider
+        provider_map = {
+            "auto": TunnelProvider.AUTO,
+            "localhost.run": TunnelProvider.LOCALHOST_RUN,
+            "bore": TunnelProvider.BORE,
+            "cloudflare": TunnelProvider.CLOUDFLARE,
+        }
+
+        provider = provider_map.get(settings.expose_provider, TunnelProvider.AUTO)
+
+        try:
+            community_tunnel_manager = TunnelManager(preferred_provider=provider)
+            tunnel = await community_tunnel_manager.start(port)
+
+            log.info(
+                colored("\n  🌍 Public URL: ", "green", attrs=["bold"])
+                + colored(tunnel.public_url, "light_blue")
+            )
+
+            if api_key:
+                log.info(
+                    colored("  🔑 API Authorization Bearer key: ", attrs=["bold"])
+                    + f"{api_key}\n"
+                )
+
+            log.info(colored(f"     (using {tunnel.provider.value})", attrs=["dark"]))
+
+        except Exception as e:
+            log.error(f"Failed to start tunnel: {e}")
+            log.info(
+                colored(
+                    "     Tip: Install 'bore' for simple tunneling: ",
+                    attrs=["dark"],
+                )
+                + colored("https://github.com/ekzhang/bore", "light_blue")
+            )
 
     protocol = "https" if settings.use_https else "http"
 

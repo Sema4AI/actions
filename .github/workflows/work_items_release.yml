@@ -1,0 +1,45 @@
+name: Work Items Release
+
+on:
+  push:
+    tags:
+      - "actions-work-items-*"
+
+permissions:
+  contents: read
+  id-token: write
+
+defaults:
+  run:
+    working-directory: "./work-items"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository and submodules
+        uses: actions/checkout@v5
+
+      - name: Install poetry
+        run: pipx install poetry
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: "poetry"
+
+      - name: Install project
+        run: poetry install
+
+      - name: Check tag version
+        run: poetry run invoke check-tag-version
+
+      - name: Build with poetry
+        run: poetry build
+
+      - name: Upload to PyPI
+        run: |
+          poetry config pypi-token.pypi  ${{ secrets.PYPI_TOKEN_ACTIONS_WORK_ITEMS }}
+          poetry publish

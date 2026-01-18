@@ -37,6 +37,8 @@ MIGRATION_ID_TO_NAME: Dict[int, str] = {
     7: "add_code_verifier",
     # we'll look for a 'migration_add_request_id_to_run' module based on this.
     8: "add_request_id_to_run",
+    # we'll look for a 'migration_add_robot_run_columns' module based on this.
+    9: "add_robot_run_columns",
 }
 
 CURRENT_VERSION: int = max(MIGRATION_ID_TO_NAME.keys())

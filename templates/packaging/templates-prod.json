@@ -30,6 +30,11 @@
             "id": "data-access-kb",
             "name": "Data Access/Knowledge Base",
             "desc": "Give agents access to knowledge base."
+        },
+        {
+            "id": "workflow-producer-consumer",
+            "name": "Workflow/Producer-Consumer",
+            "desc": "Producer-consumer workflow pattern using work items."
         }
     ]
 }

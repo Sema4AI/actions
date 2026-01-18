@@ -17,6 +17,11 @@ A drop-in replacement for `robocorp-workitems` with broader applicability beyond
 pip install actions-work-items
 ```
 
+Or with poetry:
+```bash
+poetry add actions-work-items
+```
+
 ## Quick Start
 
 ### robocorp-workitems Compatible API

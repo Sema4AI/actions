@@ -1,0 +1,30 @@
+spec-version: v2
+
+name: Workflow Producer-Consumer Template
+description: Producer-consumer workflow pattern using work items.
+version: 0.0.1
+
+dependencies:
+  conda-forge:
+    - python=3.12.12
+    - uv=0.8.17
+  pypi:
+    - sema4ai-actions=1.6.4
+    - -e ../../work-items  # TODO: Change to 'actions-work-items>=0.2.0' after PyPI publish
+    - requests>=2.31.0
+
+dev-dependencies:
+  conda-forge:
+    - pytest=8.4.2
+    - ruff=0.14.3
+
+dev-tasks:
+  test: pytest tests
+  lint: ruff check . && ruff format --check .
+
+packaging:
+  exclude:
+    - ./.git/**
+    - ./devdata/**
+    - ./output/**
+    - ./**/__pycache__

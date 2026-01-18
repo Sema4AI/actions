@@ -346,9 +346,29 @@ class Rcc(object):
             msg = f"Did not find CONDA_PREFIX in {environ}"
             return return_failure(msg)
 
+        # Derive PYTHON_EXE from CONDA_PREFIX if not explicitly set by RCC
         if "PYTHON_EXE" not in environ:
-            msg = f"Did not find PYTHON_EXE in {environ}"
-            return return_failure(msg)
+            conda_prefix = environ["CONDA_PREFIX"]
+            # Try common Python locations in conda environment
+            import platform
+            if platform.system() == "Windows":
+                python_candidates = [
+                    os.path.join(conda_prefix, "python.exe"),
+                    os.path.join(conda_prefix, "Scripts", "python.exe"),
+                ]
+            else:
+                python_candidates = [
+                    os.path.join(conda_prefix, "bin", "python3"),
+                    os.path.join(conda_prefix, "bin", "python"),
+                ]
+
+            for candidate in python_candidates:
+                if os.path.exists(candidate):
+                    environ["PYTHON_EXE"] = candidate
+                    break
+            else:
+                msg = f"Could not find Python executable in CONDA_PREFIX: {conda_prefix}"
+                return return_failure(msg)
 
         return ActionResult(True, None, EnvInfo(environ))
 

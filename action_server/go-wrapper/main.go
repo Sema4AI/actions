@@ -31,8 +31,8 @@ var ASSETS_VERSION []byte
 //go:embed assets/app_hash
 var ASSETS_APP_HASH []byte
 
-// Constants
-var debugGoWrapper = os.Getenv("SEMA4AI_GO_WRAPPER_DEBUG") == "1"
+// Constants - support both new and legacy env var names
+var debugGoWrapper = os.Getenv("ACTIONS_GO_WRAPPER_DEBUG") == "1" || os.Getenv("SEMA4AI_GO_WRAPPER_DEBUG") == "1"
 
 // read/write/execute for the owner, read/execute for the group and others
 const DEFAULT_PERMISSIONS = 0755
@@ -333,8 +333,11 @@ func extractAndRun(config RunConfig) {
 
 	if config.DoUpdateCheck {
 		// Check if there is an update available, but only do it if there is
-		// no `SEMA4AI_OPTIMIZE_FOR_CONTAINER` environment variable set to 1.
-		if os.Getenv("SEMA4AI_OPTIMIZE_FOR_CONTAINER") != "1" && os.Getenv("SEMA4AI_SKIP_UPDATE_CHECK") != "1" {
+		// no container optimization or skip update check environment variable set.
+		// Support both new (ACTIONS_*) and legacy (SEMA4AI_*) env var names.
+		skipContainer := os.Getenv("ACTIONS_OPTIMIZE_FOR_CONTAINER") == "1" || os.Getenv("SEMA4AI_OPTIMIZE_FOR_CONTAINER") == "1"
+		skipUpdate := os.Getenv("ACTIONS_SKIP_UPDATE_CHECK") == "1" || os.Getenv("SEMA4AI_SKIP_UPDATE_CHECK") == "1"
+		if !skipContainer && !skipUpdate {
 			checkAvailableUpdate(version, config)
 		}
 	}
@@ -347,7 +350,7 @@ func extractAndRun(config RunConfig) {
 			fmt.Fprintf(os.Stderr, "Error getting local app data directory (LOCALAPPDATA environment variable is not set)\n")
 			os.Exit(1)
 		}
-		targetDirectory = fmt.Sprintf("%s\\sema4ai\\bin\\%s\\internal\\%s", appDataDir, config.ExecutableName, version)
+		targetDirectory = fmt.Sprintf("%s\\actions\\bin\\%s\\internal\\%s", appDataDir, config.ExecutableName, version)
 		executablePath = filepath.Join(targetDirectory, fmt.Sprintf("%s.exe", config.ExecutableName))
 	case "linux", "darwin":
 		homeDir, err := os.UserHomeDir()
@@ -355,7 +358,7 @@ func extractAndRun(config RunConfig) {
 			fmt.Fprintf(os.Stderr, "Error getting user home directory: %s\n", err)
 			os.Exit(1)
 		}
-		targetDirectory = fmt.Sprintf("%s/.sema4ai/bin/%s/internal/%s", homeDir, config.ExecutableName, version)
+		targetDirectory = fmt.Sprintf("%s/.actions/bin/%s/internal/%s", homeDir, config.ExecutableName, version)
 		executablePath = filepath.Join(targetDirectory, config.ExecutableName)
 	default:
 		fmt.Fprintf(os.Stderr, "Unsupported operating system\n")

@@ -1,0 +1,7 @@
+__pycache__/
+*.py[cod]
+.env
+output/
+devdata/
+*.db
+.ruff_cache/
