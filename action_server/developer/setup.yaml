@@ -1,4 +1,4 @@
-# Action Server Development Environment
+uv# Action Server Development Environment
 #
 # This defines the conda environment for building action-server.
 # RCC uses this to create an isolated, reproducible build environment.
