@@ -14,7 +14,7 @@ dependencies:
 
   # Package management and build tools
   - pip=25.0
-  - uv=0.5.14
+  - uv=0.9.26
 
   # Task runner for invoke tasks
   - invoke=2.2.0
