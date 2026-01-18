@@ -50,6 +50,7 @@ def start_server(
     from ._api_oauth2 import oauth2_api_router
     from ._api_robots import robots_api_router
     from ._api_run import run_api_router
+    from ._api_work_items import work_items_api_router
     from ._api_secrets import secrets_api_router
     from ._app import get_app
     from ._server_websockets import websocket_api_router
@@ -115,6 +116,7 @@ def start_server(
         action_package_api_router, include_in_schema=settings.full_openapi_spec
     )
     app.include_router(robots_api_router, include_in_schema=settings.full_openapi_spec)
+    app.include_router(work_items_api_router, include_in_schema=settings.full_openapi_spec)
     app.include_router(analytics_api_router, include_in_schema=settings.full_openapi_spec)
     app.include_router(websocket_api_router)
     app.include_router(secrets_api_router, include_in_schema=settings.full_openapi_spec)
