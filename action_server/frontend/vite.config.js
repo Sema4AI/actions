@@ -8,6 +8,9 @@ import react from '@vitejs/plugin-react';
 const tier = process.env.TIER || 'community';
 const isCommunity = tier === 'community';
 
+// Vendored packages that are allowed in community builds
+const VENDORED_PACKAGES = ['@sema4ai/components', '@sema4ai/icons'];
+
 // Custom plugin to enforce tier separation
 function tierSeparationPlugin() {
   return {
@@ -16,8 +19,12 @@ function tierSeparationPlugin() {
     resolveId(source, importer) {
       // Block enterprise imports in community builds
       if (isCommunity) {
-        if (source.includes('@sema4ai/') || 
-            source.includes('@/enterprise') || 
+        // Allow vendored @sema4ai packages
+        if (VENDORED_PACKAGES.some(pkg => source.startsWith(pkg))) {
+          return null; // Allow these
+        }
+        if (source.includes('@sema4ai/') ||
+            source.includes('@/enterprise') ||
             source.includes('../enterprise')) {
           console.error(`❌ Enterprise import detected in community build: ${source}`);
           console.error(`   From: ${importer}`);
@@ -76,8 +83,8 @@ export default defineConfig({
   build: {
     rollupOptions: {
       // Tree-shake enterprise code in community builds
+      // Note: Vendored packages (@sema4ai/components, @sema4ai/icons) are NOT externalized
       external: isCommunity ? [
-        /@sema4ai\/.*/,
         /@\/enterprise\/.*/,
       ] : [],
       output: {
