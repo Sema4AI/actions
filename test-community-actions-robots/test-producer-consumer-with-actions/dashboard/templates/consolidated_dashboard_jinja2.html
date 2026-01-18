@@ -1,0 +1,3881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 RPA Analytics Dashboard - Professional Automation Insights</title>
+    
+    <!-- Professional Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <!-- Use DuckDB WASM ES module approach like in working scripts.js -->
+    <script type="module" id="duckdb-loader">
+      import * as duckdb from "https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@latest/+esm";
+      
+      // Make duckdb available globally
+      window.duckdb = duckdb;
+      
+      // Signal that DuckDB is loaded
+      window.duckdbLoaded = true;
+      window.dispatchEvent(new Event('duckdb-loaded'));
+    </script>
+    
+    <script>
+      // Library loading check with fallback
+      window.addEventListener('DOMContentLoaded', function() {
+        let libraryErrors = [];
+        
+        // Check for Chart.js immediately
+        if (!window.Chart) {
+          libraryErrors.push('Chart.js failed to load');
+        }
+        
+        // Check for DuckDB after a short delay to allow module loading
+        setTimeout(() => {
+          if (!window.duckdbLoaded) {
+            libraryErrors.push('DuckDB WASM failed to load');
+          }
+          
+          if (libraryErrors.length > 0) {
+            console.error('Library loading errors:', libraryErrors);
+            // Show a user-friendly error message
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.innerHTML = 
+              '<i class="fas fa-exclamation-triangle"></i> ' +
+              'Some libraries failed to load. Please check your internet connection and reload the page.' +
+              '<br><small>Missing: ' + libraryErrors.join(', ') + '</small>';
+            errorDiv.style.position = 'fixed';
+            errorDiv.style.top = '20px';
+            errorDiv.style.left = '20px';
+            errorDiv.style.right = '20px';
+            errorDiv.style.zIndex = '9999';
+            document.body.appendChild(errorDiv);
+          }
+        }, 1000);
+      });
+    </script>
+    <style>
+        :root {
+            /* Professional Brand Colors - RPA Analytics Theme */
+            --brand-primary: #0066cc;          /* Professional blue */
+            --brand-secondary: #003d7a;        /* Deep navy */
+            --brand-accent: #00a86b;           /* Professional green */
+            --brand-accent-2: #ff6b35;         /* Warm orange */
+            
+            /* Semantic Colors */
+            --success-color: #00a86b;
+            --warning-color: #ffb020;
+            --error-color: #e74c3c;
+            --info-color: #0066cc;
+            
+            /* Light Theme Variables */
+            --primary-color: var(--brand-primary);
+            --secondary-color: var(--brand-secondary);
+            --accent-color: var(--brand-accent);
+            --accent-2-color: var(--brand-accent-2);
+            
+            /* Advanced Gradient Backgrounds */
+            --background-gradient: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            --header-gradient: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 100%);
+            --card-gradient: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+            
+            /* Glass-morphism Effects */
+            --card-background: rgba(255, 255, 255, 0.85);
+            --card-backdrop: blur(20px);
+            --glass-border: rgba(255, 255, 255, 0.3);
+            
+            /* Typography */
+            --text-primary: #1a202c;
+            --text-secondary: #4a5568;
+            --text-muted: #718096;
+            --text-inverse: #ffffff;
+            
+            /* Enhanced Borders & Surfaces */
+            --border-color: #e2e8f0;
+            --border-light: #f7fafc;
+            --surface-elevated: #ffffff;
+            --surface-subtle: #f7fafc;
+            
+            /* Professional Shadows */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            
+            /* Interactive States */
+            --hover-overlay: rgba(0, 102, 204, 0.04);
+            --active-overlay: rgba(0, 102, 204, 0.08);
+            --focus-ring: 0 0 0 3px rgba(0, 102, 204, 0.12);
+            
+            /* Spacing Scale */
+            --space-xs: 0.25rem;
+            --space-sm: 0.5rem;
+            --space-md: 1rem;
+            --space-lg: 1.5rem;
+            --space-xl: 2rem;
+            --space-2xl: 3rem;
+            
+            /* Border Radius Scale */
+            --radius-sm: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            --radius-2xl: 1.5rem;
+        }
+
+        [data-theme="dark"] {
+            /* Dark Theme Brand Colors */
+            --brand-primary: #3b82f6;
+            --brand-secondary: #1e40af;
+            --brand-accent: #10b981;
+            --brand-accent-2: #f59e0b;
+            
+            /* Dark Theme Overrides */
+            --primary-color: var(--brand-primary);
+            --secondary-color: var(--brand-secondary);
+            --accent-color: var(--brand-accent);
+            --accent-2-color: var(--brand-accent-2);
+            
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+            --info-color: #3b82f6;
+            
+            /* Dark Gradients */
+            --background-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            --header-gradient: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 100%);
+            --card-gradient: linear-gradient(145deg, #1e293b 0%, #334155 100%);
+            
+            /* Dark Glass-morphism */
+            --card-background: rgba(30, 41, 59, 0.85);
+            --card-backdrop: blur(20px);
+            --glass-border: rgba(148, 163, 184, 0.2);
+            
+            /* Dark Typography */
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --text-inverse: #0f172a;
+            
+            /* Dark Borders & Surfaces */
+            --border-color: #334155;
+            --border-light: #475569;
+            --surface-elevated: #1e293b;
+            --surface-subtle: #0f172a;
+            
+            /* Dark Shadows */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.25);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+            --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            
+            /* Dark Interactive States */
+            --hover-overlay: rgba(59, 130, 246, 0.08);
+            --active-overlay: rgba(59, 130, 246, 0.12);
+            --focus-ring: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: var(--background-gradient);
+            min-height: 100vh;
+            color: var(--text-primary);
+            line-height: 1.6;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-feature-settings: 'liga', 'kern';
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Enhanced Typography Scale */
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 700;
+            line-height: 1.2;
+            letter-spacing: -0.025em;
+        }
+
+        h1 { font-size: 2.5rem; }
+        h2 { font-size: 2rem; }
+        h3 { font-size: 1.5rem; }
+        h4 { font-size: 1.25rem; }
+        h5 { font-size: 1.125rem; }
+        h6 { font-size: 1rem; }
+
+        .text-sm { font-size: 0.875rem; }
+        .text-xs { font-size: 0.75rem; }
+        .text-lg { font-size: 1.125rem; }
+        .text-xl { font-size: 1.25rem; }
+
+        /* Professional Container */
+        .dashboard-container {
+            max-width: 1680px;
+            margin: 0 auto;
+            padding: var(--space-xl);
+            position: relative;
+        }
+
+        /* Modern Professional Header */
+        .header {
+            background: var(--header-gradient);
+            backdrop-filter: var(--card-backdrop);
+            border-radius: var(--radius-2xl);
+            padding: var(--space-2xl);
+            margin-bottom: var(--space-2xl);
+            text-align: center;
+            box-shadow: var(--shadow-xl);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-color), var(--accent-2-color));
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: var(--space-md);
+            color: var(--text-inverse);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 2;
+        }
+
+        .header h1 .robot-icon {
+            display: inline-block;
+            margin-right: var(--space-md);
+            background: var(--accent-color);
+            padding: var(--space-md);
+            border-radius: var(--radius-lg);
+            font-size: 2.5rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .header .subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.25rem;
+            font-weight: 500;
+            margin-bottom: var(--space-xl);
+            letter-spacing: 0.025em;
+            position: relative;
+            z-index: 2;
+        }
+
+        .header .meta-info {
+            display: flex;
+            justify-content: center;
+            gap: var(--space-2xl);
+            flex-wrap: wrap;
+            margin-top: var(--space-xl);
+            position: relative;
+            z-index: 2;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            color: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.1);
+            padding: var(--space-sm) var(--space-md);
+            border-radius: var(--radius-lg);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            font-weight: 500;
+        }
+
+        .meta-item i {
+            color: var(--accent-color);
+            font-size: 1.1rem;
+        }
+
+        /* Modern Theme Toggle */
+        .theme-toggle {
+            position: absolute;
+            top: var(--space-lg);
+            right: var(--space-lg);
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: var(--radius-xl);
+            width: 56px;
+            height: 56px;
+            cursor: pointer;
+            font-size: 1.25rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(20px);
+            z-index: 10;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.05);
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.4);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .theme-toggle:active {
+            transform: scale(0.95);
+        }
+
+        /* Professional Controls */
+        .controls {
+            background: var(--card-background);
+            backdrop-filter: var(--card-backdrop);
+            border-radius: var(--radius-xl);
+            padding: var(--space-xl);
+            margin-bottom: var(--space-2xl);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--glass-border);
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: var(--space-xl);
+            align-items: center;
+        }
+
+        /* Enhanced Search */
+        .search-container {
+            position: relative;
+            flex-grow: 1;
+        }
+
+        .search-container i {
+            position: absolute;
+            left: var(--space-md);
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: var(--space-md) var(--space-md) var(--space-md) calc(var(--space-md) * 3);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            font-size: 1rem;
+            background: var(--surface-elevated);
+            color: var(--text-primary);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: var(--focus-ring);
+            transform: translateY(-1px);
+        }
+
+        .search-input::placeholder {
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        /* Professional Filter Groups */
+        .filter-group {
+            display: flex;
+            gap: var(--space-sm);
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: var(--space-sm) var(--space-lg);
+            border: 2px solid var(--primary-color);
+            background: transparent;
+            color: var(--primary-color);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .filter-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--primary-color);
+            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: -1;
+        }
+
+        .filter-btn:hover::before,
+        .filter-btn.active::before {
+            left: 0;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .filter-btn i {
+            font-size: 0.9rem;
+        }
+
+        /* Professional Statistics Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--space-xl);
+            margin-bottom: var(--space-2xl);
+        }
+
+        .stat-card {
+            background: var(--card-gradient);
+            backdrop-filter: var(--card-backdrop);
+            border-radius: var(--radius-xl);
+            padding: var(--space-xl);
+            text-align: center;
+            box-shadow: var(--shadow-lg);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+            group: hover;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            transform: scaleX(0);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: var(--radius-md);
+        }
+
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            background: radial-gradient(circle at 50% 50%, rgba(0, 102, 204, 0.03) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: var(--shadow-2xl);
+        }
+
+        .stat-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .stat-card:hover::after {
+            opacity: 1;
+        }
+
+        .stat-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto var(--space-lg);
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            border-radius: var(--radius-xl);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            z-index: 2;
+        }
+
+        .stat-icon::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            border-radius: inherit;
+            z-index: -1;
+            opacity: 0.3;
+            filter: blur(8px);
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: var(--space-sm);
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            position: relative;
+            z-index: 2;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: var(--space-sm);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            position: relative;
+            z-index: 2;
+        }
+
+        .stat-change {
+            font-size: 0.875rem;
+            margin-top: var(--space-sm);
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: var(--radius-lg);
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-xs);
+            position: relative;
+            z-index: 2;
+        }
+
+        .stat-change.positive {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .stat-change.negative {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error-color);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .stat-change i {
+            font-size: 0.75rem;
+        }
+
+        /* Professional Charts Grid */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: var(--space-2xl);
+            margin-bottom: var(--space-2xl);
+        }
+
+        .chart-card {
+            background: var(--card-gradient);
+            backdrop-filter: var(--card-backdrop);
+            border-radius: var(--radius-xl);
+            padding: var(--space-xl);
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            border: 1px solid var(--glass-border);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .chart-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .chart-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: var(--space-xl);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            border-bottom: 2px solid var(--border-light);
+            padding-bottom: var(--space-md);
+        }
+
+        .chart-title i {
+            color: var(--primary-color);
+            font-size: 1.25rem;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 350px;
+        }
+
+        /* Professional Data Tables */
+        .data-table {
+            background: var(--card-gradient);
+            backdrop-filter: var(--card-backdrop);
+            border-radius: var(--radius-xl);
+            padding: var(--space-xl);
+            box-shadow: var(--shadow-lg);
+            margin-bottom: var(--space-2xl);
+            border: 1px solid var(--glass-border);
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-xl);
+            border-bottom: 2px solid var(--border-light);
+            padding-bottom: var(--space-md);
+        }
+
+        .table-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+
+        .table-title i {
+            color: var(--primary-color);
+            font-size: 1.25rem;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--surface-elevated);
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            padding: var(--space-md) var(--space-lg);
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: top;
+        }
+
+        th {
+            background: linear-gradient(135deg, var(--surface-subtle), var(--border-light));
+            font-weight: 700;
+            color: var(--text-primary);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 0.75rem;
+        }
+
+        .sortable-header {
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            padding-right: var(--space-xl);
+        }
+
+        .sortable-header:hover {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            color: white;
+        }
+
+        .sort-indicator {
+            display: inline-block;
+            margin-left: var(--space-sm);
+            font-size: 0.75rem;
+            opacity: 0.5;
+            position: absolute;
+            right: var(--space-md);
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .sort-indicator.active {
+            opacity: 1;
+            color: var(--primary-color);
+        }
+
+        .sortable-header:hover .sort-indicator {
+            opacity: 1;
+            color: white;
+        }
+
+        .sort-asc .sort-indicator::before {
+            content: '↑';
+        }
+
+        .sort-desc .sort-indicator::before {
+            content: '↓';
+        }
+
+        .sort-none .sort-indicator::before {
+            content: '↕';
+        }
+
+        tr:hover {
+            background: var(--hover-overlay);
+        }
+
+        tbody tr {
+            transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Professional Status Badges */
+        .status-badge {
+            padding: var(--space-xs) var(--space-md);
+            border-radius: var(--radius-lg);
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-xs);
+            border: 1px solid transparent;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .status-success {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));
+            color: var(--success-color);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .status-error {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05));
+            color: var(--error-color);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .status-warning {
+            background: linear-gradient(135deg, rgba(255, 176, 32, 0.15), rgba(255, 176, 32, 0.05));
+            color: var(--warning-color);
+            border-color: rgba(255, 176, 32, 0.3);
+        }
+
+        .status-info {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.05));
+            color: var(--info-color);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        /* Professional Loading States */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .loading i {
+            animation: spin 1s linear infinite;
+            margin-right: var(--space-md);
+            color: var(--primary-color);
+            font-size: 1.5rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Enhanced Animations */
+        .fade-in {
+            animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Professional Error States */
+        .error-message {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05));
+            color: var(--error-color);
+            padding: var(--space-lg);
+            border-radius: var(--radius-lg);
+            margin: var(--space-lg) 0;
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            font-weight: 500;
+        }
+
+        .error-message i {
+            font-size: 1.25rem;
+            color: var(--error-color);
+        }
+
+        /* Professional Empty States */
+        .empty-state {
+            text-align: center;
+            padding: var(--space-2xl);
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: var(--space-lg);
+            color: var(--text-muted);
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: var(--space-sm);
+            color: var(--text-secondary);
+        }
+
+        .empty-state p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* Professional Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: var(--space-xl);
+            overflow-x: auto;
+        }
+
+        .tab {
+            padding: var(--space-lg) var(--space-xl);
+            cursor: pointer;
+            border: none;
+            background: none;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .tab i {
+            font-size: 0.9rem;
+        }
+
+        .tab.active {
+            color: var(--primary-color);
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            border-radius: var(--radius-sm);
+        }
+
+        .tab:hover:not(.active) {
+            color: var(--text-primary);
+            background: var(--hover-overlay);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Professional Mobile Responsive Design */
+        @media (max-width: 1200px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-container {
+                padding: var(--space-md);
+            }
+
+            .header {
+                padding: var(--space-xl);
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .header h1 .robot-icon {
+                font-size: 1.75rem;
+                padding: var(--space-sm);
+            }
+
+            .header .subtitle {
+                font-size: 1rem;
+            }
+
+            .header .meta-info {
+                flex-direction: column;
+                gap: var(--space-md);
+            }
+
+            .controls-grid {
+                grid-template-columns: 1fr;
+                gap: var(--space-lg);
+            }
+
+            .filter-group {
+                justify-content: center;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: var(--space-lg);
+            }
+
+            .stat-card {
+                padding: var(--space-lg);
+            }
+
+            .stat-number {
+                font-size: 2.5rem;
+            }
+
+            .charts-grid {
+                gap: var(--space-lg);
+            }
+
+            .chart-card,
+            .data-table {
+                padding: var(--space-lg);
+            }
+
+            .table-wrapper {
+                font-size: 0.8rem;
+            }
+
+            th, td {
+                padding: var(--space-sm) var(--space-md);
+            }
+
+            .tabs {
+                padding: 0 var(--space-sm);
+            }
+
+            .tab {
+                padding: var(--space-md) var(--space-lg);
+                font-size: 0.85rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .dashboard-container {
+                padding: var(--space-sm);
+            }
+
+            .header h1 {
+                font-size: 1.75rem;
+            }
+
+            .stat-number {
+                font-size: 2rem;
+            }
+
+            .filter-btn {
+                padding: var(--space-xs) var(--space-md);
+                font-size: 0.8rem;
+            }
+
+            .search-input {
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                background: white !important;
+                color: black !important;
+            }
+
+            .theme-toggle,
+            .controls {
+                display: none !important;
+            }
+
+            .dashboard-container {
+                max-width: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            .chart-card,
+            .data-table,
+            .stat-card {
+                break-inside: avoid;
+                box-shadow: none !important;
+                border: 1px solid #ddd !important;
+            }
+        }
+
+        /* Enhanced Focus States for Accessibility */
+        .filter-btn:focus,
+        .search-input:focus,
+        .tab:focus,
+        .theme-toggle:focus {
+            outline: 2px solid var(--primary-color);
+            outline-offset: 2px;
+        }
+
+        .sortable-header:focus {
+            outline: 2px solid var(--primary-color);
+            outline-offset: -2px;
+        }
+
+        /* Dark Mode Enhancements */
+        [data-theme="dark"] .chart-card,
+        [data-theme="dark"] .data-table,
+        [data-theme="dark"] .stat-card {
+            box-shadow: var(--shadow-lg), 0 0 0 1px rgba(148, 163, 184, 0.1);
+        }
+
+        [data-theme="dark"] .search-input:focus {
+            box-shadow: var(--focus-ring), 0 0 0 1px var(--primary-color);
+        }
+
+        /* Enhanced Loading Animation */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .loading.pulse {
+            animation: pulse 2s infinite;
+        }
+
+        /* Professional Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--border-light);
+            border-radius: var(--radius-sm);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: var(--radius-sm);
+            transition: background 0.2s;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
+        [data-theme="dark"] ::-webkit-scrollbar-track {
+            background: var(--surface-subtle);
+        }
+
+        [data-theme="dark"] ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+        }
+
+        [data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="header fade-in">
+            <button class="theme-toggle" id="themeToggle">
+                <i class="fas fa-moon"></i>
+            </button>
+            <h1>
+                <span class="robot-icon">
+                    <i class="fas fa-robot"></i>
+                </span>
+                RPA Analytics Dashboard
+            </h1>
+            <p class="subtitle">Intelligent Automation • Performance Analytics • Quality Insights</p>
+            <div class="meta-info">
+                <div class="meta-item">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span id="generatedDate">Generated on {{generated_date|format_timestamp}}</span>
+                </div>
+                <div class="meta-item">
+                    <i class="fas fa-clock"></i>
+                    <span id="executionTime">Execution Time: {{ execution_duration }}</span>
+                </div>
+                <div class="meta-item">
+                    <i class="fas fa-database"></i>
+                    <span id="dataStats">{{ total_log_entries }} log entries processed</span>
+                </div>
+                <div class="meta-item">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Real-time Analytics</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls fade-in">
+            <div class="controls-grid">
+                <div class="search-container">
+                    <i class="fas fa-search"></i>
+                    <input type="text" class="search-input" placeholder="Search logs, tasks, or work items..." id="searchInput">
+                </div>
+                <div class="filter-group">
+                    <button class="filter-btn active" data-filter="all">
+                        <i class="fas fa-th"></i> All
+                    </button>
+                    <button class="filter-btn" data-filter="producer">
+                        <i class="fas fa-play"></i> Producer
+                    </button>
+                    <button class="filter-btn" data-filter="consumer">
+                        <i class="fas fa-cogs"></i> Consumer
+                    </button>
+                    <button class="filter-btn" data-filter="reporter">
+                        <i class="fas fa-chart-line"></i> Reporter
+                    </button>
+                </div>
+                <div class="filter-group">
+                    <button class="filter-btn" data-level="ERROR">
+                        <i class="fas fa-exclamation-circle"></i> Errors
+                    </button>
+                    <button class="filter-btn" data-level="WARNING">
+                        <i class="fas fa-exclamation-triangle"></i> Warnings
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="data-table fade-in">
+            <div class="table-header">
+                <div class="table-title">
+                    <i class="fas fa-table"></i>
+                    Interactive Data Explorer
+                </div>
+            </div>
+            
+            <div class="tabs">
+                <button class="tab active" data-tab="producer-logs">
+                    <i class="fas fa-play"></i> Producer Logs
+                </button>
+                <button class="tab" data-tab="consumer-logs">
+                    <i class="fas fa-cogs"></i> Consumer Logs
+                </button>
+                <button class="tab" data-tab="reporter-logs">
+                    <i class="fas fa-chart-line"></i> Reporter Logs
+                </button>
+                <button class="tab" data-tab="workitems">
+                    <i class="fas fa-tasks"></i> Work Items
+                </button>
+                <button class="tab" data-tab="screenshots">
+                    <i class="fas fa-camera"></i> Screenshots
+                </button>
+            </div>
+
+            <div class="tab-content active" id="producer-logs">
+                <div class="loading" id="producerLogsLoading">
+                    <i class="fas fa-spinner"></i>
+                    Loading producer logs...
+                </div>
+                <div class="table-wrapper" id="producerLogsTable" style="display: none;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="sortable-header sort-none" data-column="timestamp">
+                                    <i class="fas fa-clock"></i> Timestamp
+                                    <span class="sort-indicator"></span>
+                                </th>
+                                <th class="sortable-header sort-none" data-column="log_level">
+                                    <i class="fas fa-flag"></i> Level
+                                    <span class="sort-indicator"></span>
+                                </th>
+                                <th class="sortable-header sort-none" data-column="message">
+                                    <i class="fas fa-comment"></i> Message
+                                    <span class="sort-indicator"></span>
+                                </th>
+                                <th class="sortable-header sort-none" data-column="file_path">
+                                    <i class="fas fa-file"></i> Source
+                                    <span class="sort-indicator"></span>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="producerLogsTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tab-content" id="consumer-logs">
+                <div class="loading" id="consumerLogsLoading">
+                    <i class="fas fa-spinner"></i>
+                    Loading consumer logs...
+                </div>
+                <div class="table-wrapper" id="consumerLogsTable" style="display: none;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="sortable-header sort-none" data-column="timestamp">
+                                    <i class="fas fa-clock"></i> Timestamp
+                                    <span class="sort-indicator"></span>
+                                </th>
+                                <th class="sortable-header sort-none" data-column="log_level">
+                                    <i class="fas fa-flag"></i> Level
+                                    <span class="sort-indicator"></span>
+                                </th>
+                                <th class="sortable-header sort-none" data-column="message">
+                                    <i class="fas fa-comment"></i> Message
+                                    <span class="sort-indicator"></span>
+                                </th>
+                                <th class="sortable-header sort-none" data-column="file_path">
+                                    <i class="fas fa-file"></i> Source
+                                    <span class="sort-indicator"></span>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="consumerLogsTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tab-content" id="reporter-logs">
+                <div class="loading" id="reporterLogsLoading">
+                    <i class="fas fa-spinner"></i>
+                    Loading reporter logs...
+                </div>
+                <div class="table-wrapper" id="reporterLogsTable" style="display: none;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="sortable-header sort-none" data-column="timestamp">
+                                    <i class="fas fa-clock"></i> Timestamp
+                                    <span class="sort-indicator"></span>
+                                </th>
+                                <th class="sortable-header sort-none" data-column="log_level">
+                                    <i class="fas fa-flag"></i> Level
+                                    <span class="sort-indicator"></span>
+                                </th>
+                                <th class="sortable-header sort-none" data-column="message">
+                                    <i class="fas fa-comment"></i> Message
+                                    <span class="sort-indicator"></span>
+                                </th>
+                                <th class="sortable-header sort-none" data-column="file_path">
+                                    <i class="fas fa-file"></i> Source
+                                    <span class="sort-indicator"></span>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="reporterLogsTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tab-content" id="workitems">
+                <div class="loading" id="workitemsLoading">
+                    <i class="fas fa-spinner"></i>
+                    Loading work items...
+                </div>
+                <div class="table-wrapper" id="workitemsTable" style="display: none;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="sortable-header sort-none" data-column="call_id">
+                                    <i class="fas fa-tag"></i> Item ID
+                                    <span class="sort-indicator"></span>
+                                </th>
+                                <th class="sortable-header sort-none" data-column="status">
+                                    <i class="fas fa-flag"></i> Status
+                                    <span class="sort-indicator"></span>
+                                </th>
+                                <th class="sortable-header sort-none" data-column="task_name">
+                                    <i class="fas fa-layer-group"></i> Pipeline
+                                    <span class="sort-indicator"></span>
+                                </th>
+                                <th class="sortable-header sort-none" data-column="screenshot_count">
+                                    <i class="fas fa-camera"></i> Screenshots
+                                    <span class="sort-indicator"></span>
+                                </th>
+                                <th class="sortable-header sort-none" data-column="processing_time_ms">
+                                    <i class="fas fa-clock"></i> Processing Time
+                                    <span class="sort-indicator"></span>
+                                </th>
+                                <th class="sortable-header sort-none" data-column="error_message">
+                                    <i class="fas fa-exclamation-circle"></i> Errors
+                                    <span class="sort-indicator"></span>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="workitemsTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tab-content" id="screenshots">
+                <div class="loading" id="screenshotsLoading">
+                    <i class="fas fa-spinner"></i>
+                    Loading screenshots...
+                </div>
+                <div class="table-wrapper" id="screenshotsTable" style="display: none;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-image"></i> Screenshot</th>
+                                <th class="sortable-header sort-none" data-column="work_item_id">
+                                    <i class="fas fa-id-card"></i> Work Item ID
+                                    <span class="sort-indicator"></span>
+                                </th>
+                                <th class="sortable-header sort-none" data-column="task_name">
+                                    <i class="fas fa-layer-group"></i> Task
+                                    <span class="sort-indicator"></span>
+                                </th>
+                                <th class="sortable-header sort-none" data-column="file_size">
+                                    <i class="fas fa-weight"></i> File Size
+                                    <span class="sort-indicator"></span>
+                                </th>
+                                <th class="sortable-header sort-none" data-column="timestamp">
+                                    <i class="fas fa-clock"></i> Timestamp
+                                    <span class="sort-indicator"></span>
+                                </th>
+                                <th class="sortable-header sort-none" data-column="description">
+                                    <i class="fas fa-comment"></i> Description
+                                    <span class="sort-indicator"></span>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="screenshotsTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+        
+        <div class="stats-grid fade-in">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-tasks"></i></div>
+                <div class="stat-number" id="totalTasks">{{ total_tasks }}</div>
+                <div class="stat-label">Total Tasks</div>
+                <div class="stat-change positive">+100% Complete</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-list-ul"></i></div>
+                <div class="stat-number" id="totalLogs">{{ total_log_entries }}</div>
+                <div class="stat-label">Log Entries</div>
+                <div class="stat-change" id="logTrend">{{ log_trend }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="stat-number" id="successRate">{{ success_rate }}%</div>
+                <div class="stat-label">Success Rate</div>
+                <div class="stat-change" id="successTrend">{{ success_trend }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-camera"></i></div>
+                <div class="stat-number" id="totalScreenshots">{{ total_screenshots }}</div>
+                <div class="stat-label">Screenshots</div>
+                <div class="stat-change" id="screenshotTrend">{{ screenshot_trend }}</div>
+            </div>
+        </div>
+
+        <div class="charts-grid fade-in">
+            <div class="chart-card">
+                <div class="chart-title">
+                    <i class="fas fa-chart-pie"></i>
+                    Log Level Distribution
+                </div>
+                <div class="chart-container">
+                    <canvas id="logLevelChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-title">
+                    <i class="fas fa-chart-line"></i>
+                    Task Execution Timeline
+                </div>
+                <div class="chart-container">
+                    <canvas id="timelineChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add your charts and other content here -->
+    </div>
+
+    <script>
+        // Embedded consolidated data will be injected here
+        const CONSOLIDATED_DATA = {{consolidated_data|tojson|safe}} || {data: {task_logs: [], work_items: [], screenshots: []}, summary: {log_level_counts: {}}};
+        
+        // HTML log contents will be stored separately
+        const HTML_CONTENTS = {{html_contents|tojson|safe}} || [];
+        
+        // HTML log files content - properly JSON encoded
+        const HTML_LOGS = {
+            producer: {{producer_log_content|tojson|safe}} || '',
+            consumer: {{consumer_log_content|tojson|safe}} || '',
+            reporter: {{reporter_log_content|tojson|safe}} || ''
+        };
+        
+        // Utility to format durations in ms to HH:MM:SS
+        function formatDuration(ms) {
+            if (typeof ms !== 'number' || isNaN(ms)) return '';
+            const sec = Math.floor(ms / 1000) % 60;
+            const min = Math.floor(ms / (1000 * 60)) % 60;
+            const hr = Math.floor(ms / (1000 * 60 * 60));
+            return `${hr > 0 ? hr + 'h ' : ''}${min > 0 ? min + 'm ' : ''}${sec}s`;
+        }
+
+        // Example: Use formatDuration in chart tooltips and stat cards
+        // When rendering chart data, call formatDuration for each duration value
+        // For example, if you have a chart showing task durations:
+        // let durations = CONSOLIDATED_DATA.data.task_logs.map(log => log.duration_ms);
+        // let labels = durations.map(ms => formatDuration(ms));
+        // Use labels in your chart config
+
+        // If you have stat cards showing total/average duration:
+        // let totalDuration = durations.reduce((a, b) => a + b, 0);
+        // document.getElementById('totalDuration').textContent = formatDuration(totalDuration);
+
+        // You can also update your chart tooltips to use formatDuration
+        // Example for Chart.js:
+        // options: {
+        //   tooltips: {
+        //     callbacks: {
+        //       label: function(context) {
+        //         return formatDuration(context.parsed.y);
+        //       }
+        //     }
+        //   }
+        // }
+        class ConsolidatedDashboard {
+            constructor() {
+                this.db = null;
+                this.charts = {};
+                this.currentFilter = 'all';
+                this.currentLevel = 'all';
+                this.currentTab = 'logs';
+                this.searchTerm = '';
+                this.currentModal = null;
+                
+                // Sort state tracking
+                this.sortState = {
+                    column: null,
+                    direction: 'none', // 'none', 'asc', 'desc'
+                    table: null
+                };
+                
+                // Remove automatic init() call - will be called externally
+            }
+            
+            async init() {
+                try {
+                    // Check if required libraries are loaded
+                    if (!window.duckdb) {
+                        throw new Error('DuckDB WASM library not loaded. Please check your internet connection.');
+                    }
+                    
+                    if (!window.Chart) {
+                        throw new Error('Chart.js library not loaded. Please check your internet connection.');
+                    }
+                    
+                    await this.initDuckDB();
+                    await this.loadData();
+                    this.setupEventListeners();
+                    this.initCharts();
+                    this.loadDefaultTab();
+                } catch (error) {
+                    console.error('Error initializing dashboard:', error);
+                    this.showError('Failed to initialize dashboard: ' + error.message);
+                    this.showFallbackContent();
+                }
+            }
+            
+            async initDuckDB() {
+                console.log('Initializing DuckDB WASM...');
+                
+                // Enhanced database cleanup to prevent catalog errors
+                if (this.db) {
+                    try {
+                        console.log('Cleaning up existing database instance...');
+                        // Close all connections first
+                        if (this.db.connection) {
+                            await this.db.connection.close();
+                        }
+                        // Terminate the database
+                        await this.db.terminate();
+                        // Wait a bit to ensure cleanup is complete
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                    } catch (error) {
+                        console.warn('Error terminating existing database:', error);
+                    }
+                    this.db = null;
+                }
+                
+                // Clear any global DuckDB state if it exists
+                if (window.globalDuckDB) {
+                    try {
+                        await window.globalDuckDB.terminate();
+                        window.globalDuckDB = null;
+                    } catch (error) {
+                        console.warn('Error cleaning global DuckDB state:', error);
+                    }
+                }
+                
+                // Wait for DuckDB to be loaded with longer timeout
+                let attempts = 0;
+                while (!window.duckdbLoaded && attempts < 100) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    attempts++;
+                }
+                
+                if (!window.duckdbLoaded || !window.duckdb) {
+                    throw new Error('DuckDB WASM failed to load after 10 seconds');
+                }
+                
+                try {
+                    // Use the same pattern as working scripts.js
+                    const JSDELIVR_BUNDLES = window.duckdb.getJsDelivrBundles();
+                    const bundle = await window.duckdb.selectBundle(JSDELIVR_BUNDLES);
+
+                    // Create worker URL with proper blob handling
+                    const worker_url = URL.createObjectURL(
+                        new Blob(['importScripts("' + bundle.mainWorker + '");'], {
+                            type: "text/javascript",
+                        })
+                    );
+
+                    // Create worker and database
+                    const worker = new Worker(worker_url);
+                    const logger = new window.duckdb.ConsoleLogger();
+                    this.db = new window.duckdb.AsyncDuckDB(logger, worker);
+
+                    // Load the web assembly module
+                    await this.db.instantiate(bundle.mainModule, bundle.pthreadWorker);
+
+                    // Clean up the object URL
+                    URL.revokeObjectURL(worker_url);
+                    
+                    // Store reference for cleanup
+                    window.globalDuckDB = this.db;
+                    
+                    console.log('DuckDB WASM initialized successfully');
+                } catch (error) {
+                    console.error('DuckDB initialization error:', error);
+                    throw new Error('Failed to initialize DuckDB WASM: ' + error.message);
+                }
+            }
+            
+            async loadData() {
+                console.log('Loading data into DuckDB...');
+                const conn = await this.db.connect();
+                
+                try {
+                    // Enhanced table cleanup with better error handling
+                    console.log('Cleaning up existing tables...');
+                    
+                    // Use a more robust approach to handle existing tables
+                    const tables = ['task_logs', 'work_items', 'screenshots', 'html_contents'];
+                    for (const table of tables) {
+                        try {
+                            await conn.query(`DROP TABLE IF EXISTS ${table}`);
+                            console.log(`Successfully dropped table: ${table}`);
+                        } catch (error) {
+                            console.warn(`Warning dropping table ${table}:`, error.message);
+                            // Continue with other tables even if one fails
+                        }
+                    }
+                    
+                    // Add a small delay to ensure cleanup is complete
+                    await new Promise(resolve => setTimeout(resolve, 50));
+                    
+                    console.log('Creating fresh tables...');
+                    
+                    // Create tables with enhanced error handling
+                    await conn.query(`
+                        CREATE TABLE task_logs (
+                            task_name VARCHAR,
+                            timestamp TIMESTAMP,
+                            log_level VARCHAR,
+                            message TEXT,
+                            file_path VARCHAR,
+                            line_number INTEGER,
+                            execution_time_ms INTEGER,
+                            thread_id VARCHAR,
+                            work_item_id VARCHAR,
+                            screenshot_refs TEXT[],
+                            html_content_path VARCHAR,
+                            html_content_size INTEGER,
+                            has_html_content BOOLEAN
+                        )
+                    `);
+                    console.log('Created task_logs table successfully');
+                        
+                    await conn.query(`
+                        CREATE TABLE work_items (
+                            task_name VARCHAR,
+                            work_item_id VARCHAR,
+                            call_id VARCHAR,
+                            status VARCHAR,
+                            original_file VARCHAR,
+                            error_message TEXT,
+                            retry_attempted BOOLEAN,
+                            processing_time_ms INTEGER,
+                            screenshot_paths TEXT[],
+                            timestamp TIMESTAMP
+                        )
+                    `);
+                    console.log('Created work_items table successfully');
+                    
+                    await conn.query(`
+                        CREATE TABLE screenshots (
+                            task_name VARCHAR,
+                            work_item_id VARCHAR,
+                            file_path VARCHAR,
+                            file_name VARCHAR,
+                            file_size INTEGER,
+                            timestamp TIMESTAMP,
+                            description TEXT,
+                            base64_data TEXT,
+                            mime_type VARCHAR
+                        )
+                    `);
+                    console.log('Created screenshots table successfully');
+                        
+                    // Insert data using proper DuckDB WASM methods with timestamp validation
+                    if (CONSOLIDATED_DATA.data.task_logs.length > 0) {
+                            // Clean and validate timestamp data before insertion
+                            const cleanTaskLogs = CONSOLIDATED_DATA.data.task_logs.map(log => {
+                                // Ensure timestamp is valid - if it looks like a file path, set to null
+                                let cleanTimestamp = log.timestamp;
+                                if (typeof cleanTimestamp === 'string' && cleanTimestamp.includes('/')) {
+                                    console.warn(`Invalid timestamp detected: ${cleanTimestamp}, setting to null`);
+                                    cleanTimestamp = null;
+                                } else if (cleanTimestamp && !isNaN(Date.parse(cleanTimestamp))) {
+                                    // Valid timestamp, keep as is
+                                    cleanTimestamp = log.timestamp;
+                                } else {
+                                    // Invalid or missing timestamp
+                                    cleanTimestamp = null;
+                                }
+                                
+                                return {
+                                    ...log,
+                                    timestamp: cleanTimestamp
+                                };
+                            });
+                            
+                            const taskLogsJson = JSON.stringify(cleanTaskLogs);
+                            await this.db.registerFileText('task_logs.json', taskLogsJson);
+                            await conn.query(`
+                                INSERT INTO task_logs 
+                                SELECT 
+                                    task_name,
+                                    CASE 
+                                        WHEN timestamp IS NOT NULL AND timestamp != '' THEN TRY_CAST(timestamp AS TIMESTAMP)
+                                        ELSE NULL 
+                                    END as timestamp,
+                                    log_level,
+                                    message,
+                                    file_path,
+                                    line_number,
+                                    execution_time_ms,
+                                    thread_id,
+                                    work_item_id,
+                                    screenshot_refs,
+                                    html_content_path,
+                                    html_content_size,
+                                    has_html_content
+                                FROM read_json_auto('task_logs.json')
+                            `);
+                        }
+                        
+                        if (CONSOLIDATED_DATA.data.work_items.length > 0) {
+                            // Clean and validate timestamp data for work items
+                            const cleanWorkItems = CONSOLIDATED_DATA.data.work_items.map(item => {
+                                let cleanTimestamp = item.timestamp;
+                                if (typeof cleanTimestamp === 'string' && cleanTimestamp.includes('/')) {
+                                    console.warn(`Invalid work item timestamp detected: ${cleanTimestamp}, setting to null`);
+                                    cleanTimestamp = null;
+                                } else if (cleanTimestamp && !isNaN(Date.parse(cleanTimestamp))) {
+                                    cleanTimestamp = item.timestamp;
+                                } else {
+                                    cleanTimestamp = null;
+                                }
+                                
+                                return {
+                                    ...item,
+                                    timestamp: cleanTimestamp
+                                };
+                            });
+                            
+                            const workItemsJson = JSON.stringify(cleanWorkItems);
+                            await this.db.registerFileText('work_items.json', workItemsJson);
+                            await conn.query(`
+                                INSERT INTO work_items 
+                                SELECT 
+                                    task_name,
+                                    work_item_id,
+                                    call_id,
+                                    status,
+                                    original_file,
+                                    error_message,
+                                    retry_attempted,
+                                    processing_time_ms,
+                                    screenshot_paths,
+                                    CASE 
+                                        WHEN timestamp IS NOT NULL AND timestamp != '' THEN TRY_CAST(timestamp AS TIMESTAMP)
+                                        ELSE NULL 
+                                    END as timestamp
+                                FROM read_json_auto('work_items.json')
+                            `);
+                        }
+                        
+                        if (CONSOLIDATED_DATA.data.screenshots.length > 0) {
+                            // Clean and validate timestamp data for screenshots
+                            const cleanScreenshots = CONSOLIDATED_DATA.data.screenshots.map(screenshot => {
+                                let cleanTimestamp = screenshot.timestamp;
+                                if (typeof cleanTimestamp === 'string' && cleanTimestamp.includes('/')) {
+                                    console.warn(`Invalid screenshot timestamp detected: ${cleanTimestamp}, setting to null`);
+                                    cleanTimestamp = null;
+                                } else if (cleanTimestamp && !isNaN(Date.parse(cleanTimestamp))) {
+                                    cleanTimestamp = screenshot.timestamp;
+                                } else {
+                                    cleanTimestamp = null;
+                                }
+                                
+                                return {
+                                    ...screenshot,
+                                    timestamp: cleanTimestamp
+                                };
+                            });
+                            
+                            const screenshotsJson = JSON.stringify(cleanScreenshots);
+                            await this.db.registerFileText('screenshots.json', screenshotsJson);
+                            await conn.query(`
+                                INSERT INTO screenshots 
+                                SELECT 
+                                    task_name,
+                                    work_item_id,
+                                    file_path,
+                                    file_name,
+                                    file_size,
+                                    CASE 
+                                        WHEN timestamp IS NOT NULL AND timestamp != '' THEN TRY_CAST(timestamp AS TIMESTAMP)
+                                        ELSE NULL 
+                                    END as timestamp,
+                                    description,
+                                    base64_data,
+                                    mime_type
+                                FROM read_json_auto('screenshots.json')
+                            `);
+                        }
+                        
+                        // Load HTML contents if available
+                        if (HTML_CONTENTS && HTML_CONTENTS.length > 0) {
+                            await conn.query(`
+                                CREATE TABLE html_contents (
+                                    task_name VARCHAR,
+                                    timestamp TIMESTAMP,
+                                    html_content TEXT,
+                                    content_size INTEGER
+                                )
+                            `);
+                            
+                            // Clean and validate timestamp data for HTML contents
+                            const cleanHtmlContents = HTML_CONTENTS.map(content => {
+                                let cleanTimestamp = content.timestamp;
+                                if (typeof cleanTimestamp === 'string' && cleanTimestamp.includes('/')) {
+                                    console.warn(`Invalid HTML content timestamp detected: ${cleanTimestamp}, setting to null`);
+                                    cleanTimestamp = null;
+                                } else if (cleanTimestamp && !isNaN(Date.parse(cleanTimestamp))) {
+                                    cleanTimestamp = content.timestamp;
+                                } else {
+                                    cleanTimestamp = null;
+                                }
+                                
+                                return {
+                                    ...content,
+                                    timestamp: cleanTimestamp
+                                };
+                            });
+                            
+                            const htmlContentsJson = JSON.stringify(cleanHtmlContents);
+                            await this.db.registerFileText('html_contents.json', htmlContentsJson);
+                            await conn.query(`
+                                INSERT INTO html_contents 
+                                SELECT 
+                                    task_name,
+                                    CASE 
+                                        WHEN timestamp IS NOT NULL AND timestamp != '' THEN TRY_CAST(timestamp AS TIMESTAMP)
+                                        ELSE NULL 
+                                    END as timestamp,
+                                    html_content,
+                                    content_size
+                                FROM read_json_auto('html_contents.json')
+                            `);
+                        }
+                    
+                    console.log('Data loaded successfully');
+                } finally {
+                    await conn.close();
+                }
+            }
+            
+            setupEventListeners() {
+                // Theme toggle
+                document.getElementById('themeToggle').addEventListener('click', () => this.toggleTheme());
+                
+                // Tab switching
+                document.querySelectorAll('.tab').forEach(tab => {
+                    tab.addEventListener('click', (e) => {
+                        const tabName = e.target.closest('.tab').dataset.tab;
+                        this.switchTab(tabName);
+                    });
+                });
+                
+                // Filter buttons
+                document.querySelectorAll('.filter-btn[data-filter]').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        document.querySelectorAll('.filter-btn[data-filter]').forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        this.currentFilter = e.target.dataset.filter;
+                        this.updateCurrentTab();
+                    });
+                });
+                
+                // Level filter buttons
+                document.querySelectorAll('.filter-btn[data-level]').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        document.querySelectorAll('.filter-btn[data-level]').forEach(b => b.classList.remove('active'));
+                        if (e.target.classList.contains('active')) {
+                            e.target.classList.remove('active');
+                            this.currentLevel = 'all';
+                        } else {
+                            e.target.classList.add('active');
+                            this.currentLevel = e.target.dataset.level;
+                        }
+                        this.updateCurrentTab();
+                    });
+                });
+                
+                // Search
+                document.getElementById('searchInput').addEventListener('input', (e) => {
+                    this.searchTerm = (e.target.value || '').toLowerCase();
+                    this.updateCurrentTab();
+                });
+                
+                // Column sorting - using event delegation
+                document.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('sortable-header') || e.target.closest('.sortable-header')) {
+                        const header = e.target.classList.contains('sortable-header') ? e.target : e.target.closest('.sortable-header');
+                        const column = header.getAttribute('data-column');
+                        if (column) {
+                            this.handleSort(column);
+                        }
+                    }
+                });
+                
+                // ESC key to close fullscreen viewer
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape' && this.currentModal) {
+                        this.closeFullscreenViewer(this.currentModal);
+                    }
+                });
+                
+                // Event delegation for screenshot thumbnails (both small and large)
+                document.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('screenshot-thumbnail') || e.target.classList.contains('screenshot-thumbnail-large')) {
+                        const modalId = e.target.getAttribute('data-modal-id');
+                        const dataUrl = e.target.getAttribute('data-data-url');
+                        const fileName = e.target.getAttribute('data-file-name');
+                        this.openFullscreenViewer(modalId, dataUrl, fileName);
+                    }
+                    
+                    // Event delegation for zoom controls
+                    if (e.target.classList.contains('zoom-in-btn') || e.target.closest('.zoom-in-btn')) {
+                        const button = e.target.classList.contains('zoom-in-btn') ? e.target : e.target.closest('.zoom-in-btn');
+                        const modalId = button.getAttribute('data-modal-id');
+                        this.zoomIn(modalId);
+                    } else if (e.target.classList.contains('zoom-out-btn') || e.target.closest('.zoom-out-btn')) {
+                        const button = e.target.classList.contains('zoom-out-btn') ? e.target : e.target.closest('.zoom-out-btn');
+                        const modalId = button.getAttribute('data-modal-id');
+                        this.zoomOut(modalId);
+                    } else if (e.target.classList.contains('reset-view-btn') || e.target.closest('.reset-view-btn')) {
+                        const button = e.target.classList.contains('reset-view-btn') ? e.target : e.target.closest('.reset-view-btn');
+                        const modalId = button.getAttribute('data-modal-id');
+                        this.resetView(modalId);
+                    }
+                    
+                    // Event delegation for modal controls
+                    if (e.target.classList.contains('close-fullscreen-btn') || e.target.closest('.close-fullscreen-btn')) {
+                        console.log('Close button clicked');
+                        const button = e.target.classList.contains('close-fullscreen-btn') ? e.target : e.target.closest('.close-fullscreen-btn');
+                        const modalId = button.getAttribute('data-modal-id');
+                        console.log('Closing modal with ID:', modalId);
+                        this.closeFullscreenViewer(modalId);
+                    } else if (e.target.classList.contains('download-screenshot-btn') || e.target.closest('.download-screenshot-btn')) {
+                        console.log('Download button clicked');
+                        const button = e.target.classList.contains('download-screenshot-btn') ? e.target : e.target.closest('.download-screenshot-btn');
+                        const dataUrl = button.getAttribute('data-data-url');
+                        const fileName = button.getAttribute('data-file-name');
+                        this.downloadScreenshot(dataUrl, fileName);
+                    } else if (e.target.classList.contains('close-fullscreen-area')) {
+                        const modalId = e.target.getAttribute('data-modal-id');
+                        console.log('Background area clicked, closing modal:', modalId);
+                        this.closeFullscreenViewer(modalId);
+                    }
+                });
+                
+                // Event delegation for mouse hover effects on thumbnails
+                document.addEventListener('mouseover', (e) => {
+                    if (e.target.classList.contains('screenshot-thumbnail')) {
+                        e.target.style.transform = 'scale(1.2)';
+                    } else if (e.target.classList.contains('screenshot-thumbnail-large')) {
+                        e.target.style.transform = 'scale(1.05)';
+                        e.target.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
+                    }
+                });
+                
+                document.addEventListener('mouseout', (e) => {
+                    if (e.target.classList.contains('screenshot-thumbnail')) {
+                        e.target.style.transform = 'scale(1)';
+                    } else if (e.target.classList.contains('screenshot-thumbnail-large')) {
+                        e.target.style.transform = 'scale(1)';
+                        e.target.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+                    }
+                });
+            }
+            
+            toggleTheme() {
+                const body = document.body;
+                const themeToggle = document.getElementById('themeToggle');
+                
+                if (body.dataset.theme === 'dark') {
+                    body.dataset.theme = 'light';
+                    themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+                } else {
+                    body.dataset.theme = 'dark';
+                    themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+                }
+            }
+            
+            switchTab(tabName) {
+                if (!tabName) return;
+                
+                // Update tab buttons
+                document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+                const activeTab = document.querySelector('[data-tab="' + tabName + '"]');
+                if (activeTab) {
+                    activeTab.classList.add('active');
+                }
+                
+                // Update tab content
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                const activeContent = document.getElementById(tabName);
+                if (activeContent) {
+                    activeContent.classList.add('active');
+                }
+                
+                this.currentTab = tabName;
+                this.updateCurrentTab();
+            }
+            
+            async updateCurrentTab() {
+                switch (this.currentTab) {
+                    case 'producer-logs':
+                        await this.loadHtmlLogs('producer', 'producerLogsLoading', 'producerLogsTable', 'producerLogsTableBody');
+                        break;
+                    case 'consumer-logs':
+                        await this.loadHtmlLogs('Consumer-Shard', 'consumerLogsLoading', 'consumerLogsTable', 'consumerLogsTableBody');
+                        break;
+                    case 'reporter-logs':
+                        await this.loadHtmlLogs('reporter', 'reporterLogsLoading', 'reporterLogsTable', 'reporterLogsTableBody');
+                        break;
+                    case 'workitems':
+                        await this.loadWorkItems();
+                        break;
+                    case 'screenshots':
+                        await this.loadScreenshots();
+                        break;
+                }
+            }
+            
+            async loadHtmlLogs(logType, loadingId, tableId, tbodyId) {
+                const loading = document.getElementById(loadingId);
+                const table = document.getElementById(tableId);
+                const tbody = document.getElementById(tbodyId);
+                
+                loading.style.display = 'flex';
+                table.style.display = 'none';
+                
+                try {
+                    const conn = await this.db.connect();
+                    
+                    // Query logs directly from the consolidated data
+                    // Use a more robust JOIN that matches task_name and handles timestamp differences
+                    let query = `
+                        SELECT 
+                            tl.task_name, 
+                            tl.timestamp, 
+                            tl.log_level, 
+                            tl.message, 
+                            tl.file_path, 
+                            tl.html_content_path, 
+                            tl.html_content_size,
+                            tl.has_html_content,
+                            hc.html_content
+                        FROM task_logs tl
+                        LEFT JOIN html_contents hc ON LOWER(tl.task_name) = LOWER(hc.task_name) 
+                            AND tl.log_level = 'HTML_LOG'
+                        WHERE ${logType.toLowerCase() === 'consumer-shard' ? 
+                            "LOWER(tl.task_name) LIKE 'consumer-shard-%'" : 
+                            "LOWER(tl.task_name) = '" + logType.toLowerCase() + "'"}
+                    `;
+                    
+                    // Apply search filter if present
+                    if (this.searchTerm) {
+                        query += ` AND LOWER(tl.message) LIKE '%${this.searchTerm}%'`;
+                    }
+                    
+                    // Apply level filter if present
+                    if (this.currentLevel !== 'all') {
+                        query += ` AND tl.log_level = '${this.currentLevel}'`;
+                    }
+                    
+                    // Apply sorting for log tables
+                    const sortClause = this.getSortClause();
+                    if (sortClause && this.sortState.table && this.sortState.table.endsWith('-logs')) {
+                        query += ' ' + sortClause;
+                    } else {
+                        query += ' ORDER BY tl.timestamp DESC';
+                    }
+                    
+                    query += ' LIMIT 100';
+                    
+                    const result = await conn.query(query);
+                    const logEntries = result.toArray();
+                    
+                    // Debug logging to understand what we're getting
+                    console.log(`[DEBUG] Query for ${logType}: Found ${logEntries.length} entries`);
+                    if (logEntries.length > 0) {
+                        console.log(`[DEBUG] Sample entry:`, logEntries[0]);
+                        console.log(`[DEBUG] HTML content available:`, logEntries.some(e => e.html_content && e.html_content.length > 0));
+                    }
+                    
+                    tbody.innerHTML = '';
+                    
+                    if (logEntries.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="4" class="empty-state">No log entries found</td></tr>';
+                    } else {
+                        logEntries.forEach(entry => {
+                            const row = document.createElement('tr');
+                            
+                            // Check if this is an HTML log entry
+                            // Add debugging for HTML content availability
+                            if (entry.log_level === 'HTML_LOG') {
+                                console.log(`[DEBUG] HTML_LOG entry found for ${entry.task_name}:`, {
+                                    has_html_content: !!entry.html_content,
+                                    content_size: entry.html_content_size,
+                                    content_path: entry.html_content_path,
+                                    content_length: entry.html_content ? entry.html_content.length : 0
+                                });
+                            }
+                            
+                            if (entry.log_level === 'HTML_LOG' && entry.html_content && entry.html_content.length > 0) {
+                                // Create advanced HTML content viewer with sanitization and responsive design
+                                const htmlId = 'html-log-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+                                const containerId = 'container-' + htmlId;
+                                
+                                row.innerHTML = 
+                                    '<td colspan="4" style="padding: 20px;">' +
+                                        '<div id="' + containerId + '" style="padding: 20px; border: 1px solid var(--border-color); border-radius: 12px; background: var(--card-background); box-shadow: 0 4px 6px rgba(0,0,0,0.1);">' +
+                                            '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">' +
+                                                '<div>' +
+                                                    '<span class="status-badge status-info" style="font-size: 1rem; padding: 6px 12px;">' +
+                                                        '<i class="fas fa-code"></i> ' + entry.task_name + ' Interactive Log' +
+                                                    '</span>' +
+                                                    '<div style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 5px;">' +
+                                                        '<i class="fas fa-clock"></i> ' + this.formatTimestamp(entry.timestamp) +
+                                                        (entry.html_content_size ? ' • <i class="fas fa-file-code"></i> ' + this.formatFileSize(entry.html_content_size) : '') +
+                                                    '</div>' +
+                                                '</div>' +
+                                                '<div style="display: flex; gap: 8px;">' +
+                                                    '<button onclick="dashboard.toggleAdvancedHtmlLog(\'' + htmlId + '\', \'' + containerId + '\')" ' +
+                                                           'id="toggle-btn-' + htmlId + '" ' +
+                                                           'style="padding: 10px 16px; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;">' +
+                                                        '<i class="fas fa-expand"></i> <span>Expand Interactive View</span>' +
+                                                    '</button>' +
+                                                    '<button onclick="dashboard.downloadHtmlLog(\'' + htmlId + '\', \'' + entry.task_name + '\')" ' +
+                                                           'style="padding: 10px 16px; background: var(--secondary-color); color: white; border: none; border-radius: 8px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;">' +
+                                                        '<i class="fas fa-download"></i> <span>Download</span>' +
+                                                    '</button>' +
+                                                    '<button onclick="dashboard.openHtmlLogInNewWindowSafe(\'' + htmlId + '\', \'' + entry.task_name + '\')" ' +
+                                                           'style="padding: 10px 16px; background: #10b981; color: white; border: none; border-radius: 8px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;">' +
+                                                        '<i class="fas fa-external-link-alt"></i> <span>New Window</span>' +
+                                                    '</button>' +
+                                                '</div>' +
+                                            '</div>' +
+                                            
+                                            '<div style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 15px; padding: 12px; background: rgba(59, 130, 246, 0.1); border-radius: 8px; border-left: 4px solid var(--primary-color);">' +
+                                                '<i class="fas fa-info-circle"></i> <strong>Rich Interactive Content:</strong> ' +
+                                                'This log contains interactive visualizations, charts, and detailed execution data. ' +
+                                                'Use the controls above to view in different modes.' +
+                                            '</div>' +
+                                            
+                                            '<div id="' + htmlId + '" style="display: none; margin-top: 15px; border: 1px solid var(--border-color); border-radius: 8px; background: white; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);">' +
+                                                '<div id="loading-' + htmlId + '" style="display: flex; justify-content: center; align-items: center; height: 100px; color: var(--text-secondary);">' +
+                                                    '<i class="fas fa-spinner fa-spin" style="margin-right: 10px;"></i> Loading interactive content...' +
+                                                '</div>' +
+                                                '<iframe id="iframe-' + htmlId + '" ' +
+                                                        'style="width: 100%; border: none; display: none;" ' +
+                                                        'sandbox="allow-scripts allow-same-origin allow-popups allow-forms">' +
+                                                '</iframe>' +
+                                            '</div>' +
+                                        '</div>' +
+                                    '</td>';
+                                
+                                // Store the HTML content for later use (avoid inline due to size)
+                                if (!window.htmlLogContents) {
+                                    window.htmlLogContents = new Map();
+                                }
+                                
+                                // Decode Base64 content since we store it encoded for safe JavaScript embedding
+                                let actualHtmlContent = entry.html_content;
+                                try {
+                                    // Try to decode Base64 content if it looks encoded
+                                    if (entry.html_content && typeof entry.html_content === 'string' && entry.html_content.length > 0) {
+                                        // Check if it looks like Base64 (common patterns)
+                                        if (entry.html_content.indexOf('<') === -1 && entry.html_content.length % 4 === 0) {
+                                            actualHtmlContent = atob(entry.html_content);
+                                            console.log(`[DEBUG] Decoded Base64 HTML content for ${entry.task_name}: ${actualHtmlContent.length} characters`);
+                                        } else {
+                                            // Content is already plain HTML
+                                            actualHtmlContent = entry.html_content;
+                                            console.log(`[DEBUG] Plain HTML content for ${entry.task_name}: ${actualHtmlContent.length} characters`);
+                                        }
+                                    } else {
+                                        throw new Error('No HTML content available');
+                                    }
+                                } catch (error) {
+                                    console.error(`[ERROR] Failed to process HTML content for ${entry.task_name}:`, error);
+                                    actualHtmlContent = '<html><body><h2>Error Loading Content</h2><p>Failed to load HTML content for ' + entry.task_name + '.</p><p>Error: ' + error.message + '</p></body></html>';
+                                }
+                                
+                                // Ensure the content is valid HTML
+                                if (!actualHtmlContent.includes('<html>') && !actualHtmlContent.includes('<!DOCTYPE')) {
+                                    actualHtmlContent = '<!DOCTYPE html><html><head><title>' + entry.task_name + ' Log</title></head><body>' + actualHtmlContent + '</body></html>';
+                                }
+                                
+                                window.htmlLogContents.set(htmlId, actualHtmlContent);
+                            } else if (entry.log_level === 'HTML_LOG' && entry.has_html_content) {
+                                // HTML_LOG entry but content is missing - show error message
+                                row.innerHTML = 
+                                    '<td colspan="4" style="padding: 20px;">' +
+                                        '<div style="padding: 20px; border: 1px solid var(--error-color); border-radius: 12px; background: rgba(239, 68, 68, 0.1); color: var(--error-color);">' +
+                                            '<div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">' +
+                                                '<i class="fas fa-exclamation-triangle"></i>' +
+                                                '<strong>' + entry.task_name + ' Interactive Log Content Missing</strong>' +
+                                            '</div>' +
+                                            '<div style="font-size: 0.9rem;">' +
+                                                'Expected size: ' + (entry.html_content_size || 'Unknown') + ' bytes<br>' +
+                                                'Content path: ' + (entry.html_content_path || 'Unknown') + '<br>' +
+                                                'This usually indicates a data pipeline issue during dashboard generation.' +
+                                            '</div>' +
+                                        '</div>' +
+                                    '</td>';
+                            } else {
+                                // Regular log entry
+                                row.innerHTML = 
+                                    '<td>' + this.formatTimestamp(entry.timestamp) + '</td>' +
+                                    '<td><span class="status-badge ' + this.getLogLevelClass(entry.log_level) + '">' + entry.log_level + '</span></td>' +
+                                    '<td>' + this.truncateText(entry.message, 100) + '</td>' +
+                                    '<td>' + (entry.file_path || entry.task_name) + '</td>';
+                            }
+                            tbody.appendChild(row);
+                        });
+                    }
+                    
+                    await conn.close();
+                    
+                    loading.style.display = 'none';
+                    table.style.display = 'block';
+                    
+                } catch (error) {
+                    console.error('Error loading ' + logType + ' logs:', error);
+                    tbody.innerHTML = '<tr><td colspan="4" class="error-message">Error loading logs</td></tr>';
+                    loading.style.display = 'none';
+                    table.style.display = 'block';
+                }
+            }
+            
+            async loadWorkItems() {
+                const loading = document.getElementById('workitemsLoading');
+                const table = document.getElementById('workitemsTable');
+                const tbody = document.getElementById('workitemsTableBody');
+                
+                loading.style.display = 'flex';
+                table.style.display = 'none';
+                
+                try {
+                    const conn = await this.db.connect();
+                    
+                    // Consolidated query that groups by call_id and aggregates data
+                    let query = `
+                        WITH consolidated_items AS (
+                            SELECT 
+                                call_id,
+                                STRING_AGG(DISTINCT work_item_id, ', ') as work_item_ids,
+                                -- Create a proper pipeline progression showing P -> C{shard} -> R
+                                CASE 
+                                    WHEN STRING_AGG(DISTINCT task_name, ',') LIKE '%Producer%' AND 
+                                         STRING_AGG(DISTINCT task_name, ',') LIKE '%Consumer%' AND
+                                         STRING_AGG(DISTINCT task_name, ',') LIKE '%Reporter%' THEN
+                                        'Producer,' || 
+                                        COALESCE(
+                                            -- Extract the specific consumer shard (e.g., "Consumer-Shard-2")
+                                            (SELECT task_name FROM work_items wi2 WHERE wi2.call_id = wi.call_id AND task_name LIKE 'Consumer-Shard-%' LIMIT 1),
+                                            -- Fallback to generic Consumer
+                                            'Consumer'
+                                        ) || ',Reporter'
+                                    WHEN STRING_AGG(DISTINCT task_name, ',') LIKE '%Producer%' AND 
+                                         STRING_AGG(DISTINCT task_name, ',') LIKE '%Consumer%' THEN
+                                        'Producer,' || 
+                                        COALESCE(
+                                            (SELECT task_name FROM work_items wi2 WHERE wi2.call_id = wi.call_id AND task_name LIKE 'Consumer-Shard-%' LIMIT 1),
+                                            'Consumer'
+                                        )
+                                    ELSE STRING_AGG(DISTINCT task_name, ',')
+                                END as completed_tasks,
+                                CASE 
+                                    WHEN COUNT(CASE WHEN status = 'FAIL' THEN 1 END) > 0 THEN 'FAIL'
+                                    WHEN COUNT(CASE WHEN status = 'PASS' THEN 1 END) = COUNT(*) THEN 'PASS'
+                                    ELSE 'PARTIAL'
+                                END as overall_status,
+                                SUM(COALESCE(processing_time_ms, 0)) as total_processing_time_ms,
+                                STRING_AGG(DISTINCT error_message, '; ') FILTER (WHERE error_message IS NOT NULL AND error_message != '') as error_summary,
+                                STRING_AGG(DISTINCT screenshot_paths::TEXT, ',') FILTER (WHERE screenshot_paths IS NOT NULL) as all_screenshots,
+                                MAX(timestamp) as latest_timestamp
+                            FROM work_items wi
+                            WHERE call_id IS NOT NULL AND call_id != ''
+                            GROUP BY call_id
+                        ),
+                        screenshot_data AS (
+                            SELECT 
+                                -- Try to match by call_id directly from work_items first
+                                wi.call_id,
+                                STRING_AGG(s.file_path, ',') as screenshot_paths,
+                                STRING_AGG(s.base64_data, ',') as screenshot_data,
+                                STRING_AGG(s.mime_type, ',') as mime_types,
+                                STRING_AGG(s.file_name, ',') as file_names
+                            FROM work_items wi
+                            LEFT JOIN screenshots s ON s.work_item_id = wi.work_item_id
+                            WHERE wi.call_id IS NOT NULL AND wi.call_id != '' AND s.base64_data IS NOT NULL
+                            GROUP BY wi.call_id
+                            
+                            UNION ALL
+                            
+                            -- Also try direct matching where screenshot work_item_id might be the call_id
+                            SELECT 
+                                s.work_item_id as call_id,
+                                STRING_AGG(s.file_path, ',') as screenshot_paths,
+                                STRING_AGG(s.base64_data, ',') as screenshot_data,
+                                STRING_AGG(s.mime_type, ',') as mime_types,
+                                STRING_AGG(s.file_name, ',') as file_names
+                            FROM screenshots s
+                            WHERE s.base64_data IS NOT NULL 
+                            AND s.work_item_id NOT IN (SELECT DISTINCT work_item_id FROM work_items WHERE work_item_id IS NOT NULL)
+                            GROUP BY s.work_item_id
+                        )
+                        SELECT 
+                            ci.*,
+                            sd.screenshot_paths,
+                            sd.screenshot_data,
+                            sd.mime_types,
+                            sd.file_names
+                        FROM consolidated_items ci
+                        LEFT JOIN screenshot_data sd ON ci.call_id = sd.call_id
+                        WHERE 1=1
+                    `;
+                    
+                    // Apply search filter
+                    if (this.searchTerm) {
+                        query += " AND LOWER(ci.call_id) LIKE '%" + this.searchTerm + "%'";
+                    }
+                    
+                    // Apply task filter by checking if the task is in completed_tasks
+                    if (this.currentFilter !== 'all' && this.currentFilter) {
+                        query += " AND LOWER(ci.completed_tasks) LIKE '%" + this.currentFilter.toLowerCase() + "%'";
+                    }
+                    
+                    // Apply sorting
+                    const sortClause = this.getSortClause();
+                    if (sortClause && this.sortState.table === 'workitems') {
+                        query += ' ' + sortClause;
+                    } else {
+                        query += ' ORDER BY ci.latest_timestamp DESC';
+                    }
+                    
+                    const result = await conn.query(query);
+                    const consolidatedItems = result.toArray();
+                    
+                    tbody.innerHTML = '';
+                    
+                    if (consolidatedItems.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No work items found</td></tr>';
+                    } else {
+                        consolidatedItems.forEach(item => {
+                            const row = document.createElement('tr');
+                            
+                            // Create task pipeline badges
+                            const tasks = (item.completed_tasks || '').split(',').filter(t => t.trim());
+                            const taskBadges = tasks.map(task => {
+                                const taskName = task.trim();
+                                let badgeText;
+                                
+                                // Extract shard number for Consumer-Shard-X format
+                                if (taskName.startsWith('Consumer-Shard-')) {
+                                    const shardMatch = taskName.match(/Consumer-Shard-(\d+)/);
+                                    badgeText = shardMatch ? `C${shardMatch[1]}` : 'C';
+                                } else {
+                                    // Use first letter for other tasks
+                                    badgeText = taskName.toUpperCase().charAt(0);
+                                }
+                                
+                                const badgeClass = this.getTaskBadgeClass(taskName);
+                                return '<span class="status-badge ' + badgeClass + '" style="margin: 2px; padding: 4px 8px; font-size: 0.75rem;" title="' + taskName + '">' + badgeText + '</span>';
+                            }).join('');
+                            
+                            // Create screenshot gallery
+                            let screenshotGallery = 'None';
+                            if (item.screenshot_data && item.screenshot_paths) {
+                                const screenshots = item.screenshot_data.split(',');
+                                const mimeTypes = (item.mime_types || '').split(',');
+                                const fileNames = (item.file_names || '').split(',');
+                                
+                                screenshotGallery = screenshots.slice(0, 3).map((screenshot, index) => {
+                                    if (screenshot && screenshot.trim()) {
+                                        const dataUrl = 'data:' + (mimeTypes[index] || 'image/png') + ';base64,' + screenshot.trim();
+                                        const fileName = fileNames[index] || 'screenshot.png';
+                                        const modalId = 'modal-' + item.call_id + '-' + index;
+                                        
+                                        return '<img src="' + dataUrl + '" alt="' + fileName + '" ' +
+                                            'style="width: 30px; height: 30px; border-radius: 4px; margin: 1px; cursor: pointer; border: 2px solid #e5e7eb; transition: all 0.2s;" ' +
+                                            'data-modal-id="' + modalId + '" ' +
+                                            'data-data-url="' + dataUrl + '" ' +
+                                            'data-file-name="' + fileName + '" ' +
+                                            'class="screenshot-thumbnail" ' +
+                                            'title="' + fileName + '">' +
+                                            '<div id="' + modalId + '" class="fullscreen-viewer" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.98); z-index: 99999; opacity: 0; transition: opacity 0.3s ease;">' +
+                                                '<div class="viewer-controls" style="position: absolute; top: 0; left: 0; right: 0; height: 70px; background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 70%, transparent 100%); display: flex; align-items: center; justify-content: space-between; padding: 0 30px; z-index: 10001;">' +
+                                                    '<div style="color: white; font-weight: 600; font-size: 18px;">' + fileName + '</div>' +
+                                                    '<button onclick="dashboard.closeFullscreenViewer(\'' + modalId + '\')" style="background: rgba(239, 68, 68, 0.9); border: none; color: white; padding: 12px 20px; border-radius: 8px; cursor: pointer;">Close</button>' +
+                                                '</div>' +
+                                                '<div style="position: absolute; top: 70px; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center;" onclick="dashboard.closeFullscreenViewer(\'' + modalId + '\')">' +
+                                                    '<img src="' + dataUrl + '" alt="' + fileName + '" style="max-width: 95vw; max-height: calc(100vh - 70px); object-fit: contain;" onclick="event.stopPropagation()">' +
+                                                '</div>' +
+                                            '</div>';
+                                    }
+                                    return '';
+                                }).filter(s => s).join('');
+                                
+                                if (screenshots.length > 3) {
+                                    screenshotGallery += ' <span style="font-size: 0.8rem; color: var(--text-secondary);">+' + (screenshots.length - 3) + ' more</span>';
+                                }
+                            }
+                            
+                            row.innerHTML = 
+                                '<td><strong>' + (item.call_id || 'N/A') + '</strong></td>' +
+                                '<td><span class="status-badge ' + this.getStatusClass(item.overall_status) + '">' + item.overall_status + '</span></td>' +
+                                '<td>' + (taskBadges || 'None') + '</td>' +
+                                '<td>' + screenshotGallery + '</td>' +
+                                '<td>' + (item.total_processing_time_ms ? item.total_processing_time_ms + 'ms' : 'N/A') + '</td>' +
+                                '<td>' + this.truncateText(item.error_summary || 'No errors', 100) + '</td>';
+                            tbody.appendChild(row);
+                        });
+                    }
+                    
+                    await conn.close();
+                    
+                    loading.style.display = 'none';
+                    table.style.display = 'block';
+                    
+                } catch (error) {
+                    console.error('Error loading work items:', error);
+                    tbody.innerHTML = '<tr><td colspan="6" class="error-message">Error loading work items: ' + error.message + '</td></tr>';
+                    loading.style.display = 'none';
+                    table.style.display = 'block';
+                }
+            }
+            
+            async loadScreenshots() {
+                const loading = document.getElementById('screenshotsLoading');
+                const table = document.getElementById('screenshotsTable');
+                const tbody = document.getElementById('screenshotsTableBody');
+                
+                loading.style.display = 'flex';
+                table.style.display = 'none';
+                
+                try {
+                    const conn = await this.db.connect();
+                    
+                    let query = `
+                        SELECT 
+                            file_name,
+                            work_item_id,
+                            task_name,
+                            file_size,
+                            timestamp,
+                            description,
+                            base64_data,
+                            mime_type
+                        FROM screenshots 
+                        WHERE 1=1
+                    `;
+                    
+                    // Apply search filter
+                    if (this.searchTerm) {
+                        query += ` AND (LOWER(file_name) LIKE '%${this.searchTerm}%' OR LOWER(description) LIKE '%${this.searchTerm}%')`;
+                    }
+                    
+                    // Apply task filter
+                    if (this.currentFilter !== 'all') {
+                        query += ` AND LOWER(task_name) = '${this.currentFilter.toLowerCase()}'`;
+                    }
+                    
+                    // Apply sorting
+                    const sortClause = this.getSortClause();
+                    if (sortClause && this.sortState.table === 'screenshots') {
+                        query += ' ' + sortClause;
+                    } else {
+                        query += ` ORDER BY timestamp DESC`;
+                    }
+                    
+                    const result = await conn.query(query);
+                    const screenshots = result.toArray();
+                    
+                    tbody.innerHTML = '';
+                    
+                    if (screenshots.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="6" class="empty-state"><i class="fas fa-camera"></i><br>No screenshots found</td></tr>';
+                    } else {
+                        screenshots.forEach(screenshot => {
+                            const row = document.createElement('tr');
+                            
+                            const imagePreview = screenshot.base64_data ? 
+                                this.createAdvancedImageViewer(screenshot.base64_data, screenshot.mime_type, screenshot.file_name, 'screenshot-modal-' + screenshot.work_item_id) :
+                                '<i class="fas fa-image" style="font-size: 2rem; color: var(--text-secondary);"></i>';
+                            
+                            row.innerHTML = 
+                                '<td>' + imagePreview + '</td>' +
+                                '<td>' + (screenshot.work_item_id || 'N/A') + '</td>' +
+                                '<td><span class="status-badge ' + this.getTaskBadgeClass(screenshot.task_name) + '">' + (screenshot.task_name || 'N/A') + '</span></td>' +
+                                '<td>' + this.formatFileSize(screenshot.file_size) + '</td>' +
+                                '<td>' + this.formatTimestamp(screenshot.timestamp) + '</td>' +
+                                '<td>' + this.truncateText(screenshot.description || 'No description', 50) + '</td>';
+                            
+                            tbody.appendChild(row);
+                        });
+                    }
+                    
+                    await conn.close();
+                    
+                    loading.style.display = 'none';
+                    table.style.display = 'block';
+                    
+                } catch (error) {
+                    console.error('Error loading screenshots:', error);
+                    tbody.innerHTML = '<tr><td colspan="6" class="error-message"><i class="fas fa-exclamation-triangle"></i>Error loading screenshots: ' + error.message + '</td></tr>';
+                    loading.style.display = 'none';
+                    table.style.display = 'block';
+                }
+            }
+            
+            
+            async loadDefaultTab() {
+                await this.loadHtmlLogs('producer', 'producerLogsLoading', 'producerLogsTable', 'producerLogsTableBody');
+            }
+            
+            initCharts() {
+                this.initLogLevelChart();
+                this.initTimelineChart();
+            }
+            
+            initLogLevelChart() {
+                const ctx = document.getElementById('logLevelChart')?.getContext('2d');
+                if (!ctx) return;
+                
+                const logLevelCounts = CONSOLIDATED_DATA.summary?.log_level_counts || {};
+                
+                // Professional color palette
+                const colors = [
+                    'rgba(239, 68, 68, 0.8)',   // Error - Red
+                    'rgba(255, 176, 32, 0.8)',  // Warning - Orange  
+                    'rgba(59, 130, 246, 0.8)',  // Info - Blue
+                    'rgba(16, 185, 129, 0.8)',  // Success - Green
+                    'rgba(139, 92, 246, 0.8)',  // Debug - Purple
+                ];
+                
+                const borderColors = [
+                    'rgba(239, 68, 68, 1)',
+                    'rgba(255, 176, 32, 1)',
+                    'rgba(59, 130, 246, 1)',
+                    'rgba(16, 185, 129, 1)',
+                    'rgba(139, 92, 246, 1)',
+                ];
+                
+                this.charts.logLevel = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(logLevelCounts),
+                        datasets: [{
+                            data: Object.values(logLevelCounts),
+                            backgroundColor: colors,
+                            borderColor: borderColors,
+                            borderWidth: 2,
+                            hoverBorderWidth: 3,
+                            hoverOffset: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '60%',
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 20,
+                                    usePointStyle: true,
+                                    pointStyle: 'circle',
+                                    font: {
+                                        size: 12,
+                                        weight: '600'
+                                    },
+                                    color: getComputedStyle(document.documentElement).getPropertyValue('--text-primary').trim()
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                titleColor: 'white',
+                                bodyColor: 'white',
+                                borderColor: 'rgba(255, 255, 255, 0.2)',
+                                borderWidth: 1,
+                                cornerRadius: 8,
+                                displayColors: true,
+                                callbacks: {
+                                    label: function(context) {
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = ((context.parsed * 100) / total).toFixed(1);
+                                        return `${context.label}: ${context.parsed} (${percentage}%)`;
+                                    }
+                                }
+                            }
+                        },
+                        animation: {
+                            animateRotate: true,
+                            animateScale: true,
+                            duration: 1000,
+                            easing: 'easeInOutQuart'
+                        }
+                    }
+                });
+            }
+            
+            initTimelineChart() {
+                const ctx = document.getElementById('timelineChart')?.getContext('2d');
+                if (!ctx) return;
+                
+                // Enhanced timeline data with gradients
+                const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+                gradient.addColorStop(0, 'rgba(0, 102, 204, 0.8)');
+                gradient.addColorStop(1, 'rgba(0, 102, 204, 0.1)');
+                
+                const borderGradient = ctx.createLinearGradient(0, 0, 0, 300);
+                borderGradient.addColorStop(0, 'rgba(0, 102, 204, 1)');
+                borderGradient.addColorStop(1, 'rgba(0, 168, 107, 1)');
+                
+                const timelineData = {
+                    labels: ['Producer', 'Consumer', 'Reporter'],
+                    datasets: [{
+                        label: 'Execution Time (minutes)',
+                        data: [2, 15, 3],
+                        backgroundColor: gradient,
+                        borderColor: borderGradient,
+                        borderWidth: 3,
+                        borderRadius: 8,
+                        borderSkipped: false,
+                        tension: 0.4,
+                        pointBackgroundColor: 'rgba(0, 102, 204, 1)',
+                        pointBorderColor: 'white',
+                        pointBorderWidth: 2,
+                        pointRadius: 6,
+                        pointHoverRadius: 8
+                    }]
+                };
+                
+                this.charts.timeline = new Chart(ctx, {
+                    type: 'bar',
+                    data: timelineData,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                titleColor: 'white',
+                                bodyColor: 'white',
+                                borderColor: 'rgba(255, 255, 255, 0.2)',
+                                borderWidth: 1,
+                                cornerRadius: 8,
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.dataset.label}: ${context.parsed.y} minutes`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: {
+                                    display: false
+                                },
+                                ticks: {
+                                    color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim(),
+                                    font: {
+                                        weight: '600'
+                                    }
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.05)',
+                                    borderDash: [5, 5]
+                                },
+                                ticks: {
+                                    color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim(),
+                                    callback: function(value) {
+                                        return value + 'm';
+                                    }
+                                }
+                            }
+                        },
+                        animation: {
+                            duration: 1200,
+                            easing: 'easeInOutQuart'
+                        }
+                    }
+                });
+            }
+            
+            // Utility functions
+            formatTimestamp(timestamp) {
+                if (!timestamp) return 'N/A';
+                try {
+                    return new Date(timestamp).toLocaleString();
+                } catch {
+                    return timestamp;
+                }
+            }
+            
+            formatFileSize(bytes) {
+                if (!bytes) return 'N/A';
+                const sizes = ['B', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(1024));
+                return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i];
+            }
+            
+            formatBytes(bytes) {
+                return this.formatFileSize(bytes);
+            }
+            
+            truncateText(text, maxLength) {
+                if (!text) return '';
+                return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+            }
+            
+            getLogLevelClass(level) {
+                if (!level) return 'status-info';
+                const levelUpper = level.toUpperCase();
+                switch (levelUpper) {
+                    case 'ERROR': return 'status-error';
+                    case 'WARN': 
+                    case 'WARNING': return 'status-warning';
+                    case 'INFO': return 'status-info';
+                    case 'DEBUG': return 'status-info';
+                    default: return 'status-info';
+                }
+            }
+            
+            getStatusClass(status) {
+                if (!status) return 'status-info';
+                const statusUpper = status.toUpperCase();
+                switch (statusUpper) {
+                    case 'COMPLETED': 
+                    case 'SUCCESS': return 'status-success';
+                    case 'FAILED': 
+                    case 'ERROR': return 'status-error';
+                    case 'WARNING': return 'status-warning';
+                    case 'PROCESSING': 
+                    case 'RUNNING': return 'status-info';
+                    default: return 'status-info';
+                }
+            }
+            
+            getTaskBadgeClass(taskName) {
+                if (!taskName) return 'status-info';
+                const taskUpper = taskName.toUpperCase();
+                
+                // Handle Consumer shard tasks
+                if (taskUpper.startsWith('CONSUMER-SHARD-') || taskUpper === 'CONSUMER') {
+                    return 'status-warning';
+                }
+                
+                switch (taskUpper) {
+                    case 'PRODUCER': return 'status-info';
+                    case 'REPORTER': return 'status-success';
+                    default: return 'status-info';
+                }
+            }
+            
+            // Legacy function kept for backward compatibility
+            escapeHtml(unsafe) {
+                return unsafe
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            }
+            
+            // Advanced HTML sanitization using modern browser APIs
+            sanitizeHtml(htmlContent) {
+                // Simple error handling injection for iframe context
+                const errorHandlingScript = 
+                    '<script>' +
+                    'window.onerror = function(msg, url, line, col, error) {' +
+                        'console.warn("Iframe error handled:", msg);' +
+                        'return true;' +
+                    '};' +
+                    'window.getSampleContents = window.getSampleContents || function() { return ""; };' +
+                    'window.toggleDetails = window.toggleDetails || function() { return false; };' +
+                    'window.showFullLog = window.showFullLog || function() { return false; };' +
+                    'window.expandSection = window.expandSection || function() { return false; };' +
+                    'if (typeof Chart === "undefined") {' +
+                        'window.Chart = { register: function() {}, defaults: { plugins: { legend: {} } } };' +
+                    '}' +
+                    '<\/script>';
+                
+                // Just inject the error handling script and return
+                if (htmlContent.includes('<head>')) {
+                    return htmlContent.replace('<head>', '<head>' + errorHandlingScript);
+                } else if (htmlContent.includes('<html>')) {
+                    return htmlContent.replace('<html>', '<html><head>' + errorHandlingScript + '</head>');
+                } else {
+                    return errorHandlingScript + htmlContent;
+                }
+            }
+            
+            // Advanced HTML log viewer with responsive iframe
+            toggleAdvancedHtmlLog(htmlId, containerId) {
+                const container = document.getElementById(containerId);
+                const existingIframe = container.querySelector('iframe');
+                
+                if (existingIframe) {
+                    existingIframe.remove();
+                    return;
+                }
+                
+                const htmlContent = HTML_LOGS[htmlId];
+                if (!htmlContent) {
+                    this.showError(`No HTML content available for ${htmlId}`);
+                    return;
+                }
+                
+                const iframe = document.createElement('iframe');
+                iframe.style.width = '100%';
+                iframe.style.height = '600px';
+                iframe.style.border = '1px solid var(--border-color)';
+                iframe.style.borderRadius = '10px';
+                iframe.style.marginTop = '10px';
+                
+                // Create a blob URL for the HTML content
+                const blob = new Blob([htmlContent], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                iframe.src = url;
+                
+                // Setup responsive resizing
+                this.setupIframeResizing(iframe, htmlId);
+                
+                container.appendChild(iframe);
+                
+                // Cleanup blob URL when iframe is removed
+                iframe.addEventListener('load', () => {
+                    setTimeout(() => URL.revokeObjectURL(url), 1000);
+                });
+            }
+            
+            // Setup intelligent iframe resizing
+            setupIframeResizing(iframe, htmlId) {
+                try {
+                    // Try to access iframe content for height calculation
+                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                    
+                    if (iframeDoc) {
+                        // Create a ResizeObserver to watch content changes
+                        const resizeIframe = () => {
+                            const contentHeight = Math.max(
+                                iframeDoc.body.scrollHeight,
+                                iframeDoc.body.offsetHeight,
+                                iframeDoc.documentElement.clientHeight,
+                                iframeDoc.documentElement.scrollHeight,
+                                iframeDoc.documentElement.offsetHeight
+                            );
+                            
+                            // Set reasonable bounds (300px min, 1200px max)
+                            const height = Math.min(Math.max(contentHeight, 300), 1200);
+                            iframe.style.height = height + 'px';
+                        };
+                        
+                        // Initial resize
+                        setTimeout(resizeIframe, 100);
+                        
+                        // Watch for content changes
+                        if (window.ResizeObserver) {
+                            const observer = new ResizeObserver(resizeIframe);
+                            observer.observe(iframeDoc.body);
+                        }
+                        
+                        // Fallback: periodic resize check
+                        const intervalId = setInterval(resizeIframe, 1000);
+                        setTimeout(() => clearInterval(intervalId), 30000); // Stop after 30 seconds
+                    }
+                } catch (e) {
+                    // Cross-origin restrictions - use fixed height
+                    console.log('Cannot access iframe content for resizing:', e);
+                    iframe.style.height = '600px';
+                }
+            }
+            
+            // Enhanced HTML log viewer with proper content handling
+            toggleAdvancedHtmlLog(htmlId, containerId) {
+                const htmlDiv = document.getElementById(htmlId);
+                const toggleBtn = document.getElementById('toggle-btn-' + htmlId);
+                const loadingDiv = document.getElementById('loading-' + htmlId);
+                const iframe = document.getElementById('iframe-' + htmlId);
+                
+                if (!htmlDiv || !toggleBtn) {
+                    console.error('HTML log elements not found:', htmlId);
+                    return;
+                }
+                
+                if (htmlDiv.style.display === 'none') {
+                    // Show the HTML log
+                    htmlDiv.style.display = 'block';
+                    toggleBtn.innerHTML = '<i class="fas fa-compress"></i> <span>Collapse Interactive View</span>';
+                    
+                    // Load content if not already loaded
+                    if (!iframe.src && window.htmlLogContents && window.htmlLogContents.has(htmlId)) {
+                        loadingDiv.style.display = 'flex';
+                        iframe.style.display = 'none';
+                        
+                        const htmlContent = window.htmlLogContents.get(htmlId);
+                        
+                        // Create sanitized HTML content
+                        const sanitizedHtml = this.sanitizeHtml(htmlContent);
+                        
+                        // Create blob URL for the content
+                        const blob = new Blob([sanitizedHtml], { type: 'text/html' });
+                        const url = URL.createObjectURL(blob);
+                        
+                        iframe.onload = function() {
+                            loadingDiv.style.display = 'none';
+                            iframe.style.display = 'block';
+                            iframe.style.height = '600px';
+                            // Setup intelligent iframe resizing
+                            dashboard.setupIframeResizing(iframe, htmlId);
+                            URL.revokeObjectURL(url);
+                        };
+                        
+                        iframe.src = url;
+                    } else if (iframe.src) {
+                        // Content already loaded
+                        loadingDiv.style.display = 'none';
+                        iframe.style.display = 'block';
+                    }
+                } else {
+                    // Hide the HTML log
+                    htmlDiv.style.display = 'none';
+                    toggleBtn.innerHTML = '<i class="fas fa-expand"></i> <span>Expand Interactive View</span>';
+                }
+            }
+            
+            // Legacy function for backward compatibility
+            toggleHtmlLog(htmlId) {
+                this.toggleAdvancedHtmlLog(htmlId, `container-${htmlId}`);
+            }
+            
+            // Enhanced download functionality
+            downloadHtmlLog(htmlId, taskName) {
+                const htmlContent = window.htmlLogContents && window.htmlLogContents.get(htmlId);
+                if (!htmlContent) {
+                    this.showError(`No HTML content available for ${taskName}`);
+                    return;
+                }
+                
+                const blob = new Blob([htmlContent], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${taskName}-logs-${new Date().toISOString().split('T')[0]}.html`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+            }
+            
+            // Open HTML log in new window for full-screen viewing (safe version using stored content)
+            openHtmlLogInNewWindowSafe(htmlId, taskName) {
+                const htmlContent = window.htmlLogContents && window.htmlLogContents.get(htmlId);
+                if (!htmlContent) {
+                    this.showError(`No HTML content available for ${taskName}`);
+                    return;
+                }
+                
+                const newWindow = window.open('', '_blank', 'width=1200,height=800,scrollbars=yes,resizable=yes');
+                
+                if (newWindow) {
+                    newWindow.document.write(htmlContent);
+                    newWindow.document.close();
+                    newWindow.document.title = `${taskName} Logs - ${new Date().toLocaleString()}`;
+                } else {
+                    this.showError('Please allow popups to view logs in a new window');
+                }
+            }
+            
+            // Legacy function for backward compatibility
+            openHtmlLogInNewWindow(htmlContent, taskName) {
+                const newWindow = window.open('', '_blank', 'width=1200,height=800,scrollbars=yes,resizable=yes');
+                
+                if (newWindow) {
+                    newWindow.document.write(htmlContent);
+                    newWindow.document.close();
+                    newWindow.document.title = `${taskName} Logs - ${new Date().toLocaleString()}`;
+                } else {
+                    this.showError('Please allow popups to view logs in a new window');
+                }
+            }
+            
+            
+            showError(message) {
+                console.error('[Dashboard Error]', message);
+                
+                // Create a more sophisticated error display
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error-message';
+                errorDiv.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: rgba(239, 68, 68, 0.95);
+                    color: white;
+                    padding: 16px 20px;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                    z-index: 10000;
+                    max-width: 400px;
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                    backdrop-filter: blur(10px);
+                    border: 1px solid rgba(255, 255, 255, 0.2);
+                    animation: slideIn 0.3s ease-out;
+                `;
+                
+                errorDiv.innerHTML = `
+                    <div style="display: flex; align-items: flex-start; gap: 12px;">
+                        <i class="fas fa-exclamation-triangle" style="color: #fbbf24; font-size: 18px; margin-top: 2px;"></i>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; margin-bottom: 4px;">Dashboard Error</div>
+                            <div style="font-size: 14px; line-height: 1.4;">${message}</div>
+                        </div>
+                        <button onclick="this.parentElement.parentElement.remove()" 
+                            style="background: none; border: none; color: white; cursor: pointer; font-size: 16px; padding: 4px;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+                
+                // Add CSS for animation if not already present
+                if (!document.getElementById('error-animations')) {
+                    const style = document.createElement('style');
+                    style.id = 'error-animations';
+                    style.textContent = `
+                        @keyframes slideIn {
+                            from {
+                                transform: translateX(100%);
+                                opacity: 0;
+                            }
+                            to {
+                                transform: translateX(0);
+                                opacity: 1;
+                            }
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+                
+                document.body.appendChild(errorDiv);
+                
+                // Auto-remove after 8 seconds
+                setTimeout(() => {
+                    if (errorDiv.parentElement) {
+                        errorDiv.style.animation = 'slideIn 0.3s ease-out reverse';
+                        setTimeout(() => errorDiv.remove(), 300);
+                    }
+                }, 8000);
+            }
+            
+            showFallbackContent() {
+                console.log('[Dashboard] Showing fallback content due to initialization failure');
+                
+                // Hide loading indicators and show fallback content
+                document.querySelectorAll('.loading').forEach(el => {
+                    el.style.display = 'none';
+                });
+                
+                // Update stats grid with error state
+                const statsGrid = document.querySelector('.stats-grid');
+                if (statsGrid) {
+                    statsGrid.innerHTML = `
+                        <div class="stat-card" style="grid-column: 1 / -1;">
+                            <div class="stat-icon"><i class="fas fa-exclamation-triangle" style="color: var(--error-color);"></i></div>
+                            <div class="stat-number" style="color: var(--error-color);">Error</div>
+                            <div class="stat-label">Dashboard Initialization Failed</div>
+                            <div style="margin-top: 15px; font-size: 0.9rem; color: var(--text-secondary);">
+                                Please check the browser console for details and try refreshing the page.
+                            </div>
+                            <button onclick="window.location.reload()" 
+                                class="filter-btn" style="margin-top: 15px; border-color: var(--primary-color);">
+                                <i class="fas fa-refresh"></i> Reload Page
+                            </button>
+                        </div>
+                    `;
+                }
+                
+                // Update charts with error message
+                document.querySelectorAll('.chart-card').forEach(card => {
+                    const container = card.querySelector('.chart-container');
+                    if (container) {
+                        container.innerHTML = `
+                            <div class="empty-state" style="height: 300px;">
+                                <i class="fas fa-chart-line" style="color: var(--error-color);"></i>
+                                <h3>Charts Unavailable</h3>
+                                <p>Unable to load chart data due to initialization error.</p>
+                            </div>
+                        `;
+                    }
+                });
+                
+                // Update data tables with error message
+                document.querySelectorAll('.tab-content').forEach(tabContent => {
+                    const tableWrapper = tabContent.querySelector('.table-wrapper');
+                    const loading = tabContent.querySelector('.loading');
+                    
+                    if (loading) loading.style.display = 'none';
+                    
+                    if (tableWrapper) {
+                        tableWrapper.style.display = 'block';
+                        const tbody = tableWrapper.querySelector('tbody');
+                        if (tbody) {
+                            tbody.innerHTML = `
+                                <tr>
+                                    <td colspan="6" class="empty-state">
+                                        <i class="fas fa-database" style="color: var(--error-color);"></i>
+                                        <h3>Data Unavailable</h3>
+                                        <p>Dashboard initialization failed. Please check your internet connection and reload the page.</p>
+                                        <button onclick="window.location.reload()" 
+                                            class="filter-btn" style="margin-top: 15px;">
+                                            <i class="fas fa-refresh"></i> Reload
+                                        </button>
+                                    </td>
+                                </tr>
+                            `;
+                        }
+                    }
+                });
+            }
+            
+            // Modern Full-Screen Image Viewer Functions
+            openFullscreenViewer(modalId, imageUrl, fileName) {
+                const modal = document.getElementById(modalId);
+                if (!modal) return;
+                
+                // Request fullscreen if supported (for true fullscreen experience)
+                if (modal.requestFullscreen) {
+                    modal.requestFullscreen().catch(() => {
+                        // Fallback to regular modal if fullscreen fails
+                        console.log('Fullscreen not available, using modal fallback');
+                    });
+                } else if (modal.webkitRequestFullscreen) {
+                    modal.webkitRequestFullscreen();
+                } else if (modal.msRequestFullscreen) {
+                    modal.msRequestFullscreen();
+                }
+                
+                // Show modal with fade-in animation
+                modal.style.display = 'block';
+                document.body.style.overflow = 'hidden'; // Prevent background scrolling
+                
+                // Trigger fade-in animation
+                requestAnimationFrame(() => {
+                    modal.style.opacity = '1';
+                });
+                
+                // Store current modal for ESC key handling
+                this.currentModal = modalId;
+            }
+            
+            closeFullscreenViewer(modalId) {
+                console.log('closeFullscreenViewer called with modalId:', modalId);
+                const modal = document.getElementById(modalId);
+                if (!modal) {
+                    console.error('Modal not found for ID:', modalId);
+                    return;
+                }
+                
+                // Exit fullscreen if active
+                if (document.fullscreenElement) {
+                    document.exitFullscreen().catch(() => {
+                        console.log('Error exiting fullscreen');
+                    });
+                } else if (document.webkitFullscreenElement) {
+                    document.webkitExitFullscreen();
+                } else if (document.msFullscreenElement) {
+                    document.msExitFullscreen();
+                }
+                
+                // Fade out animation
+                modal.style.opacity = '0';
+                
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                    document.body.style.overflow = ''; // Restore scrolling
+                }, 300);
+                
+                // Clear current modal
+                this.currentModal = null;
+                console.log('closeFullscreenViewer completed for modalId:', modalId);
+            }
+            
+            initModernViewer(modalId, img) {
+                if (!img) return;
+                
+                const modal = document.getElementById(modalId);
+                const container = img.parentElement;
+                
+                // Calculate better initial scale to maximize image size
+                const containerRect = container.getBoundingClientRect();
+                const imgNaturalWidth = img.naturalWidth || img.width;
+                const imgNaturalHeight = img.naturalHeight || img.height;
+                
+                // Calculate scale to fit 90% of the container
+                const scaleToFitX = (containerRect.width * 0.9) / imgNaturalWidth;
+                const scaleToFitY = (containerRect.height * 0.9) / imgNaturalHeight;
+                const optimalScale = Math.min(scaleToFitX, scaleToFitY, 3); // Cap at 3x for readability
+                
+                // Use a minimum scale to ensure image is always reasonably sized
+                const initialScale = Math.max(optimalScale, 0.8);
+                
+                // Store viewer state with better initial scaling
+                const viewerState = {
+                    scale: initialScale,
+                    translateX: 0,
+                    translateY: 0,
+                    isDragging: false,
+                    lastX: 0,
+                    lastY: 0,
+                    initialScale: initialScale
+                };
+                
+                // Store state on the image
+                img.viewerState = viewerState;
+                
+                // Apply initial transform to make image larger
+                this.updateViewerTransform(img);
+                
+                this.setupViewerInteractions(modal, img, container);
+            }
+            
+            setupViewerInteractions(modal, img, container) {
+                const state = img.viewerState;
+                
+                // Mouse wheel zoom
+                container.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const rect = img.getBoundingClientRect();
+                    const x = e.clientX - rect.left - rect.width / 2;
+                    const y = e.clientY - rect.top - rect.height / 2;
+                    
+                    const zoomIntensity = 0.1;
+                    const zoom = e.deltaY < 0 ? (1 + zoomIntensity) : (1 - zoomIntensity);
+                    
+                    const newScale = Math.min(Math.max(state.scale * zoom, 0.1), 5);
+                    
+                    // Adjust translation to zoom toward cursor
+                    const scaleDiff = newScale - state.scale;
+                    state.translateX -= x * scaleDiff / state.scale;
+                    state.translateY -= y * scaleDiff / state.scale;
+                    state.scale = newScale;
+                    
+                    this.updateViewerTransform(img);
+                });
+                
+                // Mouse drag for panning
+                let startDragX, startDragY;
+                
+                img.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    state.isDragging = true;
+                    startDragX = e.clientX - state.translateX;
+                    startDragY = e.clientY - state.translateY;
+                    
+                    img.style.cursor = 'grabbing';
+                    container.style.cursor = 'grabbing';
+                });
+                
+                document.addEventListener('mousemove', (e) => {
+                    if (!state.isDragging) return;
+                    
+                    e.preventDefault();
+                    state.translateX = e.clientX - startDragX;
+                    state.translateY = e.clientY - startDragY;
+                    
+                    this.updateViewerTransform(img);
+                });
+                
+                document.addEventListener('mouseup', () => {
+                    if (state.isDragging) {
+                        state.isDragging = false;
+                        img.style.cursor = 'grab';
+                        container.style.cursor = 'grab';
+                    }
+                });
+                
+                // Touch support for mobile
+                let lastTouchDistance = 0;
+                let touchStartX = 0, touchStartY = 0;
+                
+                img.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    
+                    if (e.touches.length === 1) {
+                        // Single touch - panning
+                        state.isDragging = true;
+                        touchStartX = e.touches[0].clientX - state.translateX;
+                        touchStartY = e.touches[0].clientY - state.translateY;
+                    } else if (e.touches.length === 2) {
+                        // Two finger - zooming
+                        state.isDragging = false;
+                        const touch1 = e.touches[0];
+                        const touch2 = e.touches[1];
+                        lastTouchDistance = Math.hypot(
+                            touch2.clientX - touch1.clientX,
+                            touch2.clientY - touch1.clientY
+                        );
+                    }
+                });
+                
+                img.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    
+                    if (e.touches.length === 1 && state.isDragging) {
+                        // Panning
+                        state.translateX = e.touches[0].clientX - touchStartX;
+                        state.translateY = e.touches[0].clientY - touchStartY;
+                        this.updateViewerTransform(img);
+                    } else if (e.touches.length === 2) {
+                        // Pinch zoom
+                        const touch1 = e.touches[0];
+                        const touch2 = e.touches[1];
+                        const distance = Math.hypot(
+                            touch2.clientX - touch1.clientX,
+                            touch2.clientY - touch1.clientY
+                        );
+                        
+                        if (lastTouchDistance > 0) {
+                            const scale = distance / lastTouchDistance;
+                            state.scale = Math.min(Math.max(state.scale * scale, 0.1), 5);
+                            this.updateViewerTransform(img);
+                        }
+                        
+                        lastTouchDistance = distance;
+                    }
+                });
+                
+                img.addEventListener('touchend', () => {
+                    state.isDragging = false;
+                    lastTouchDistance = 0;
+                });
+            }
+            
+            updateViewerTransform(img) {
+                const state = img.viewerState;
+                if (!state) return;
+                
+                // Use requestAnimationFrame for smoother transforms
+                requestAnimationFrame(() => {
+                    img.style.transform = `translate(${state.translateX}px, ${state.translateY}px) scale(${state.scale})`;
+                });
+            }
+            
+            // New simplified zoom functions
+            zoomIn(modalId) {
+                const modal = document.getElementById(modalId);
+                if (!modal) return;
+                
+                const img = modal.querySelector('.image-container img');
+                if (!img || !img.viewerState) return;
+                
+                const state = img.viewerState;
+                state.scale = Math.min(state.scale * 1.3, 5);
+                this.updateViewerTransform(img);
+            }
+            
+            zoomOut(modalId) {
+                const modal = document.getElementById(modalId);
+                if (!modal) return;
+                
+                const img = modal.querySelector('.image-container img');
+                if (!img || !img.viewerState) return;
+                
+                const state = img.viewerState;
+                state.scale = Math.max(state.scale / 1.3, 0.1);
+                this.updateViewerTransform(img);
+            }
+            
+            resetView(modalId) {
+                const modal = document.getElementById(modalId);
+                if (!modal) return;
+                
+                const img = modal.querySelector('.image-container img');
+                if (!img || !img.viewerState) return;
+                
+                const state = img.viewerState;
+                
+                // Temporarily disable transitions for instant reset
+                const originalTransition = img.style.transition;
+                img.style.transition = 'none';
+                
+                state.scale = state.initialScale; // Use the calculated initial scale
+                state.translateX = 0;
+                state.translateY = 0;
+                this.updateViewerTransform(img);
+                
+                // Re-enable transitions after a brief delay
+                setTimeout(() => {
+                    img.style.transition = originalTransition || 'transform 0.2s ease-out';
+                }, 50);
+            }
+            
+            downloadScreenshot(dataUrl, fileName) {
+                const a = document.createElement('a');
+                a.href = dataUrl;
+                a.download = fileName || 'screenshot.png';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
+            
+            // Setup intelligent iframe resizing (enhanced version)
+            setupIframeResizing(iframe, htmlId) {
+                try {
+                    // Try to access iframe content for height calculation
+                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                    
+                    if (iframeDoc) {
+                        // Create a ResizeObserver to watch content changes
+                        const resizeIframe = () => {
+                            try {
+                                const contentHeight = Math.max(
+                                    iframeDoc.body ? iframeDoc.body.scrollHeight : 0,
+                                    iframeDoc.body ? iframeDoc.body.offsetHeight : 0,
+                                    iframeDoc.documentElement ? iframeDoc.documentElement.clientHeight : 0,
+                                    iframeDoc.documentElement ? iframeDoc.documentElement.scrollHeight : 0,
+                                    iframeDoc.documentElement ? iframeDoc.documentElement.offsetHeight : 0
+                                );
+                                
+                                // Set reasonable bounds (300px min, 1200px max)
+                                const height = Math.min(Math.max(contentHeight || 600, 300), 1200);
+                                iframe.style.height = height + 'px';
+                            } catch (err) {
+                                console.warn('Error in resizeIframe:', err);
+                                iframe.style.height = '600px';
+                            }
+                        };
+                        
+                        // Initial resize with delay to allow content to load
+                        setTimeout(resizeIframe, 100);
+                        setTimeout(resizeIframe, 500); // Second attempt
+                        
+                        // Watch for content changes
+                        if (window.ResizeObserver && iframeDoc.body) {
+                            try {
+                                const observer = new ResizeObserver(resizeIframe);
+                                observer.observe(iframeDoc.body);
+                            } catch (obsError) {
+                                console.warn('ResizeObserver failed:', obsError);
+                            }
+                        }
+                        
+                        // Fallback: periodic resize check
+                        const intervalId = setInterval(resizeIframe, 2000);
+                        setTimeout(() => clearInterval(intervalId), 30000); // Stop after 30 seconds
+                    }
+                } catch (e) {
+                    // Cross-origin restrictions - use fixed height
+                    console.log('Cannot access iframe content for resizing, using fixed height:', e);
+                    iframe.style.height = '600px';
+                }
+            }
+            
+            createAdvancedImageViewer(base64Data, mimeType, fileName, modalId) {
+                const dataUrl = 'data:' + (mimeType || 'image/png') + ';base64,' + base64Data;
+                const viewerId = 'viewer-' + modalId;
+                
+                return '<div class="screenshot-preview">' +
+                    '<img src="' + dataUrl + '" alt="' + fileName + '" ' +
+                        'style="max-width: 120px; max-height: 80px; border-radius: 4px; cursor: pointer; border: 2px solid #e5e7eb; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: all 0.2s;" ' +
+                        'data-modal-id="' + modalId + '" ' +
+                        'data-data-url="' + dataUrl + '" ' +
+                        'data-file-name="' + fileName + '" ' +
+                        'class="screenshot-thumbnail-large">' +
+                    
+                    '<!-- Modern Full-Screen Image Viewer -->' +
+                    '<div id="' + modalId + '" class="fullscreen-viewer" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.98); z-index: 99999; font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, sans-serif; opacity: 0; transition: opacity 0.3s ease;">' +
+                        
+                        '<!-- Top Controls Bar -->' +
+                        '<div class="viewer-controls" style="position: absolute; top: 0; left: 0; right: 0; height: 70px; background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 70%, transparent 100%); display: flex; align-items: center; justify-content: space-between; padding: 0 30px; z-index: 10001;">' +
+                            '<div style="color: white; font-weight: 600; font-size: 18px; display: flex; align-items: center; gap: 12px;">' +
+                                '<i class="fas fa-image" style="color: #60a5fa;"></i>' +
+                                '<span>' + fileName + '</span>' +
+                            '</div>' +
+                            '<div style="display: flex; align-items: center; gap: 16px;">' +
+                                '<button class="download-screenshot-btn" ' + 
+                                    'data-data-url="' + dataUrl + '" ' +
+                                    'data-file-name="' + fileName + '" ' +
+                                    'style="background: rgba(16, 185, 129, 0.9); border: none; color: white; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 500; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">' +
+                                    '<i class="fas fa-download"></i> Download' +
+                                '</button>' +
+                                '<button class="close-fullscreen-btn" ' +
+                                    'data-modal-id="' + modalId + '" ' +
+                                    'style="background: rgba(239, 68, 68, 0.9); border: none; color: white; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 500; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">' +
+                                    '<i class="fas fa-times"></i> Close' +
+                                '</button>' +
+                            '</div>' +
+                        '</div>' +
+                        
+                        '<!-- Zoom Controls (Right Side) -->' +
+                        '<div class="zoom-controls" style="position: absolute; right: 30px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 12px; z-index: 10002;">' +
+                            '<button class="zoom-in-btn" data-modal-id="' + modalId + '" ' +
+                                'style="width: 50px; height: 50px; background: rgba(0,0,0,0.8); border: 2px solid rgba(255,255,255,0.3); color: white; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; transition: all 0.2s; backdrop-filter: blur(10px);">' +
+                                '<i class="fas fa-plus"></i>' +
+                            '</button>' +
+                            '<button class="zoom-out-btn" data-modal-id="' + modalId + '" ' +
+                                'style="width: 50px; height: 50px; background: rgba(0,0,0,0.8); border: 2px solid rgba(255,255,255,0.3); color: white; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; transition: all 0.2s; backdrop-filter: blur(10px);">' +
+                                '<i class="fas fa-minus"></i>' +
+                            '</button>' +
+                            '<button class="reset-view-btn" data-modal-id="' + modalId + '" ' +
+                                'style="width: 50px; height: 50px; background: rgba(0,0,0,0.8); border: 2px solid rgba(255,255,255,0.3); color: white; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; transition: all 0.2s; backdrop-filter: blur(10px);">' +
+                                '<i class="fas fa-expand-arrows-alt"></i>' +
+                            '</button>' +
+                        '</div>' +
+                        
+                        '<!-- Help Instructions (Bottom Center) -->' +
+                        '<div class="viewer-help" style="position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; padding: 16px 24px; border-radius: 12px; font-size: 14px; display: flex; align-items: center; gap: 16px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); z-index: 10003;">' +
+                            '<div style="display: flex; align-items: center; gap: 6px;"><i class="fas fa-mouse" style="color: #60a5fa;"></i><span>Drag to pan</span></div>' +
+                            '<div style="display: flex; align-items: center; gap: 6px;"><i class="fas fa-scroll" style="color: #60a5fa;"></i><span>Scroll to zoom</span></div>' +
+                            '<div style="display: flex; align-items: center; gap: 6px;"><kbd style="background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 4px; font-family: monospace;">ESC</kbd><span>Close</span></div>' +
+                        '</div>' +
+                        
+                        '<!-- Image Container (Maximum Coverage) -->' +
+                        '<div id="' + viewerId + '" class="image-container close-fullscreen-area" ' +
+                            'data-modal-id="' + modalId + '" ' +
+                            'style="position: absolute; top: 70px; left: 0; right: 0; bottom: 60px; display: flex; align-items: center; justify-content: center; cursor: grab; overflow: hidden;">' +
+                            '<img src="' + dataUrl + '" alt="' + fileName + '" ' +
+                                'class="fullscreen-image" ' +
+                                'data-modal-id="' + modalId + '" ' +
+                                'style="max-width: 95vw; max-height: calc(100vh - 130px); min-width: 80vw; min-height: 60vh; object-fit: contain; cursor: grab; transition: transform 0.2s ease-out; transform-origin: center center; user-select: none;" ' +
+                                'draggable="false" ' +
+                                'onclick="event.stopPropagation()" ' +
+                                'onload="dashboard.initModernViewer(\'' + modalId + '\', this)">' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
+            }
+            
+            // Sort handling methods
+            handleSort(column) {
+                // Determine new direction
+                let newDirection;
+                if (this.sortState.column === column) {
+                    // Same column clicked, cycle through: none -> asc -> desc -> none
+                    switch (this.sortState.direction) {
+                        case 'none':
+                            newDirection = 'asc';
+                            break;
+                        case 'asc':
+                            newDirection = 'desc';
+                            break;
+                        case 'desc':
+                            newDirection = 'none';
+                            break;
+                        default:
+                            newDirection = 'asc';
+                    }
+                } else {
+                    // Different column clicked, start with ascending
+                    newDirection = 'asc';
+                }
+                
+                // Update sort state
+                this.sortState.column = column;
+                this.sortState.direction = newDirection;
+                this.sortState.table = this.currentTab;
+                
+                // Update UI indicators
+                this.updateSortIndicators(column, newDirection);
+                
+                // Refresh current tab with new sort
+                this.updateCurrentTab();
+            }
+            
+            updateSortIndicators(column, direction) {
+                // Reset all sort indicators in current table
+                const currentTabElement = document.getElementById(this.currentTab);
+                if (currentTabElement) {
+                    const headers = currentTabElement.querySelectorAll('.sortable-header');
+                    headers.forEach(header => {
+                        header.classList.remove('sort-asc', 'sort-desc', 'sort-none');
+                        header.classList.add('sort-none');
+                        const indicator = header.querySelector('.sort-indicator');
+                        if (indicator) {
+                            indicator.classList.remove('active');
+                        }
+                    });
+                    
+                    // Set active sort indicator
+                    const activeHeader = currentTabElement.querySelector(`[data-column="${column}"]`);
+                    if (activeHeader) {
+                        activeHeader.classList.remove('sort-none');
+                        activeHeader.classList.add(`sort-${direction}`);
+                        const indicator = activeHeader.querySelector('.sort-indicator');
+                        if (indicator) {
+                            indicator.classList.add('active');
+                        }
+                    }
+                }
+            }
+            
+            getSortClause() {
+                if (this.sortState.direction === 'none' || !this.sortState.column) {
+                    return '';
+                }
+                
+                const direction = this.sortState.direction.toUpperCase();
+                const column = this.sortState.column;
+                
+                // Handle table-specific column mappings
+                if (this.sortState.table === 'workitems') {
+                    switch (column) {
+                        case 'call_id':
+                            return `ORDER BY ci.call_id ${direction}`;
+                        case 'status':
+                            return `ORDER BY ci.overall_status ${direction}`;
+                        case 'task_name':
+                            return `ORDER BY ci.completed_tasks ${direction}`;
+                        case 'processing_time_ms':
+                            return `ORDER BY COALESCE(ci.total_processing_time_ms, 0) ${direction}`;
+                        case 'error_message':
+                            return `ORDER BY COALESCE(ci.error_summary, '') ${direction}`;
+                        case 'screenshot_count':
+                            return `ORDER BY CASE WHEN ci.screenshot_data IS NOT NULL THEN ARRAY_LENGTH(STRING_TO_ARRAY(ci.screenshot_data, ',')) ELSE 0 END ${direction}`;
+                        default:
+                            return `ORDER BY ci.latest_timestamp ${direction}`;
+                    }
+                } else if (this.sortState.table === 'screenshots') {
+                    // Handle screenshots table sorting
+                    switch (column) {
+                        case 'processing_time_ms':
+                            return `ORDER BY COALESCE(${column}, 0) ${direction}`;
+                        case 'file_size':
+                            return `ORDER BY COALESCE(${column}, 0) ${direction}`;
+                        case 'timestamp':
+                            return `ORDER BY COALESCE(${column}, '1900-01-01') ${direction}`;
+                        default:
+                            return `ORDER BY COALESCE(${column}, '') ${direction}`;
+                    }
+                } else if (this.sortState.table && this.sortState.table.endsWith('-logs')) {
+                    // Handle log tables (producer-logs, consumer-logs, reporter-logs) with "tl." prefix
+                    switch (column) {
+                        case 'timestamp':
+                            return `ORDER BY COALESCE(tl.${column}, '1900-01-01') ${direction}`;
+                        case 'log_level':
+                        case 'message':
+                        case 'file_path':
+                            return `ORDER BY COALESCE(tl.${column}, '') ${direction}`;
+                        default:
+                            return `ORDER BY COALESCE(tl.${column}, '') ${direction}`;
+                    }
+                } else {
+                    // Handle other tables
+                    switch (column) {
+                        case 'processing_time_ms':
+                            return `ORDER BY COALESCE(${column}, 0) ${direction}`;
+                        case 'file_size':
+                            return `ORDER BY COALESCE(${column}, 0) ${direction}`;
+                        case 'timestamp':
+                            return `ORDER BY COALESCE(${column}, '1900-01-01') ${direction}`;
+                        default:
+                            return `ORDER BY COALESCE(${column}, '') ${direction}`;
+                    }
+                }
+            }
+            
+        }
+        
+        // Global dashboard instance
+        let dashboard;
+        let dashboardInitialized = false;
+        let initializationInProgress = false;
+        
+        // Initialize dashboard function with duplicate prevention and retry logic
+        function initializeDashboard(retryCount = 0) {
+            if (dashboardInitialized) {
+                console.log('Dashboard already initialized, skipping');
+                return;
+            }
+            
+            if (initializationInProgress) {
+                console.log('Dashboard initialization already in progress, skipping');
+                return;
+            }
+            
+            const maxRetries = 2;
+            initializationInProgress = true;
+            
+            try {
+                console.log(`[Dashboard] Initialization attempt ${retryCount + 1}/${maxRetries + 1}`);
+                dashboard = new ConsolidatedDashboard();
+                
+                dashboard.init().then(() => {
+                    dashboardInitialized = true;
+                    initializationInProgress = false;
+                    console.log('[Dashboard] Initialization completed successfully');
+                }).catch(error => {
+                    console.error(`Dashboard initialization failed (attempt ${retryCount + 1}):`, error);
+                    initializationInProgress = false;  // Allow retry on failure
+                    
+                    if (retryCount < maxRetries) {
+                        console.log(`[Dashboard] Retrying initialization in 2 seconds...`);
+                        setTimeout(() => {
+                            initializeDashboard(retryCount + 1);
+                        }, 2000);
+                    } else {
+                        console.error('[Dashboard] Max retries exceeded, showing fallback content');
+                        if (dashboard) {
+                            dashboard.showFallbackContent();
+                        } else {
+                            // Create minimal dashboard instance for error handling
+                            const fallbackDiv = document.createElement('div');
+                            fallbackDiv.className = 'error-message';
+                            fallbackDiv.style.cssText = `
+                                margin: 50px;
+                                padding: 30px;
+                                text-align: center;
+                                background: var(--card-background);
+                                border-radius: 15px;
+                                box-shadow: var(--shadow);
+                            `;
+                            fallbackDiv.innerHTML = `
+                                <div style="font-size: 3rem; margin-bottom: 20px; color: var(--error-color);">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <h2 style="margin-bottom: 15px; color: var(--text-primary);">Dashboard Initialization Failed</h2>
+                                <p style="color: var(--text-secondary); margin-bottom: 20px;">
+                                    Failed to initialize the dashboard after ${maxRetries + 1} attempts.
+                                    Please check your internet connection and try again.
+                                </p>
+                                <button onclick="window.location.reload()" 
+                                    class="filter-btn" style="font-size: 1.1rem; padding: 12px 24px;">
+                                    <i class="fas fa-refresh"></i> Reload Page
+                                </button>
+                            `;
+                            
+                            const container = document.querySelector('.dashboard-container');
+                            if (container) {
+                                container.appendChild(fallbackDiv);
+                            } else {
+                                document.body.appendChild(fallbackDiv);
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error(`Failed to create dashboard instance (attempt ${retryCount + 1}):`, error);
+                dashboardInitialized = false;  // Allow retry on failure
+                
+                if (retryCount < maxRetries) {
+                    console.log(`[Dashboard] Retrying dashboard creation in 2 seconds...`);
+                    setTimeout(() => {
+                        initializeDashboard(retryCount + 1);
+                    }, 2000);
+                } else {
+                    console.error('[Dashboard] Max retries exceeded for dashboard creation');
+                    // Show final fallback content
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'error-message';
+                    errorDiv.style.cssText = 'margin: 50px; padding: 30px; text-align: center; background: rgba(239, 68, 68, 0.1); color: var(--error-color); border-radius: 15px;';
+                    errorDiv.innerHTML = `
+                        <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 20px;"></i>
+                        <h2>Critical Dashboard Error</h2>
+                        <p>Failed to initialize dashboard after multiple attempts. Please refresh the page.</p>
+                        <button onclick="window.location.reload()" style="margin-top: 15px; padding: 10px 20px; background: var(--error-color); color: white; border: none; border-radius: 8px; cursor: pointer;">
+                            <i class="fas fa-refresh"></i> Reload Page
+                        </button>
+                    `;
+                    document.body.appendChild(errorDiv);
+                }
+            }
+        }
+        
+        // Global cleanup function to prevent database conflicts
+        function cleanupDashboard() {
+            if (dashboard && dashboard.db) {
+                console.log('Cleaning up dashboard database...');
+                try {
+                    dashboard.db.terminate().catch(err => {
+                        console.warn('Error during dashboard cleanup:', err);
+                    });
+                } catch (error) {
+                    console.warn('Error during dashboard cleanup:', error);
+                }
+            }
+            
+            if (window.globalDuckDB) {
+                console.log('Cleaning up global DuckDB instance...');
+                try {
+                    window.globalDuckDB.terminate().catch(err => {
+                        console.warn('Error during global DuckDB cleanup:', err);
+                    });
+                    window.globalDuckDB = null;
+                } catch (error) {
+                    console.warn('Error during global DuckDB cleanup:', error);
+                }
+            }
+        }
+        
+        // Add cleanup listeners
+        window.addEventListener('beforeunload', cleanupDashboard);
+        window.addEventListener('unload', cleanupDashboard);
+        
+        // Cleanup on page visibility change (when switching tabs)
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                // Page is being hidden, prepare for potential cleanup
+                console.log('Page visibility changed to hidden');
+            }
+        });
+        
+        // Initialize dashboard when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(initializeDashboard, 100);
+        });
+    </script>
+</body>
+</html>

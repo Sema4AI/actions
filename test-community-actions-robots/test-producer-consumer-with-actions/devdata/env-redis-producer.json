@@ -1,0 +1,11 @@
+{
+  "RC_WORKITEM_ADAPTER": "robocorp_adapters_custom.redis_adapter.RedisAdapter",
+  "REDIS_HOST": "localhost",
+  "REDIS_PORT": "6379",
+  "REDIS_DB": "0",
+  "REDIS_PASSWORD": "",
+  "REDIS_MAX_CONNECTIONS": "50",
+  "RC_WORKITEM_QUEUE_NAME": "qa_forms",
+  "RC_WORKITEM_FILES_DIR": "devdata/work_item_files",
+  "RC_WORKITEM_ORPHAN_TIMEOUT_MINUTES": "30"
+}

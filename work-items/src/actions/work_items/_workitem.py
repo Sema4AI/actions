@@ -4,13 +4,15 @@ Work item classes for producer-consumer workflows.
 Based on robocorp-workitems (Apache 2.0 License).
 """
 
+import fnmatch
+import glob as glob_module
 import logging
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Optional, TYPE_CHECKING
+from typing import Any, Dict, Iterator, List, Optional, TYPE_CHECKING, Union
 
 from ._exceptions import BusinessException, ApplicationException
-from ._types import ExceptionType, JSONType, State
+from ._types import Email, ExceptionType, JSONType, PathType, State
 from ._utils import truncate
 
 if TYPE_CHECKING:
@@ -139,14 +141,68 @@ class WorkItem:
 
         self._adapter.add_file(self._id, name, original_name, content)
 
-    def remove_file(self, name: str) -> None:
+    def remove_file(self, name: str, missing_ok: bool = False) -> None:
         """
         Remove a file from this work item.
 
         Args:
             name: File name.
+            missing_ok: If True, don't raise error if file doesn't exist.
         """
-        self._adapter.remove_file(self._id, name)
+        try:
+            self._adapter.remove_file(self._id, name)
+        except (ValueError, FileNotFoundError):
+            if not missing_ok:
+                raise
+
+    def add_files(self, pattern: str) -> List[Path]:
+        """
+        Add multiple files matching a glob pattern.
+
+        Args:
+            pattern: Glob pattern (e.g., "*.pdf", "data/*.csv").
+
+        Returns:
+            List of paths that were added.
+        """
+        added = []
+        for path_str in glob_module.glob(pattern, recursive=True):
+            path = Path(path_str)
+            if path.is_file():
+                self.add_file(path=path)
+                added.append(path)
+        return added
+
+    def remove_files(self, pattern: str, missing_ok: bool = True) -> List[str]:
+        """
+        Remove files matching a pattern.
+
+        Args:
+            pattern: Glob pattern to match against file names.
+            missing_ok: If True, don't raise error if no files match.
+
+        Returns:
+            List of file names that were removed.
+        """
+        removed = []
+        for name in self.list_files():
+            if fnmatch.fnmatch(name, pattern):
+                self.remove_file(name, missing_ok=True)
+                removed.append(name)
+        return removed
+
+    def get_email(self, name: str = "email.eml") -> Email:
+        """
+        Parse an email attachment from this work item.
+
+        Args:
+            name: Name of the email file attachment.
+
+        Returns:
+            Parsed Email object.
+        """
+        content = self.get_file(name)
+        return Email.from_bytes(content)
 
 
 class Input(WorkItem):
@@ -155,6 +211,20 @@ class Input(WorkItem):
 
     Input work items are reserved from the input queue and must be
     released (done or failed) after processing.
+
+    Can be used as a context manager for automatic release:
+
+        with inputs.reserve() as item:
+            # Process item
+            pass  # Automatically marked as done on successful exit
+
+    Or with exception-based release:
+
+        for item in inputs:
+            with item:
+                if bad_data:
+                    raise BusinessException("Invalid data format")
+                # Process...
     """
 
     def __init__(
@@ -165,11 +235,68 @@ class Input(WorkItem):
     ):
         super().__init__(adapter, item_id, payload)
         self._state = State.IN_PROGRESS
+        self._exception: Optional[Exception] = None
+
+    def __enter__(self) -> "Input":
+        """Enter context manager."""
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb) -> bool:
+        """
+        Exit context manager with automatic release.
+
+        If an exception occurred:
+        - BusinessException -> fail with BUSINESS type
+        - ApplicationException -> fail with APPLICATION type
+        - Other exceptions -> fail with APPLICATION type
+
+        If no exception and not already released -> done()
+        """
+        if self._released:
+            return False
+
+        if exc_val is not None:
+            # Exception occurred
+            self._exception = exc_val
+            if isinstance(exc_val, BusinessException):
+                self.fail(
+                    exception_type=ExceptionType.BUSINESS,
+                    code=getattr(exc_val, "code", None),
+                    message=str(exc_val),
+                )
+            elif isinstance(exc_val, ApplicationException):
+                self.fail(
+                    exception_type=ExceptionType.APPLICATION,
+                    code=getattr(exc_val, "code", None),
+                    message=str(exc_val),
+                )
+            else:
+                self.fail(
+                    exception_type=ExceptionType.APPLICATION,
+                    code=exc_type.__name__ if exc_type else "ERROR",
+                    message=str(exc_val),
+                )
+            # Don't suppress the exception
+            return False
+        else:
+            # No exception, mark as done
+            self.done()
+            return False
 
     @property
     def released(self) -> bool:
         """Whether this input has been released."""
         return self._released
+
+    @property
+    def state(self) -> State:
+        """Current state of this input."""
+        return self._state
+
+    @property
+    def exception(self) -> Optional[Exception]:
+        """Exception that caused this input to fail, if any."""
+        return self._exception
 
     def done(self) -> None:
         """

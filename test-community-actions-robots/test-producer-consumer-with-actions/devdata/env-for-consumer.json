@@ -1,0 +1,5 @@
+{
+  "RC_WORKITEM_ADAPTER": "FileAdapter",
+  "RC_WORKITEM_INPUT_PATH": "output/shards/work-items-shard-1.json",
+  "RC_WORKITEM_OUTPUT_PATH": "output/consumer-to-reporter/work-items-1.json"
+}

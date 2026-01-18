@@ -1,0 +1,5 @@
+{
+  "RC_WORKITEM_ADAPTER": "FileAdapter",
+  "RC_WORKITEM_INPUT_PATH": "devdata/work-items-in/input-for-producer/work-items.json",
+  "RC_WORKITEM_OUTPUT_PATH": "output/producer-to-consumer/work-items.json"
+}

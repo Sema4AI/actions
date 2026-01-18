@@ -1,0 +1,17 @@
+{
+    "inputs": [
+        {
+            "inputName": "input-1",
+            "inputValue": {}
+        }
+    ],
+    "metadata": {
+        "actionName": "get_customers",
+        "actionRelativePath": "data_actions.py",
+        "schemaDescription": [],
+        "managedParamsSchemaDescription": {},
+        "inputFileVersion": "v3",
+        "kind": "query",
+        "actionSignature": "query/args: ''"
+    }
+}

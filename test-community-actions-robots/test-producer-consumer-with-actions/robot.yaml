@@ -1,0 +1,49 @@
+# For more details on the format and content:
+# https://github.com/joshyorko/rcc/blob/master/docs/recipes.md#what-is-in-robotyaml
+
+tasks:
+  Producer:
+    shell: python -m robocorp.tasks run tasks.py -t producer 
+  Consumer:
+    shell: python -m robocorp.tasks run tasks.py -t consumer
+  Reporter:
+    shell: python -m robocorp.tasks run tasks.py -t reporter 
+  GenerateConsolidatedDashboard:
+    shell: python -m robocorp.tasks run generate_consolidated_dashboard.py -t generate_consolidated_dashboard
+  AssistantOrg:
+    shell: python -m robocorp.tasks run assistant.py -t assistant_org
+
+
+
+
+devTasks:
+  SeedSQLiteDB:
+    shell: python scripts/seed_sqlite_db.py
+  SeedRedisDB:
+    shell: python scripts/seed_redis_db.py
+  SeedDocDB:
+    shell: python scripts/seed_docdb.py
+  CheckSQLiteDB:
+    shell: python scripts/check_sqlite_db.py
+  RecoverOrphanedItems:
+    shell: python scripts/recover_orphaned_items.py
+  DiagnoseReporterIssue:
+    shell: python scripts/diagnose_reporter_issue.py
+
+  ListWorkItems:
+    shell: python -m robocorp.tasks run scripts/listworkitems.py -t list_work_items
+
+environmentConfigs:
+  - environment_windows_amd64_freeze.yaml
+  - environment_linux_amd64_freeze.yaml
+  - environment_darwin_amd64_freeze.yaml
+  - conda.yaml
+
+artifactsDir: output
+
+PATH:
+  - .
+PYTHONPATH:
+  - .
+ignoreFiles:
+  - .gitignore

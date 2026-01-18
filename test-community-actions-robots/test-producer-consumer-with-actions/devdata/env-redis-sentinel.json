@@ -1,0 +1,15 @@
+{
+  "_comment": "Redis Sentinel configuration example for automatic failover",
+  "RC_WORKITEM_ADAPTER": "robocorp_adapters_custom.redis_adapter.RedisAdapter",
+  "REDIS_HOST": "redis-sentinel-1.example.com",
+  "REDIS_PORT": "26379",
+  "REDIS_DB": "0",
+  "REDIS_PASSWORD": "${REDIS_PASSWORD}",
+  "REDIS_MAX_CONNECTIONS": "100",
+  "RC_WORKITEM_QUEUE_NAME": "production_queue",
+  "RC_WORKITEM_FILES_DIR": "/mnt/shared/work_item_files",
+  "RC_WORKITEM_ORPHAN_TIMEOUT_MINUTES": "30",
+  "REDIS_SENTINEL_ENABLED": "true",
+  "REDIS_SENTINEL_MASTER_NAME": "mymaster",
+  "REDIS_SENTINEL_NODES": "redis-sentinel-1.example.com:26379,redis-sentinel-2.example.com:26379,redis-sentinel-3.example.com:26379"
+}

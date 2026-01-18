@@ -1,0 +1,9 @@
+{
+  "RC_WORKITEM_ADAPTER": "robocorp_adapters_custom._yorko_control_room.YorkoControlRoomAdapter",
+  "YORKO_API_URL": "http://localhost:8000",
+  "YORKO_API_TOKEN": "your-api-token-here",
+  "YORKO_WORKSPACE_ID": "your-workspace-uuid-here",
+  "YORKO_WORKER_ID": "consumer-robot-1",
+  "YORKO_PROCESS_RUN_ID": "optional-process-run-uuid",
+  "YORKO_REQUEST_TIMEOUT": "30"
+}

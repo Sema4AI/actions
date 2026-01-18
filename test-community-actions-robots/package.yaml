@@ -1,0 +1,59 @@
+spec-version: v2
+
+# Required: A short name for the action package
+name: Community Actions Test Package
+
+# Required: A description of what's in the action package.
+description: Test package for community action server with work items producer-consumer pattern.
+
+# Package version number, recommend using semver.org
+version: 0.1.0
+
+dependencies:
+  conda-forge:
+    - python=3.12.12
+    - uv=0.8.17
+    - gitpython=3.1.44
+  pypi:
+    - sema4ai-actions=1.6.2
+    - sema4ai-data=1.2.1
+    - requests>=2.31.0
+
+post-install:
+  # Install local work-items package from sibling directory
+  - pip install -e ../work-items
+
+dev-dependencies:
+  conda-forge:
+    - pytest=8.4.2
+    - types-requests=2.32.4.20250913
+    - ruff=0.14.3
+    - mypy=1.18.2
+
+dev-tasks:
+  test: pytest tests
+  lint: |
+    ruff check .
+    ruff format --check .
+  typecheck: mypy --follow-imports=silent --strict .
+  prettify: |
+    ruff format .
+
+packaging:
+  # By default, all files and folders in this directory are packaged when uploaded.
+  # Add exclusion rules below (expects glob format: https://docs.python.org/3/library/glob.html)
+  exclude:
+    - ./.git/**
+    - ./.vscode/**
+    - ./devdata/**
+    - ./output/**
+    - ./venv/**
+    - ./.venv/**
+    - ./.DS_store/**
+    - ./**/*.pyc
+    - ./**/*.zip
+    - ./**/.env
+    - ./**/__MACOSX
+    - ./**/__pycache__
+    - ./**/.git
+    - ./node_modules/**

@@ -1,10 +1,13 @@
 [tool.poetry]
 name = "actions-work-items"
-version = "0.1.0"
-description = "Work items for producer-consumer automation workflows"
+version = "0.2.0"
+description = "Drop-in replacement for robocorp-workitems with broader applicability"
 authors = ["Community Contributors"]
 license = "Apache-2.0"
 readme = "README.md"
+homepage = "https://github.com/joshyorko/actions"
+repository = "https://github.com/joshyorko/actions"
+keywords = ["automation", "work-items", "producer-consumer", "rpa", "workflow"]
 packages = [{include = "actions", from = "src"}]
 classifiers = [
     "Development Status :: 4 - Beta",

@@ -1,0 +1,464 @@
+name: Cached ARC Producer-Consumer Matrix Workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      org_name:
+        description: 'Organization name to fetch repositories from'
+        default: 'joshyorko'
+      max_workers:
+        description: 'Maximum number of parallel workers'
+        default: '4'
+        type: string
+
+# Global env for all jobs
+env:
+  # Point to your cloud rccremote (nginx front), public DNS with valid TLS
+  RCC_REMOTE_ORIGIN: https://rccremote.example.com:443
+  # Put holotree/spaces somewhere writeable and cacheable
+  ROBOCORP_HOME: ${{ github.workspace }}/.rcc_home
+
+jobs:
+  producer:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.get-matrix.outputs.matrix }}
+      shard_count: ${{ steps.get-matrix.outputs.shard_count }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+
+      - name: Install RCC
+        run: |
+          if [ ! -x .tools/rcc/v18.8.0/rcc ]; then
+            mkdir -p .tools/rcc/v18.8.0
+            curl -sSL https://github.com/joshyorko/rcc/releases/download/v18.8.0/rcc-linux64 -o .tools/rcc/v18.8.0/rcc
+            chmod +x .tools/rcc/v18.8.0/rcc
+          fi
+          # Make rcc available in this step and subsequent ones
+          echo "${GITHUB_WORKSPACE}/.tools/rcc/v18.8.0" >> "$GITHUB_PATH"
+          export PATH="${GITHUB_WORKSPACE}/.tools/rcc/v18.8.0:$PATH"
+          rcc version
+
+      - name: Cache ROBOCORP_HOME
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.ROBOCORP_HOME }}
+          key: rcc-home-${{ runner.os }}-rccv18.8.0-${{ hashFiles('**/robot.yaml','**/conda.yaml') }}
+          restore-keys: |
+            rcc-home-${{ runner.os }}-rccv18.8.0-
+            rcc-home-${{ runner.os }}-
+
+      - name: Disable RCC telemetry
+        run: rcc config identity -t
+
+      - name: Generate input work item for producer
+        run: |
+          mkdir -p devdata/work-items-in/input-for-producer
+          echo '[{"payload": {"org": "${{ inputs.org_name }}"}}]' > devdata/work-items-in/input-for-producer/work-items.json
+
+      - name: Warm Holotree
+        run: |
+          rcc holotree variables -r robot.yaml -s producer || true
+          rcc holotree variables -r robot.yaml -s consumer || true
+          rcc holotree variables -r robot.yaml -s reporter || true
+          rcc holotree list || true
+
+      - name: Run RCC Producer
+        run: rcc run -t producer -e devdata/env-for-producer.json
+        env:
+          ORG_NAME: ${{ inputs.org_name }}
+
+      - name: Capture Producer Logs
+        run: |
+          mkdir -p output/producer-to-consumer
+          if [ -f "output/log.html" ]; then
+            mv output/log.html output/producer-to-consumer/producer-logs.html
+          fi
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Generate shards and matrix
+        run: python3 scripts/generate_shards_and_matrix.py ${{ inputs.max_workers }}
+
+      - name: Get matrix configuration
+        id: get-matrix
+        run: |
+          cat output/matrix-output.json
+          MATRIX=$(cat output/matrix-output.json)
+          echo "matrix=${MATRIX}" >> $GITHUB_OUTPUT
+          SHARD_COUNT=$(echo "${MATRIX}" | jq '.matrix.include | length')
+          echo "shard_count=${SHARD_COUNT}" >> $GITHUB_OUTPUT
+
+      - name: Upload producer output for consumers
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: producer-output
+          path: output
+          retention-days: 1
+
+  consumer:
+    runs-on: ubuntu-latest
+    needs: producer
+    if: needs.producer.outputs.shard_count > 0
+    strategy:
+      matrix: ${{ fromJSON(needs.producer.outputs.matrix).matrix }}
+      max-parallel: ${{ fromJSON(inputs.max_workers) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+
+      - name: Install RCC
+        run: |
+          if [ ! -x .tools/rcc/v18.8.0/rcc ]; then
+            mkdir -p .tools/rcc/v18.8.0
+            curl -sSL https://github.com/joshyorko/rcc/releases/download/v18.8.0/rcc-linux64 -o .tools/rcc/v18.8.0/rcc
+            chmod +x .tools/rcc/v18.8.0/rcc
+          fi
+          # Make rcc available in this step and subsequent ones
+          echo "${GITHUB_WORKSPACE}/.tools/rcc/v18.8.0" >> "$GITHUB_PATH"
+          export PATH="${GITHUB_WORKSPACE}/.tools/rcc/v18.8.0:$PATH"
+          rcc version
+
+      - name: Cache ROBOCORP_HOME
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.ROBOCORP_HOME }}
+          key: rcc-home-${{ runner.os }}-rccv18.8.0-${{ hashFiles('**/robot.yaml','**/conda.yaml') }}
+          restore-keys: |
+            rcc-home-${{ runner.os }}-rccv18.8.0-
+            rcc-home-${{ runner.os }}-
+
+      - name: Disable RCC telemetry
+        run: rcc config identity -t
+
+      - name: Download sharded work items
+        uses: actions/download-artifact@v4.3.0
+        with:
+          name: producer-output
+          path: output/
+
+      - name: List output directory contents (debug)
+        run: |
+          echo "Listing output directory:"
+          ls -lR output
+
+      - name: Setup work items for this shard
+        run: python3 scripts/shard_loader.py
+        env:
+          SHARD_ID: ${{ matrix.shard_id }}
+
+      - name: Update consumer env file for shard
+        run: |
+          SHARD_PATH="output/shards/work-items-shard-${{ matrix.shard_id }}.json"
+          cat > devdata/env-for-consumer.json <<EOF
+          {
+            "RC_WORKITEM_ADAPTER": "FileAdapter",
+            "RC_WORKITEM_INPUT_PATH": "${SHARD_PATH}",
+            "RC_WORKITEM_OUTPUT_PATH": "output/consumer-to-reporter/work-items-${{ matrix.shard_id }}.json"
+          }
+          EOF
+
+      - name: Run RCC Consumer
+        run: rcc run -t consumer -e devdata/env-for-consumer.json
+        env:
+          SHARD_ID: ${{ matrix.shard_id }}
+          ORG_NAME: ${{ inputs.org_name }}
+
+      - name: Capture Consumer Shard Logs
+        run: |
+          echo "🔍 Looking for consumer log files..."
+          mkdir -p output/consumer-to-reporter
+          if [ -f "output/log.html" ]; then
+            echo "✅ Found output/log.html, moving to shard-specific name"
+            mv output/log.html output/consumer-to-reporter/consumer-shard-${{ matrix.shard_id }}-logs.html
+          else
+            echo "⚠️ No output/log.html found for shard ${{ matrix.shard_id }}"
+            echo "<html><body><h1>No log generated for shard ${{ matrix.shard_id }}</h1></body></html>" > output/consumer-to-reporter/consumer-shard-${{ matrix.shard_id }}-logs.html
+          fi
+
+      - name: Upload shard output for reporter
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: shard-output-${{ matrix.shard_id }}
+          path: output/
+          retention-days: 1
+
+  reporter:
+    runs-on: ubuntu-latest
+    needs: [producer, consumer]
+    if: always()
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+
+      - name: Install RCC
+        run: |
+          if [ ! -x .tools/rcc/v18.8.0/rcc ]; then
+            mkdir -p .tools/rcc/v18.8.0
+            curl -sSL https://github.com/joshyorko/rcc/releases/download/v18.8.0/rcc-linux64 -o .tools/rcc/v18.8.0/rcc
+            chmod +x .tools/rcc/v18.8.0/rcc
+          fi
+          # Make rcc available in this step and subsequent ones
+          echo "${GITHUB_WORKSPACE}/.tools/rcc/v18.8.0" >> "$GITHUB_PATH"
+          export PATH="${GITHUB_WORKSPACE}/.tools/rcc/v18.8.0:$PATH"
+          rcc version
+
+      - name: Cache ROBOCORP_HOME
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.ROBOCORP_HOME }}
+          key: rcc-home-${{ runner.os }}-rccv18.8.0-${{ hashFiles('**/robot.yaml','**/conda.yaml') }}
+          restore-keys: |
+            rcc-home-${{ runner.os }}-rccv18.8.0-
+            rcc-home-${{ runner.os }}-
+
+      - name: Disable RCC telemetry
+        run: rcc config identity -t
+
+      - name: Download all shard outputs
+        uses: actions/download-artifact@v4.3.0
+        with:
+          pattern: shard-output-*
+          path: shard-outputs/
+          merge-multiple: true
+
+      - name: List downloaded files (for debugging)
+        run: ls -lR shard-outputs || true
+
+      - name: Combine consumer outputs for reporter
+        run: |
+          mkdir -p output/reporter-input
+          if ls shard-outputs/consumer-to-reporter/work-items-*.json >/dev/null 2>&1; then
+            jq -s 'add' shard-outputs/consumer-to-reporter/work-items-*.json > output/reporter-input/work-items.json
+          else
+            echo '[]' > output/reporter-input/work-items.json
+          fi
+
+      - name: Create reporter environment config
+        run: |
+          mkdir -p output/reporter-final
+          cat > devdata/env-for-reporter.json <<EOF
+          {
+            "RC_WORKITEM_ADAPTER": "FileAdapter",
+            "RC_WORKITEM_INPUT_PATH": "output/reporter-input/work-items.json",
+            "RC_WORKITEM_OUTPUT_PATH": "output/reporter-final/work-items.json"
+          }
+          EOF
+
+      - name: Run RCC Reporter
+        run: rcc run -t reporter -e devdata/env-for-reporter.json
+
+      - name: Capture Reporter Logs
+        run: |
+          if [ -f "output/log.html" ]; then
+            mv output/log.html output/reporter-logs.html
+          fi
+
+      - name: Upload reporter output
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: reporter-output
+          path: |
+            output/final_report_*.json
+            output/reporter-logs.html
+            output/consumer-to-reporter/
+            output/reporter-final/
+          retention-days: 7
+
+      - name: Workflow Summary
+        if: always()
+        run: |
+          echo "# 🧩 Fetch Repos Bot Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Parameter | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Org Name | ${{ inputs.org_name }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Max Workers | ${{ inputs.max_workers }} |" >> $GITHUB_STEP_SUMMARY
+          SHARD_COUNT="${{ needs.producer.outputs.shard_count }}"; if [ -z "$SHARD_COUNT" ] || [ "$SHARD_COUNT" = "null" ]; then SHARD_COUNT="0"; fi
+          echo "| Shards Created | $SHARD_COUNT |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 🔄 Pipeline Status" >> $GITHUB_STEP_SUMMARY
+          echo "| Stage | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Producer | ${{ needs.producer.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Consumer | ${{ needs.consumer.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Reporter | ${{ job.status }} |" >> $GITHUB_STEP_SUMMARY
+
+  consolidated-dashboard:
+    runs-on: ubuntu-latest
+    needs: [producer, consumer, reporter]
+    if: always()
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install RCC
+        run: |
+          if [ ! -x .tools/rcc/v18.8.0/rcc ]; then
+            mkdir -p .tools/rcc/v18.8.0
+            curl -sSL https://github.com/joshyorko/rcc/releases/download/v18.8.0/rcc-linux64 -o .tools/rcc/v18.8.0/rcc
+            chmod +x .tools/rcc/v18.8.0/rcc
+          fi
+          echo "${GITHUB_WORKSPACE}/.tools/rcc/v18.8.0" >> "$GITHUB_PATH"
+          export PATH="${GITHUB_WORKSPACE}/.tools/rcc/v18.8.0:$PATH"
+          rcc version
+
+      - name: Cache ROBOCORP_HOME
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.ROBOCORP_HOME }}
+          key: rcc-home-${{ runner.os }}-rccv18.8.0-${{ hashFiles('**/robot.yaml','**/conda.yaml') }}
+          restore-keys: |
+            rcc-home-${{ runner.os }}-rccv18.8.0-
+            rcc-home-${{ runner.os }}-
+
+      - name: Disable RCC telemetry
+        run: rcc config identity -t
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4.3.0
+        with:
+          path: all-artifacts
+
+      - name: Debug - List all downloaded artifacts
+        run: |
+          echo "=== Downloaded Artifacts Structure ==="
+          ls -lR all-artifacts
+
+      - name: Organize files for dashboard
+        run: |
+          set -e
+          echo "Organizing output directory for dashboard..."
+          mkdir -p output/producer-to-consumer
+          mkdir -p output/consumer-to-reporter
+          mkdir -p output/screenshots
+
+          # Producer logs
+          if [ -f "all-artifacts/producer-output/producer-to-consumer/producer-logs.html" ]; then
+            cp all-artifacts/producer-output/producer-to-consumer/producer-logs.html output/producer-to-consumer/producer-logs.html || true
+          fi
+
+          # Copy reporter log (prefer preserved name, fallback to log.html)
+          if [ -f "all-artifacts/reporter-output/reporter-logs.html" ]; then
+            cp all-artifacts/reporter-output/reporter-logs.html output/reporter-logs.html || true
+          fi
+          if [ -f "all-artifacts/reporter-output/log.html" ]; then
+            cp all-artifacts/reporter-output/log.html output/reporter-logs.html || true
+          fi
+
+          # Combine consumer shard outputs into a single work-items.json if available
+          files_to_merge=$(find all-artifacts -type f -path "*/shard-output-*/consumer-to-reporter/work-items-*.json" | wc -l)
+          if [ "$files_to_merge" -gt 0 ]; then
+            find all-artifacts -type f -path "*/shard-output-*/consumer-to-reporter/work-items-*.json" -print0 | xargs -0 jq -s 'add' > output/consumer-to-reporter/work-items.json
+            # Zip all work-items-*.json files from all shards into a single archive
+            echo "Zipping all consumer-to-reporter work-items-*.json files into output/all-repos.zip..."
+            find all-artifacts -type f -path "*/shard-output-*/consumer-to-reporter/work-items-*.json" -print0 | xargs -0 zip -j output/all-repos.zip
+            # Also include any repos shard zip files produced by consumers (repos-shard-*.zip)
+            repo_zip_count=$(find all-artifacts -type f -name "repos-shard-*.zip" | wc -l)
+            if [ "$repo_zip_count" -gt 0 ]; then
+              echo "Including consumer repos shard zips into output/all-repos.zip and copying to output/"
+              # Copy repo shard zips into output for visibility
+              find all-artifacts -type f -name "repos-shard-*.zip" -exec cp {} output/ \;
+              # Add the repo shard zip files into the aggregate zip
+              find all-artifacts -type f -name "repos-shard-*.zip" -print0 | xargs -0 zip -u -j output/all-repos.zip
+            fi
+          else
+            # Fallback: reporter-final/work-items.json
+            if [ -f "all-artifacts/reporter-output/reporter-final/work-items.json" ]; then
+              cp all-artifacts/reporter-output/reporter-final/work-items.json output/consumer-to-reporter/work-items.json
+              # Zip the fallback file as well
+              echo "Zipping fallback reporter-final/work-items.json into output/all-repos.zip..."
+              zip -j output/all-repos.zip all-artifacts/reporter-output/reporter-final/work-items.json
+              # Also include repo shard zips if they exist (from reporter or other artifacts)
+              if ls all-artifacts/**/repos-shard-*.zip >/dev/null 2>&1; then
+                echo "Copying any repos-shard-*.zip to output and adding to all-repos.zip"
+                find all-artifacts -type f -name "repos-shard-*.zip" -exec cp {} output/ \;
+                find all-artifacts -type f -name "repos-shard-*.zip" -print0 | xargs -0 zip -u -j output/all-repos.zip || true
+              fi
+            else
+              echo "[]" > output/consumer-to-reporter/work-items.json
+              # Still create an empty zip if no files found
+              echo "No work-items-*.json files found, creating empty output/all-repos.zip"
+              zip -j output/all-repos.zip /dev/null || true
+            fi
+          fi
+
+          # Copy consumer shard logs if any
+          for p in all-artifacts/shard-output-*/consumer-to-reporter/consumer-shard-*-logs.html; do
+            if [ -f "$p" ]; then
+              cp "$p" output/consumer-to-reporter/ || true
+            fi
+          done
+          # Placeholder if none
+          if ! ls output/consumer-to-reporter/consumer-shard-*-logs.html >/dev/null 2>&1; then
+            echo "<html><body><h1>No Consumer Logs Available</h1></body></html>" > output/consumer-to-reporter/consumer-logs.html
+          fi
+
+          # Ensure any repos-shard-*.zip files copied into output are present for upload
+          if ls output/repos-shard-*.zip >/dev/null 2>&1; then
+            echo "Found repos shard zip(s) in output:"
+            ls -l output/repos-shard-*.zip || true
+          else
+            echo "No repos-shard-*.zip files found in output"
+          fi
+
+      - name: Verify zipped all-repos file
+        run: |
+          if [ -f output/all-repos.zip ]; then
+            echo "output/all-repos.zip exists. Listing contents:"
+            unzip -l output/all-repos.zip
+            # Also list any individual shard repo zips copied into output
+            if ls output/repos-shard-*.zip >/dev/null 2>&1; then
+              echo "Found individual repos-shard zip files:";
+              ls -l output/repos-shard-*.zip || true
+            fi
+          else
+            echo "ERROR: output/all-repos.zip was not created!"
+            exit 1
+          fi
+
+      - name: Generate Consolidated Dashboard
+        run: |
+          rcc run -t GenerateConsolidatedDashboard
+          test -f output/consolidated_dashboard_jinja2.html
+
+      - name: Upload consolidated dashboard artifacts
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: consolidated-dashboard-output
+          path: |
+            output/consolidated_dashboard_jinja2.html
+            output/consolidated_data.json
+            output/csv_exports/
+            output/consumer-to-reporter/
+            output/reporter-logs.html
+            output/repos-shard-*.zip
+            output/all-repos.zip
+          retention-days: 7
+
+      - name: Dashboard Generation Summary
+        if: always()
+        run: |
+          echo "# 📊 Consolidated Dashboard Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f "output/consolidated_dashboard_jinja2.html" ]; then
+            echo "## ✅ Dashboard Generation Successful" >> $GITHUB_STEP_SUMMARY
+            echo "The consolidated dashboard has been generated successfully using Jinja2 templating." >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 📁 Generated Artifacts" >> $GITHUB_STEP_SUMMARY
+            echo "- output/consolidated_dashboard_jinja2.html" >> $GITHUB_STEP_SUMMARY
+            echo "- output/consolidated_data.json" >> $GITHUB_STEP_SUMMARY
+            echo "- output/csv_exports/" >> $GITHUB_STEP_SUMMARY
+            echo "- output/consumer-to-reporter/" >> $GITHUB_STEP_SUMMARY
+            echo "- output/reporter-logs.html" >> $GITHUB_STEP_SUMMARY
+            echo "- Artifact: consolidated-dashboard-output" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## ❌ Dashboard Generation Failed" >> $GITHUB_STEP_SUMMARY
+            echo "The dashboard generation encountered an error. Check job logs for details." >> $GITHUB_STEP_SUMMARY
+          fi

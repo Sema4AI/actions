@@ -1,0 +1,7 @@
+{
+  "RC_WORKITEM_ADAPTER": "robocorp_adapters_custom.sqlite_adapter.SQLiteAdapter",
+  "RC_WORKITEM_DB_PATH": "devdata/work_items.db",
+  "RC_WORKITEM_FILES_DIR": "devdata/work_item_files",
+  "RC_WORKITEM_QUEUE_NAME": "qa_forms",
+  "RC_WORKITEM_ORPHAN_TIMEOUT_MINUTES": "30"
+}

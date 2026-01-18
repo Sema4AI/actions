@@ -1,0 +1,12 @@
+{
+  "RC_WORKITEM_ADAPTER": "robocorp_adapters_custom.docdb_adapter.DocumentDBAdapter",
+  "DOCDB_HOSTNAME": "localhost",
+  "DOCDB_PORT": "27017",
+  "DOCDB_USERNAME": "qauser",
+  "DOCDB_PASSWORD": "qapassword",
+  "DOCDB_DATABASE": "qa_workitems",
+  "RC_WORKITEM_QUEUE_NAME": "qa_forms_output_output",
+  "RC_WORKITEM_FILES_DIR": "devdata/work_item_files",
+  "RC_WORKITEM_ORPHAN_TIMEOUT_MINUTES": "30",
+  "RC_WORKITEM_FILE_SIZE_THRESHOLD": "1000000"
+}
