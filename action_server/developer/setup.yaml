@@ -1,4 +1,4 @@
-uv# Action Server Development Environment
+# Action Server Development Environment
 #
 # This defines the conda environment for building action-server.
 # RCC uses this to create an isolated, reproducible build environment.
@@ -14,7 +14,7 @@ dependencies:
 
   # Package management and build tools
   - pip=25.0
-  - uv=0.5.14
+  - uv=0.9.26
 
   # Task runner for invoke tasks
   - invoke=2.2.0
