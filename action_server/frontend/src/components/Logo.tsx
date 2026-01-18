@@ -1,6 +1,6 @@
 import { forwardRef, useMemo } from 'react';
 import { IconProps } from '@sema4ai/icons';
-import { styled } from '@sema4ai/theme';
+import { styled } from '~/vendor/sema4ai-theme';
 
 const IconStyled = styled.span`
   display: inline-block;

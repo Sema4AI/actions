@@ -1,6 +1,6 @@
 import { SideNavigation, Box, Link, Scroll, useSystemTheme } from '@sema4ai/components';
 import { MouseEvent, StrictMode, useCallback, useEffect, useMemo, useState } from 'react';
-import { ThemeOverrides, ThemeProvider, styled } from '@sema4ai/theme';
+import { ThemeOverrides, ThemeProvider, styled } from '~/vendor/sema4ai-theme';
 import { IconBolt, IconGlobe, IconShare, IconUnorderedList } from '@sema4ai/icons';
 import { IconSema4 } from '@sema4ai/icons/logos';
 import {

@@ -81,20 +81,20 @@ def test_rcc_tool(tmpdir):
     target = tmpdir / f"rcc{suffix}"
 
     # Using joshyorko/rcc version (see: https://github.com/joshyorko/rcc/releases)
-    tool = RccTool(target, "v18.13.1")
+    tool = RccTool(target, "v18.16.0")
     assert not tool.verify()
     tool.download()
     assert tool.verify()
 
     target = tmpdir / "rcc-in_mac_arm"
-    tool = RccTool(target, "v18.13.1")
+    tool = RccTool(target, "v18.16.0")
     tool.force_sys_platform = "darwin"
     tool.force_machine = "arm64"
     tool.make_run_check = False
     tool.download()
     assert tool.verify()
 
-    executable = RccTool.get_default_executable(version="v18.13.1", download=True)
+    executable = RccTool.get_default_executable(version="v18.16.0", download=True)
     assert executable.exists()
     assert executable.is_file()
 

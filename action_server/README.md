@@ -65,7 +65,7 @@ The `package.yaml` file is required for specifying the Python environment and de
 
 ### Community RCC Fork
 
-This Action Server uses the **joshyorko/rcc v18.13.1** community fork, which provides:
+This Action Server uses the **joshyorko/rcc v18.16.0** community fork, which provides:
 - **Faster startup** - no proprietary cloud service calls
 - **Official sources** - downloads micromamba directly from conda-forge instead of Robocorp CDN
 - **Decoupled infrastructure** - works fully offline after initial environment bootstrap

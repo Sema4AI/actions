@@ -89,7 +89,7 @@ def sema4ai_home(tmpdir_factory) -> str:
 
 
 # Using joshyorko/rcc open-source version
-RCC_VERSION = "v18.13.1"
+RCC_VERSION = "v18.16.0"
 
 
 def _download_rcc(location: str, force: bool = False) -> None:

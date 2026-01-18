@@ -1,6 +1,6 @@
 import { ComponentProps, RefObject } from 'react';
 import { componentWithRef, Grid } from '@sema4ai/components';
-import { styled } from '@sema4ai/theme';
+import { styled } from '~/vendor/sema4ai-theme';
 import { DefinitionListKey, DefinitionListValue } from './components/Item';
 
 const compoundComponents = {

@@ -12,7 +12,7 @@ SET activatePath=%scriptPath%\activate.bat
 
 echo 
 :: Get RCC binary using joshyorko/rcc GitHub releases
-SET rccUrl=https://github.com/joshyorko/rcc/releases/download/v18.13.1/rcc-windows64.exe
+SET rccUrl=https://github.com/joshyorko/rcc/releases/download/v18.16.0/rcc-windows64.exe
 IF NOT EXIST "%rccPath%" (
     curl -o %rccPath% %rccUrl% --fail || goto env_error
 )

@@ -14,6 +14,40 @@ export PATH=$PATH:/usr/local/go/bin
 uv run --no-project --python 3.12 poetry run inv build-executable --go-wrapper
 
 # Step 4: Copy to root and test
-cp dist/final/action-server /workspaces/actions/action-server
-cd /tmp/test-action-server
-/workspaces/actions/action-server start --port=8080
+cp dist/final/action-server ../action-server
+mkdir -p ../tmp/test-action-server && cd ../tmp/test-action-server
+../../action-server start --port=8080
+
+
+================================================================================
+BRANCHING STRATEGY
+================================================================================
+
+Branch Structure:
+  master     → Clean mirror of upstream (Sema4AI/actions)
+  community  → Your fork with custom changes (RCC fork, analytics, UI, etc.)
+
+Workflow:
+  - Feature branches → PR to `community` (NOT master)
+  - master stays in sync with Sema4AI upstream
+
+Automation:
+  - Pull App (wei/pull) installed - automatically syncs master with upstream
+  - No manual sync needed for master branch
+  - Pull does hard reset, so master will always match Sema4AI exactly
+
+To pull upstream changes into community (after Pull syncs master):
+  git fetch origin
+  git checkout community
+  git merge origin/master
+  # Resolve any conflicts, then push
+
+Manual Sync Commands (if Pull app fails):
+  git fetch upstream
+  git checkout master
+  git reset --hard upstream/master
+  git push origin master --force-with-lease
+
+Remotes:
+  origin   → git@github.com:joshyorko/actions.git (your fork)
+  upstream → git@github.com:Sema4AI/actions.git (Sema4AI)

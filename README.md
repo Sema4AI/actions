@@ -274,7 +274,7 @@ Build more `@actions` and be awesome! We'd love to hear and see what have you bu
 
 ## 🌍 Community Edition
 
-This build uses the **[joshyorko/rcc](https://github.com/joshyorko/rcc)** fork (v18.13.1) - a fully open-source version of RCC with several key benefits:
+This build uses the **[joshyorko/rcc](https://github.com/joshyorko/rcc)** fork (v18.16.0) - a fully open-source version of RCC with several key benefits:
 
 ### Why the Community RCC Fork?
 

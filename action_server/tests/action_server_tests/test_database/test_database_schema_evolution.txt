@@ -72,6 +72,10 @@ CREATE TABLE IF NOT EXISTS run(
     relative_artifacts_dir TEXT NOT NULL,
     numbered_id INTEGER NOT NULL,
     request_id TEXT NOT NULL DEFAULT '',
+    run_type TEXT NOT NULL DEFAULT 'action',
+    robot_package_path TEXT DEFAULT None,
+    robot_task_name TEXT DEFAULT None,
+    robot_env_hash TEXT DEFAULT None,
     FOREIGN KEY (action_id) REFERENCES action(id)  
 )
 ''',
@@ -99,6 +103,11 @@ CREATE INDEX run_action_id_non_unique_index ON run(action_id);
 
 '''
 CREATE INDEX run_request_id_non_unique_index ON run(request_id);
+''',
+
+
+'''
+CREATE INDEX run_run_type_non_unique_index ON run(run_type);
 ''',
 
 
