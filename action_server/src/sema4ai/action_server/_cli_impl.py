@@ -734,7 +734,9 @@ def _main_retcode(
                     return handle_env_command(base_args, rcc)
 
                 if command == "cloud":
-                    from sema4ai.action_server._actions_cloud import handle_cloud_command
+                    from sema4ai.action_server._actions_cloud import (
+                        handle_cloud_command,
+                    )
 
                     return handle_cloud_command(base_args)
 

@@ -6,9 +6,10 @@ Validates that adding community features doesn't require enterprise code changes
 
 import hashlib
 import json
-import pytest
 import subprocess
 from pathlib import Path
+
+import pytest
 
 
 class TestCommunityTierIsolation:

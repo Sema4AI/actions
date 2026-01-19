@@ -5,9 +5,10 @@ Tests that import violations are detected and builds fail with clear errors.
 """
 
 import json
-import pytest
 import subprocess
 from pathlib import Path
+
+import pytest
 
 
 class TestValidationGuard:

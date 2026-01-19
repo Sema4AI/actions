@@ -2,23 +2,24 @@
 Tests for the Analytics API endpoints.
 """
 
-import pytest
 from datetime import datetime, timedelta
+
+import pytest
+
 from sema4ai.action_server._api_analytics import (
     AnalyticsSummary,
-    RunsByDay,
     RunsByAction,
+    RunsByDay,
     get_analytics_summary,
-    get_runs_by_day,
     get_runs_by_action,
+    get_runs_by_day,
 )
 from sema4ai.action_server._models import (
-    Run,
     Action,
     ActionPackage,
+    Run,
     RunStatus,
     create_db,
-    get_db,
 )
 
 
@@ -31,10 +32,7 @@ def temp_db(tmp_path):
 
 
 def _create_test_action(
-    action_id: str,
-    package_id: str,
-    action_name: str,
-    lineno: int = 10
+    action_id: str, package_id: str, action_name: str, lineno: int = 10
 ) -> Action:
     """Helper to create test action objects."""
     return Action(
@@ -56,7 +54,7 @@ def _create_test_run(
     status: RunStatus,
     start_time: str,
     run_time: float,
-    numbered_id: int
+    numbered_id: int,
 ) -> Run:
     """Helper to create test run objects."""
     return Run(
@@ -102,11 +100,19 @@ def populated_db(tmp_path):
 
             runs = [
                 # Today's runs for action 1
-                _create_test_run("run-001", "action-001", RunStatus.PASSED, today, 1.5, 1),
-                _create_test_run("run-002", "action-001", RunStatus.FAILED, today, 0.5, 2),
+                _create_test_run(
+                    "run-001", "action-001", RunStatus.PASSED, today, 1.5, 1
+                ),
+                _create_test_run(
+                    "run-002", "action-001", RunStatus.FAILED, today, 0.5, 2
+                ),
                 # Yesterday's runs for action 2
-                _create_test_run("run-003", "action-002", RunStatus.PASSED, yesterday, 2.0, 3),
-                _create_test_run("run-004", "action-002", RunStatus.PASSED, yesterday, 1.0, 4),
+                _create_test_run(
+                    "run-003", "action-002", RunStatus.PASSED, yesterday, 2.0, 3
+                ),
+                _create_test_run(
+                    "run-004", "action-002", RunStatus.PASSED, yesterday, 1.0, 4
+                ),
             ]
 
             for run in runs:

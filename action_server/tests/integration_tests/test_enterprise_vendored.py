@@ -5,9 +5,10 @@ Tests offline enterprise builds using vendored packages.
 """
 
 import json
-import pytest
 import subprocess
 from pathlib import Path
+
+import pytest
 
 
 class TestEnterpriseVendored:

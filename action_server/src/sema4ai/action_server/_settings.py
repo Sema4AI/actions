@@ -82,7 +82,7 @@ def is_community_build() -> bool:
     # Enterprise builds will have a specific marker file or module
     try:
         # Try to import enterprise-specific module
-        import sema4ai.action_server._enterprise_marker  # type: ignore
+        import sema4ai.action_server._enterprise_marker  # type: ignore # noqa: F401
 
         return False
     except ImportError:

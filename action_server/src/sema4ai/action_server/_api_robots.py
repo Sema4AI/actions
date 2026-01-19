@@ -13,10 +13,9 @@ from fastapi.routing import APIRouter
 from pydantic import BaseModel
 
 from sema4ai.action_server._database import datetime_to_str
-from sema4ai.action_server._models import Run, RunStatus
+from sema4ai.action_server._rcc import get_rcc_robots
 from sema4ai.action_server._runs_state_cache import get_global_runs_state
 from sema4ai.action_server._settings import get_settings
-from sema4ai.action_server._rcc import get_rcc_robots
 
 log = logging.getLogger(__name__)
 
@@ -81,7 +80,7 @@ def _discover_robots_in_dir(base_dir: Path) -> List[RobotPackageDetailAPI]:
     - robot.yaml (older RCC format with conda.yaml for deps)
     - package.yaml with tasks defined (newer format)
     """
-    robots: list[dict] = []
+    robots: list[RobotPackageDetailAPI] = []
 
     if not base_dir.exists():
         return robots
@@ -112,7 +111,12 @@ def _discover_robots_in_dir(base_dir: Path) -> List[RobotPackageDetailAPI]:
             for task_name, task_info in tasks_data.items():
                 docs = ""
                 if isinstance(task_info, dict):
-                    docs = task_info.get("documentation") or task_info.get("docs") or task_info.get("description") or ""
+                    docs = (
+                        task_info.get("documentation")
+                        or task_info.get("docs")
+                        or task_info.get("description")
+                        or ""
+                    )
                 tasks.append(RobotTaskInfoAPI(name=task_name, docs=docs))
 
             robot = RobotPackageDetailAPI(
@@ -237,7 +241,11 @@ def _validate_robot_package(package_dir: Path) -> tuple[bool, str, Optional[str]
                 return False, "No tasks defined in robot.yaml", None
 
             robot_name = robot_data.get("name", package_dir.name)
-            return True, f"Valid robot package (robot.yaml) with {len(tasks)} task(s)", robot_name
+            return (
+                True,
+                f"Valid robot package (robot.yaml) with {len(tasks)} task(s)",
+                robot_name,
+            )
 
         except yaml.YAMLError as e:
             return False, f"Invalid YAML in robot.yaml: {e}", None
@@ -256,10 +264,18 @@ def _validate_robot_package(package_dir: Path) -> tuple[bool, str, Optional[str]
             # Check for tasks (robot packages have tasks)
             tasks = pkg_data.get("tasks", {})
             if not tasks:
-                return False, "No tasks defined in package.yaml - this may be an action package, not a robot", None
+                return (
+                    False,
+                    "No tasks defined in package.yaml - this may be an action package, not a robot",
+                    None,
+                )
 
             robot_name = pkg_data.get("name", package_dir.name)
-            return True, f"Valid robot package (package.yaml) with {len(tasks)} task(s)", robot_name
+            return (
+                True,
+                f"Valid robot package (package.yaml) with {len(tasks)} task(s)",
+                robot_name,
+            )
 
         except yaml.YAMLError as e:
             return False, f"Invalid YAML in package.yaml: {e}", None
@@ -269,7 +285,9 @@ def _validate_robot_package(package_dir: Path) -> tuple[bool, str, Optional[str]
     return False, "No robot.yaml or package.yaml found in the package", None
 
 
-def _extract_zip_to_robots(zip_path: Path, robot_name: Optional[str] = None) -> tuple[bool, str, Optional[Path]]:
+def _extract_zip_to_robots(
+    zip_path: Path, robot_name: Optional[str] = None
+) -> tuple[bool, str, Optional[Path]]:
     """
     Extract a zip file to the robots directory.
 
@@ -278,7 +296,7 @@ def _extract_zip_to_robots(zip_path: Path, robot_name: Optional[str] = None) -> 
     ROBOTS_DIR.mkdir(parents=True, exist_ok=True)
 
     try:
-        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+        with zipfile.ZipFile(zip_path, "r") as zip_ref:
             # Get the list of files in the zip
             namelist = zip_ref.namelist()
 
@@ -288,7 +306,7 @@ def _extract_zip_to_robots(zip_path: Path, robot_name: Optional[str] = None) -> 
             # Check if there's a single root directory
             root_dirs = set()
             for name in namelist:
-                parts = name.split('/')
+                parts = name.split("/")
                 if parts[0]:
                     root_dirs.add(parts[0])
 
@@ -314,7 +332,9 @@ def _extract_zip_to_robots(zip_path: Path, robot_name: Optional[str] = None) -> 
                 final_name = robot_name or extracted_name or package_dir.name
 
                 # Sanitize name for filesystem
-                final_name = "".join(c for c in final_name if c.isalnum() or c in "._- ").strip()
+                final_name = "".join(
+                    c for c in final_name if c.isalnum() or c in "._- "
+                ).strip()
                 if not final_name:
                     final_name = "imported_robot"
 
@@ -323,6 +343,7 @@ def _extract_zip_to_robots(zip_path: Path, robot_name: Optional[str] = None) -> 
                 if target_dir.exists():
                     # Add suffix to make unique
                     import uuid
+
                     suffix = str(uuid.uuid4())[:8]
                     final_name = f"{final_name}_{suffix}"
                     target_dir = ROBOTS_DIR / final_name
@@ -357,11 +378,11 @@ async def _download_from_url(url: str) -> tuple[bool, str, Optional[Path]]:
     if "github.com" in parsed.netloc:
         # Convert GitHub repo URL to zip download URL
         # https://github.com/owner/repo -> https://github.com/owner/repo/archive/refs/heads/main.zip
-        path_parts = parsed.path.strip('/').split('/')
+        path_parts = parsed.path.strip("/").split("/")
         if len(path_parts) >= 2:
             owner, repo = path_parts[0], path_parts[1]
             # Remove .git suffix if present
-            if repo.endswith('.git'):
+            if repo.endswith(".git"):
                 repo = repo[:-4]
             url = f"https://github.com/{owner}/{repo}/archive/refs/heads/main.zip"
 
@@ -409,7 +430,7 @@ async def import_robot(
     try:
         if file:
             # Handle file upload
-            if not file.filename or not file.filename.endswith('.zip'):
+            if not file.filename or not file.filename.endswith(".zip"):
                 return RobotImportResponseAPI(
                     success=False,
                     message="File must be a .zip archive",
@@ -465,7 +486,7 @@ class RobotRunRequestAPI(BaseModel):
 
 
 class RobotRunResponseAPI(BaseModel):
-    run_id: str  # The assigned run ID 
+    run_id: str  # The assigned run ID
     status: str  # Current run status
     message: Optional[str] = None  # Optional status message
 
@@ -477,15 +498,22 @@ async def run_robot_task(
 ):
     """
     Execute a robot task and track its execution.
-    
+
     The task is executed asynchronously and the run status can be monitored
     via the /api/runs/{run_id} endpoint.
     """
-    import uuid
     import datetime
     import json
+    import uuid
     from pathlib import Path
-    from sema4ai.action_server._models import RUN_ID_COUNTER, Run, RunStatus, Counter, get_db
+
+    from sema4ai.action_server._models import (
+        RUN_ID_COUNTER,
+        Counter,
+        Run,
+        RunStatus,
+        get_db,
+    )
 
     # Get settings for paths
     settings = get_settings()
@@ -574,10 +602,14 @@ async def run_robot_task(
                     pass
 
             if not conda_yaml.exists():
-                raise RuntimeError(f"conda.yaml not found in {package_path} (required for robot.yaml format)")
+                raise RuntimeError(
+                    f"conda.yaml not found in {package_path} (required for robot.yaml format)"
+                )
 
             env_config_file = conda_yaml
-            log.info(f"Using robot.yaml format with conda.yaml for environment: {robot_config_file}")
+            log.info(
+                f"Using robot.yaml format with conda.yaml for environment: {robot_config_file}"
+            )
         elif package_yaml.exists():
             # Newer package.yaml format - dependencies are inline
             robot_config_file = package_yaml
@@ -598,11 +630,15 @@ async def run_robot_task(
             env_result = rcc.create_env_and_get_vars(
                 settings.datadir,
                 env_config_file,
-                package_yaml_hash=rcc.get_package_yaml_hash(env_config_file, devenv=False),
+                package_yaml_hash=rcc.get_package_yaml_hash(
+                    env_config_file, devenv=False
+                ),
                 devenv=False,
             )
             if not env_result.success:
-                raise RuntimeError(f"Failed to create robot environment: {env_result.message}")
+                raise RuntimeError(
+                    f"Failed to create robot environment: {env_result.message}"
+                )
 
             # Update env hash
             run.robot_env_hash = env_result.result.env.get("CONDA_ENVIRONMENT_HASH", "")
@@ -631,8 +667,10 @@ async def run_robot_task(
             rcc_args = [
                 "task",
                 "run",
-                "--robot", str(robot_config_file),
-                "--task", request.task_name,
+                "--robot",
+                str(robot_config_file),
+                "--task",
+                request.task_name,
             ]
 
             # Only add --space if we have an env hash (for pre-built environments)
@@ -687,10 +725,12 @@ async def run_robot_task(
 
             if result.success:
                 run.status = RunStatus.PASSED
-                run.result = json.dumps({
-                    "output": result.result,
-                    "artifacts_dir": str(artifacts_dir),
-                })
+                run.result = json.dumps(
+                    {
+                        "output": result.result,
+                        "artifacts_dir": str(artifacts_dir),
+                    }
+                )
             else:
                 run.status = RunStatus.FAILED
                 run.error_message = result.message
@@ -703,8 +743,8 @@ async def run_robot_task(
                 {
                     "status": run.status,
                     "result": run.result,
-                    "error_message": run.error_message,  
-                }
+                    "error_message": run.error_message,
+                },
             )
 
         except Exception as e:

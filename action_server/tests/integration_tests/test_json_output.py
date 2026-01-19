@@ -5,9 +5,10 @@ Tests that --json flag produces valid, parseable JSON output.
 """
 
 import json
-import pytest
 import subprocess
 from pathlib import Path
+
+import pytest
 
 
 class TestJSONOutput:

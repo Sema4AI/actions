@@ -3,8 +3,8 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Iterator, Optional, Union
 
+from pydantic import BaseModel
 from pydantic.dataclasses import dataclass
-from pydantic import BaseModel, Field
 
 from sema4ai.action_server._database import DBRules
 
@@ -104,7 +104,9 @@ class Run:
     run_type: str = "action"  # 'action' or 'robot'
     _db_rules.indexes.add("Run.run_type")
 
-    robot_package_path: Optional[str] = None  # Path to robot package if run_type='robot'
+    robot_package_path: Optional[
+        str
+    ] = None  # Path to robot package if run_type='robot'
     robot_task_name: Optional[str] = None  # Name of robot task if run_type='robot'
     robot_env_hash: Optional[str] = None  # RCC environment hash if run_type='robot'
 

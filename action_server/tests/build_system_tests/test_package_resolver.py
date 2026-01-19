@@ -6,16 +6,10 @@ Tests T008: DependencySource resolution, fallback order, and error handling
 import socket
 import subprocess
 from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
-
-from package_resolver import (
-    DependencyError,
-    DependencySource,
-    SourceType,
-    resolve,
-)
+from package_resolver import DependencyError, DependencySource, SourceType, resolve
 
 
 class TestDependencySourceClass:

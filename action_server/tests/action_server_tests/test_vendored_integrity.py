@@ -8,6 +8,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+
 import pytest
 
 
@@ -155,7 +156,7 @@ class TestVendoredIntegrity:
                 })
         
         assert len(mismatches) == 0, (
-            f"Checksum mismatches detected:\n" +
+            "Checksum mismatches detected:\n" +
             "\n".join(
                 f"  {m['package']}: expected {m['expected']}, "
                 f"got {m['calculated']}"

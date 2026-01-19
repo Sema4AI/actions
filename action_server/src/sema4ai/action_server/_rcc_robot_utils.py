@@ -1,4 +1,3 @@
-\
 import json
 import logging
 import os
@@ -23,7 +22,7 @@ class RobotPackageListItem(BaseModel):
 
 class RobotTask(BaseModel):
     name: str
-    docs: Optional[str] = Field(None, alias="documentation") # RCC uses "documentation"
+    docs: Optional[str] = Field(None, alias="documentation")  # RCC uses "documentation"
 
 
 class RobotDetails(BaseModel):
@@ -44,8 +43,8 @@ def _run_rcc_command(
             capture_output=True,
             text=True,
             cwd=cwd,
-            check=False, # We handle non-zero exit codes manually
-            timeout=300, # 5 minutes timeout
+            check=False,  # We handle non-zero exit codes manually
+            timeout=300,  # 5 minutes timeout
         )
         return process.stdout, process.stderr, process.returncode
     except FileNotFoundError:
@@ -84,12 +83,16 @@ def list_robot_packages(robots_dir: Path) -> List[RobotPackageListItem]:
                         with zf.open("robot.yaml") as robot_yaml_file:
                             robot_yaml_content = yaml.safe_load(robot_yaml_file)
                             if isinstance(robot_yaml_content, dict):
-                                package_name = robot_yaml_content.get("name", package_name)
+                                package_name = robot_yaml_content.get(
+                                    "name", package_name
+                                )
                                 version = robot_yaml_content.get("version")
                                 description = robot_yaml_content.get("description")
                     else:
                         # If no robot.yaml, still list it as a potential (but perhaps incomplete) robot zip
-                        logger.debug(f"Zip file {item} does not contain a robot.yaml, using filename as name.")
+                        logger.debug(
+                            f"Zip file {item} does not contain a robot.yaml, using filename as name."
+                        )
             except zipfile.BadZipFile:
                 logger.warning(f"Could not read zip file: {item}")
                 continue
@@ -113,11 +116,13 @@ def list_robot_packages(robots_dir: Path) -> List[RobotPackageListItem]:
             else:
                 # If a directory doesn't have robot.yaml, we might not consider it a primary robot package
                 # Or we could list it and let get_robot_details fail if it's not valid
-                logger.debug(f"Directory {item} does not contain a robot.yaml. Skipping for now.")
-                continue # Or decide to include it with minimal info
+                logger.debug(
+                    f"Directory {item} does not contain a robot.yaml. Skipping for now."
+                )
+                continue  # Or decide to include it with minimal info
 
         else:
-            continue # Skip other file types
+            continue  # Skip other file types
 
         robot_packages.append(
             RobotPackageListItem(
@@ -142,7 +147,7 @@ def get_robot_details(robot_package_path: Path) -> Optional[RobotDetails]:
 
     robot_name = robot_package_path.stem
     yaml_contents: Optional[Dict] = None
-    
+
     # Determine if it's a directory or a zip file for RCC commands
     # RCC generally expects a path to a directory containing robot.yaml or the zip file itself.
     rcc_target_path_str = str(robot_package_path)
@@ -157,7 +162,9 @@ def get_robot_details(robot_package_path: Path) -> Optional[RobotDetails]:
                     if isinstance(yaml_contents, dict):
                         robot_name = yaml_contents.get("name", robot_name)
             except Exception as e:
-                logger.warning(f"Could not parse robot.yaml in {robot_package_path}: {e}")
+                logger.warning(
+                    f"Could not parse robot.yaml in {robot_package_path}: {e}"
+                )
     elif robot_package_path.is_file() and robot_package_path.suffix.lower() == ".zip":
         try:
             with zipfile.ZipFile(robot_package_path, "r") as zf:
@@ -167,8 +174,9 @@ def get_robot_details(robot_package_path: Path) -> Optional[RobotDetails]:
                         if isinstance(yaml_contents, dict):
                             robot_name = yaml_contents.get("name", robot_name)
         except Exception as e:
-            logger.warning(f"Could not read robot.yaml from zip {robot_package_path}: {e}")
-
+            logger.warning(
+                f"Could not read robot.yaml from zip {robot_package_path}: {e}"
+            )
 
     # Get holotree variables
     # For zip files, RCC might need to extract it first or operate on it directly.
@@ -176,7 +184,7 @@ def get_robot_details(robot_package_path: Path) -> Optional[RobotDetails]:
     # Let's assume rcc handles zip paths correctly for these commands.
     # If `robot_package_path` is a directory, `rcc ... --robot path/to/dir` should work.
     # If `robot_package_path` is a zip, `rcc ... --robot path/to/robot.zip` should work.
-    
+
     args_vars = ["holotree", "variables", "--json", "--robot", rcc_target_path_str]
     stdout_vars, stderr_vars, retcode_vars = _run_rcc_command(args_vars)
 
@@ -198,21 +206,25 @@ def get_robot_details(robot_package_path: Path) -> Optional[RobotDetails]:
     # Get task list
     args_tasks = ["task", "list", "--json", "--robot", rcc_target_path_str]
     stdout_tasks, stderr_tasks, retcode_tasks = _run_rcc_command(args_tasks)
-    
+
     tasks_data: List[RobotTask] = []
     if retcode_tasks == 0 and stdout_tasks:
         try:
             parsed_tasks = json.loads(stdout_tasks)
-            if isinstance(parsed_tasks, list): # RCC task list --json returns a list of task objects
+            if isinstance(
+                parsed_tasks, list
+            ):  # RCC task list --json returns a list of task objects
                 tasks_data = [RobotTask(**task_info) for task_info in parsed_tasks]
             else:
-                logger.error(f"RCC task list for {robot_package_path} did not return a list. Output: {stdout_tasks}")
+                logger.error(
+                    f"RCC task list for {robot_package_path} did not return a list. Output: {stdout_tasks}"
+                )
 
         except json.JSONDecodeError:
             logger.error(
                 f"Failed to parse JSON from rcc task list for {robot_package_path}. Output: {stdout_tasks}"
             )
-        except Exception as e: # Catch Pydantic validation errors too
+        except Exception as e:  # Catch Pydantic validation errors too
             logger.error(
                 f"Error processing task list for {robot_package_path}: {e}. Output: {stdout_tasks}"
             )
@@ -236,8 +248,8 @@ def run_robot_task(
     robot_package_path: Path,
     task_name: str,
     inputs: Optional[Dict] = None,
-    run_id: Optional[str] = None, # For potential future use with RCC logs
-    secrets_file: Optional[Path] = None, # For passing secrets if needed
+    run_id: Optional[str] = None,  # For potential future use with RCC logs
+    secrets_file: Optional[Path] = None,  # For passing secrets if needed
 ) -> Tuple[str, str, int]:
     """
     Executes `rcc task run --robot <robot_package_path> --task <task_name>`
@@ -264,16 +276,17 @@ def run_robot_task(
     # that might be configured through `holotree variables` or `robot.yaml` `env` section.
     # If direct input passing is needed, it would typically involve setting environment variables
     # for the subprocess.
-    
-    env_vars = os.environ.copy()
+
+    _env_vars = os.environ.copy()  # Reserved for future use in subprocess calls
     if inputs:
         # This is a simplistic way; robots might expect specific env var formats
         # or a work-items.json file. For now, just logging.
-        logger.info(f"Inputs provided for task {task_name}: {inputs}. These are not directly passed via CLI args by this function yet.")
+        logger.info(
+            f"Inputs provided for task {task_name}: {inputs}. These are not directly passed via CLI args by this function yet."
+        )
         # Example of setting env vars if needed:
         # for key, value in inputs.items():
         #     env_vars[f"RC_INPUT_{key.upper()}"] = str(value)
-
 
     # TODO: Explore how to pass `inputs` to `rcc task run`.
     # This might involve creating a temporary input work-item JSON and passing its path,
@@ -290,12 +303,13 @@ def run_robot_task(
     if secrets_file and secrets_file.exists():
         args.extend(["--secrets", str(secrets_file)])
 
-
     logger.info(f"Running RCC command: rcc {' '.join(args)}")
-    
+
     # `_run_rcc_command` uses `cwd=None` by default, which means it runs from the action server's CWD.
     # This should be fine as `--robot` takes an absolute or relative path to the robot.
-    stdout, stderr, exit_code = _run_rcc_command(args) # env=env_vars if passing custom env
+    stdout, stderr, exit_code = _run_rcc_command(
+        args
+    )  # env=env_vars if passing custom env
 
     if exit_code != 0:
         logger.error(
@@ -308,10 +322,10 @@ def run_robot_task(
             f"\\nSTDOUT:\\n{stdout}"
         )
         if stderr:
-             logger.info(f"STDERR:\\n{stderr}")
-
+            logger.info(f"STDERR:\\n{stderr}")
 
     return stdout, stderr, exit_code
+
 
 if __name__ == "__main__":
     # Example Usage (for testing this module directly)
@@ -338,13 +352,13 @@ if __name__ == "__main__":
             "List Files": {
                 "command": ["python", "-m", "robot_code", "ls"],
                 "documentation": "Lists files in the current directory.",
-            }
+            },
         },
-        "condaConfigFile": "conda.yaml" # RCC needs a valid config
+        "condaConfigFile": "conda.yaml",  # RCC needs a valid config
     }
     with open(dummy_robot_dir / "robot.yaml", "w") as f:
         yaml.dump(robot_yaml_content_dict, f)
-    
+
     # Dummy conda.yaml
     with open(dummy_robot_dir / "conda.yaml", "w") as f:
         f.write("channels:\\n  - conda-forge\\ndependencies:\\n  - python=3.9\\n")
@@ -377,17 +391,27 @@ if __name__ == "__main__":
 """
     (dummy_robot_dir / "robot_code.py").write_text(robot_code_py_content)
 
-
     # Create a dummy zip robot
     dummy_zip_path = test_robots_dir / "MyZippedRobot.zip"
     with zipfile.ZipFile(dummy_zip_path, "w") as zf:
-        zf.writestr("robot.yaml", yaml.dump({
-            "name": "My Zipped Robot", "version": "1.1", "description": "A robot from a zip.",
-            "tasks": {"Greet": {"command": ["echo", "Hello from Zipped Robot"]}},
-            "condaConfigFile": "conda.yaml"
-        }))
-        zf.writestr("conda.yaml", "channels:\\n  - conda-forge\\ndependencies:\\n  - python=3.9\\n")
-
+        zf.writestr(
+            "robot.yaml",
+            yaml.dump(
+                {
+                    "name": "My Zipped Robot",
+                    "version": "1.1",
+                    "description": "A robot from a zip.",
+                    "tasks": {
+                        "Greet": {"command": ["echo", "Hello from Zipped Robot"]}
+                    },
+                    "condaConfigFile": "conda.yaml",
+                }
+            ),
+        )
+        zf.writestr(
+            "conda.yaml",
+            "channels:\\n  - conda-forge\\ndependencies:\\n  - python=3.9\\n",
+        )
 
     print(f"--- Listing robots in {test_robots_dir} ---")
     robots = list_robot_packages(test_robots_dir)
@@ -405,31 +429,32 @@ if __name__ == "__main__":
                 print(f"\\n--- Running task '{task_to_run}' for {details.name} ---")
                 # Set environment variable for the echo task
                 os.environ["MESSAGE"] = "Hello from RCC Robot Utils Test!"
-                stdout, stderr, retcode = run_robot_task(
-                    details.path, task_to_run
-                )
+                stdout, stderr, retcode = run_robot_task(details.path, task_to_run)
                 print(f"Exit Code: {retcode}")
                 print(f"STDOUT:\\n{stdout}")
                 print(f"STDERR:\\n{stderr}")
-                del os.environ["MESSAGE"] # Clean up env var
-        
+                del os.environ["MESSAGE"]  # Clean up env var
+
         # Test zip robot details
         zipped_robot_item = next((r for r in robots if r.is_zip), None)
         if zipped_robot_item:
-            print(f"\\n--- Getting details for ZIPPED robot {zipped_robot_item.name} ({zipped_robot_item.path}) ---")
+            print(
+                f"\\n--- Getting details for ZIPPED robot {zipped_robot_item.name} ({zipped_robot_item.path}) ---"
+            )
             zip_details = get_robot_details(zipped_robot_item.path)
             if zip_details:
                 print(zip_details.model_dump_json(indent=2, exclude_none=True))
                 if zip_details.tasks:
                     zip_task_to_run = zip_details.tasks[0].name
-                    print(f"\\n--- Running task '{zip_task_to_run}' for {zip_details.name} ---")
+                    print(
+                        f"\\n--- Running task '{zip_task_to_run}' for {zip_details.name} ---"
+                    )
                     stdout_zip, stderr_zip, retcode_zip = run_robot_task(
                         zip_details.path, zip_task_to_run
                     )
                     print(f"Exit Code: {retcode_zip}")
                     print(f"STDOUT:\\n{stdout_zip}")
                     print(f"STDERR:\\n{stderr_zip}")
-
 
     # Cleanup (optional)
     # import shutil

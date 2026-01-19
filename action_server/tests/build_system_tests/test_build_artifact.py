@@ -6,18 +6,19 @@ Tests artifact naming, hashing, metadata generation, and SBOM validation.
 
 import hashlib
 import json
-import pytest
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 from unittest.mock import Mock, patch
+
+import pytest
 
 # Import will fail until implementation exists (TDD)
 try:
     from build_artifact import (
-        BuildArtifact,
         ArtifactType,
-        generate_artifact_name,
+        BuildArtifact,
         compute_sha256,
+        generate_artifact_name,
         generate_metadata,
     )
     from tier_selector import COMMUNITY, ENTERPRISE

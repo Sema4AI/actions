@@ -5,18 +5,15 @@ Tests the validate-artifact command for imports, licenses, size, determinism, an
 """
 
 import json
-import pytest
 import subprocess
 from pathlib import Path
 from unittest.mock import Mock, patch
 
+import pytest
+
 # Import will fail until implementation exists (TDD)
 try:
-    from artifact_validator import (
-        ArtifactValidator,
-        ValidationResult,
-        ValidationCheck,
-    )
+    from artifact_validator import ArtifactValidator, ValidationCheck, ValidationResult
 except ImportError:
     pytest.skip("ArtifactValidator not yet implemented", allow_module_level=True)
 

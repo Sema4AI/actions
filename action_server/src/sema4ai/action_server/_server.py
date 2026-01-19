@@ -50,8 +50,8 @@ def start_server(
     from ._api_oauth2 import oauth2_api_router
     from ._api_robots import robots_api_router
     from ._api_run import run_api_router
-    from ._api_work_items import work_items_api_router
     from ._api_secrets import secrets_api_router
+    from ._api_work_items import work_items_api_router
     from ._app import get_app
     from ._server_websockets import websocket_api_router
     from ._settings import get_settings
@@ -159,9 +159,9 @@ def start_server(
             )
 
             if expose_session_payload:
-                payload["expose_url"] = (
-                    f"https://{expose_session_payload.sessionId}.{settings.expose_url}"
-                )
+                payload[
+                    "expose_url"
+                ] = f"https://{expose_session_payload.sessionId}.{settings.expose_url}"
         return payload
 
     if start_args.auto_reload:
@@ -314,7 +314,7 @@ def start_server(
         return (host, port)
 
     def expose_later(loop):
-        from sema4ai.action_server._settings import is_frozen, is_community_build
+        from sema4ai.action_server._settings import is_community_build, is_frozen
 
         nonlocal expose_subprocess
 

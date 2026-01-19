@@ -16,9 +16,8 @@ Note: This test intentionally scans code files only (Python, JS/TS, JSON, YAML)
 and excludes specs, tests, docs and vendored/build artifacts to reduce noise.
 """
 
-from pathlib import Path
 import re
-
+from pathlib import Path
 
 # Patterns that indicate presence of tier selection / tier-specific logic.
 # These are intentionally conservative (look for assignment, env var access,

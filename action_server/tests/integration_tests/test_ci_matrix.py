@@ -5,9 +5,10 @@ Tests CI matrix strategy with tier × os combinations.
 """
 
 import json
-import pytest
 import subprocess
 from pathlib import Path
+
+import pytest
 
 
 class TestCIMatrix:

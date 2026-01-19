@@ -5,9 +5,10 @@ Tests that internal developers can build enterprise tier with npm credentials.
 """
 
 import json
-import pytest
 import subprocess
 from pathlib import Path
+
+import pytest
 
 
 class TestEnterpriseRegistry:

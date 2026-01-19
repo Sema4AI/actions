@@ -5,20 +5,21 @@ Tests the tree-shaking functionality for detecting and excluding enterprise
 imports in community builds.
 """
 
-import pytest
 from pathlib import Path
 from unittest.mock import Mock, patch
 
+import pytest
+
 # Import will fail until implementation exists (TDD)
 try:
+    from tier_selector import COMMUNITY, ENTERPRISE
     from tree_shaker import (
-        TreeShaker,
         ImportViolation,
-        scan_imports,
+        TreeShaker,
         detect_enterprise_imports,
         generate_vite_external_config,
+        scan_imports,
     )
-    from tier_selector import COMMUNITY, ENTERPRISE
 except ImportError:
     # Expected to fail initially (TDD)
     pytest.skip("TreeShaker not yet implemented", allow_module_level=True)

@@ -5,9 +5,10 @@ Tests that external contributors can build community tier without authentication
 """
 
 import json
-import pytest
 import subprocess
 from pathlib import Path
+
+import pytest
 
 
 class TestCommunityBuildOffline:

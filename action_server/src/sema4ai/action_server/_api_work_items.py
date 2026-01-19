@@ -6,7 +6,6 @@ by producer-consumer automation workflows.
 """
 
 import logging
-from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import fastapi
@@ -23,14 +22,17 @@ work_items_api_router = APIRouter(prefix="/api/work-items")
 
 # Pydantic models for API
 
+
 class WorkItemCreate(BaseModel):
     """Request to create/seed a work item."""
+
     payload: Optional[Dict[str, Any]] = None
     queue_name: Optional[str] = None
 
 
 class WorkItemResponse(BaseModel):
     """Response with work item details."""
+
     id: str
     queue_name: str
     state: str
@@ -45,12 +47,14 @@ class WorkItemResponse(BaseModel):
 
 class WorkItemListResponse(BaseModel):
     """Response with list of work items."""
+
     items: List[WorkItemResponse]
     total: int
 
 
 class QueueStatsResponse(BaseModel):
     """Response with queue statistics."""
+
     queue_name: str
     pending: int
     in_progress: int
@@ -97,7 +101,7 @@ def _check_adapter():
     if adapter is None:
         raise fastapi.HTTPException(
             status_code=503,
-            detail="Work items not available - actions-work-items package not installed"
+            detail="Work items not available - actions-work-items package not installed",
         )
     return adapter
 
@@ -152,11 +156,11 @@ async def list_work_items(
     if state:
         try:
             from actions.work_items import State
+
             state_enum = State(state.upper())
         except (ValueError, ImportError):
             raise fastapi.HTTPException(
-                status_code=400,
-                detail=f"Invalid state: {state}"
+                status_code=400, detail=f"Invalid state: {state}"
             )
 
     items = adapter.list_items(
@@ -210,8 +214,7 @@ async def get_work_item(item_id: str):
         item = adapter.get_item(item_id)
     except ValueError:
         raise fastapi.HTTPException(
-            status_code=404,
-            detail=f"Work item not found: {item_id}"
+            status_code=404, detail=f"Work item not found: {item_id}"
         )
 
     return WorkItemResponse(
@@ -237,8 +240,7 @@ async def delete_work_item(item_id: str):
         adapter.delete_item(item_id)
     except ValueError:
         raise fastapi.HTTPException(
-            status_code=404,
-            detail=f"Work item not found: {item_id}"
+            status_code=404, detail=f"Work item not found: {item_id}"
         )
 
     return {"status": "deleted", "id": item_id}
@@ -258,8 +260,7 @@ async def upload_file(
         adapter.get_item(item_id)
     except ValueError:
         raise fastapi.HTTPException(
-            status_code=404,
-            detail=f"Work item not found: {item_id}"
+            status_code=404, detail=f"Work item not found: {item_id}"
         )
 
     content = await file.read()
@@ -287,8 +288,7 @@ async def list_files(item_id: str):
         adapter.get_item(item_id)
     except ValueError:
         raise fastapi.HTTPException(
-            status_code=404,
-            detail=f"Work item not found: {item_id}"
+            status_code=404, detail=f"Work item not found: {item_id}"
         )
 
     files = adapter.list_files(item_id)
@@ -304,17 +304,15 @@ async def download_file(item_id: str, filename: str):
         content = adapter.get_file(item_id, filename)
     except ValueError:
         raise fastapi.HTTPException(
-            status_code=404,
-            detail=f"File not found: {filename} in work item {item_id}"
+            status_code=404, detail=f"File not found: {filename} in work item {item_id}"
         )
 
     from fastapi.responses import Response
+
     return Response(
         content=content,
         media_type="application/octet-stream",
-        headers={
-            "Content-Disposition": f'attachment; filename="{filename}"'
-        },
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
 
 
@@ -327,8 +325,7 @@ async def delete_file(item_id: str, filename: str):
         adapter.get_item(item_id)
     except ValueError:
         raise fastapi.HTTPException(
-            status_code=404,
-            detail=f"Work item not found: {item_id}"
+            status_code=404, detail=f"Work item not found: {item_id}"
         )
 
     adapter.remove_file(item_id, filename)

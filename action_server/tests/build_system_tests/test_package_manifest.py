@@ -6,18 +6,19 @@ tier-specific package.json files.
 """
 
 import json
-import pytest
 from pathlib import Path
-from unittest.mock import Mock, patch, mock_open
+from unittest.mock import Mock, mock_open, patch
+
+import pytest
 
 # Import will fail until implementation exists (TDD)
 try:
     from package_manifest import (
+        ManifestValidationError,
         PackageManifest,
         ValidationResult,
-        ManifestValidationError,
     )
-    from tier_selector import BuildTier, COMMUNITY, ENTERPRISE
+    from tier_selector import COMMUNITY, ENTERPRISE, BuildTier
 except ImportError:
     # Expected to fail initially (TDD)
     pytest.skip("PackageManifest not yet implemented", allow_module_level=True)

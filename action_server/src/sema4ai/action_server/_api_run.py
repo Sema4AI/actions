@@ -9,14 +9,18 @@ from fastapi.params import Param
 from fastapi.routing import APIRouter
 from starlette.responses import FileResponse
 
-from sema4ai.action_server._models import Run, RunListItemModel, RunDetailModel
+from sema4ai.action_server._models import Run, RunDetailModel, RunListItemModel
 
 log = logging.getLogger(__name__)
 run_api_router = APIRouter(prefix="/api/runs")
 
 
 @run_api_router.get("", response_model=List[RunListItemModel])
-def list_runs(run_type: Optional[str] = fastapi.Query(default=None, description="Filter by run type (e.g., 'action', 'robot')")):
+def list_runs(
+    run_type: Optional[str] = fastapi.Query(
+        default=None, description="Filter by run type (e.g., 'action', 'robot')"
+    ),
+):
     from ._runs_state_cache import get_global_runs_state
 
     global_runs_state = get_global_runs_state()

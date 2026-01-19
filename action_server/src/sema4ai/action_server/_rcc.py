@@ -351,6 +351,7 @@ class Rcc(object):
             conda_prefix = environ["CONDA_PREFIX"]
             # Try common Python locations in conda environment
             import platform
+
             if platform.system() == "Windows":
                 python_candidates = [
                     os.path.join(conda_prefix, "python.exe"),
@@ -367,7 +368,9 @@ class Rcc(object):
                     environ["PYTHON_EXE"] = candidate
                     break
             else:
-                msg = f"Could not find Python executable in CONDA_PREFIX: {conda_prefix}"
+                msg = (
+                    f"Could not find Python executable in CONDA_PREFIX: {conda_prefix}"
+                )
                 return return_failure(msg)
 
         return ActionResult(True, None, EnvInfo(environ))
@@ -472,7 +475,9 @@ def initialize_rcc(rcc_location: Path, rcc_home: Optional[Path]) -> Iterator[Rcc
     Legacy function - initializes RCC for actions.
     For new code, prefer initialize_rcc_actions() and initialize_rcc_robots().
     """
-    with initialize_rcc_actions(rcc_location, rcc_home if rcc_home else Path.home() / ".actions") as rcc:
+    with initialize_rcc_actions(
+        rcc_location, rcc_home if rcc_home else Path.home() / ".actions"
+    ) as rcc:
         yield rcc
 
 

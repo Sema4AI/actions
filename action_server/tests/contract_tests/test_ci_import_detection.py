@@ -5,10 +5,11 @@ Tests that CI workflows detect and fail on enterprise imports in community build
 """
 
 import json
-import pytest
 import subprocess
 from pathlib import Path
 from unittest.mock import Mock, patch
+
+import pytest
 
 
 class TestCIImportDetection:

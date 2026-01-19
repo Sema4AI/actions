@@ -9,8 +9,7 @@ Provides aggregated run statistics including:
 
 import logging
 from dataclasses import dataclass
-from datetime import datetime, timedelta
-from typing import List, Optional
+from typing import List
 
 from fastapi.routing import APIRouter
 
@@ -187,8 +186,6 @@ def get_runs_by_action() -> List[RunsByAction]:
     Returns:
         List of RunsByAction objects sorted by total runs descending
     """
-    from sema4ai.action_server._models import Action, ActionPackage
-
     db = get_db()
     with db.connect():
         with db.cursor() as cursor:

@@ -5,11 +5,10 @@ Tests T007a: Default tier behavior (FR-003 compliance)
 """
 
 import pytest
-
 from tier_selector import (
-    BuildTier,
     COMMUNITY,
     ENTERPRISE,
+    BuildTier,
     ConfigurationError,
     TierName,
     select_tier,

@@ -5,17 +5,14 @@ Tests that build artifacts follow the specified naming conventions for
 frontend bundles and executable binaries across tiers and platforms.
 """
 
-import pytest
-from pathlib import Path
 import re
+from pathlib import Path
+
+import pytest
 
 # Import will fail until implementation exists (TDD)
 try:
-    from build_artifact import (
-        BuildArtifact,
-        generate_artifact_name,
-        ArtifactType,
-    )
+    from build_artifact import ArtifactType, BuildArtifact, generate_artifact_name
     from tier_selector import COMMUNITY, ENTERPRISE
 except ImportError:
     pytest.skip("Artifact naming not yet implemented", allow_module_level=True)

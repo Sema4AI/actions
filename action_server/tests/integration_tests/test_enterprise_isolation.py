@@ -6,9 +6,10 @@ Validates that adding enterprise features doesn't affect community builds.
 
 import hashlib
 import json
-import pytest
 import subprocess
 from pathlib import Path
+
+import pytest
 
 
 class TestEnterpriseTierIsolation:

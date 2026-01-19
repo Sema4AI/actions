@@ -6,10 +6,11 @@ for enterprise import violations.
 """
 
 import json
-import pytest
 import subprocess
 from pathlib import Path
 from unittest.mock import Mock, patch
+
+import pytest
 
 # Import will fail until implementation exists (TDD)
 try:

@@ -103,12 +103,16 @@ def download_bore(target: Optional[str] = None, force: bool = False) -> Path:
 
             # Download to temp file
             import tempfile
+
             with tempfile.TemporaryDirectory() as tmpdir:
                 archive_path = Path(tmpdir) / asset_name
 
                 log.info(f"Downloading bore from {bore_url}")
                 status = sema4ai_http.download_with_resume(
-                    bore_url, archive_path, make_executable=False, overwrite_existing=True
+                    bore_url,
+                    archive_path,
+                    make_executable=False,
+                    overwrite_existing=True,
                 )
 
                 if status.status in (
@@ -120,19 +124,21 @@ def download_bore(target: Optional[str] = None, force: bool = False) -> Path:
                 # Extract the binary
                 if is_zip:
                     import zipfile
-                    with zipfile.ZipFile(archive_path, 'r') as zf:
+
+                    with zipfile.ZipFile(archive_path, "r") as zf:
                         # Find bore executable in archive
                         for name in zf.namelist():
-                            if name.endswith('bore.exe') or name == 'bore':
+                            if name.endswith("bore.exe") or name == "bore":
                                 zf.extract(name, tmpdir)
                                 extracted = Path(tmpdir) / name
                                 shutil.move(str(extracted), str(bore_path))
                                 break
                 else:
                     import tarfile
-                    with tarfile.open(archive_path, 'r:gz') as tf:
+
+                    with tarfile.open(archive_path, "r:gz") as tf:
                         for member in tf.getmembers():
-                            if member.name.endswith('bore') or member.name == 'bore':
+                            if member.name.endswith("bore") or member.name == "bore":
                                 tf.extract(member, tmpdir)
                                 extracted = Path(tmpdir) / member.name
                                 shutil.move(str(extracted), str(bore_path))
@@ -147,9 +153,9 @@ def download_bore(target: Optional[str] = None, force: bool = False) -> Path:
     except ImportError:
         # Fallback without sema4ai_http - use urllib
         import tarfile
+        import tempfile
         import urllib.request
         import zipfile
-        import tempfile
 
         log.info(f"Downloading bore from {bore_url}")
 
@@ -158,17 +164,17 @@ def download_bore(target: Optional[str] = None, force: bool = False) -> Path:
             urllib.request.urlretrieve(bore_url, archive_path)
 
             if is_zip:
-                with zipfile.ZipFile(archive_path, 'r') as zf:
+                with zipfile.ZipFile(archive_path, "r") as zf:
                     for name in zf.namelist():
-                        if name.endswith('bore.exe') or name == 'bore':
+                        if name.endswith("bore.exe") or name == "bore":
                             zf.extract(name, tmpdir)
                             extracted = Path(tmpdir) / name
                             shutil.move(str(extracted), str(bore_path))
                             break
             else:
-                with tarfile.open(archive_path, 'r:gz') as tf:
+                with tarfile.open(archive_path, "r:gz") as tf:
                     for member in tf.getmembers():
-                        if member.name.endswith('bore') or member.name == 'bore':
+                        if member.name.endswith("bore") or member.name == "bore":
                             tf.extract(member, tmpdir)
                             extracted = Path(tmpdir) / member.name
                             shutil.move(str(extracted), str(bore_path))
@@ -240,12 +246,15 @@ def download_cloudflared(target: Optional[str] = None, force: bool = False) -> P
 
         timeout = 120.0
         with timed_acquire_mutex(
-            "action_server_cloudflared_download", timeout=timeout, raise_error_on_timeout=True
+            "action_server_cloudflared_download",
+            timeout=timeout,
+            raise_error_on_timeout=True,
         ):
             if not force and cf_path.exists():
                 return cf_path
 
             import tempfile
+
             with tempfile.TemporaryDirectory() as tmpdir:
                 if direct_binary:
                     # Direct binary download
@@ -257,24 +266,32 @@ def download_cloudflared(target: Optional[str] = None, force: bool = False) -> P
                         sema4ai_http.DownloadStatus.HTTP_ERROR,
                         sema4ai_http.DownloadStatus.PARTIAL,
                     ):
-                        raise RuntimeError(f"Failed to download cloudflared: {status.status}")
+                        raise RuntimeError(
+                            f"Failed to download cloudflared: {status.status}"
+                        )
                 else:
                     # Tarball download (macOS)
                     archive_path = Path(tmpdir) / asset_name
                     log.info(f"Downloading cloudflared from {cf_url}")
                     status = sema4ai_http.download_with_resume(
-                        cf_url, archive_path, make_executable=False, overwrite_existing=True
+                        cf_url,
+                        archive_path,
+                        make_executable=False,
+                        overwrite_existing=True,
                     )
                     if status.status in (
                         sema4ai_http.DownloadStatus.HTTP_ERROR,
                         sema4ai_http.DownloadStatus.PARTIAL,
                     ):
-                        raise RuntimeError(f"Failed to download cloudflared: {status.status}")
+                        raise RuntimeError(
+                            f"Failed to download cloudflared: {status.status}"
+                        )
 
                     import tarfile
-                    with tarfile.open(archive_path, 'r:gz') as tf:
+
+                    with tarfile.open(archive_path, "r:gz") as tf:
                         for member in tf.getmembers():
-                            if 'cloudflared' in member.name:
+                            if "cloudflared" in member.name:
                                 tf.extract(member, tmpdir)
                                 extracted = Path(tmpdir) / member.name
                                 shutil.move(str(extracted), str(cf_path))
@@ -287,8 +304,8 @@ def download_cloudflared(target: Optional[str] = None, force: bool = False) -> P
 
     except ImportError:
         # Fallback without sema4ai_http
-        import urllib.request
         import tempfile
+        import urllib.request
 
         log.info(f"Downloading cloudflared from {cf_url}")
 
@@ -297,12 +314,13 @@ def download_cloudflared(target: Optional[str] = None, force: bool = False) -> P
                 urllib.request.urlretrieve(cf_url, cf_path)
             else:
                 import tarfile
+
                 archive_path = Path(tmpdir) / asset_name
                 urllib.request.urlretrieve(cf_url, archive_path)
 
-                with tarfile.open(archive_path, 'r:gz') as tf:
+                with tarfile.open(archive_path, "r:gz") as tf:
                     for member in tf.getmembers():
-                        if 'cloudflared' in member.name:
+                        if "cloudflared" in member.name:
                             tf.extract(member, tmpdir)
                             extracted = Path(tmpdir) / member.name
                             shutil.move(str(extracted), str(cf_path))
@@ -420,9 +438,7 @@ class LocalhostRunProvider(BaseTunnelProvider):
 
         # localhost.run uses .lhr.life domain for tunnel URLs
         # Exclude admin.localhost.run which is their website
-        url_pattern = re.compile(
-            r"https://[a-zA-Z0-9-]+\.lhr\.life"
-        )
+        url_pattern = re.compile(r"https://[a-zA-Z0-9-]+\.lhr\.life")
 
         start_time = asyncio.get_event_loop().time()
 
@@ -438,7 +454,8 @@ class LocalhostRunProvider(BaseTunnelProvider):
 
             # Read line with timeout
             line = await asyncio.get_event_loop().run_in_executor(
-                None, process.stdout.readline  # type: ignore[union-attr]
+                None,
+                process.stdout.readline,  # type: ignore[union-attr]
             )
 
             if line:
@@ -549,7 +566,8 @@ class BoreProvider(BaseTunnelProvider):
                 raise TimeoutError("Timed out waiting for bore URL")
 
             line = await asyncio.get_event_loop().run_in_executor(
-                None, process.stdout.readline  # type: ignore[union-attr]
+                None,
+                process.stdout.readline,  # type: ignore[union-attr]
             )
 
             if line:
@@ -676,7 +694,8 @@ class CloudflareProvider(BaseTunnelProvider):
                 raise TimeoutError("Timed out waiting for Cloudflare URL")
 
             line = await asyncio.get_event_loop().run_in_executor(
-                None, process.stdout.readline  # type: ignore[union-attr]
+                None,
+                process.stdout.readline,  # type: ignore[union-attr]
             )
 
             if line:
@@ -768,11 +787,11 @@ class TunnelManager:
                 "  - cloudflared: https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/installation/"
             )
 
-        errors = []
-        for provider in available:
+        errors: list[tuple[str, str]] = []
+        for provider in available:  # type: ignore[assignment]
             try:
                 log.info(f"Trying {provider.name.value}...")  # type: ignore[union-attr]
-                self.active_tunnel = await provider.start(port)  # type: ignore[assignment]
+                self.active_tunnel = await provider.start(port)  # type: ignore[union-attr]
                 log.info(f"Successfully started tunnel with {provider.name.value}")  # type: ignore[union-attr]
                 return self.active_tunnel
             except Exception as e:

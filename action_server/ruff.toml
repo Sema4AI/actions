@@ -1,11 +1,9 @@
-line-length=88  # matches the .pylintrc one as well
+line-length = 88
+
 extend-exclude = [
     "*vendor*",
     # Exclude TDD tests for unimplemented features
     "tests/build_system_tests",
     "tests/contract_tests",
     "tests/integration_tests",
-    "*/tests/build_system_tests",
-    "*/tests/contract_tests",
-    "*/tests/integration_tests",
 ]
