@@ -157,6 +157,7 @@ jobs:
           path: artifacts/
 
       - name: List artifacts
+        working-directory: .
         run: |
           echo "Downloaded artifacts:"
           ls -la artifacts/
