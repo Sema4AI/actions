@@ -19,7 +19,7 @@ permissions:
 'on':
   push:
     branches:
-    - master
+    - community
     - wip
     paths:
     - action_server/**
@@ -32,7 +32,7 @@ permissions:
     - mcp/**
   pull_request:
     branches:
-    - master
+    - community
     paths:
     - action_server/**
     - .github/workflows/action_server_tests.yml

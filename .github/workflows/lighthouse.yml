@@ -2,7 +2,7 @@ name: Lighthouse CI
 
 on:
   pull_request:
-    branches: [master]
+    branches: [community]
     paths:
       - 'action_server/frontend/**'
       - '.github/workflows/lighthouse.yml'

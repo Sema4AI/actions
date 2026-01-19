@@ -2,12 +2,12 @@ name: Frontend Build
 
 on:
   push:
-    branches: [master]
+    branches: [community]
     paths:
       - 'action_server/frontend/**'
       - '.github/workflows/frontend-build.yml'
   pull_request:
-    branches: [master]
+    branches: [community]
     paths:
       - 'action_server/frontend/**'
       - '.github/workflows/frontend-build.yml'

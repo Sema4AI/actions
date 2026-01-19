@@ -3,7 +3,7 @@ name: Action Server Frontend tests
 on:
   pull_request:
     branches:
-      - "master"
+      - "community"
     paths:
       - "action_server/frontend/**"
       - ".github/workflows/action_server_frontend_tests.yml"

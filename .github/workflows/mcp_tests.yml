@@ -19,7 +19,7 @@ permissions:
 'on':
   push:
     branches:
-    - master
+    - community
     - wip
     paths:
     - mcp/**
@@ -29,7 +29,7 @@ permissions:
     - sema4ai-http-helper/**
   pull_request:
     branches:
-    - master
+    - community
     paths:
     - mcp/**
     - .github/workflows/mcp_tests.yml
