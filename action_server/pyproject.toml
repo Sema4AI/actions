@@ -7,7 +7,7 @@ authors = [
 	"Fabio Z. <fabio@sema4.ai>"
 ]
 readme = "README.md"
-repository = "https://github.com/sema4ai/actions/"
+repository = "https://github.com/joshyorko/actions/tree/community"
 license = "Apache-2.0"
 packages = [{ include = "sema4ai", from = "src" }]
 include = [
@@ -15,7 +15,7 @@ include = [
 	"src/sema4ai/action_server/_oauth2_config.py",
 	"src/sema4ai/action_server/bin/rcc*",
 ]
-homepage = "https://github.com/sema4ai/actions/"
+homepage = "https://github.com/joshyorko/actions/tree/community"
 
 [tool.poetry.scripts]
 action-server = "sema4ai.action_server.cli:main"

@@ -5,8 +5,8 @@ description = "Drop-in replacement for robocorp-workitems with broader applicabi
 authors = ["Community Contributors"]
 license = "Apache-2.0"
 readme = "README.md"
-homepage = "https://github.com/joshyorko/actions"
-repository = "https://github.com/joshyorko/actions"
+homepage = "https://github.com/joshyorko/actions/tree/community"
+repository = "https://github.com/joshyorko/actions/tree/community"
 keywords = ["automation", "work-items", "producer-consumer", "rpa", "workflow"]
 packages = [{include = "actions", from = "src"}]
 classifiers = [
