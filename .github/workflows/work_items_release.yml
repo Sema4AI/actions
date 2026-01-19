@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - "actions-work-items-*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (must match pyproject.toml)'
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -34,6 +40,7 @@ jobs:
         run: poetry install
 
       - name: Check tag version
+        if: github.event_name == 'push'
         run: poetry run invoke check-tag-version
 
       - name: Build with poetry
