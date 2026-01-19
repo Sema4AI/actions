@@ -85,6 +85,18 @@ testpaths = ["tests"]
 module = "robocorp.actions.*"
 ignore_missing_imports = true
 
+# Ignore missing build system modules (tests for unimplemented features)
+[[tool.mypy.overrides]]
+module = [
+    "tree_shaker",
+    "tier_selector",
+    "artifact_validator",
+    "build_artifact",
+    "package_resolver",
+    "package_manifest"
+]
+ignore_missing_imports = true
+
 [[tool.mypy.overrides]]
 module = "robocorp.tasks.*"
 ignore_missing_imports = true

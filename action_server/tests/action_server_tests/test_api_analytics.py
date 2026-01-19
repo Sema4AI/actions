@@ -61,7 +61,7 @@ def _create_test_run(
     """Helper to create test run objects."""
     return Run(
         id=run_id,
-        status=status,
+        status=status,  # type: ignore[arg-type]
         action_id=action_id,
         start_time=start_time,
         run_time=run_time,

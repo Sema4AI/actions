@@ -81,7 +81,7 @@ def _discover_robots_in_dir(base_dir: Path) -> List[RobotPackageDetailAPI]:
     - robot.yaml (older RCC format with conda.yaml for deps)
     - package.yaml with tasks defined (newer format)
     """
-    robots = []
+    robots: list[dict] = []
 
     if not base_dir.exists():
         return robots
@@ -112,7 +112,7 @@ def _discover_robots_in_dir(base_dir: Path) -> List[RobotPackageDetailAPI]:
             for task_name, task_info in tasks_data.items():
                 docs = ""
                 if isinstance(task_info, dict):
-                    docs = task_info.get("documentation", task_info.get("docs", task_info.get("description", "")))
+                    docs = task_info.get("documentation") or task_info.get("docs") or task_info.get("description") or ""
                 tasks.append(RobotTaskInfoAPI(name=task_name, docs=docs))
 
             robot = RobotPackageDetailAPI(
@@ -152,7 +152,7 @@ def _discover_robots_in_dir(base_dir: Path) -> List[RobotPackageDetailAPI]:
             for task_name, task_info in tasks_data.items():
                 docs = ""
                 if isinstance(task_info, dict):
-                    docs = task_info.get("docs", task_info.get("description", ""))
+                    docs = task_info.get("docs") or task_info.get("description") or ""
                 tasks.append(RobotTaskInfoAPI(name=task_name, docs=docs))
 
             robot = RobotPackageDetailAPI(
@@ -432,6 +432,7 @@ async def import_robot(
             temp_zip_path = downloaded_path
 
         # Extract and validate the package
+        assert temp_zip_path is not None, "temp_zip_path should be set by now"
         success, message, robot_path = _extract_zip_to_robots(temp_zip_path)
 
         if success and robot_path:
@@ -529,7 +530,7 @@ async def run_robot_task(
                     f"Error. No counter found for run_id. Counters in db: {db.all(Counter)}"
                 )
             run_kwargs["numbered_id"] = counter_record[0][0]
-            run = Run(**run_kwargs)
+            run = Run(**run_kwargs)  # type: ignore[arg-type]
             db.insert(run)
 
     # Notify run state listeners

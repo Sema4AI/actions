@@ -438,7 +438,7 @@ class LocalhostRunProvider(BaseTunnelProvider):
 
             # Read line with timeout
             line = await asyncio.get_event_loop().run_in_executor(
-                None, process.stdout.readline
+                None, process.stdout.readline  # type: ignore[union-attr]
             )
 
             if line:
@@ -549,7 +549,7 @@ class BoreProvider(BaseTunnelProvider):
                 raise TimeoutError("Timed out waiting for bore URL")
 
             line = await asyncio.get_event_loop().run_in_executor(
-                None, process.stdout.readline
+                None, process.stdout.readline  # type: ignore[union-attr]
             )
 
             if line:
@@ -676,7 +676,7 @@ class CloudflareProvider(BaseTunnelProvider):
                 raise TimeoutError("Timed out waiting for Cloudflare URL")
 
             line = await asyncio.get_event_loop().run_in_executor(
-                None, process.stdout.readline
+                None, process.stdout.readline  # type: ignore[union-attr]
             )
 
             if line:
@@ -771,13 +771,13 @@ class TunnelManager:
         errors = []
         for provider in available:
             try:
-                log.info(f"Trying {provider.name.value}...")
-                self.active_tunnel = await provider.start(port)
-                log.info(f"Successfully started tunnel with {provider.name.value}")
+                log.info(f"Trying {provider.name.value}...")  # type: ignore[union-attr]
+                self.active_tunnel = await provider.start(port)  # type: ignore[assignment]
+                log.info(f"Successfully started tunnel with {provider.name.value}")  # type: ignore[union-attr]
                 return self.active_tunnel
             except Exception as e:
-                log.warning(f"Failed to start {provider.name.value}: {e}")
-                errors.append((provider.name.value, str(e)))
+                log.warning(f"Failed to start {provider.name.value}: {e}")  # type: ignore[union-attr]
+                errors.append((provider.name.value, str(e)))  # type: ignore[union-attr]
 
         error_msg = "\n".join([f"  - {name}: {err}" for name, err in errors])
         raise RuntimeError(f"All tunnel providers failed:\n{error_msg}")
