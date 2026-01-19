@@ -342,7 +342,7 @@ class RccTool(BaseTool):
 
             # GitHub releases URL format
             # Remove 'v' prefix if present in version for consistency
-            version_str = tool_version.lstrip('v')
+            version_str = tool_version.lstrip("v")
             url = f"https://github.com/joshyorko/rcc/releases/download/v{version_str}/{asset_name}"
 
             try:
