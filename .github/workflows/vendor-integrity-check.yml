@@ -44,7 +44,7 @@ jobs:
             echo "Error: manifest.json not found"
             exit 1
           fi
-          echo "✓ manifest.json exists"
+          echo "[OK] manifest.json exists"
       
       - name: Verify all required packages are vendored
         run: |
@@ -60,7 +60,7 @@ jobs:
               exit 1
             fi
             
-            echo "✓ Package $package is present and valid"
+            echo "[OK] Package $package is present and valid"
           done
       
       - name: Calculate and verify checksums
@@ -94,13 +94,13 @@ jobs:
                       f"{package_name}: expected {expected}, got {calculated}"
                   )
               else:
-                  print(f"✓ {package_name} checksum verified")
+                  print(f"[OK] {package_name} checksum verified")
           
           if errors:
-              print("\n❌ Checksum mismatches detected:")
+              print("\n[ERROR] Checksum mismatches detected:")
               for error in errors:
                   print(f"  - {error}")
               sys.exit(1)
           else:
-              print("\n✓ All checksums verified successfully")
+              print("\n[OK] All checksums verified successfully")
           EOF

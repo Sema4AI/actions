@@ -30,7 +30,7 @@ def test_community_tier_logging_explicit():
     # Check that tier is logged
     output = result.stdout + result.stderr
     assert "Building with tier: community" in output or \
-           "🔨 Building with tier: community" in output, \
+           "[BUILD] Building with tier: community" in output, \
            f"Tier not logged in output. Stdout: {result.stdout}, Stderr: {result.stderr}"
     
     # Verify it's early in the output (before npm install)
@@ -39,7 +39,7 @@ def test_community_tier_logging_explicit():
     npm_line_idx = None
     
     for idx, line in enumerate(lines):
-        if "Building with tier: community" in line or "🔨 Building with tier: community" in line:
+        if "Building with tier: community" in line or "[BUILD] Building with tier: community" in line:
             tier_line_idx = idx
         if "Installing dependencies" in line or "npm ci" in line:
             npm_line_idx = idx
@@ -69,7 +69,7 @@ def test_enterprise_tier_logging_explicit():
     # Check that tier is logged
     output = result.stdout + result.stderr
     assert "Building with tier: enterprise" in output or \
-           "🔨 Building with tier: enterprise" in output, \
+           "[BUILD] Building with tier: enterprise" in output, \
            f"Tier not logged in output. Stdout: {result.stdout}, Stderr: {result.stderr}"
     
     # Verify it's early in the output (before npm install)
@@ -78,7 +78,7 @@ def test_enterprise_tier_logging_explicit():
     npm_line_idx = None
     
     for idx, line in enumerate(lines):
-        if "Building with tier: enterprise" in line or "🔨 Building with tier: enterprise" in line:
+        if "Building with tier: enterprise" in line or "[BUILD] Building with tier: enterprise" in line:
             tier_line_idx = idx
         if "Installing dependencies" in line or "npm ci" in line:
             npm_line_idx = idx
@@ -108,7 +108,7 @@ def test_community_tier_logging_default():
     # Check that tier is logged
     output = result.stdout + result.stderr
     assert "Building with tier: community" in output or \
-           "🔨 Building with tier: community" in output, \
+           "[BUILD] Building with tier: community" in output, \
            f"Tier not logged in output. Stdout: {result.stdout}, Stderr: {result.stderr}"
 
 

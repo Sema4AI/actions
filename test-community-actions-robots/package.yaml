@@ -18,6 +18,8 @@ dependencies:
     - sema4ai-actions=1.6.2
     - sema4ai-data=1.2.1
     - requests>=2.31.0
+    - robocorp-log=3.0.1
+    - pandas=2.3.3
 
 post-install:
   # Install local work-items package from sibling directory

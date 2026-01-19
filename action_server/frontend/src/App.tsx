@@ -15,6 +15,7 @@ import { ArtifactsPage } from '@/core/pages/Artifacts';
 import { LogsPage } from '@/core/pages/Logs';
 import { RobotsPage } from '@/core/pages/Robots';
 import { RunHistoryPage } from '@/core/pages/RunHistory';
+import { WorkItemsPage } from '@/core/pages/WorkItems';
 import {
   ActionServerContext,
   ActionServerContextType,
@@ -114,6 +115,17 @@ const RobotsIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+const WorkItemsIcon = ({ className }: { className?: string }) => (
+  <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="8" x2="21" y1="6" y2="6" />
+    <line x1="8" x2="21" y1="12" y2="12" />
+    <line x1="8" x2="21" y1="18" y2="18" />
+    <line x1="3" x2="3.01" y1="6" y2="6" />
+    <line x1="3" x2="3.01" y1="12" y2="12" />
+    <line x1="3" x2="3.01" y1="18" y2="18" />
+  </svg>
+);
+
 const LockIcon = ({ className }: { className?: string }) => (
   <svg className={className} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
@@ -172,6 +184,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Actions', path: '/actions', tier: 'core', icon: ActionsIcon },
   { label: 'Runs', path: '/runs', tier: 'core', icon: RunsIcon },
   { label: 'Robots', path: '/robots', tier: 'core', icon: RobotsIcon },
+  { label: 'Work Items', path: '/work-items', tier: 'core', icon: WorkItemsIcon },
   { label: 'Analytics', path: '/analytics', tier: 'core', icon: AnalyticsIcon },
   { label: 'OpenAPI spec', path: '/openapi', tier: 'core', icon: OpenApiIcon },
 ];
@@ -474,6 +487,7 @@ const AppRoutes = () => {
         <Route path="/actions" element={<ActionsPage />} />
         <Route path="/runs" element={<RunHistoryPage />} />
         <Route path="/robots" element={<RobotsPage />} />
+        <Route path="/work-items" element={<WorkItemsPage />} />
         <Route path="/logs/:runId" element={<LogsPage />} />
         <Route path="/artifacts/:runId" element={<ArtifactsPage />} />
 

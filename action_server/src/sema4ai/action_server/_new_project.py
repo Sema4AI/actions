@@ -92,7 +92,7 @@ def handle_new_project(
 
         _unpack_template(template_name, directory)
 
-        log.info("✅ Project created")
+        log.info("Project created successfully")
         return 0
     except KeyboardInterrupt:
         log.debug("Operation cancelled")

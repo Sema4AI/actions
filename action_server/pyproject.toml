@@ -43,6 +43,7 @@ requests_oauthlib = "^2.0"
 watchfiles = "^1.1.1"
 sema4ai-common = "^0.3.0"
 mcp = "^1.21.0"
+actions-work-items = { path = "../work-items/", develop = true }
 
 [tool.poetry.group.dev.dependencies]
 sema4ai-devutils = { path = "../devutils/", develop = true }

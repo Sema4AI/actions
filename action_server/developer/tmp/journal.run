@@ -1,0 +1,595 @@
+{"when":1768773404,"controller":"rcc.user","event":"start task","detail":"name=community from=action_server/developer/toolkit.yaml","comment":"at task environment setup"}
+{"when":1768773404,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 00/15 v18.16.0 0.039s Context: \"kdlocpanda\" \u003ckdlocpanda@bluefin\u003e [linux_amd64/LSB Version: n/a; Distributor ID: Bluefin; Description: Dudleys Second Bedroom; Release: 43; Codename: Deinonychus]."}
+{"when":1768773404,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 01/15 v18.16.0 0.003s Fresh [private mode] holotree environment 2323f523-9786-e977-0145-570e6a9e2174. (parent/pid: 429605/436186)"}
+{"when":1768773404,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 02/15 v18.16.0 0.004s Holotree blueprint is \"27862294f07aea0c\" [linux_amd64 with 11 workers on 12 CPUs from \"setup.yaml\"]."}
+{"when":1768773404,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 14/15 v18.16.0 0.370s Restore space from library [with 11 workers on 12 CPUs; with compression: true]."}
+{"when":1768773407,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 15/15 v18.16.0 2.610s Fresh holotree done [with 11 workers on 12 CPUs]."}
+{"when":1768773407,"controller":"rcc.user","event":"start","detail":"robot","comment":"started"}
+{"when":1768773407,"controller":"rcc.user","event":"run","detail":"robot","comment":"task run"}
+{"when":1768773407,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 0 to 1 ... map[436252:rcc]"}
+{"when":1768773407,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 1 to 3 ... map[436252:python3.12 436254:invoke 436261:npm ci]"}
+{"when":1768773416,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[436252:python3.12 436254:invoke 436345:npm run build 436358:node]"}
+{"when":1768773416,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 5 ... map[436252:python3.12 436254:invoke 436345:npm run build 436358:node 436369:esbuild]"}
+{"when":1768773421,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 5 to 3 ... map[436252:python3.12 436254:invoke 436411:python3.12]"}
+{"when":1768773422,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[436252:python3.12 436254:invoke 436411:python3.12 436431:python3.12]"}
+{"when":1768773423,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 5 ... map[436252:python3.12 436254:invoke 436411:python3.12 436434:python3.12 436436:file]"}
+{"when":1768773423,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 5 to 4 ... map[436252:python3.12 436254:invoke 436411:python3.12 436460:python3.12]"}
+{"when":1768773424,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[436252:python3.12 436254:invoke 436411:python3.12 436463:python3.12]"}
+{"when":1768773424,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[436252:python3.12 436254:invoke 436411:python3.12 436466:python3.12]"}
+{"when":1768773425,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[436252:python3.12 436254:invoke 436411:python3.12]"}
+{"when":1768773426,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[436252:python3.12 436254:invoke 436411:python3.12 436479:python3.12]"}
+{"when":1768773426,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[436252:python3.12 436254:invoke 436411:python3.12]"}
+{"when":1768773428,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[436252:python3.12 436254:invoke 436411:python3.12 436493:python3.12]"}
+{"when":1768773428,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[436252:python3.12 436254:invoke 436411:python3.12 436496:python3.12]"}
+{"when":1768773431,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[436252:python3.12 436254:invoke 436411:python3.12]"}
+{"when":1768773432,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[436252:python3.12 436254:invoke 436411:python3.12 436518:python3.12]"}
+{"when":1768773432,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[436252:python3.12 436254:invoke 436411:python3.12 436522:python3.12]"}
+{"when":1768773433,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[436252:python3.12 436254:invoke 436411:python3.12 436526:python3.12]"}
+{"when":1768773433,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[436252:python3.12 436254:invoke 436411:python3.12]"}
+{"when":1768773434,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[436252:python3.12 436254:invoke 436411:python3.12 436542:python3.12]"}
+{"when":1768773435,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[436252:python3.12 436254:invoke 436411:python3.12]"}
+{"when":1768773436,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[436252:python3.12 436254:invoke 436411:python3.12 436557:python3.12]"}
+{"when":1768773436,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[436252:python3.12 436254:invoke 436411:python3.12 436561:python3.12]"}
+{"when":1768773437,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[436252:python3.12 436254:invoke 436411:python3.12 436565:python3.12]"}
+{"when":1768773437,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[436252:python3.12 436254:invoke 436411:python3.12]"}
+{"when":1768773440,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[436252:python3.12 436254:invoke 436411:python3.12 436596:python3.12]"}
+{"when":1768773441,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[436252:python3.12 436254:invoke 436411:python3.12 436599:python3.12]"}
+{"when":1768773441,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[436252:python3.12 436254:invoke 436411:python3.12]"}
+{"when":1768773445,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[436252:python3.12 436254:invoke 436411:python3.12 436859:ldd]"}
+{"when":1768773446,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[436252:python3.12 436254:invoke 436411:python3.12]"}
+{"when":1768773447,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 2 ... map[436252:python3.12 436254:invoke]"}
+{"when":1768773451,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 2 to 3 ... map[436252:python3.12 436254:invoke 437496:go]"}
+{"when":1768773452,"controller":"rcc.user","event":"robot exit","detail":"From rcc \"v18.16.0\" (controller: \"user\") point of view, \"actual main robot run\" was SUCCESS.","comment":"rcc point of view"}
+{"when":1768773452,"controller":"rcc.user","event":"processes","detail":"final","comment":"count: 0"}
+{"when":1768773453,"controller":"rcc.user","event":"stop","detail":"robot","comment":"done"}
+{"when":1768773632,"controller":"rcc.user","event":"start task","detail":"name=community from=action_server/developer/toolkit.yaml","comment":"at task environment setup"}
+{"when":1768773632,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 00/15 v18.16.0 0.049s Context: \"kdlocpanda\" \u003ckdlocpanda@bluefin\u003e [linux_amd64/LSB Version: n/a; Distributor ID: Bluefin; Description: Dudleys Second Bedroom; Release: 43; Codename: Deinonychus]."}
+{"when":1768773632,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 01/15 v18.16.0 0.004s Fresh [private mode] holotree environment 2323f523-9786-e977-0145-570e6a9e2174. (parent/pid: 429605/439845)"}
+{"when":1768773632,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 02/15 v18.16.0 0.004s Holotree blueprint is \"27862294f07aea0c\" [linux_amd64 with 11 workers on 12 CPUs from \"setup.yaml\"]."}
+{"when":1768773633,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 14/15 v18.16.0 0.308s Restore space from library [with 11 workers on 12 CPUs; with compression: true]."}
+{"when":1768773633,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 15/15 v18.16.0 0.600s Fresh holotree done [with 11 workers on 12 CPUs]."}
+{"when":1768773633,"controller":"rcc.user","event":"start","detail":"robot","comment":"started"}
+{"when":1768773633,"controller":"rcc.user","event":"run","detail":"robot","comment":"task run"}
+{"when":1768773633,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 0 to 1 ... map[439888:python3.12]"}
+{"when":1768773634,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 1 to 3 ... map[439888:python3.12 439889:invoke 439896:npm ci]"}
+{"when":1768773640,"controller":"rcc.user","event":"robot exit","detail":"From rcc \"v18.16.0\" (controller: \"user\") point of view, \"actual main robot run\" was FAILURE, reason: signal: interrupt","comment":"rcc point of view"}
+{"when":1768773640,"controller":"rcc.user","event":"processes","detail":"final","comment":"count: 0"}
+{"when":1768773644,"controller":"rcc.user","event":"start task","detail":"name=community from=action_server/developer/toolkit.yaml","comment":"at task environment setup"}
+{"when":1768773644,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 00/15 v18.16.0 0.052s Context: \"kdlocpanda\" \u003ckdlocpanda@bluefin\u003e [linux_amd64/LSB Version: n/a; Distributor ID: Bluefin; Description: Dudleys Second Bedroom; Release: 43; Codename: Deinonychus]."}
+{"when":1768773644,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 01/15 v18.16.0 0.003s Fresh [private mode] holotree environment 2323f523-9786-e977-0145-570e6a9e2174. (parent/pid: 429605/439989)"}
+{"when":1768773644,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 02/15 v18.16.0 0.004s Holotree blueprint is \"27862294f07aea0c\" [linux_amd64 with 11 workers on 12 CPUs from \"setup.yaml\"]."}
+{"when":1768773644,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 14/15 v18.16.0 0.370s Restore space from library [with 11 workers on 12 CPUs; with compression: true]."}
+{"when":1768773645,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 15/15 v18.16.0 0.637s Fresh holotree done [with 11 workers on 12 CPUs]."}
+{"when":1768773645,"controller":"rcc.user","event":"start","detail":"robot","comment":"started"}
+{"when":1768773645,"controller":"rcc.user","event":"run","detail":"robot","comment":"task run"}
+{"when":1768773645,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 0 to 1 ... map[440028:python3.12]"}
+{"when":1768773646,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 1 to 3 ... map[440028:python3.12 440030:invoke 440037:npm ci]"}
+{"when":1768773654,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[440028:python3.12 440030:invoke 440037:npm ci 440111:node]"}
+{"when":1768773654,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 5 ... map[440028:python3.12 440030:invoke 440123:npm run build 440136:node 440147:esbuild]"}
+{"when":1768773659,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 5 to 3 ... map[440028:python3.12 440030:invoke 440192:python3.12]"}
+{"when":1768773659,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[440028:python3.12 440030:invoke 440192:python3.12 440214:python3.12]"}
+{"when":1768773660,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[440028:python3.12 440030:invoke 440192:python3.12 440217:python3.12]"}
+{"when":1768773661,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[440028:python3.12 440030:invoke 440192:python3.12 440231:python3.12]"}
+{"when":1768773662,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[440028:python3.12 440030:invoke 440192:python3.12 440244:python3.12]"}
+{"when":1768773662,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[440028:python3.12 440030:invoke 440192:python3.12 440247:python3.12]"}
+{"when":1768773663,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[440028:python3.12 440030:invoke 440192:python3.12 440250:python3.12]"}
+{"when":1768773663,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[440028:python3.12 440030:invoke 440192:python3.12]"}
+{"when":1768773664,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[440028:python3.12 440030:invoke 440192:python3.12 440263:python3.12]"}
+{"when":1768773665,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[440028:python3.12 440030:invoke 440192:python3.12 440267:python3.12]"}
+{"when":1768773668,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[440028:python3.12 440030:invoke 440192:python3.12]"}
+{"when":1768773668,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[440028:python3.12 440030:invoke 440192:python3.12 440292:python3.12]"}
+{"when":1768773669,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[440028:python3.12 440030:invoke 440192:python3.12 440296:python3.12]"}
+{"when":1768773669,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[440028:python3.12 440030:invoke 440192:python3.12 440310:python3.12]"}
+{"when":1768773670,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[440028:python3.12 440030:invoke 440192:python3.12]"}
+{"when":1768773671,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[440028:python3.12 440030:invoke 440192:python3.12 440313:python3.12]"}
+{"when":1768773672,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[440028:python3.12 440030:invoke 440192:python3.12 440324:python3.12]"}
+{"when":1768773672,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[440028:python3.12 440030:invoke 440192:python3.12]"}
+{"when":1768773673,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[440028:python3.12 440030:invoke 440192:python3.12 440330:python3.12]"}
+{"when":1768773673,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[440028:python3.12 440030:invoke 440192:python3.12 440331:python3.12]"}
+{"when":1768773674,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[440028:python3.12 440030:invoke 440192:python3.12 440346:python3.12]"}
+{"when":1768773675,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[440028:python3.12 440030:invoke 440192:python3.12]"}
+{"when":1768773677,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[440028:python3.12 440030:invoke 440192:python3.12 440365:python3.12]"}
+{"when":1768773677,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[440028:python3.12 440030:invoke 440192:python3.12 440378:python3.12]"}
+{"when":1768773678,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[440028:python3.12 440030:invoke 440192:python3.12]"}
+{"when":1768773683,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 2 ... map[440028:python3.12 440030:invoke]"}
+{"when":1768773687,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 2 to 3 ... map[440028:python3.12 440030:invoke 441270:go]"}
+{"when":1768773688,"controller":"rcc.user","event":"robot exit","detail":"From rcc \"v18.16.0\" (controller: \"user\") point of view, \"actual main robot run\" was SUCCESS.","comment":"rcc point of view"}
+{"when":1768773688,"controller":"rcc.user","event":"processes","detail":"final","comment":"count: 0"}
+{"when":1768773689,"controller":"rcc.user","event":"stop","detail":"robot","comment":"done"}
+{"when":1768774335,"controller":"rcc.user","event":"start task","detail":"name=community from=action_server/developer/toolkit.yaml","comment":"at task environment setup"}
+{"when":1768774335,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 00/15 v18.16.0 0.056s Context: \"kdlocpanda\" \u003ckdlocpanda@bluefin\u003e [linux_amd64/LSB Version: n/a; Distributor ID: Bluefin; Description: Dudleys Second Bedroom; Release: 43; Codename: Deinonychus]."}
+{"when":1768774335,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 01/15 v18.16.0 0.002s Fresh [private mode] holotree environment 2323f523-9786-e977-0145-570e6a9e2174. (parent/pid: 429605/447241)"}
+{"when":1768774335,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 02/15 v18.16.0 0.002s Holotree blueprint is \"27862294f07aea0c\" [linux_amd64 with 11 workers on 12 CPUs from \"setup.yaml\"]."}
+{"when":1768774335,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 14/15 v18.16.0 0.324s Restore space from library [with 11 workers on 12 CPUs; with compression: true]."}
+{"when":1768774335,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 15/15 v18.16.0 0.568s Fresh holotree done [with 11 workers on 12 CPUs]."}
+{"when":1768774335,"controller":"rcc.user","event":"start","detail":"robot","comment":"started"}
+{"when":1768774335,"controller":"rcc.user","event":"run","detail":"robot","comment":"task run"}
+{"when":1768774336,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 0 to 1 ... map[447282:python3.12]"}
+{"when":1768774336,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 1 to 3 ... map[447282:python3.12 447284:invoke 447291:npm ci]"}
+{"when":1768774344,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 3 ... map[447282:python3.12 447284:invoke 447375:npm]"}
+{"when":1768774344,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 5 ... map[447282:python3.12 447284:invoke 447375:npm run build 447388:node 447399:esbuild]"}
+{"when":1768774347,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 5 to 2 ... map[447282:python3.12 447284:invoke]"}
+{"when":1768774348,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 2 to 4 ... map[447282:python3.12 447284:invoke 447442:python3.12 447447:python3.12]"}
+{"when":1768774348,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[447282:python3.12 447284:invoke 447442:python3.12 447452:python3.12]"}
+{"when":1768774349,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[447282:python3.12 447284:invoke 447442:python3.12 447455:python3.12]"}
+{"when":1768774350,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[447282:python3.12 447284:invoke 447442:python3.12 447480:python3.12]"}
+{"when":1768774350,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[447282:python3.12 447284:invoke 447442:python3.12 447483:python3.12]"}
+{"when":1768774351,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[447282:python3.12 447284:invoke 447442:python3.12 447486:python3.12]"}
+{"when":1768774351,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[447282:python3.12 447284:invoke 447442:python3.12 447501:python3.12]"}
+{"when":1768774352,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[447282:python3.12 447284:invoke 447442:python3.12]"}
+{"when":1768774353,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[447282:python3.12 447284:invoke 447442:python3.12 447520:python3.12]"}
+{"when":1768774354,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[447282:python3.12 447284:invoke 447442:python3.12]"}
+{"when":1768774355,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[447282:python3.12 447284:invoke 447442:python3.12 447523:python3.12]"}
+{"when":1768774357,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[447282:python3.12 447284:invoke 447442:python3.12]"}
+{"when":1768774357,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[447282:python3.12 447284:invoke 447442:python3.12 447549:python3.12]"}
+{"when":1768774358,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[447282:python3.12 447284:invoke 447442:python3.12 447553:python3.12]"}
+{"when":1768774359,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[447282:python3.12 447284:invoke 447442:python3.12 447557:python3.12]"}
+{"when":1768774359,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[447282:python3.12 447284:invoke 447442:python3.12]"}
+{"when":1768774360,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[447282:python3.12 447284:invoke 447442:python3.12 447571:python3.12]"}
+{"when":1768774361,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[447282:python3.12 447284:invoke 447442:python3.12 447572:python3.12]"}
+{"when":1768774361,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[447282:python3.12 447284:invoke 447442:python3.12]"}
+{"when":1768774362,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[447282:python3.12 447284:invoke 447442:python3.12 447583:python3.12]"}
+{"when":1768774362,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[447282:python3.12 447284:invoke 447442:python3.12 447587:python3.12]"}
+{"when":1768774363,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[447282:python3.12 447284:invoke 447442:python3.12 447591:python3.12]"}
+{"when":1768774364,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[447282:python3.12 447284:invoke 447442:python3.12]"}
+{"when":1768774366,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[447282:python3.12 447284:invoke 447442:python3.12 447622:python3.12]"}
+{"when":1768774367,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[447282:python3.12 447284:invoke 447442:python3.12 447625:python3.12]"}
+{"when":1768774368,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[447282:python3.12 447284:invoke 447442:python3.12]"}
+{"when":1768774373,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 2 ... map[447282:python3.12 447284:invoke]"}
+{"when":1768774378,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 2 to 3 ... map[447282:python3.12 447284:invoke 448516:go]"}
+{"when":1768774378,"controller":"rcc.user","event":"robot exit","detail":"From rcc \"v18.16.0\" (controller: \"user\") point of view, \"actual main robot run\" was SUCCESS.","comment":"rcc point of view"}
+{"when":1768774378,"controller":"rcc.user","event":"processes","detail":"final","comment":"count: 0"}
+{"when":1768774379,"controller":"rcc.user","event":"stop","detail":"robot","comment":"done"}
+{"when":1768774566,"controller":"rcc.user","event":"start task","detail":"name=community from=action_server/developer/toolkit.yaml","comment":"at task environment setup"}
+{"when":1768774566,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 00/15 v18.16.0 0.044s Context: \"kdlocpanda\" \u003ckdlocpanda@bluefin\u003e [linux_amd64/LSB Version: n/a; Distributor ID: Bluefin; Description: Dudleys Second Bedroom; Release: 43; Codename: Deinonychus]."}
+{"when":1768774566,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 01/15 v18.16.0 0.002s Fresh [private mode] holotree environment 2323f523-9786-e977-0145-570e6a9e2174. (parent/pid: 429605/450777)"}
+{"when":1768774566,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 02/15 v18.16.0 0.002s Holotree blueprint is \"27862294f07aea0c\" [linux_amd64 with 11 workers on 12 CPUs from \"setup.yaml\"]."}
+{"when":1768774567,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 14/15 v18.16.0 0.333s Restore space from library [with 11 workers on 12 CPUs; with compression: true]."}
+{"when":1768774567,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 15/15 v18.16.0 0.583s Fresh holotree done [with 11 workers on 12 CPUs]."}
+{"when":1768774567,"controller":"rcc.user","event":"start","detail":"robot","comment":"started"}
+{"when":1768774567,"controller":"rcc.user","event":"run","detail":"robot","comment":"task run"}
+{"when":1768774567,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 0 to 1 ... map[450816:python3.12]"}
+{"when":1768774568,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 1 to 3 ... map[450816:python3.12 450818:invoke 450825:npm ci]"}
+{"when":1768774574,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 5 ... map[450816:python3.12 450818:invoke 450825:npm ci 450882:sh 450883:node]"}
+{"when":1768774575,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 5 to 4 ... map[450816:python3.12 450818:invoke 450906:npm run build 450919:node]"}
+{"when":1768774575,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 5 ... map[450816:python3.12 450818:invoke 450906:npm run build 450919:node 450930:esbuild]"}
+{"when":1768774579,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 5 to 3 ... map[450816:python3.12 450818:invoke 450972:python3.12]"}
+{"when":1768774579,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[450816:python3.12 450818:invoke 450972:python3.12 450993:python3.12]"}
+{"when":1768774580,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[450816:python3.12 450818:invoke 450972:python3.12 451000:python3.12]"}
+{"when":1768774581,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[450816:python3.12 450818:invoke 450972:python3.12 451018:python3.12]"}
+{"when":1768774581,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[450816:python3.12 450818:invoke 450972:python3.12 451031:python3.12]"}
+{"when":1768774582,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[450816:python3.12 450818:invoke 450972:python3.12 451034:python3.12]"}
+{"when":1768774583,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[450816:python3.12 450818:invoke 450972:python3.12]"}
+{"when":1768774584,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[450816:python3.12 450818:invoke 450972:python3.12 451048:python3.12]"}
+{"when":1768774585,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[450816:python3.12 450818:invoke 450972:python3.12 451057:python3.12]"}
+{"when":1768774588,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[450816:python3.12 450818:invoke 450972:python3.12]"}
+{"when":1768774588,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[450816:python3.12 450818:invoke 450972:python3.12 451077:python3.12]"}
+{"when":1768774589,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[450816:python3.12 450818:invoke 450972:python3.12 451082:python3.12]"}
+{"when":1768774589,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[450816:python3.12 450818:invoke 450972:python3.12 451096:python3.12]"}
+{"when":1768774590,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[450816:python3.12 450818:invoke 450972:python3.12]"}
+{"when":1768774591,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[450816:python3.12 450818:invoke 450972:python3.12 451101:python3.12]"}
+{"when":1768774592,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[450816:python3.12 450818:invoke 450972:python3.12 451112:python3.12]"}
+{"when":1768774592,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[450816:python3.12 450818:invoke 450972:python3.12]"}
+{"when":1768774593,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[450816:python3.12 450818:invoke 450972:python3.12 451115:python3.12]"}
+{"when":1768774593,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[450816:python3.12 450818:invoke 450972:python3.12 451119:python3.12]"}
+{"when":1768774594,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[450816:python3.12 450818:invoke 450972:python3.12 451132:python3.12]"}
+{"when":1768774595,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[450816:python3.12 450818:invoke 450972:python3.12]"}
+{"when":1768774597,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[450816:python3.12 450818:invoke 450972:python3.12 451152:python3.12]"}
+{"when":1768774597,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[450816:python3.12 450818:invoke 450972:python3.12]"}
+{"when":1768774602,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[450816:python3.12 450818:invoke 450972:python3.12 451598:ldd]"}
+{"when":1768774602,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[450816:python3.12 450818:invoke 450972:python3.12]"}
+{"when":1768774604,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 2 ... map[450816:python3.12 450818:invoke]"}
+{"when":1768774607,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 2 to 3 ... map[450816:python3.12 450818:invoke 452065:go]"}
+{"when":1768774608,"controller":"rcc.user","event":"robot exit","detail":"From rcc \"v18.16.0\" (controller: \"user\") point of view, \"actual main robot run\" was SUCCESS.","comment":"rcc point of view"}
+{"when":1768774608,"controller":"rcc.user","event":"processes","detail":"final","comment":"count: 0"}
+{"when":1768774609,"controller":"rcc.user","event":"stop","detail":"robot","comment":"done"}
+{"when":1768774972,"controller":"rcc.user","event":"start task","detail":"name=community from=action_server/developer/toolkit.yaml","comment":"at task environment setup"}
+{"when":1768774972,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 00/15 v18.16.0 0.045s Context: \"kdlocpanda\" \u003ckdlocpanda@bluefin\u003e [linux_amd64/LSB Version: n/a; Distributor ID: Bluefin; Description: Dudleys Second Bedroom; Release: 43; Codename: Deinonychus]."}
+{"when":1768774972,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 01/15 v18.16.0 0.003s Fresh [private mode] holotree environment 2323f523-9786-e977-0145-570e6a9e2174. (parent/pid: 429605/459612)"}
+{"when":1768774972,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 02/15 v18.16.0 0.004s Holotree blueprint is \"27862294f07aea0c\" [linux_amd64 with 11 workers on 12 CPUs from \"setup.yaml\"]."}
+{"when":1768774973,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 14/15 v18.16.0 0.488s Restore space from library [with 11 workers on 12 CPUs; with compression: true]."}
+{"when":1768774974,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 15/15 v18.16.0 0.757s Fresh holotree done [with 11 workers on 12 CPUs]."}
+{"when":1768774974,"controller":"rcc.user","event":"start","detail":"robot","comment":"started"}
+{"when":1768774974,"controller":"rcc.user","event":"run","detail":"robot","comment":"task run"}
+{"when":1768774974,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 0 to 1 ... map[459999:python3.12]"}
+{"when":1768774974,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 1 to 3 ... map[459999:python3.12 460001:invoke 460041:node]"}
+{"when":1768774975,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 3 ... map[459999:python3.12 460001:invoke 460041:npm ci]"}
+{"when":1768774985,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 5 ... map[459999:python3.12 460001:invoke 460183:npm run build 460196:node 460207:esbuild]"}
+{"when":1768774989,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 5 to 3 ... map[459999:python3.12 460001:invoke 460270:python3.12]"}
+{"when":1768774990,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[459999:python3.12 460001:invoke 460270:python3.12 460276:python3.12]"}
+{"when":1768774990,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[459999:python3.12 460001:invoke 460270:python3.12 460283:python3.12]"}
+{"when":1768774991,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[459999:python3.12 460001:invoke 460270:python3.12 460311:python3.12]"}
+{"when":1768774992,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[459999:python3.12 460001:invoke 460270:python3.12 460338:python3.12]"}
+{"when":1768774992,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[459999:python3.12 460001:invoke 460270:python3.12 460350:python3.12]"}
+{"when":1768774993,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[459999:python3.12 460001:invoke 460270:python3.12]"}
+{"when":1768774994,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[459999:python3.12 460001:invoke 460270:python3.12 460380:python3.12]"}
+{"when":1768774994,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[459999:python3.12 460001:invoke 460270:python3.12]"}
+{"when":1768774995,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[459999:python3.12 460001:invoke 460270:python3.12 460396:python3.12]"}
+{"when":1768774996,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[459999:python3.12 460001:invoke 460270:python3.12 460399:python3.12]"}
+{"when":1768774999,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[459999:python3.12 460001:invoke 460270:python3.12]"}
+{"when":1768775000,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[459999:python3.12 460001:invoke 460270:python3.12 460431:python3.12]"}
+{"when":1768775000,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[459999:python3.12 460001:invoke 460270:python3.12 460435:python3.12]"}
+{"when":1768775001,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[459999:python3.12 460001:invoke 460270:python3.12 460439:python3.12]"}
+{"when":1768775001,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[459999:python3.12 460001:invoke 460270:python3.12]"}
+{"when":1768775002,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[459999:python3.12 460001:invoke 460270:python3.12 460453:python3.12]"}
+{"when":1768775003,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[459999:python3.12 460001:invoke 460270:python3.12]"}
+{"when":1768775004,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[459999:python3.12 460001:invoke 460270:python3.12 460466:python3.12]"}
+{"when":1768775004,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[459999:python3.12 460001:invoke 460270:python3.12 460476:python3.12]"}
+{"when":1768775005,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[459999:python3.12 460001:invoke 460270:python3.12 460477:python3.12]"}
+{"when":1768775005,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[459999:python3.12 460001:invoke 460270:python3.12 460497:python3.12]"}
+{"when":1768775006,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[459999:python3.12 460001:invoke 460270:python3.12]"}
+{"when":1768775008,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[459999:python3.12 460001:invoke 460270:python3.12 460518:python3.12]"}
+{"when":1768775009,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[459999:python3.12 460001:invoke 460270:python3.12]"}
+{"when":1768775009,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[459999:python3.12 460001:invoke 460270:python3.12 460531:python3.12]"}
+{"when":1768775010,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[459999:python3.12 460001:invoke 460270:python3.12]"}
+{"when":1768775015,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 2 ... map[459999:python3.12 460001:invoke]"}
+{"when":1768775019,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 2 to 3 ... map[459999:python3.12 460001:invoke 461450:go]"}
+{"when":1768775020,"controller":"rcc.user","event":"robot exit","detail":"From rcc \"v18.16.0\" (controller: \"user\") point of view, \"actual main robot run\" was SUCCESS.","comment":"rcc point of view"}
+{"when":1768775020,"controller":"rcc.user","event":"processes","detail":"final","comment":"count: 0"}
+{"when":1768775021,"controller":"rcc.user","event":"stop","detail":"robot","comment":"done"}
+{"when":1768775035,"controller":"rcc.user","event":"start task","detail":"name=community from=action_server/developer/toolkit.yaml","comment":"at task environment setup"}
+{"when":1768775035,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 00/15 v18.16.0 0.038s Context: \"kdlocpanda\" \u003ckdlocpanda@bluefin\u003e [linux_amd64/LSB Version: n/a; Distributor ID: Bluefin; Description: Dudleys Second Bedroom; Release: 43; Codename: Deinonychus]."}
+{"when":1768775035,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 01/15 v18.16.0 0.005s Fresh [private mode] holotree environment 2323f523-9786-e977-0145-570e6a9e2174. (parent/pid: 387290/463846)"}
+{"when":1768775035,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 02/15 v18.16.0 0.003s Holotree blueprint is \"27862294f07aea0c\" [linux_amd64 with 11 workers on 12 CPUs from \"setup.yaml\"]."}
+{"when":1768775035,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 14/15 v18.16.0 0.399s Restore space from library [with 11 workers on 12 CPUs; with compression: true]."}
+{"when":1768775036,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 15/15 v18.16.0 0.659s Fresh holotree done [with 11 workers on 12 CPUs]."}
+{"when":1768775036,"controller":"rcc.user","event":"start","detail":"robot","comment":"started"}
+{"when":1768775036,"controller":"rcc.user","event":"run","detail":"robot","comment":"task run"}
+{"when":1768775036,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 0 to 1 ... map[463887:python3.12]"}
+{"when":1768775036,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 1 to 3 ... map[463887:python3.12 463889:invoke 463896:npm ci]"}
+{"when":1768775045,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 3 ... map[463887:python3.12 463889:invoke 463988:npm run build]"}
+{"when":1768775046,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 5 ... map[463887:python3.12 463889:invoke 463988:npm run build 464001:node 464012:esbuild]"}
+{"when":1768775050,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 5 to 3 ... map[463887:python3.12 463889:invoke 464051:python3.12]"}
+{"when":1768775051,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[463887:python3.12 463889:invoke 464051:python3.12 464057:python3.12]"}
+{"when":1768775052,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[463887:python3.12 463889:invoke 464051:python3.12 464071:python3.12]"}
+{"when":1768775052,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[463887:python3.12 463889:invoke 464051:python3.12 464074:python3.12]"}
+{"when":1768775053,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[463887:python3.12 463889:invoke 464051:python3.12 464088:python3.12]"}
+{"when":1768775054,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[463887:python3.12 463889:invoke 464051:python3.12 464102:python3.12]"}
+{"when":1768775055,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[463887:python3.12 463889:invoke 464051:python3.12 464105:python3.12]"}
+{"when":1768775056,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[463887:python3.12 463889:invoke 464051:python3.12 464108:python3.12]"}
+{"when":1768775056,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[463887:python3.12 463889:invoke 464051:python3.12]"}
+{"when":1768775058,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[463887:python3.12 463889:invoke 464051:python3.12 464133:python3.12]"}
+{"when":1768775059,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[463887:python3.12 463889:invoke 464051:python3.12 464136:python3.12]"}
+{"when":1768775062,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[463887:python3.12 463889:invoke 464051:python3.12]"}
+{"when":1768775063,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[463887:python3.12 463889:invoke 464051:python3.12 464215:python3.12]"}
+{"when":1768775063,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[463887:python3.12 463889:invoke 464051:python3.12 464219:python3.12]"}
+{"when":1768775064,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[463887:python3.12 463889:invoke 464051:python3.12 464233:python3.12]"}
+{"when":1768775065,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[463887:python3.12 463889:invoke 464051:python3.12]"}
+{"when":1768775066,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[463887:python3.12 463889:invoke 464051:python3.12 464246:python3.12]"}
+{"when":1768775066,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[463887:python3.12 463889:invoke 464051:python3.12 464247:python3.12]"}
+{"when":1768775067,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[463887:python3.12 463889:invoke 464051:python3.12]"}
+{"when":1768775068,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[463887:python3.12 463889:invoke 464051:python3.12 464250:python3.12]"}
+{"when":1768775068,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[463887:python3.12 463889:invoke 464051:python3.12 464266:python3.12]"}
+{"when":1768775069,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[463887:python3.12 463889:invoke 464051:python3.12 464270:python3.12]"}
+{"when":1768775069,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[463887:python3.12 463889:invoke 464051:python3.12]"}
+{"when":1768775071,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[463887:python3.12 463889:invoke 464051:python3.12 464286:python3.12]"}
+{"when":1768775072,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[463887:python3.12 463889:invoke 464051:python3.12]"}
+{"when":1768775073,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[463887:python3.12 463889:invoke 464051:python3.12 464297:python3.12]"}
+{"when":1768775073,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[463887:python3.12 463889:invoke 464051:python3.12]"}
+{"when":1768775077,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[463887:python3.12 463889:invoke 464051:python3.12 464676:ldd]"}
+{"when":1768775077,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[463887:python3.12 463889:invoke 464051:python3.12]"}
+{"when":1768775078,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 2 ... map[463887:python3.12 463889:invoke]"}
+{"when":1768775083,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 2 to 4 ... map[463887:python3.12 463889:invoke 465197:go 465318:link]"}
+{"when":1768775083,"controller":"rcc.user","event":"robot exit","detail":"From rcc \"v18.16.0\" (controller: \"user\") point of view, \"actual main robot run\" was SUCCESS.","comment":"rcc point of view"}
+{"when":1768775083,"controller":"rcc.user","event":"processes","detail":"final","comment":"count: 0"}
+{"when":1768775085,"controller":"rcc.user","event":"stop","detail":"robot","comment":"done"}
+{"when":1768775466,"controller":"rcc.user","event":"start task","detail":"name=community from=action_server/developer/toolkit.yaml","comment":"at task environment setup"}
+{"when":1768775466,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 00/15 v18.16.0 0.039s Context: \"kdlocpanda\" \u003ckdlocpanda@bluefin\u003e [linux_amd64/LSB Version: n/a; Distributor ID: Bluefin; Description: Dudleys Second Bedroom; Release: 43; Codename: Deinonychus]."}
+{"when":1768775466,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 01/15 v18.16.0 0.001s Fresh [private mode] holotree environment 2323f523-9786-e977-0145-570e6a9e2174. (parent/pid: 469614/469756)"}
+{"when":1768775466,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 02/15 v18.16.0 0.001s Holotree blueprint is \"27862294f07aea0c\" [linux_amd64 with 11 workers on 12 CPUs from \"setup.yaml\"]."}
+{"when":1768775467,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 14/15 v18.16.0 0.374s Restore space from library [with 11 workers on 12 CPUs; with compression: true]."}
+{"when":1768775467,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 15/15 v18.16.0 0.595s Fresh holotree done [with 11 workers on 12 CPUs]."}
+{"when":1768775467,"controller":"rcc.user","event":"start","detail":"robot","comment":"started"}
+{"when":1768775467,"controller":"rcc.user","event":"run","detail":"robot","comment":"task run"}
+{"when":1768775467,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 0 to 1 ... map[469796:python3.12]"}
+{"when":1768775468,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 1 to 3 ... map[469796:python3.12 469798:invoke 469805:npm ci]"}
+{"when":1768775475,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[469796:python3.12 469798:invoke 469879:npm run build 469892:node]"}
+{"when":1768775475,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 5 ... map[469796:python3.12 469798:invoke 469879:npm run build 469892:node 469903:esbuild]"}
+{"when":1768775483,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 5 to 3 ... map[469796:python3.12 469798:invoke 470136:python3.12]"}
+{"when":1768775484,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[469796:python3.12 469798:invoke 470136:python3.12 470154:python3.12]"}
+{"when":1768775485,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[469796:python3.12 469798:invoke 470136:python3.12 470159:python3.12]"}
+{"when":1768775486,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[469796:python3.12 469798:invoke 470136:python3.12 470175:python3.12]"}
+{"when":1768775488,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[469796:python3.12 469798:invoke 470136:python3.12 470201:python3.12]"}
+{"when":1768775489,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[469796:python3.12 469798:invoke 470136:python3.12 470219:python3.12]"}
+{"when":1768775490,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[469796:python3.12 469798:invoke 470136:python3.12 470260:python3.12]"}
+{"when":1768775491,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[469796:python3.12 469798:invoke 470136:python3.12]"}
+{"when":1768775492,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[469796:python3.12 469798:invoke 470136:python3.12 470294:python3.12]"}
+{"when":1768775493,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[469796:python3.12 469798:invoke 470136:python3.12]"}
+{"when":1768775496,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[469796:python3.12 469798:invoke 470136:python3.12 470366:python3.12]"}
+{"when":1768775497,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[469796:python3.12 469798:invoke 470136:python3.12 470371:python3.12]"}
+{"when":1768775500,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[469796:python3.12 469798:invoke 470136:python3.12]"}
+{"when":1768775501,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[469796:python3.12 469798:invoke 470136:python3.12 470450:python3.12]"}
+{"when":1768775502,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[469796:python3.12 469798:invoke 470136:python3.12 470467:python3.12]"}
+{"when":1768775502,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[469796:python3.12 469798:invoke 470136:python3.12 470469:python3.12]"}
+{"when":1768775503,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[469796:python3.12 469798:invoke 470136:python3.12 470477:python3.12]"}
+{"when":1768775504,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[469796:python3.12 469798:invoke 470136:python3.12]"}
+{"when":1768775505,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[469796:python3.12 469798:invoke 470136:python3.12 470494:python3.12]"}
+{"when":1768775506,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[469796:python3.12 469798:invoke 470136:python3.12]"}
+{"when":1768775507,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[469796:python3.12 469798:invoke 470136:python3.12 470514:python3.12]"}
+{"when":1768775508,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[469796:python3.12 469798:invoke 470136:python3.12 470528:python3.12]"}
+{"when":1768775508,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[469796:python3.12 469798:invoke 470136:python3.12 470537:python3.12]"}
+{"when":1768775509,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[469796:python3.12 469798:invoke 470136:python3.12 470548:python3.12]"}
+{"when":1768775509,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[469796:python3.12 469798:invoke 470136:python3.12]"}
+{"when":1768775513,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[469796:python3.12 469798:invoke 470136:python3.12 470606:python3.12]"}
+{"when":1768775514,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[469796:python3.12 469798:invoke 470136:python3.12]"}
+{"when":1768775514,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[469796:python3.12 469798:invoke 470136:python3.12 470622:python3.12]"}
+{"when":1768775515,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[469796:python3.12 469798:invoke 470136:python3.12]"}
+{"when":1768775520,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[469796:python3.12 469798:invoke 470136:python3.12 471476:ldd]"}
+{"when":1768775521,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[469796:python3.12 469798:invoke 470136:python3.12]"}
+{"when":1768775522,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 2 ... map[469796:python3.12 469798:invoke]"}
+{"when":1768775528,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 2 to 3 ... map[469796:python3.12 469798:invoke 471556:go]"}
+{"when":1768775528,"controller":"rcc.user","event":"robot exit","detail":"From rcc \"v18.16.0\" (controller: \"user\") point of view, \"actual main robot run\" was SUCCESS.","comment":"rcc point of view"}
+{"when":1768775528,"controller":"rcc.user","event":"processes","detail":"final","comment":"count: 0"}
+{"when":1768775530,"controller":"rcc.user","event":"stop","detail":"robot","comment":"done"}
+{"when":1768775730,"controller":"rcc.user","event":"start task","detail":"name=community from=action_server/developer/toolkit.yaml","comment":"at task environment setup"}
+{"when":1768775730,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 00/15 v18.16.0 0.045s Context: \"kdlocpanda\" \u003ckdlocpanda@bluefin\u003e [linux_amd64/LSB Version: n/a; Distributor ID: Bluefin; Description: Dudleys Second Bedroom; Release: 43; Codename: Deinonychus]."}
+{"when":1768775730,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 01/15 v18.16.0 0.003s Fresh [private mode] holotree environment 2323f523-9786-e977-0145-570e6a9e2174. (parent/pid: 475508/479886)"}
+{"when":1768775730,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 02/15 v18.16.0 0.004s Holotree blueprint is \"27862294f07aea0c\" [linux_amd64 with 11 workers on 12 CPUs from \"setup.yaml\"]."}
+{"when":1768775730,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 14/15 v18.16.0 0.329s Restore space from library [with 11 workers on 12 CPUs; with compression: true]."}
+{"when":1768775731,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 15/15 v18.16.0 0.593s Fresh holotree done [with 11 workers on 12 CPUs]."}
+{"when":1768775731,"controller":"rcc.user","event":"start","detail":"robot","comment":"started"}
+{"when":1768775731,"controller":"rcc.user","event":"run","detail":"robot","comment":"task run"}
+{"when":1768775731,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 0 to 1 ... map[479911:python3.12]"}
+{"when":1768775732,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 1 to 3 ... map[479911:python3.12 479913:invoke 479920:npm ci]"}
+{"when":1768775739,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 5 ... map[479911:python3.12 479913:invoke 479920:npm ci 479981:sh 479982:node]"}
+{"when":1768775739,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 5 to 5 ... map[479911:python3.12 479913:invoke 480005:npm run build 480018:node 480029:esbuild]"}
+{"when":1768775743,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 5 to 3 ... map[479911:python3.12 479913:invoke 480072:python3.12]"}
+{"when":1768775744,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[479911:python3.12 479913:invoke 480072:python3.12 480093:python3.12]"}
+{"when":1768775745,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[479911:python3.12 479913:invoke 480072:python3.12 480096:python3.12]"}
+{"when":1768775746,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[479911:python3.12 479913:invoke 480072:python3.12 480116:python3.12]"}
+{"when":1768775747,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[479911:python3.12 479913:invoke 480072:python3.12 480123:python3.12]"}
+{"when":1768775747,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[479911:python3.12 479913:invoke 480072:python3.12 480126:python3.12]"}
+{"when":1768775748,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[479911:python3.12 479913:invoke 480072:python3.12 480129:python3.12]"}
+{"when":1768775748,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[479911:python3.12 479913:invoke 480072:python3.12]"}
+{"when":1768775750,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[479911:python3.12 479913:invoke 480072:python3.12 480143:python3.12]"}
+{"when":1768775751,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[479911:python3.12 479913:invoke 480072:python3.12 480158:python3.12]"}
+{"when":1768775753,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[479911:python3.12 479913:invoke 480072:python3.12]"}
+{"when":1768775754,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[479911:python3.12 479913:invoke 480072:python3.12 480175:python3.12]"}
+{"when":1768775755,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[479911:python3.12 479913:invoke 480072:python3.12 480189:python3.12]"}
+{"when":1768775755,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[479911:python3.12 479913:invoke 480072:python3.12 480193:python3.12]"}
+{"when":1768775756,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[479911:python3.12 479913:invoke 480072:python3.12]"}
+{"when":1768775757,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[479911:python3.12 479913:invoke 480072:python3.12 480211:python3.12]"}
+{"when":1768775757,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[479911:python3.12 479913:invoke 480072:python3.12 480212:python3.12]"}
+{"when":1768775758,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[479911:python3.12 479913:invoke 480072:python3.12]"}
+{"when":1768775759,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[479911:python3.12 479913:invoke 480072:python3.12 480228:python3.12]"}
+{"when":1768775759,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[479911:python3.12 479913:invoke 480072:python3.12 480229:python3.12]"}
+{"when":1768775760,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[479911:python3.12 479913:invoke 480072:python3.12 480233:python3.12]"}
+{"when":1768775760,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[479911:python3.12 479913:invoke 480072:python3.12]"}
+{"when":1768775763,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[479911:python3.12 479913:invoke 480072:python3.12 480268:python3.12]"}
+{"when":1768775764,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[479911:python3.12 479913:invoke 480072:python3.12 480271:python3.12]"}
+{"when":1768775764,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[479911:python3.12 479913:invoke 480072:python3.12]"}
+{"when":1768775767,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[479911:python3.12 479913:invoke 480072:python3.12 480322:gcc]"}
+{"when":1768775768,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[479911:python3.12 479913:invoke 480072:python3.12 480931:ldd]"}
+{"when":1768775769,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[479911:python3.12 479913:invoke 480072:python3.12]"}
+{"when":1768775770,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 2 ... map[479911:python3.12 479913:invoke]"}
+{"when":1768775774,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 2 to 3 ... map[479911:python3.12 479913:invoke 481170:go]"}
+{"when":1768775774,"controller":"rcc.user","event":"robot exit","detail":"From rcc \"v18.16.0\" (controller: \"user\") point of view, \"actual main robot run\" was SUCCESS.","comment":"rcc point of view"}
+{"when":1768775774,"controller":"rcc.user","event":"processes","detail":"final","comment":"count: 0"}
+{"when":1768775775,"controller":"rcc.user","event":"stop","detail":"robot","comment":"done"}
+{"when":1768776798,"controller":"rcc.user","event":"start task","detail":"name=community from=action_server/developer/toolkit.yaml","comment":"at task environment setup"}
+{"when":1768776798,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 00/15 v18.16.0 0.050s Context: \"kdlocpanda\" \u003ckdlocpanda@bluefin\u003e [linux_amd64/LSB Version: n/a; Distributor ID: Bluefin; Description: Dudleys Second Bedroom; Release: 43; Codename: Deinonychus]."}
+{"when":1768776798,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 01/15 v18.16.0 0.001s Fresh [private mode] holotree environment 2323f523-9786-e977-0145-570e6a9e2174. (parent/pid: 475508/494837)"}
+{"when":1768776798,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 02/15 v18.16.0 0.001s Holotree blueprint is \"27862294f07aea0c\" [linux_amd64 with 11 workers on 12 CPUs from \"setup.yaml\"]."}
+{"when":1768776798,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 14/15 v18.16.0 0.312s Restore space from library [with 11 workers on 12 CPUs; with compression: true]."}
+{"when":1768776799,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 15/15 v18.16.0 0.570s Fresh holotree done [with 11 workers on 12 CPUs]."}
+{"when":1768776799,"controller":"rcc.user","event":"start","detail":"robot","comment":"started"}
+{"when":1768776799,"controller":"rcc.user","event":"run","detail":"robot","comment":"task run"}
+{"when":1768776799,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 0 to 1 ... map[494863:python3.12]"}
+{"when":1768776800,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 1 to 3 ... map[494863:python3.12 494864:invoke 494871:npm ci]"}
+{"when":1768776807,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 3 ... map[494863:python3.12 494864:invoke 494997:node]"}
+{"when":1768776808,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 5 ... map[494863:python3.12 494864:invoke 494997:npm run build 495010:node 495032:esbuild]"}
+{"when":1768776811,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 5 to 3 ... map[494863:python3.12 494864:invoke 495064:python3.12]"}
+{"when":1768776811,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[494863:python3.12 494864:invoke 495064:python3.12 495069:python3.12]"}
+{"when":1768776812,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[494863:python3.12 494864:invoke 495064:python3.12 495085:python3.12]"}
+{"when":1768776812,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[494863:python3.12 494864:invoke 495064:python3.12 495088:python3.12]"}
+{"when":1768776813,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[494863:python3.12 494864:invoke 495064:python3.12 495102:python3.12]"}
+{"when":1768776814,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[494863:python3.12 494864:invoke 495064:python3.12 495105:python3.12]"}
+{"when":1768776814,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[494863:python3.12 494864:invoke 495064:python3.12 495118:python3.12]"}
+{"when":1768776815,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[494863:python3.12 494864:invoke 495064:python3.12 495121:python3.12]"}
+{"when":1768776815,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[494863:python3.12 494864:invoke 495064:python3.12]"}
+{"when":1768776817,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[494863:python3.12 494864:invoke 495064:python3.12 495135:python3.12]"}
+{"when":1768776817,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[494863:python3.12 494864:invoke 495064:python3.12 495138:python3.12]"}
+{"when":1768776820,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[494863:python3.12 494864:invoke 495064:python3.12]"}
+{"when":1768776820,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[494863:python3.12 494864:invoke 495064:python3.12 495163:python3.12]"}
+{"when":1768776821,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[494863:python3.12 494864:invoke 495064:python3.12 495167:python3.12]"}
+{"when":1768776821,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[494863:python3.12 494864:invoke 495064:python3.12 495183:python3.12]"}
+{"when":1768776822,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[494863:python3.12 494864:invoke 495064:python3.12]"}
+{"when":1768776823,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[494863:python3.12 494864:invoke 495064:python3.12 495197:python3.12]"}
+{"when":1768776824,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[494863:python3.12 494864:invoke 495064:python3.12 495198:python3.12]"}
+{"when":1768776824,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[494863:python3.12 494864:invoke 495064:python3.12 495211:python3.12]"}
+{"when":1768776825,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[494863:python3.12 494864:invoke 495064:python3.12]"}
+{"when":1768776825,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[494863:python3.12 494864:invoke 495064:python3.12 495218:python3.12]"}
+{"when":1768776826,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[494863:python3.12 494864:invoke 495064:python3.12 495233:python3.12]"}
+{"when":1768776826,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[494863:python3.12 494864:invoke 495064:python3.12]"}
+{"when":1768776829,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[494863:python3.12 494864:invoke 495064:python3.12 495247:python3.12]"}
+{"when":1768776829,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[494863:python3.12 494864:invoke 495064:python3.12 495250:python3.12]"}
+{"when":1768776830,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[494863:python3.12 494864:invoke 495064:python3.12]"}
+{"when":1768776833,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[494863:python3.12 494864:invoke 495064:python3.12 495460:ldd]"}
+{"when":1768776834,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[494863:python3.12 494864:invoke 495064:python3.12]"}
+{"when":1768776835,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 2 ... map[494863:python3.12 494864:invoke]"}
+{"when":1768776839,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 2 to 4 ... map[494863:python3.12 494864:invoke 496152:go 496274:compile]"}
+{"when":1768776840,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 2 ... map[494863:python3.12 494864:invoke]"}
+{"when":1768776840,"controller":"rcc.user","event":"robot exit","detail":"From rcc \"v18.16.0\" (controller: \"user\") point of view, \"actual main robot run\" was SUCCESS.","comment":"rcc point of view"}
+{"when":1768776840,"controller":"rcc.user","event":"processes","detail":"final","comment":"count: 0"}
+{"when":1768776841,"controller":"rcc.user","event":"stop","detail":"robot","comment":"done"}
+{"when":1768777050,"controller":"rcc.user","event":"start task","detail":"name=community from=action_server/developer/toolkit.yaml","comment":"at task environment setup"}
+{"when":1768777050,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 00/15 v18.16.0 0.050s Context: \"kdlocpanda\" \u003ckdlocpanda@bluefin\u003e [linux_amd64/LSB Version: n/a; Distributor ID: Bluefin; Description: Dudleys Second Bedroom; Release: 43; Codename: Deinonychus]."}
+{"when":1768777050,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 01/15 v18.16.0 0.002s Fresh [private mode] holotree environment 2323f523-9786-e977-0145-570e6a9e2174. (parent/pid: 498389/498528)"}
+{"when":1768777050,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 02/15 v18.16.0 0.002s Holotree blueprint is \"16e45fef52194e15\" [linux_amd64 with 11 workers on 12 CPUs from \"setup.yaml\"]."}
+{"when":1768777050,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 03/15 v18.16.0 0.002s Fill hololib from RCC_REMOTE_ORIGIN skipped. RCC_REMOTE_ORIGIN was not defined."}
+{"when":1768777050,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 04/15 v18.16.0 0.002s Cleanup holotree stage for fresh install."}
+{"when":1768777050,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 05/15 v18.16.0 0.002s Build environment into holotree stage \"/var/home/kdlocpanda/.robocorp/holotree/h5367906_493f813dad24d3t\"."}
+{"when":1768777050,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 06/15 v18.16.0 0.002s Restore partial environment into holotree stage \"/var/home/kdlocpanda/.robocorp/holotree/h5367906_493f813dad24d3t\"."}
+{"when":1768777053,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 07/15 v18.16.0 2.902s Skipping micromamba phase, layer exists."}
+{"when":1768777053,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 08/15 v18.16.0 0.008s Running uv install phase. (uv v0.9.26) [layer: 16e45fef52194e15]"}
+{"when":1768777061,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 09/15 v18.16.0 7.234s Post install scripts phase skipped -- no scripts."}
+{"when":1768777061,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 10/15 v18.16.0 0.004s Activate environment started phase."}
+{"when":1768777063,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 11/15 v18.16.0 2.056s Pip check skipped."}
+{"when":1768777063,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 12/15 v18.16.0 0.028s Update installation plan."}
+{"when":1768777063,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 13/15 v18.16.0 0.004s Record holotree stage to hololib [with 11 workers on 12 CPUs]."}
+{"when":1768777064,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 14/15 v18.16.0 1.438s Restore space from library [with 11 workers on 12 CPUs; with compression: true]."}
+{"when":1768777065,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 15/15 v18.16.0 1.136s Fresh holotree done [with 11 workers on 12 CPUs]."}
+{"when":1768777065,"controller":"rcc.user","event":"start","detail":"robot","comment":"started"}
+{"when":1768777065,"controller":"rcc.user","event":"run","detail":"robot","comment":"task run"}
+{"when":1768777065,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 0 to 1 ... map[498785:python3.12]"}
+{"when":1768777066,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 1 to 3 ... map[498785:python3.12 498787:invoke 498804:npm ci]"}
+{"when":1768777073,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 5 ... map[498785:python3.12 498787:invoke 498804:npm ci 498861:sh 498862:node]"}
+{"when":1768777074,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 5 to 5 ... map[498785:python3.12 498787:invoke 498886:npm run build 498899:node 498910:esbuild]"}
+{"when":1768777078,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 5 to 3 ... map[498785:python3.12 498787:invoke 498981:python3.12]"}
+{"when":1768777078,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[498785:python3.12 498787:invoke 498981:python3.12 498998:python3.12]"}
+{"when":1768777079,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[498785:python3.12 498787:invoke 498981:python3.12 499004:python3.12]"}
+{"when":1768777079,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[498785:python3.12 498787:invoke 498981:python3.12 499008:python3.12]"}
+{"when":1768777081,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[498785:python3.12 498787:invoke 498981:python3.12 499051:python3.12]"}
+{"when":1768777081,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[498785:python3.12 498787:invoke 498981:python3.12 499059:python3.12]"}
+{"when":1768777082,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[498785:python3.12 498787:invoke 498981:python3.12 499063:python3.12]"}
+{"when":1768777082,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[498785:python3.12 498787:invoke 498981:python3.12 499077:python3.12]"}
+{"when":1768777083,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[498785:python3.12 498787:invoke 498981:python3.12]"}
+{"when":1768777085,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[498785:python3.12 498787:invoke 498981:python3.12 499097:python3.12]"}
+{"when":1768777086,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[498785:python3.12 498787:invoke 498981:python3.12 499100:python3.12]"}
+{"when":1768777088,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[498785:python3.12 498787:invoke 498981:python3.12]"}
+{"when":1768777088,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[498785:python3.12 498787:invoke 498981:python3.12 499129:python3.12]"}
+{"when":1768777089,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[498785:python3.12 498787:invoke 498981:python3.12 499133:python3.12]"}
+{"when":1768777090,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[498785:python3.12 498787:invoke 498981:python3.12 499138:python3.12]"}
+{"when":1768777090,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[498785:python3.12 498787:invoke 498981:python3.12]"}
+{"when":1768777091,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[498785:python3.12 498787:invoke 498981:python3.12 499153:python3.12]"}
+{"when":1768777092,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[498785:python3.12 498787:invoke 498981:python3.12 499155:python3.12]"}
+{"when":1768777093,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[498785:python3.12 498787:invoke 498981:python3.12]"}
+{"when":1768777093,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[498785:python3.12 498787:invoke 498981:python3.12 499170:python3.12]"}
+{"when":1768777094,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[498785:python3.12 498787:invoke 498981:python3.12 499175:python3.12]"}
+{"when":1768777094,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[498785:python3.12 498787:invoke 498981:python3.12 499180:python3.12]"}
+{"when":1768777095,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[498785:python3.12 498787:invoke 498981:python3.12]"}
+{"when":1768777097,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[498785:python3.12 498787:invoke 498981:python3.12 499214:python3.12]"}
+{"when":1768777098,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[498785:python3.12 498787:invoke 498981:python3.12 499221:python3.12]"}
+{"when":1768777099,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[498785:python3.12 498787:invoke 498981:python3.12]"}
+{"when":1768777104,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 2 ... map[498785:python3.12 498787:invoke]"}
+{"when":1768777109,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 2 to 3 ... map[498785:python3.12 498787:invoke 500145:go]"}
+{"when":1768777109,"controller":"rcc.user","event":"robot exit","detail":"From rcc \"v18.16.0\" (controller: \"user\") point of view, \"actual main robot run\" was SUCCESS.","comment":"rcc point of view"}
+{"when":1768777109,"controller":"rcc.user","event":"processes","detail":"final","comment":"count: 0"}
+{"when":1768777110,"controller":"rcc.user","event":"stop","detail":"robot","comment":"done"}
+{"when":1768777365,"controller":"rcc.user","event":"start task","detail":"name=community from=action_server/developer/toolkit.yaml","comment":"at task environment setup"}
+{"when":1768777365,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 00/15 v18.16.0 0.053s Context: \"kdlocpanda\" \u003ckdlocpanda@bluefin\u003e [linux_amd64/LSB Version: n/a; Distributor ID: Bluefin; Description: Dudleys Second Bedroom; Release: 43; Codename: Deinonychus]."}
+{"when":1768777365,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 01/15 v18.16.0 0.003s Fresh [private mode] holotree environment 2323f523-9786-e977-0145-570e6a9e2174. (parent/pid: 505351/505491)"}
+{"when":1768777365,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 02/15 v18.16.0 0.004s Holotree blueprint is \"16e45fef52194e15\" [linux_amd64 with 11 workers on 12 CPUs from \"setup.yaml\"]."}
+{"when":1768777365,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 14/15 v18.16.0 0.335s Restore space from library [with 11 workers on 12 CPUs; with compression: true]."}
+{"when":1768777366,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 15/15 v18.16.0 0.597s Fresh holotree done [with 11 workers on 12 CPUs]."}
+{"when":1768777366,"controller":"rcc.user","event":"start","detail":"robot","comment":"started"}
+{"when":1768777366,"controller":"rcc.user","event":"run","detail":"robot","comment":"task run"}
+{"when":1768777366,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 0 to 1 ... map[505517:python3.12]"}
+{"when":1768777366,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 1 to 3 ... map[505517:python3.12 505518:invoke 505533:npm ci]"}
+{"when":1768777375,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[505517:python3.12 505518:invoke 505635:npm run build 505649:node]"}
+{"when":1768777375,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 5 ... map[505517:python3.12 505518:invoke 505635:npm run build 505649:node 505660:esbuild]"}
+{"when":1768777379,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 5 to 3 ... map[505517:python3.12 505518:invoke 505721:python3.12]"}
+{"when":1768777379,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[505517:python3.12 505518:invoke 505721:python3.12 505743:python3.12]"}
+{"when":1768777380,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[505517:python3.12 505518:invoke 505721:python3.12]"}
+{"when":1768777380,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[505517:python3.12 505518:invoke 505721:python3.12 505766:python3.12]"}
+{"when":1768777381,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[505517:python3.12 505518:invoke 505721:python3.12 505789:python3.12]"}
+{"when":1768777382,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[505517:python3.12 505518:invoke 505721:python3.12 505793:python3.12]"}
+{"when":1768777382,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[505517:python3.12 505518:invoke 505721:python3.12 505797:python3.12]"}
+{"when":1768777383,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[505517:python3.12 505518:invoke 505721:python3.12 505800:python3.12]"}
+{"when":1768777383,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[505517:python3.12 505518:invoke 505721:python3.12]"}
+{"when":1768777384,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[505517:python3.12 505518:invoke 505721:python3.12 505815:python3.12]"}
+{"when":1768777386,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[505517:python3.12 505518:invoke 505721:python3.12 505830:python3.12]"}
+{"when":1768777388,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[505517:python3.12 505518:invoke 505721:python3.12]"}
+{"when":1768777388,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[505517:python3.12 505518:invoke 505721:python3.12 505849:python3.12]"}
+{"when":1768777389,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[505517:python3.12 505518:invoke 505721:python3.12 505864:python3.12]"}
+{"when":1768777390,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[505517:python3.12 505518:invoke 505721:python3.12 505867:python3.12]"}
+{"when":1768777390,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[505517:python3.12 505518:invoke 505721:python3.12]"}
+{"when":1768777391,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[505517:python3.12 505518:invoke 505721:python3.12 505883:python3.12]"}
+{"when":1768777392,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[505517:python3.12 505518:invoke 505721:python3.12 505884:python3.12]"}
+{"when":1768777392,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[505517:python3.12 505518:invoke 505721:python3.12]"}
+{"when":1768777393,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[505517:python3.12 505518:invoke 505721:python3.12 505888:python3.12]"}
+{"when":1768777393,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[505517:python3.12 505518:invoke 505721:python3.12 505904:python3.12]"}
+{"when":1768777394,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[505517:python3.12 505518:invoke 505721:python3.12 505909:python3.12]"}
+{"when":1768777395,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[505517:python3.12 505518:invoke 505721:python3.12]"}
+{"when":1768777397,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[505517:python3.12 505518:invoke 505721:python3.12 505947:python3.12]"}
+{"when":1768777398,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[505517:python3.12 505518:invoke 505721:python3.12 505950:python3.12]"}
+{"when":1768777399,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[505517:python3.12 505518:invoke 505721:python3.12]"}
+{"when":1768777404,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 2 ... map[505517:python3.12 505518:invoke]"}
+{"when":1768777409,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 2 to 3 ... map[505517:python3.12 505518:invoke 506861:go]"}
+{"when":1768777409,"controller":"rcc.user","event":"robot exit","detail":"From rcc \"v18.16.0\" (controller: \"user\") point of view, \"actual main robot run\" was SUCCESS.","comment":"rcc point of view"}
+{"when":1768777409,"controller":"rcc.user","event":"processes","detail":"final","comment":"count: 0"}
+{"when":1768777410,"controller":"rcc.user","event":"stop","detail":"robot","comment":"done"}
+{"when":1768777530,"controller":"rcc.user","event":"start task","detail":"name=community from=action_server/developer/toolkit.yaml","comment":"at task environment setup"}
+{"when":1768777530,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 00/15 v18.16.0 0.039s Context: \"kdlocpanda\" \u003ckdlocpanda@bluefin\u003e [linux_amd64/LSB Version: n/a; Distributor ID: Bluefin; Description: Dudleys Second Bedroom; Release: 43; Codename: Deinonychus]."}
+{"when":1768777530,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 01/15 v18.16.0 0.004s Fresh [private mode] holotree environment 2323f523-9786-e977-0145-570e6a9e2174. (parent/pid: 509518/509658)"}
+{"when":1768777530,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 02/15 v18.16.0 0.004s Holotree blueprint is \"16e45fef52194e15\" [linux_amd64 with 11 workers on 12 CPUs from \"setup.yaml\"]."}
+{"when":1768777531,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 14/15 v18.16.0 0.346s Restore space from library [with 11 workers on 12 CPUs; with compression: true]."}
+{"when":1768777531,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 15/15 v18.16.0 0.601s Fresh holotree done [with 11 workers on 12 CPUs]."}
+{"when":1768777531,"controller":"rcc.user","event":"start","detail":"robot","comment":"started"}
+{"when":1768777531,"controller":"rcc.user","event":"run","detail":"robot","comment":"task run"}
+{"when":1768777531,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 0 to 1 ... map[509684:python3.12]"}
+{"when":1768777532,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 1 to 3 ... map[509684:python3.12 509686:invoke 509693:npm ci]"}
+{"when":1768777539,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 3 ... map[509684:python3.12 509686:invoke 509777:npm run build]"}
+{"when":1768777540,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 5 ... map[509684:python3.12 509686:invoke 509777:npm run build 509791:node 509802:esbuild]"}
+{"when":1768777543,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 5 to 3 ... map[509684:python3.12 509686:invoke 509858:python3.12]"}
+{"when":1768777544,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[509684:python3.12 509686:invoke 509858:python3.12 509865:python3.12]"}
+{"when":1768777544,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[509684:python3.12 509686:invoke 509858:python3.12 509869:python3.12]"}
+{"when":1768777545,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[509684:python3.12 509686:invoke 509858:python3.12 509884:python3.12]"}
+{"when":1768777545,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[509684:python3.12 509686:invoke 509858:python3.12 509899:python3.12]"}
+{"when":1768777546,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[509684:python3.12 509686:invoke 509858:python3.12 509902:python3.12]"}
+{"when":1768777547,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[509684:python3.12 509686:invoke 509858:python3.12 509920:python3.12]"}
+{"when":1768777548,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[509684:python3.12 509686:invoke 509858:python3.12 509924:python3.12]"}
+{"when":1768777548,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[509684:python3.12 509686:invoke 509858:python3.12]"}
+{"when":1768777550,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[509684:python3.12 509686:invoke 509858:python3.12 509941:python3.12]"}
+{"when":1768777550,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[509684:python3.12 509686:invoke 509858:python3.12 509944:python3.12]"}
+{"when":1768777553,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[509684:python3.12 509686:invoke 509858:python3.12]"}
+{"when":1768777554,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[509684:python3.12 509686:invoke 509858:python3.12 509976:python3.12]"}
+{"when":1768777554,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[509684:python3.12 509686:invoke 509858:python3.12 509980:python3.12]"}
+{"when":1768777555,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[509684:python3.12 509686:invoke 509858:python3.12 509998:python3.12]"}
+{"when":1768777555,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[509684:python3.12 509686:invoke 509858:python3.12]"}
+{"when":1768777557,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[509684:python3.12 509686:invoke 509858:python3.12 510015:python3.12]"}
+{"when":1768777557,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[509684:python3.12 509686:invoke 509858:python3.12]"}
+{"when":1768777558,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[509684:python3.12 509686:invoke 509858:python3.12 510019:python3.12]"}
+{"when":1768777558,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[509684:python3.12 509686:invoke 509858:python3.12 510034:python3.12]"}
+{"when":1768777559,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[509684:python3.12 509686:invoke 509858:python3.12 510037:python3.12]"}
+{"when":1768777559,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[509684:python3.12 509686:invoke 509858:python3.12 510042:python3.12]"}
+{"when":1768777560,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[509684:python3.12 509686:invoke 509858:python3.12]"}
+{"when":1768777562,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[509684:python3.12 509686:invoke 509858:python3.12 510063:python3.12]"}
+{"when":1768777563,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[509684:python3.12 509686:invoke 509858:python3.12]"}
+{"when":1768777563,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[509684:python3.12 509686:invoke 509858:python3.12 510078:python3.12]"}
+{"when":1768777564,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[509684:python3.12 509686:invoke 509858:python3.12]"}
+{"when":1768777569,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 2 ... map[509684:python3.12 509686:invoke]"}
+{"when":1768777573,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 2 to 3 ... map[509684:python3.12 509686:invoke 510990:go]"}
+{"when":1768777574,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 2 ... map[509684:python3.12 509686:invoke]"}
+{"when":1768777574,"controller":"rcc.user","event":"robot exit","detail":"From rcc \"v18.16.0\" (controller: \"user\") point of view, \"actual main robot run\" was SUCCESS.","comment":"rcc point of view"}
+{"when":1768777574,"controller":"rcc.user","event":"processes","detail":"final","comment":"count: 0"}
+{"when":1768777575,"controller":"rcc.user","event":"stop","detail":"robot","comment":"done"}
+{"when":1768777999,"controller":"rcc.user","event":"start task","detail":"name=community from=action_server/developer/toolkit.yaml","comment":"at task environment setup"}
+{"when":1768777999,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 00/15 v18.16.0 0.041s Context: \"kdlocpanda\" \u003ckdlocpanda@bluefin\u003e [linux_amd64/LSB Version: n/a; Distributor ID: Bluefin; Description: Dudleys Second Bedroom; Release: 43; Codename: Deinonychus]."}
+{"when":1768777999,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 01/15 v18.16.0 0.001s Fresh [private mode] holotree environment 2323f523-9786-e977-0145-570e6a9e2174. (parent/pid: 475508/519843)"}
+{"when":1768777999,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 02/15 v18.16.0 0.001s Holotree blueprint is \"16e45fef52194e15\" [linux_amd64 with 11 workers on 12 CPUs from \"setup.yaml\"]."}
+{"when":1768777999,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 14/15 v18.16.0 0.327s Restore space from library [with 11 workers on 12 CPUs; with compression: true]."}
+{"when":1768777999,"controller":"rcc.user","event":"environment","detail":"build","comment":"Progress: 15/15 v18.16.0 0.579s Fresh holotree done [with 11 workers on 12 CPUs]."}
+{"when":1768777999,"controller":"rcc.user","event":"start","detail":"robot","comment":"started"}
+{"when":1768777999,"controller":"rcc.user","event":"run","detail":"robot","comment":"task run"}
+{"when":1768778000,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 0 to 1 ... map[519868:python3.12]"}
+{"when":1768778000,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 1 to 3 ... map[519868:python3.12 519870:invoke 519877:npm ci]"}
+{"when":1768778007,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 5 ... map[519868:python3.12 519870:invoke 519877:npm ci 519946:sh 519947:node]"}
+{"when":1768778008,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 5 to 4 ... map[519868:python3.12 519870:invoke 519975:npm run build 519988:node]"}
+{"when":1768778008,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 5 ... map[519868:python3.12 519870:invoke 519975:npm run build 519988:node 519999:esbuild]"}
+{"when":1768778011,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 5 to 3 ... map[519868:python3.12 519870:invoke 520049:python3.12]"}
+{"when":1768778012,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[519868:python3.12 519870:invoke 520049:python3.12 520056:python3.12]"}
+{"when":1768778012,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[519868:python3.12 519870:invoke 520049:python3.12 520059:python3.12]"}
+{"when":1768778013,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[519868:python3.12 519870:invoke 520049:python3.12 520075:python3.12]"}
+{"when":1768778014,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[519868:python3.12 519870:invoke 520049:python3.12 520089:python3.12]"}
+{"when":1768778014,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[519868:python3.12 519870:invoke 520049:python3.12 520092:python3.12]"}
+{"when":1768778015,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[519868:python3.12 519870:invoke 520049:python3.12]"}
+{"when":1768778015,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[519868:python3.12 519870:invoke 520049:python3.12 520110:python3.12]"}
+{"when":1768778016,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[519868:python3.12 519870:invoke 520049:python3.12]"}
+{"when":1768778017,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[519868:python3.12 519870:invoke 520049:python3.12 520123:python3.12]"}
+{"when":1768778018,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[519868:python3.12 519870:invoke 520049:python3.12 520126:python3.12]"}
+{"when":1768778020,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[519868:python3.12 519870:invoke 520049:python3.12]"}
+{"when":1768778020,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[519868:python3.12 519870:invoke 520049:python3.12 520141:python3.12]"}
+{"when":1768778021,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[519868:python3.12 519870:invoke 520049:python3.12 520159:python3.12]"}
+{"when":1768778021,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[519868:python3.12 519870:invoke 520049:python3.12 520163:python3.12]"}
+{"when":1768778022,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[519868:python3.12 519870:invoke 520049:python3.12]"}
+{"when":1768778024,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[519868:python3.12 519870:invoke 520049:python3.12 520218:python3.12]"}
+{"when":1768778024,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[519868:python3.12 519870:invoke 520049:python3.12]"}
+{"when":1768778025,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[519868:python3.12 519870:invoke 520049:python3.12 520235:python3.12]"}
+{"when":1768778025,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[519868:python3.12 519870:invoke 520049:python3.12 520239:python3.12]"}
+{"when":1768778026,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[519868:python3.12 519870:invoke 520049:python3.12 520243:python3.12]"}
+{"when":1768778026,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[519868:python3.12 519870:invoke 520049:python3.12]"}
+{"when":1768778029,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 4 ... map[519868:python3.12 519870:invoke 520049:python3.12 520284:python3.12]"}
+{"when":1768778030,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 4 ... map[519868:python3.12 519870:invoke 520049:python3.12 520287:python3.12]"}
+{"when":1768778030,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 4 to 3 ... map[519868:python3.12 519870:invoke 520049:python3.12]"}
+{"when":1768778036,"controller":"rcc.user","event":"processes","detail":"updated","comment":"count from 3 to 2 ... map[519868:python3.12 519870:invoke]"}

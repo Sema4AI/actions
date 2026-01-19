@@ -18,15 +18,302 @@ Usage:
 import asyncio
 import logging
 import os
+import platform
 import re
 import shutil
 import subprocess
+import sys
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
+from pathlib import Path
 from typing import Optional
 
 log = logging.getLogger(__name__)
+
+# Bore version to download
+BORE_VERSION = "0.5.2"
+
+# Cloudflared version to download
+CLOUDFLARED_VERSION = "2024.12.2"
+
+
+def get_default_bore_location() -> Path:
+    """Get the default location for the bore binary.
+
+    Downloads to package bin/ directory (same location as RCC).
+    """
+    CURDIR = Path(__file__).parent.absolute()
+    if sys.platform == "win32":
+        bore_path = CURDIR / "bin" / f"bore-{BORE_VERSION}.exe"
+    else:
+        bore_path = CURDIR / "bin" / f"bore-{BORE_VERSION}"
+    return bore_path
+
+
+def download_bore(target: Optional[str] = None, force: bool = False) -> Path:
+    """
+    Downloads bore binary if not available.
+
+    Bore releases: https://github.com/ekzhang/bore/releases
+    """
+    if target:
+        bore_path = Path(target)
+    else:
+        bore_path = get_default_bore_location()
+
+    if not force and bore_path.exists():
+        return bore_path
+
+    log.info(f"bore not available at: {bore_path}. Downloading.")
+    bore_path.parent.mkdir(parents=True, exist_ok=True)
+
+    machine = platform.machine().lower()
+
+    # Map platform to bore release asset names
+    # Assets: bore-v0.5.2-x86_64-unknown-linux-musl.tar.gz
+    #         bore-v0.5.2-x86_64-apple-darwin.tar.gz
+    #         bore-v0.5.2-aarch64-apple-darwin.tar.gz
+    #         bore-v0.5.2-x86_64-pc-windows-msvc.zip
+    if sys.platform == "win32":
+        asset_name = f"bore-v{BORE_VERSION}-x86_64-pc-windows-msvc.zip"
+        is_zip = True
+    elif sys.platform == "darwin":
+        if machine in ("arm64", "aarch64"):
+            asset_name = f"bore-v{BORE_VERSION}-aarch64-apple-darwin.tar.gz"
+        else:
+            asset_name = f"bore-v{BORE_VERSION}-x86_64-apple-darwin.tar.gz"
+        is_zip = False
+    else:  # Linux
+        asset_name = f"bore-v{BORE_VERSION}-x86_64-unknown-linux-musl.tar.gz"
+        is_zip = False
+
+    bore_url = f"https://github.com/ekzhang/bore/releases/download/v{BORE_VERSION}/{asset_name}"
+
+    try:
+        import sema4ai_http
+        from sema4ai.common.system_mutex import timed_acquire_mutex
+
+        timeout = 120.0
+        with timed_acquire_mutex(
+            "action_server_bore_download", timeout=timeout, raise_error_on_timeout=True
+        ):
+            if not force and bore_path.exists():
+                return bore_path
+
+            # Download to temp file
+            import tempfile
+            with tempfile.TemporaryDirectory() as tmpdir:
+                archive_path = Path(tmpdir) / asset_name
+
+                log.info(f"Downloading bore from {bore_url}")
+                status = sema4ai_http.download_with_resume(
+                    bore_url, archive_path, make_executable=False, overwrite_existing=True
+                )
+
+                if status.status in (
+                    sema4ai_http.DownloadStatus.HTTP_ERROR,
+                    sema4ai_http.DownloadStatus.PARTIAL,
+                ):
+                    raise RuntimeError(f"Failed to download bore: {status.status}")
+
+                # Extract the binary
+                if is_zip:
+                    import zipfile
+                    with zipfile.ZipFile(archive_path, 'r') as zf:
+                        # Find bore executable in archive
+                        for name in zf.namelist():
+                            if name.endswith('bore.exe') or name == 'bore':
+                                zf.extract(name, tmpdir)
+                                extracted = Path(tmpdir) / name
+                                shutil.move(str(extracted), str(bore_path))
+                                break
+                else:
+                    import tarfile
+                    with tarfile.open(archive_path, 'r:gz') as tf:
+                        for member in tf.getmembers():
+                            if member.name.endswith('bore') or member.name == 'bore':
+                                tf.extract(member, tmpdir)
+                                extracted = Path(tmpdir) / member.name
+                                shutil.move(str(extracted), str(bore_path))
+                                break
+
+                # Make executable on Unix
+                if sys.platform != "win32":
+                    os.chmod(bore_path, 0o755)
+
+                log.info(f"bore downloaded successfully to {bore_path}")
+
+    except ImportError:
+        # Fallback without sema4ai_http - use urllib
+        import tarfile
+        import urllib.request
+        import zipfile
+        import tempfile
+
+        log.info(f"Downloading bore from {bore_url}")
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            archive_path = Path(tmpdir) / asset_name
+            urllib.request.urlretrieve(bore_url, archive_path)
+
+            if is_zip:
+                with zipfile.ZipFile(archive_path, 'r') as zf:
+                    for name in zf.namelist():
+                        if name.endswith('bore.exe') or name == 'bore':
+                            zf.extract(name, tmpdir)
+                            extracted = Path(tmpdir) / name
+                            shutil.move(str(extracted), str(bore_path))
+                            break
+            else:
+                with tarfile.open(archive_path, 'r:gz') as tf:
+                    for member in tf.getmembers():
+                        if member.name.endswith('bore') or member.name == 'bore':
+                            tf.extract(member, tmpdir)
+                            extracted = Path(tmpdir) / member.name
+                            shutil.move(str(extracted), str(bore_path))
+                            break
+
+            if sys.platform != "win32":
+                os.chmod(bore_path, 0o755)
+
+            log.info(f"bore downloaded successfully to {bore_path}")
+
+    return bore_path
+
+
+def get_default_cloudflared_location() -> Path:
+    """Get the default location for the cloudflared binary.
+
+    Downloads to package bin/ directory (same location as RCC).
+    """
+    CURDIR = Path(__file__).parent.absolute()
+    if sys.platform == "win32":
+        cf_path = CURDIR / "bin" / f"cloudflared-{CLOUDFLARED_VERSION}.exe"
+    else:
+        cf_path = CURDIR / "bin" / f"cloudflared-{CLOUDFLARED_VERSION}"
+    return cf_path
+
+
+def download_cloudflared(target: Optional[str] = None, force: bool = False) -> Path:
+    """
+    Downloads cloudflared binary if not available.
+
+    Cloudflared releases: https://github.com/cloudflare/cloudflared/releases
+    """
+    if target:
+        cf_path = Path(target)
+    else:
+        cf_path = get_default_cloudflared_location()
+
+    if not force and cf_path.exists():
+        return cf_path
+
+    log.info(f"cloudflared not available at: {cf_path}. Downloading.")
+    cf_path.parent.mkdir(parents=True, exist_ok=True)
+
+    machine = platform.machine().lower()
+
+    # Map platform to cloudflared release asset names
+    # https://github.com/cloudflare/cloudflared/releases
+    if sys.platform == "win32":
+        asset_name = "cloudflared-windows-amd64.exe"
+        direct_binary = True
+    elif sys.platform == "darwin":
+        if machine in ("arm64", "aarch64"):
+            asset_name = "cloudflared-darwin-arm64.tgz"
+        else:
+            asset_name = "cloudflared-darwin-amd64.tgz"
+        direct_binary = False
+    else:  # Linux
+        if machine in ("arm64", "aarch64"):
+            asset_name = "cloudflared-linux-arm64"
+        else:
+            asset_name = "cloudflared-linux-amd64"
+        direct_binary = True
+
+    cf_url = f"https://github.com/cloudflare/cloudflared/releases/download/{CLOUDFLARED_VERSION}/{asset_name}"
+
+    try:
+        import sema4ai_http
+        from sema4ai.common.system_mutex import timed_acquire_mutex
+
+        timeout = 120.0
+        with timed_acquire_mutex(
+            "action_server_cloudflared_download", timeout=timeout, raise_error_on_timeout=True
+        ):
+            if not force and cf_path.exists():
+                return cf_path
+
+            import tempfile
+            with tempfile.TemporaryDirectory() as tmpdir:
+                if direct_binary:
+                    # Direct binary download
+                    log.info(f"Downloading cloudflared from {cf_url}")
+                    status = sema4ai_http.download_with_resume(
+                        cf_url, cf_path, make_executable=True, overwrite_existing=True
+                    )
+                    if status.status in (
+                        sema4ai_http.DownloadStatus.HTTP_ERROR,
+                        sema4ai_http.DownloadStatus.PARTIAL,
+                    ):
+                        raise RuntimeError(f"Failed to download cloudflared: {status.status}")
+                else:
+                    # Tarball download (macOS)
+                    archive_path = Path(tmpdir) / asset_name
+                    log.info(f"Downloading cloudflared from {cf_url}")
+                    status = sema4ai_http.download_with_resume(
+                        cf_url, archive_path, make_executable=False, overwrite_existing=True
+                    )
+                    if status.status in (
+                        sema4ai_http.DownloadStatus.HTTP_ERROR,
+                        sema4ai_http.DownloadStatus.PARTIAL,
+                    ):
+                        raise RuntimeError(f"Failed to download cloudflared: {status.status}")
+
+                    import tarfile
+                    with tarfile.open(archive_path, 'r:gz') as tf:
+                        for member in tf.getmembers():
+                            if 'cloudflared' in member.name:
+                                tf.extract(member, tmpdir)
+                                extracted = Path(tmpdir) / member.name
+                                shutil.move(str(extracted), str(cf_path))
+                                break
+
+                if sys.platform != "win32":
+                    os.chmod(cf_path, 0o755)
+
+                log.info(f"cloudflared downloaded successfully to {cf_path}")
+
+    except ImportError:
+        # Fallback without sema4ai_http
+        import urllib.request
+        import tempfile
+
+        log.info(f"Downloading cloudflared from {cf_url}")
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            if direct_binary:
+                urllib.request.urlretrieve(cf_url, cf_path)
+            else:
+                import tarfile
+                archive_path = Path(tmpdir) / asset_name
+                urllib.request.urlretrieve(cf_url, archive_path)
+
+                with tarfile.open(archive_path, 'r:gz') as tf:
+                    for member in tf.getmembers():
+                        if 'cloudflared' in member.name:
+                            tf.extract(member, tmpdir)
+                            extracted = Path(tmpdir) / member.name
+                            shutil.move(str(extracted), str(cf_path))
+                            break
+
+            if sys.platform != "win32":
+                os.chmod(cf_path, 0o755)
+
+            log.info(f"cloudflared downloaded successfully to {cf_path}")
+
+    return cf_path
 
 
 class TunnelProvider(str, Enum):
@@ -131,8 +418,10 @@ class LocalhostRunProvider(BaseTunnelProvider):
         """Wait for localhost.run to output the public URL."""
         import asyncio
 
+        # localhost.run uses .lhr.life domain for tunnel URLs
+        # Exclude admin.localhost.run which is their website
         url_pattern = re.compile(
-            r"https?://[a-zA-Z0-9-]+\.lhr\.life[^\s]*|https?://[a-zA-Z0-9]+\.localhost\.run[^\s]*"
+            r"https://[a-zA-Z0-9-]+\.lhr\.life"
         )
 
         start_time = asyncio.get_event_loop().time()
@@ -176,6 +465,7 @@ class BoreProvider(BaseTunnelProvider):
 
     Uses the bore binary to create TCP tunnels.
     Simple and lightweight (~500KB Rust binary).
+    Will auto-download if not available.
 
     Note: bore.pub doesn't provide HTTPS, just HTTP over the tunnel port.
 
@@ -184,21 +474,45 @@ class BoreProvider(BaseTunnelProvider):
 
     def __init__(self, server: str = "bore.pub"):
         self.server = server
+        self._bore_path: Optional[str] = None
 
     @property
     def name(self) -> TunnelProvider:
         return TunnelProvider.BORE
 
+    def _get_bore_path(self) -> Optional[str]:
+        """Get bore binary path, downloading if necessary."""
+        # First check if bore is in PATH
+        system_bore = shutil.which("bore")
+        if system_bore:
+            return system_bore
+
+        # Try to download bore
+        try:
+            bore_path = download_bore()
+            if bore_path.exists():
+                return str(bore_path)
+        except Exception as e:
+            log.warning(f"Failed to download bore: {e}")
+
+        return None
+
     def is_available(self) -> bool:
-        """Check if bore binary is available."""
-        return shutil.which("bore") is not None
+        """Check if bore binary is available (will download if needed)."""
+        self._bore_path = self._get_bore_path()
+        return self._bore_path is not None
 
     async def start(self, port: int) -> TunnelInfo:
         """Start bore tunnel."""
+        if not self._bore_path:
+            self._bore_path = self._get_bore_path()
+        if not self._bore_path:
+            raise RuntimeError("bore binary not available")
+
         log.info(f"Starting bore tunnel to {self.server}...")
 
         process = subprocess.Popen(
-            ["bore", "local", str(port), "--to", self.server],
+            [self._bore_path, "local", str(port), "--to", self.server],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
@@ -261,6 +575,7 @@ class CloudflareProvider(BaseTunnelProvider):
     Cloudflare Tunnel provider.
 
     Uses cloudflared to create production-grade tunnels.
+    Will auto-download cloudflared if not available.
     Requires either:
     1. Pre-configured tunnel (CLOUDFLARE_TUNNEL_TOKEN env var)
     2. Quick tunnel mode (no config, temporary URL)
@@ -268,16 +583,42 @@ class CloudflareProvider(BaseTunnelProvider):
     Usage: cloudflared tunnel --url http://localhost:{port}
     """
 
+    def __init__(self):
+        self._cloudflared_path: Optional[str] = None
+
     @property
     def name(self) -> TunnelProvider:
         return TunnelProvider.CLOUDFLARE
 
+    def _get_cloudflared_path(self) -> Optional[str]:
+        """Get cloudflared binary path, downloading if necessary."""
+        # First check if cloudflared is in PATH
+        system_cf = shutil.which("cloudflared")
+        if system_cf:
+            return system_cf
+
+        # Try to download cloudflared
+        try:
+            cf_path = download_cloudflared()
+            if cf_path.exists():
+                return str(cf_path)
+        except Exception as e:
+            log.warning(f"Failed to download cloudflared: {e}")
+
+        return None
+
     def is_available(self) -> bool:
-        """Check if cloudflared is available."""
-        return shutil.which("cloudflared") is not None
+        """Check if cloudflared is available (will download if needed)."""
+        self._cloudflared_path = self._get_cloudflared_path()
+        return self._cloudflared_path is not None
 
     async def start(self, port: int) -> TunnelInfo:
         """Start Cloudflare tunnel."""
+        if not self._cloudflared_path:
+            self._cloudflared_path = self._get_cloudflared_path()
+        if not self._cloudflared_path:
+            raise RuntimeError("cloudflared binary not available")
+
         log.info("Starting Cloudflare tunnel...")
 
         # Check for pre-configured tunnel token
@@ -286,7 +627,7 @@ class CloudflareProvider(BaseTunnelProvider):
         if tunnel_token:
             # Use pre-configured tunnel
             process = subprocess.Popen(
-                ["cloudflared", "tunnel", "run", "--token", tunnel_token],
+                [self._cloudflared_path, "tunnel", "run", "--token", tunnel_token],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 text=True,
@@ -300,7 +641,7 @@ class CloudflareProvider(BaseTunnelProvider):
         else:
             # Use quick tunnel (temporary URL)
             process = subprocess.Popen(
-                ["cloudflared", "tunnel", "--url", f"http://localhost:{port}"],
+                [self._cloudflared_path, "tunnel", "--url", f"http://localhost:{port}"],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 text=True,

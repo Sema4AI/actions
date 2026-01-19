@@ -333,8 +333,10 @@ class RccTool(BaseTool):
             if sys_platform == "win32":
                 asset_name = "rcc-windows64.exe"
             elif sys_platform == "darwin":
-                # joshyorko/rcc uses rcc-darwin64 for both x86_64 and arm64
-                asset_name = "rcc-darwin64"
+                if machine == "arm64":
+                    asset_name = "rcc-macosarm64"
+                else:
+                    asset_name = "rcc-macos64"
             else:  # Linux
                 asset_name = "rcc-linux64"
 

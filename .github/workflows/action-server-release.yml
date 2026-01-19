@@ -1,0 +1,210 @@
+name: Action Server Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 3.0.0). Leave empty to use version from pyproject.toml'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    working-directory: ./action_server
+
+jobs:
+  build:
+    name: Build Action Server (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-22.04
+          - windows-2022
+          - macos-15
+        include:
+          - os: ubuntu-22.04
+            python: '3.12'
+            asset_name: action-server-linux64
+          - os: windows-2022
+            python: '3.12'
+            asset_name: action-server-windows64.exe
+          - os: macos-15
+            python: '3.12'
+            asset_name: action-server-macosarm64
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install Python 3.12
+        run: uv python install 3.12
+
+      - name: Install devutils requirements
+        run: uv run --no-project --python ${{ matrix.python }} python -m pip install --break-system-packages -r ../devutils/requirements.txt
+
+      - name: Install project
+        run: uv run --no-project --python ${{ matrix.python }} inv devinstall
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - name: Setup go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+          cache-dependency-path: action_server/go-wrapper/go.sum
+
+      - name: Get version
+        id: get_version
+        shell: bash
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION=$(uv run --no-project --python ${{ matrix.python }} poetry version -s)
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION"
+
+      - name: Build frontend (using vendored packages)
+        run: uv run --no-project --python ${{ matrix.python }} inv build-frontend
+        env:
+          CI: true
+
+      - name: Build OAuth2 config
+        run: uv run --no-project --python ${{ matrix.python }} inv build-oauth2-config
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build binary (unsigned, with Go wrapper)
+        env:
+          RC_ACTION_SERVER_FORCE_DOWNLOAD_RCC: 'true'
+          RC_ACTION_SERVER_DO_SELFTEST: 'true'
+        run: uv run --no-project --python ${{ matrix.python }} poetry run inv build-executable --go-wrapper
+
+      - name: Verify binary was built
+        shell: bash
+        run: |
+          if [ "${{ matrix.os }}" == "windows-2022" ]; then
+            BINARY="dist/final/action-server.exe"
+          else
+            BINARY="dist/final/action-server"
+          fi
+          if [ ! -f "$BINARY" ]; then
+            echo "Error: Binary not found at $BINARY"
+            ls -la dist/ || true
+            ls -la dist/final/ || true
+            exit 1
+          fi
+          echo "[OK] Binary built successfully"
+
+      - name: Test binary
+        shell: bash
+        run: |
+          if [ "${{ matrix.os }}" == "windows-2022" ]; then
+            ./dist/final/action-server.exe version
+          else
+            ./dist/final/action-server version
+          fi
+
+      - name: Rename binary for release
+        shell: bash
+        run: |
+          if [ "${{ matrix.os }}" == "windows-2022" ]; then
+            cp dist/final/action-server.exe dist/final/${{ matrix.asset_name }}
+          else
+            cp dist/final/action-server dist/final/${{ matrix.asset_name }}
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset_name }}
+          path: action_server/dist/final/${{ matrix.asset_name }}
+          retention-days: 1
+
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+
+      - name: List artifacts
+        run: |
+          echo "Downloaded artifacts:"
+          ls -la artifacts/
+          find artifacts/ -type f
+
+      - name: Prepare release assets
+        run: |
+          mkdir -p release-assets
+          # Move each artifact to release-assets with proper naming
+          if [ -f "artifacts/action-server-linux64/action-server-linux64" ]; then
+            mv artifacts/action-server-linux64/action-server-linux64 release-assets/
+          fi
+          if [ -f "artifacts/action-server-windows64.exe/action-server-windows64.exe" ]; then
+            mv artifacts/action-server-windows64.exe/action-server-windows64.exe release-assets/
+          fi
+          if [ -f "artifacts/action-server-macosarm64/action-server-macosarm64" ]; then
+            mv artifacts/action-server-macosarm64/action-server-macosarm64 release-assets/
+          fi
+          echo "Release assets:"
+          ls -la release-assets/
+        working-directory: .
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: action-server-v${{ needs.build.outputs.version }}
+          name: Action Server v${{ needs.build.outputs.version }}
+          body: |
+            ## Action Server v${{ needs.build.outputs.version }}
+
+            ### Downloads
+            - **Linux (x64)**: `action-server-linux64`
+            - **Windows (x64)**: `action-server-windows64.exe`
+            - **macOS (ARM64)**: `action-server-macosarm64`
+
+            ### Installation via Homebrew (macOS/Linux)
+            ```bash
+            brew tap joshyorko/tools
+            brew install action-server
+            ```
+
+            ### Usage
+            ```bash
+            action-server --help
+            ```
+          files: |
+            release-assets/*
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

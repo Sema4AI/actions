@@ -48,7 +48,7 @@ def download_rcc(
     is_64 = not machine or "64" in machine
 
     # Using joshyorko/rcc GitHub releases
-    # Asset names: rcc-windows64.exe, rcc-darwin64, rcc-linux64
+    # Asset names: rcc-windows64.exe, rcc-macosarm64, rcc-macos64, rcc-linux64
     if sys.platform == "win32":
         if is_64:
             asset_name = "rcc-windows64.exe"
@@ -57,9 +57,9 @@ def download_rcc(
 
     elif sys.platform == "darwin":
         if machine == "arm64":
-            asset_name = "rcc-darwin64"
+            asset_name = "rcc-macosarm64"
         else:
-            raise RuntimeError("Unsupported platform (macos x86_64)")
+            asset_name = "rcc-macos64"
 
     else:
         if is_64:

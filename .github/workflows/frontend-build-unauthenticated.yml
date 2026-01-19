@@ -26,14 +26,11 @@ jobs:
         os:
           - ubuntu-22.04
           - windows-2022
-          - macos-13
           - macos-15
         include:
           - os: ubuntu-22.04
             python: '3.12'
           - os: windows-2022
-            python: '3.12'
-          - os: macos-13
             python: '3.12'
           - os: macos-15
             python: '3.12'
@@ -54,7 +51,7 @@ jobs:
             exit 1
           fi
           # Note: GITHUB_TOKEN is always present in GH Actions but shouldn't be used for npm
-          echo "✓ No npm credentials detected"
+          echo "[OK] No npm credentials detected"
         shell: bash
       
       - name: Verify no .npmrc with credentials
@@ -64,7 +61,7 @@ jobs:
             cat ~/.npmrc
             exit 1
           fi
-          echo "✓ No .npmrc file found"
+          echo "[OK] No .npmrc file found"
         shell: bash
       
       - name: Install the latest version of uv
@@ -90,6 +87,7 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: '1.23'
+          cache-dependency-path: action_server/go-wrapper/go.sum
       
       - name: Build frontend (using vendored packages)
         run: uv run --no-project --python ${{ matrix.python }} inv build-frontend
@@ -114,7 +112,7 @@ jobs:
             ls -la dist/
             exit 1
           fi
-          echo "✓ Binary built successfully"
+          echo "[OK] Binary built successfully"
         shell: bash
       
       - name: Test binary

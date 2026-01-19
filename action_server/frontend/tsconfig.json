@@ -18,7 +18,8 @@
       "~/*": ["*"],
       "@/core/*": ["core/*"],
       "@/enterprise/*": ["enterprise/*"],
-      "@/shared/*": ["shared/*"]
+      "@/shared/*": ["shared/*"],
+      "@/queries/*": ["queries/*"]
     },
     "types": ["vite/client", "node"]
   }

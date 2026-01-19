@@ -363,6 +363,7 @@ echo "::set-output name=is_beta::$is_beta"
             "uses": "actions/setup-go@v5",
             "with": {
                 "go-version": "1.23",
+                "cache-dependency-path": "action_server/go-wrapper/go.sum",
             },
         }
 

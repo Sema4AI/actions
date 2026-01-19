@@ -107,6 +107,17 @@ def _add_start_server_command(command_parser, defaults):
         help="Always answer yes to expose reuse confirmation",
     )
     start_parser.add_argument(
+        "--expose-provider",
+        dest="expose_provider",
+        choices=["auto", "localhost.run", "bore", "cloudflare"],
+        default="auto",
+        help=(
+            "Tunnel provider for --expose. Options: auto (try all), "
+            "localhost.run (SSH-based), bore (Rust binary), cloudflare (cloudflared). "
+            "(default: %(default)s)"
+        ),
+    )
+    start_parser.add_argument(
         "--api-key",
         dest="api_key",
         help=(

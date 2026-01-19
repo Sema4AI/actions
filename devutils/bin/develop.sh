@@ -14,7 +14,11 @@ echo
 # Get RCC binary based on platform using joshyorko/rcc GitHub releases
 RCC_VERSION="v18.16.0"
 if [[ "$(uname)" == "Darwin" ]]; then
-    RCC_URL="https://github.com/joshyorko/rcc/releases/download/$RCC_VERSION/rcc-darwin64"
+    if [[ "$(uname -m)" == "arm64" ]]; then
+        RCC_URL="https://github.com/joshyorko/rcc/releases/download/$RCC_VERSION/rcc-macosarm64"
+    else
+        RCC_URL="https://github.com/joshyorko/rcc/releases/download/$RCC_VERSION/rcc-macos64"
+    fi
 else
     RCC_URL="https://github.com/joshyorko/rcc/releases/download/$RCC_VERSION/rcc-linux64"
 fi

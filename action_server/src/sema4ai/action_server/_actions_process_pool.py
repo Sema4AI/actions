@@ -130,6 +130,11 @@ class ProcessHandle:
         # also be wrong.
         env.pop("ROBOT_ROOT", None)
 
+        # Pass datadir to actions so work-items use the shared database
+        env["SEMA4AI_ACTION_SERVER_DATADIR"] = str(settings.datadir)
+        # Also set RC_WORKITEM_DB_PATH directly for actions-work-items compatibility
+        env["RC_WORKITEM_DB_PATH"] = str(settings.datadir / "workitems.db")
+
         if settings.reuse_processes:
             # When reusing processes we don't want to dump threads if
             # the process doesn't exit!

@@ -330,6 +330,7 @@ class Settings:
             "ssl_keyfile",
             "ssl_certfile",
             "oauth2_settings",
+            "expose_provider",
         ):
             assert hasattr(settings, attr)
             if hasattr(args, attr):

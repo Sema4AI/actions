@@ -145,7 +145,7 @@ def vendor_package(
             updated_by
         )
         
-        print(f"✓ Successfully vendored {package_name}@{version}")
+        print(f"[OK] Successfully vendored {package_name}@{version}")
 
 
 def update_manifest(

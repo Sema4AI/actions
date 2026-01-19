@@ -44,7 +44,7 @@ dependencies:
 - iniconfig=2.3.0
 - invoke=2.2.0
 - jaraco.classes=3.4.0
-- jaraco.context=6.0.2
+- jaraco.context=6.1.0
 - jaraco.functools=4.4.0
 - jeepney=0.9.0
 - keyring=25.7.0
@@ -66,7 +66,7 @@ dependencies:
 - libgomp=15.2.0
 - libiconv=1.18
 - liblapack=3.11.0
-- liblzma=5.8.1
+- liblzma=5.8.2
 - libnghttp2=1.67.0
 - libnsl=2.0.1
 - libopenblas=0.3.30
@@ -121,11 +121,11 @@ dependencies:
 - tk=8.6.13
 - tomli=2.4.0
 - tomlkit=0.12.4
-- trove-classifiers=2025.12.1.14
+- trove-classifiers=2026.1.14.14
 - typing_extensions=4.15.0
 - tzdata=2025c
 - urllib3=2.6.3
-- uv=0.5.14
+- uv=0.9.26
 - virtualenv=20.36.1
 - wheel=0.45.1
 - zipp=3.23.0
@@ -133,6 +133,7 @@ dependencies:
 - zstandard=0.25.0
 - zstd=1.5.7
 - pip:
+  - actions-work-items==0.2.0
   - aiohappyeyeballs==2.6.1
   - aiohttp==3.13.3
   - aiosignal==1.4.0
@@ -196,7 +197,7 @@ dependencies:
   - sema4ai-http-helper==2.1.2
   - six==1.17.0
   - snowballstemmer==3.0.1
-  - sse-starlette==3.1.2
+  - sse-starlette==3.2.0
   - starlette==0.50.0
   - termcolor==3.3.0
   - truststore==0.9.2

@@ -200,7 +200,7 @@ def main():
         print(json.dumps(result, indent=2))
     else:
         for check in checks:
-            status = "✓" if check.passed else "✗"
+            status = "[OK]" if check.passed else "[FAIL]"
             print(f"{status} {check.name}: {check.message}")
     
     sys.exit(0 if all_passed else 1)

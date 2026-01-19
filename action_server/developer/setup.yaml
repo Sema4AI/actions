@@ -46,4 +46,5 @@ dependencies:
     - -e ./build_common
     - -e ./devutils
     - -e ./common
+    - -e ./work-items
     - -e ./action_server
