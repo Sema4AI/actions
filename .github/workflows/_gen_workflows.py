@@ -455,7 +455,7 @@ echo "::set-output name=is_beta::$is_beta"
                 "GITHUB_REF_NAME": "${{ github.ref_name }}",
                 "GITHUB_PR_NUMBER": "${{ github.event.pull_request.number }}",
             },
-            "run": f"{run_in_env}poetry run inv build-executable --sign --go-wrapper",
+            "run": f'if [ -n "$MACOS_SIGNING_CERT" ] || [ -n "$VAULT_URL" ]; then {run_in_env}poetry run inv build-executable --sign --go-wrapper; else {run_in_env}poetry run inv build-executable --go-wrapper; fi',
         }
 
     def build_steps(self) -> list[dict]:

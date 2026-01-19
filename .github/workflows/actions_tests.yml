@@ -19,7 +19,7 @@ permissions:
 'on':
   push:
     branches:
-    - community
+    - master
     - wip
     paths:
     - actions/**
@@ -28,7 +28,7 @@ permissions:
     - sema4ai-http-helper/**
   pull_request:
     branches:
-    - community
+    - master
     paths:
     - actions/**
     - .github/workflows/actions_tests.yml

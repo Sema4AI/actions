@@ -19,7 +19,7 @@ permissions:
 'on':
   push:
     branches:
-    - community
+    - master
     - wip
     paths:
     - sema4ai-http-helper/**
@@ -27,7 +27,7 @@ permissions:
     - devutils/**
   pull_request:
     branches:
-    - community
+    - master
     paths:
     - sema4ai-http-helper/**
     - .github/workflows/http_helper_tests.yml

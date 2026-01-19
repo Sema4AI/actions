@@ -19,7 +19,7 @@ permissions:
 'on':
   push:
     branches:
-    - community
+    - master
     - wip
     paths:
     - action_server/**
@@ -32,7 +32,7 @@ permissions:
     - mcp/**
   pull_request:
     branches:
-    - community
+    - master
     paths:
     - action_server/**
     - .github/workflows/action_server_tests.yml
@@ -124,8 +124,10 @@ jobs:
         GITHUB_EVENT_NAME: ${{ github.event_name }}
         GITHUB_REF_NAME: ${{ github.ref_name }}
         GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
-      run: uv run --no-project --python ${{ matrix.python }} poetry run inv build-executable
-        --sign --go-wrapper
+      run: if [ -n "$MACOS_SIGNING_CERT" ] || [ -n "$VAULT_URL" ]; then uv run --no-project
+        --python ${{ matrix.python }} poetry run inv build-executable --sign --go-wrapper;
+        else uv run --no-project --python ${{ matrix.python }} poetry run inv build-executable
+        --go-wrapper; fi
     - name: 'Upload artifact: action_server/dist/final/'
       uses: actions/upload-artifact@v4
       with:

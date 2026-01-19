@@ -19,7 +19,7 @@ permissions:
 'on':
   push:
     branches:
-    - community
+    - master
     - wip
     paths:
     - common/**
@@ -28,7 +28,7 @@ permissions:
     - sema4ai-http-helper/**
   pull_request:
     branches:
-    - community
+    - master
     paths:
     - common/**
     - .github/workflows/common_tests.yml

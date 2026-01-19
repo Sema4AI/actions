@@ -25,6 +25,7 @@ updates:
 - package-ecosystem: pip
   directories:
   - action_server
+  - action_server/frontend/node_modules/libxmljs2/node_modules/node-gyp/gyp
   - actions
   - build_common
   - common
@@ -32,6 +33,7 @@ updates:
   - mcp
   - sema4ai-http-helper
   - templates/advanced
+  - work-items
   schedule:
     interval: daily
   open-pull-requests-limit: 0
@@ -40,6 +42,9 @@ updates:
 - package-ecosystem: npm
   directories:
   - action_server/frontend
+  - action_server/frontend/vendored/components
+  - action_server/frontend/vendored/icons
+  - action_server/frontend/vendored/theme
   schedule:
     interval: daily
   open-pull-requests-limit: 0
