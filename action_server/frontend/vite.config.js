@@ -71,10 +71,9 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: './__tests__/a11y/setup.ts',
-  include: ['**/__tests__/**/*.test.*', '**/__tests__/**/*.spec.*'],
-  // Visual tests using Playwright live under __tests__/visual and must be
-  // executed by Playwright, not Vitest. Exclude them from Vitest's collector.
-  exclude: ['**/__tests__/visual/**'],
+    include: ['__tests__/**/*.test.{ts,tsx}', '__tests__/**/*.spec.{ts,tsx}'],
+    // Exclude node_modules and visual tests (Playwright)
+    exclude: ['**/node_modules/**', '**/__tests__/visual/**', '**/*.backup'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],

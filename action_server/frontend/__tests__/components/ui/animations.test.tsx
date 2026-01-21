@@ -8,11 +8,13 @@ import { Table, TableBody, TableRow, TableCell } from '@/core/components/ui/Tabl
 
 describe('Micro-interaction Animations', () => {
   describe('Transition Duration Requirements', () => {
-    it('Button has transition-colors with implicit duration ≤200ms', () => {
+    it('Button has transition-all with explicit duration-150 for interactive feedback', () => {
       const { container } = render(<Button>Test Button</Button>);
       const button = container.querySelector('button');
-      expect(button?.className).toContain('transition-colors');
-      // Tailwind's default transition-colors duration is 150ms, which meets the ≤200ms requirement
+      // Button uses transition-all to support scale animation on active state
+      expect(button?.className).toContain('transition-all');
+      expect(button?.className).toContain('duration-150');
+      expect(button?.className).toContain('active:scale-[0.98]');
     });
 
     it('Input has transition-colors with explicit duration-200', () => {
@@ -38,7 +40,7 @@ describe('Micro-interaction Animations', () => {
   });
 
   describe('GPU-Accelerated Properties', () => {
-    it('Components use transition-colors for color changes (not layout-affecting)', () => {
+    it('Components use appropriate transitions for their interaction patterns', () => {
       const { container: buttonContainer } = render(<Button>Test</Button>);
       const { container: inputContainer } = render(<Input />);
       const { container: rowContainer } = render(
@@ -51,20 +53,22 @@ describe('Micro-interaction Animations', () => {
         </Table>,
       );
 
-      expect(buttonContainer.querySelector('button')?.className).toContain('transition-colors');
+      // Button uses transition-all to support scale animation on press
+      expect(buttonContainer.querySelector('button')?.className).toContain('transition-all');
+      // Input and TableRow use transition-colors for color changes only
       expect(inputContainer.querySelector('input')?.className).toContain('transition-colors');
       expect(rowContainer.querySelector('tr')?.className).toContain('transition-colors');
     });
   });
 
   describe('Hover State Transitions', () => {
-    it('Button applies hover:bg-* classes that work with transition-colors', () => {
+    it('Button applies hover:bg-* classes that work with transitions', () => {
       const { container } = render(<Button>Hover Me</Button>);
       const button = container.querySelector('button');
       const classes = button?.className || '';
 
-      // Check for hover state class and transition
-      expect(classes).toContain('transition-colors');
+      // Check for hover state class and transition (uses transition-all for scale support)
+      expect(classes).toContain('transition-all');
       expect(classes).toMatch(/hover:bg-/);
     });
 
@@ -76,7 +80,7 @@ describe('Micro-interaction Animations', () => {
         const button = container.querySelector('button');
         const classes = button?.className || '';
 
-        expect(classes).toContain('transition-colors');
+        expect(classes).toContain('transition-all');
         expect(classes).toMatch(/hover:bg-/);
       });
     });
@@ -104,7 +108,7 @@ describe('Micro-interaction Animations', () => {
       const classes = row?.className || '';
 
       expect(classes).toContain('transition-colors');
-      expect(classes).toContain('hover:bg-gray-50');
+      expect(classes).toContain('hover:bg-muted/50');
     });
   });
 
@@ -130,8 +134,9 @@ describe('Micro-interaction Animations', () => {
 
       expect(classes).toContain('focus-visible:outline-none');
       expect(classes).toContain('focus-visible:ring-2');
-      expect(classes).toContain('focus-visible:ring-blue-500');
-      expect(classes).toContain('transition-colors');
+      expect(classes).toContain('focus-visible:ring-ring');
+      // Button uses transition-all for interactive feedback (scale on press)
+      expect(classes).toContain('transition-all');
     });
 
     it('Input has focus-visible:ring with transition-colors', () => {
@@ -144,31 +149,36 @@ describe('Micro-interaction Animations', () => {
       expect(classes).toContain('transition-colors');
     });
 
-    it('Input error state has red focus ring', () => {
+    it('Input error state has destructive focus ring', () => {
       const { container } = render(<Input error />);
       const input = container.querySelector('input');
       const classes = input?.className || '';
 
-      expect(classes).toContain('focus-visible:ring-red-500');
+      expect(classes).toContain('focus-visible:ring-destructive');
       expect(classes).toContain('transition-colors');
     });
   });
 
   describe('Animation Property Validation', () => {
-    it('No components use layout-affecting properties in transitions', () => {
-      // Test that components don't animate width, height, margin, padding, etc.
+    it('Button uses transition-all for interactive scale feedback', () => {
+      // Button intentionally uses transition-all to support active:scale animation
       const { container: buttonContainer } = render(<Button>Test</Button>);
-      const { container: inputContainer } = render(<Input />);
-
       const button = buttonContainer.querySelector('button');
+
+      // Button should use transition-all for scale animation on press
+      expect(button?.className).toContain('transition-all');
+      expect(button?.className).toContain('active:scale-[0.98]');
+      // Should respect reduced motion
+      expect(button?.className).toContain('motion-reduce:transition-none');
+      expect(button?.className).toContain('motion-reduce:active:scale-100');
+    });
+
+    it('Input uses transition-colors for safe color-only transitions', () => {
+      const { container: inputContainer } = render(<Input />);
       const input = inputContainer.querySelector('input');
 
-      // Should use transition-colors, not transition-all or transition
-      expect(button?.className).not.toContain('transition-all');
+      // Input should use transition-colors, not transition-all
       expect(input?.className).not.toContain('transition-all');
-
-      // Should only use safe transition properties
-      expect(button?.className).toContain('transition-colors');
       expect(input?.className).toContain('transition-colors');
     });
 
@@ -197,7 +207,8 @@ describe('Micro-interaction Animations', () => {
 
       expect(classes).toContain('disabled:opacity-50');
       expect(classes).toContain('disabled:pointer-events-none');
-      expect(classes).toContain('transition-colors');
+      // Button uses transition-all for interactive feedback
+      expect(classes).toContain('transition-all');
     });
 
     it('Input disabled state has opacity transition', () => {
@@ -226,7 +237,7 @@ describe('Micro-interaction Animations', () => {
       const row = container.querySelector('tr');
       const classes = row?.className || '';
 
-      expect(classes).toContain('bg-blue-50');
+      expect(classes).toContain('bg-primary/8');
       expect(classes).toContain('transition-colors');
       expect(row?.getAttribute('data-state')).toBe('selected');
     });
@@ -247,7 +258,7 @@ describe('Micro-interaction Animations', () => {
 
       expect(classes).toContain('cursor-pointer');
       expect(classes).toContain('transition-colors');
-      expect(classes).toContain('hover:bg-gray-50');
+      expect(classes).toContain('hover:bg-muted/50');
     });
   });
 
@@ -264,7 +275,9 @@ describe('Micro-interaction Animations', () => {
             </Button>,
           );
           const button = container.querySelector('button');
-          expect(button?.className).toContain('transition-colors');
+          // Button uses transition-all for interactive scale feedback
+          expect(button?.className).toContain('transition-all');
+          expect(button?.className).toContain('active:scale-[0.98]');
         });
       });
     });
@@ -285,49 +298,54 @@ describe('Micro-interaction Animations', () => {
   });
 
   describe('Animation Performance Best Practices', () => {
-    it('Components avoid animating box-shadow directly', () => {
-      const { container: buttonContainer } = render(<Button>Test</Button>);
+    it('Input avoids animating box-shadow directly', () => {
       const { container: inputContainer } = render(<Input />);
-
-      const button = buttonContainer.querySelector('button');
       const input = inputContainer.querySelector('input');
 
-      // Should not have transition-shadow or transition-all
-      expect(button?.className).not.toMatch(/transition-(shadow|all)/);
-      expect(input?.className).not.toMatch(/transition-(shadow|all)/);
+      // Input should not have transition-shadow or transition-all
+      expect(input?.className).not.toMatch(/transition-shadow/);
+      expect(input?.className).not.toContain('transition-all');
     });
 
-    it('Focus rings appear instantly without transition delay', () => {
+    it('Button uses transition-all with reduced motion support', () => {
+      const { container: buttonContainer } = render(<Button>Test</Button>);
+      const button = buttonContainer.querySelector('button');
+
+      // Button intentionally uses transition-all for scale animation
+      expect(button?.className).toContain('transition-all');
+      // But respects reduced motion preference
+      expect(button?.className).toContain('motion-reduce:transition-none');
+    });
+
+    it('Focus rings appear with proper focus-visible support', () => {
       const { container } = render(<Button>Focus Test</Button>);
       const button = container.querySelector('button');
       const classes = button?.className || '';
 
-      // Focus ring should be instant (no transition on ring property)
+      // Focus ring should use focus-visible
       expect(classes).toContain('focus-visible:ring-2');
-      // Transition is only on colors, not on ring appearance
-      expect(classes).toContain('transition-colors');
+      expect(classes).toContain('focus-visible:outline-none');
     });
 
-    it('Hover states transition smoothly with colors only', () => {
+    it('Button hover states work with transition-all', () => {
       const { container } = render(<Button>Hover Test</Button>);
       const button = container.querySelector('button');
       const classes = button?.className || '';
 
-      // Should transition colors for hover
-      expect(classes).toContain('transition-colors');
+      // Button uses transition-all for both color and scale transitions
+      expect(classes).toContain('transition-all');
       expect(classes).toMatch(/hover:bg-/);
-
-      // Should not transition other properties
-      expect(classes).not.toMatch(/transition-(transform|scale|width|height)/);
+      expect(classes).toContain('active:scale-[0.98]');
     });
   });
 
   describe('Transition Duration Validation', () => {
     it('All transition durations are ≤200ms or use default', () => {
-      // Button uses default Tailwind transition-colors (150ms)
+      // Button uses transition-all with explicit duration-150
       const { container: buttonContainer } = render(<Button>Test</Button>);
       const button = buttonContainer.querySelector('button');
-      expect(button?.className).toContain('transition-colors');
+      expect(button?.className).toContain('transition-all');
+      expect(button?.className).toContain('duration-150');
       expect(button?.className).not.toMatch(/duration-(300|500|700|1000)/);
 
       // Input explicitly uses duration-200

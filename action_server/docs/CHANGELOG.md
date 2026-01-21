@@ -2,6 +2,29 @@
 
 ## Unreleased
 
+## 1.1.0 - 2026-01-21
+
+### Features
+- Enhanced logs page with colorized console output and tabbed interface for toggling between console and full log view
+- Added copy button for console output in the logs page
+- Added refresh button in run history to fetch the latest runs from the server
+- Improved animations for a snappier feel across the application
+- Enhanced clipboard functionality for better user experience
+
+### Fixes
+- Renamed `RCC_HOME` environment variable to `ROBOCORP_HOME` for consistency with documentation and other tools
+
+## 1.0.0 - 2026-01-08
+
+Community Edition initial release based on the open-source Action Server.
+
+- Community-focused build system without proprietary dependencies
+- Vendored frontend packages for offline building capability
+- Work items integration for producer-consumer workflows
+- Robots UI for managing robot packages
+- Community expose functionality for sharing actions
+- Analytics dashboard for monitoring action usage
+
 ## 3.0.0 - 2026-01-08
 
 - Removed support for macos x86_64 (only macos arm64 is supported).

@@ -55,3 +55,59 @@ export const prettyPrint = (input: string) => {
 export const toKebabCase = (str: string): string => {
   return str.replace(/[\s_]+/g, '-').toLowerCase();
 };
+
+/**
+ * Download data as a JSON file
+ * @param data - The data to download (will be stringified if not already a string)
+ * @param filename - The filename (without extension)
+ */
+export const downloadAsJson = (data: unknown, filename: string): void => {
+  const jsonString = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+  const blob = new Blob([jsonString], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `${filename}.json`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
+
+/**
+ * Copy text to clipboard
+ * @param text - The text to copy
+ * @returns Promise that resolves to true if copy succeeded, false otherwise
+ */
+export const copyToClipboard = async (text: string): Promise<boolean> => {
+  // Try modern clipboard API first
+  if (navigator.clipboard && window.isSecureContext) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      // Fall through to fallback
+    }
+  }
+  
+  // Fallback for older browsers or insecure contexts
+  const textArea = document.createElement('textarea');
+  textArea.value = text;
+  textArea.style.position = 'fixed';
+  textArea.style.left = '-999999px';
+  textArea.style.top = '-999999px';
+  textArea.style.opacity = '0';
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+  
+  try {
+    const success = document.execCommand('copy');
+    return success;
+  } catch {
+    console.warn('Copy to clipboard failed');
+    return false;
+  } finally {
+    document.body.removeChild(textArea);
+  }
+};

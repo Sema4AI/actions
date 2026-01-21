@@ -380,3 +380,16 @@ export const fetchRuns = async (runType?: string): Promise<Run[]> => {
   const result = await loadAsync<Run[]>(url, 'GET');
   return result.data || [];
 };
+
+/**
+ * Force refresh runs from the server.
+ * Call this after running an action to immediately update the runs list
+ * without waiting for WebSocket push.
+ */
+export const refreshRuns = async (): Promise<void> => {
+  const runs = await loadAsync<Run[]>(`${baseUrl}/api/runs`, 'GET');
+  if (runs.data !== undefined) {
+    sortRuns(runs.data);
+  }
+  globalModelContainer.onModelUpdated(ModelType.RUNS, runs);
+};

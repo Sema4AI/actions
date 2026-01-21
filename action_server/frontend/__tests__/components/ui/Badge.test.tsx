@@ -14,7 +14,8 @@ describe('Badge', () => {
     const { container } = render(<Badge variant="success">OK</Badge>);
     const el = container.firstChild as HTMLElement | null;
     expect(el).toBeTruthy();
-    // Variant classes are expected to include a green background for success
-    expect(el?.className).toMatch(/bg-green-100/);
+    // Variant classes use semantic color tokens
+    expect(el?.className).toContain('bg-success/10');
+    expect(el?.className).toContain('text-success');
   });
 });

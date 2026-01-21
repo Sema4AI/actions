@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { Badge } from '@/core/components/ui/Badge';
@@ -26,10 +26,11 @@ import { Textarea } from '@/core/components/ui/Textarea';
 import type { OpenAPIV3_1 } from 'openapi-types';
 import { useActionRunMutation } from '~/queries/actions';
 import { useActionServerContext } from '@/shared/context/actionServerContext';
+import { refreshRuns } from '@/shared/api-client';
 import { useLocalStorage } from '@/shared/hooks/useLocalStorage';
 import { Action, ActionPackage, Run, RunStatus, ServerConfig } from '@/shared/types';
 import { formDataToPayload, propertiesToFormData } from '@/shared/utils/formData';
-import { prettyPrint } from '@/shared/utils/helpers';
+import { prettyPrint, downloadAsJson, copyToClipboard } from '@/shared/utils/helpers';
 import { cn } from '@/shared/utils/cn';
 import { getStaggerDelay, animationClasses } from '@/shared/utils/animations';
 import { ActionsIcon } from '@/shared/components/Icons';
@@ -46,8 +47,6 @@ const statusLabel: Record<RunStatus, string> = {
   [RunStatus.FAILED]: 'Failed',
   [RunStatus.CANCELLED]: 'Cancelled',
 };
-
-// statusBadgeStyles is superseded by Badge variants — mapping now lives in renderStatusBadge
 
 declare global {
   interface Window {
@@ -119,7 +118,6 @@ const getRunsForAction = (runs: Run[] | undefined, actionId: string | null): Run
 };
 
 export const renderStatusBadge = (status: RunStatus) => {
-  // Map run status to badge variants for consistent visual semantics
   const map: Record<RunStatus, 'success' | 'error' | 'warning' | 'info' | 'neutral'> = {
     [RunStatus.NOT_RUN]: 'neutral',
     [RunStatus.RUNNING]: 'info',
@@ -143,32 +141,107 @@ const renderPackageBadge = (pkg: ActionPackage | undefined) => {
   );
 };
 
-const documentationSection = (action: Action) => (
-  <div className="space-y-4">
-    <div>
-      <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-        Documentation
-      </h3>
-      <pre className="mt-2 max-h-64 overflow-auto rounded-md border border-border bg-muted/50 p-4 text-sm text-foreground">
-        {action.docs || 'No documentation available for this action yet.'}
-      </pre>
+// Copy button component
+const CopyButton = ({ 
+  value, 
+  label = 'Copy',
+  size = 'sm',
+  variant = 'ghost',
+}: { 
+  value: string; 
+  label?: string;
+  size?: 'sm' | 'default';
+  variant?: 'ghost' | 'outline' | 'secondary';
+}) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    const success = await copyToClipboard(value);
+    if (success) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  return (
+    <Button
+      type="button"
+      variant={variant}
+      size={size}
+      onClick={handleCopy}
+      className="gap-1.5"
+    >
+      {copied ? (
+        <>
+          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+          Copied!
+        </>
+      ) : (
+        <>
+          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+          </svg>
+          {label}
+        </>
+      )}
+    </Button>
+  );
+};
+
+// Code block with copy button
+const CodeBlock = ({ 
+  value, 
+  title,
+  maxHeight = 'max-h-64',
+  showCopy = true,
+  showExport = false,
+  exportFilename,
+}: { 
+  value: string; 
+  title?: string;
+  maxHeight?: string;
+  showCopy?: boolean;
+  showExport?: boolean;
+  exportFilename?: string;
+}) => {
+  return (
+    <div className="relative group">
+      {title && (
+        <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+          {title}
+        </h3>
+      )}
+      <div className="relative">
+        <pre className={cn(
+          'overflow-auto rounded-md border border-border bg-muted/50 p-4 text-sm text-foreground font-mono',
+          maxHeight,
+        )}>
+          {value}
+        </pre>
+        {(showCopy || showExport) && (
+          <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+            {showCopy && <CopyButton value={value} label="" size="sm" variant="secondary" />}
+            {showExport && exportFilename && (
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={() => downloadAsJson(value, exportFilename)}
+                className="gap-1"
+              >
+                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+              </Button>
+            )}
+          </div>
+        )}
+      </div>
     </div>
-    <div>
-      <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Input Schema</h3>
-      <pre className="mt-2 max-h-64 overflow-auto rounded-md border border-border bg-muted/50 p-4 text-sm text-foreground">
-        {prettyPrint(action.input_schema)}
-      </pre>
-    </div>
-    <div>
-      <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-        Output Schema
-      </h3>
-      <pre className="mt-2 max-h-64 overflow-auto rounded-md border border-border bg-muted/50 p-4 text-sm text-foreground">
-        {prettyPrint(action.output_schema)}
-      </pre>
-    </div>
-  </div>
-);
+  );
+};
 
 const VersionMismatchBanner = ({ serverConfig }: { serverConfig: ServerConfig | undefined }) => {
   const [dismissed, setDismissed] = useState(false);
@@ -197,9 +270,7 @@ const VersionMismatchBanner = ({ serverConfig }: { serverConfig: ServerConfig | 
           Action Server backend version changed!
         </p>
         <p className="mt-1 text-sm text-yellow-700 dark:text-yellow-300/80">
-          Reload to ensure the UI is using the latest schema and resources. If you&apos;re in the
-          middle of editing request data you can ignore this warning, but the current session may be
-          unstable.
+          Reload to ensure the UI is using the latest schema and resources.
         </p>
       </div>
       <div className="flex items-center gap-2">
@@ -241,6 +312,12 @@ export const ActionsPage = () => {
   const [useAdvancedMode, setUseAdvancedMode] = useState(false);
   const [formValues, setFormValues] = useState<Record<string, string>>({});
   const { mutateAsync: runAction, isPending: isRunning } = useActionRunMutation();
+  
+  // Track if component has mounted to prevent re-animation on selection changes
+  const hasMounted = useRef(false);
+  useEffect(() => {
+    hasMounted.current = true;
+  }, []);
 
   const actions = useMemo(() => {
     if (!loadedActions.data) {
@@ -262,9 +339,10 @@ export const ActionsPage = () => {
 
   const recentRuns = useMemo(() => {
     const runs = getRunsForAction(loadedRuns.data, selectedActionId);
-    return runs.slice(0, 10);
+    return runs.slice(0, 5);
   }, [loadedRuns.data, selectedActionId]);
 
+  // Auto-select first action on load
   useEffect(() => {
     if (!selectedActionId && actions.length > 0) {
       setSelectedActionId(actions[0].id);
@@ -273,6 +351,9 @@ export const ActionsPage = () => {
 
   const openRunDialog = useCallback(
     (action: Action) => {
+      // Set the selected action first
+      setSelectedActionId(action.id);
+      
       setRunPayload(buildInitialPayload(action));
       setRunResult(null);
       setRunError(null);
@@ -308,8 +389,6 @@ export const ActionsPage = () => {
       if (!actionToDelete) {
         return;
       }
-      // TODO: Implement actual delete API call
-      // Example: await deleteAction(actionToDelete.id);
       console.log('Delete action:', actionToDelete.name);
       setDeleteDialogOpen(false);
       setActionToDelete(null);
@@ -326,7 +405,6 @@ export const ActionsPage = () => {
       let parsedPayload: unknown;
 
       if (useAdvancedMode) {
-        // Use JSON payload from textarea
         try {
           parsedPayload = JSON.parse(runPayload || '{}');
           setJsonPayloadError(null);
@@ -335,14 +413,12 @@ export const ActionsPage = () => {
           return;
         }
       } else {
-        // Build payload from form values
         const properties = parseInputSchema(selectedAction);
         const payload: Record<string, unknown> = {};
 
         properties.forEach((prop) => {
           const value = formValues[prop.name];
           if (value !== undefined && value !== '') {
-            // Convert value based on type
             if (prop.type === 'number' || prop.type === 'integer') {
               payload[prop.name] = Number(value);
             } else if (prop.type === 'boolean') {
@@ -372,6 +448,11 @@ export const ActionsPage = () => {
         });
         setRunResult(result);
         setRunError(null);
+        
+        // Immediately refresh runs list so the new run appears without waiting for WebSocket
+        refreshRuns().catch(() => {
+          // Silently ignore - WebSocket will eventually update the list
+        });
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Failed to run action';
         setRunError(message);
@@ -383,7 +464,7 @@ export const ActionsPage = () => {
   if (loadedActions.isPending) {
     return (
       <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-        Loading actions…
+        Loading actions...
       </div>
     );
   }
@@ -398,17 +479,17 @@ export const ActionsPage = () => {
 
   if (actions.length === 0) {
     return (
-      <div className="h-full space-y-4 p-6 animate-fadeInUp">
+      <div className="h-full space-y-6 p-8 animate-fadeInUp motion-reduce:animate-none">
         <VersionMismatchBanner serverConfig={loadedServerConfig.data} />
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/30 p-12 text-center min-h-[400px]">
-          <div className="mb-4 rounded-full bg-primary/10 p-4">
-            <ActionsIcon className="h-8 w-8 text-primary" />
+        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-muted/30 p-16 text-center min-h-[400px]">
+          <div className="mb-6 rounded-full bg-primary/10 p-6">
+            <ActionsIcon className="h-10 w-10 text-primary" />
           </div>
-          <h2 className="text-lg font-semibold text-foreground">No actions available yet</h2>
-          <p className="mt-2 max-w-sm text-sm text-muted-foreground">
+          <h2 className="text-xl font-semibold text-foreground">No actions available yet</h2>
+          <p className="mt-3 max-w-md text-base text-muted-foreground">
             Install an action package or create one to start running automated workflows.
           </p>
-          <Button className="mt-6" onClick={() => navigate('/runs')}>
+          <Button className="mt-8" size="lg" onClick={() => navigate('/runs')}>
             Review run history
           </Button>
         </div>
@@ -417,32 +498,33 @@ export const ActionsPage = () => {
   }
 
   return (
-    <div className="h-full space-y-6 p-6 animate-fadeInUp">
+    <div className="h-full space-y-6 p-8 animate-fadeInUp motion-reduce:animate-none">
       <VersionMismatchBanner serverConfig={loadedServerConfig.data} />
 
-      <div className="rounded-lg border border-border bg-card shadow-sm">
+      <div className="rounded-xl border border-border bg-card shadow-sm">
         <div className="flex flex-col gap-4 border-b border-border p-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">
             <h1 className="text-2xl font-semibold text-card-foreground">Action Packages</h1>
-            <p className="text-sm text-muted-foreground">
-              Actions available on this Action Server instance. Select one to inspect its schema or
-              execute it with custom parameters.
+            <p className="text-base text-muted-foreground">
+              Click an action to run it, or select to view details.
             </p>
           </div>
-          <div className="text-sm text-muted-foreground whitespace-nowrap">
-            {loadedActions.data?.length || 0} packages • {actions.length} enabled actions
+          <div className="text-base text-muted-foreground whitespace-nowrap">
+            {loadedActions.data?.length || 0} packages &bull; {actions.length} enabled actions
           </div>
         </div>
 
-        <div className="grid gap-6 p-6 lg:grid-cols-[2fr,3fr]">
-          <div className="rounded-md border border-border">
+        <div className="grid gap-8 p-6 lg:grid-cols-[3fr,2fr]">
+          {/* Actions Table - Left Side */}
+          <div className="rounded-lg border border-border overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/50">
-                  <TableHead>Action</TableHead>
-                  <TableHead>Package</TableHead>
-                  <TableHead>Location</TableHead>
-                  <TableHead>Runs</TableHead>
+                  <TableHead className="text-sm">Action</TableHead>
+                  <TableHead className="text-sm">Package</TableHead>
+                  <TableHead className="text-sm">Location</TableHead>
+                  <TableHead className="text-sm w-[100px]">Runs</TableHead>
+                  <TableHead className="w-[80px]"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -454,16 +536,13 @@ export const ActionsPage = () => {
                     <TableRow
                       key={action.id}
                       className={cn(
-                        // Base styles
-                        'cursor-pointer',
-                        // Colors and states
+                        'cursor-pointer transition-colors duration-150 h-14',
                         'hover:bg-muted/50',
                         isSelected && 'bg-primary/10 hover:bg-primary/15 border-l-2 border-l-primary',
-                        // Animations
-                        animationClasses.transitionWithMotionSafe,
-                        animationClasses.fadeInWithMotionSafe,
+                        // Only animate on initial mount
+                        !hasMounted.current && 'animate-fadeInUp motion-reduce:animate-none',
                       )}
-                      style={getStaggerDelay(index)}
+                      style={!hasMounted.current ? getStaggerDelay(index) : undefined}
                       onClick={() => setSelectedActionId(action.id)}
                       role="button"
                       tabIndex={0}
@@ -475,15 +554,32 @@ export const ActionsPage = () => {
                       }}
                       aria-selected={isSelected}
                     >
-                      <TableCell className="font-medium text-card-foreground">{action.name}</TableCell>
+                      <TableCell className="font-medium text-card-foreground text-base">{action.name}</TableCell>
                       <TableCell>{renderPackageBadge(pkg)}</TableCell>
-                      <TableCell className="text-xs text-muted-foreground font-mono">
+                      <TableCell className="text-sm text-muted-foreground font-mono">
                         {action.file}:{action.lineno}
                       </TableCell>
                       <TableCell>
-                        <span className="inline-flex items-center justify-center rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground font-medium min-w-[2rem]">
+                        <span className="inline-flex items-center justify-center rounded-md bg-muted px-2.5 py-1 text-sm text-muted-foreground font-medium min-w-[2.5rem]">
                           {runs.length}
                         </span>
+                      </TableCell>
+                      <TableCell>
+                        {/* Inline Run Button - Modal First UX */}
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openRunDialog(action);
+                          }}
+                          className="h-9 w-9 p-0"
+                          title="Run action"
+                        >
+                          <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                          </svg>
+                        </Button>
                       </TableCell>
                     </TableRow>
                   );
@@ -492,55 +588,34 @@ export const ActionsPage = () => {
             </Table>
           </div>
 
-          <div className="space-y-6">
+          {/* Detail Panel - Right Side (Simplified: just info + recent runs + collapsible docs) */}
+          <div className="space-y-5">
             {selectedAction && selectedPackage ? (
               <>
-                <div
-                  className={cn(
-                    // Layout
-                    'flex flex-col gap-4 p-6',
-                    // Style
-                    'rounded-md border border-border bg-gradient-to-br from-card to-muted/20 shadow-sm',
-                    // Hover effects
-                    'hover:shadow-md hover:border-border/60',
-                    // Animations
-                    'transition-all duration-300',
-                    animationClasses.fadeInWithMotionSafe,
-                  )}
-                >
-                  <div>
-                    <div className="flex flex-wrap items-center gap-3">
-                      <h2 className="text-xl font-semibold text-card-foreground">
-                        {selectedAction.name}
-                      </h2>
-                      {!selectedAction.enabled && (
-                        <Badge variant="warning">
-                          Not available
-                        </Badge>
-                      )}
-                      {renderPackageBadge(selectedPackage)}
-                    </div>
-                    <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-                      {selectedAction.docs
-                        ? selectedAction.docs.split('\n')[0]
-                        : 'This action does not provide description text yet.'}
-                    </p>
+                {/* Action Info Card */}
+                <div className="p-5 rounded-lg border border-border bg-gradient-to-br from-card to-muted/20 shadow-sm">
+                  <div className="flex flex-wrap items-center gap-3 mb-3">
+                    <h2 className="text-xl font-semibold text-card-foreground">
+                      {selectedAction.name}
+                    </h2>
+                    {renderPackageBadge(selectedPackage)}
                   </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Button onClick={() => openRunDialog(selectedAction)} disabled={!selectedAction.enabled}>
+                  <p className="text-base text-muted-foreground leading-relaxed mb-5">
+                    {selectedAction.docs
+                      ? selectedAction.docs.split('\n')[0]
+                      : 'No description available.'}
+                  </p>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <Button size="lg" onClick={() => openRunDialog(selectedAction)} disabled={!selectedAction.enabled}>
+                      <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                      </svg>
                       Run action
                     </Button>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0" aria-label="Open action menu">
-                          <span className="sr-only">Open action menu</span>
-                          <svg
-                            className="h-4 w-4"
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 16 16"
-                            fill="currentColor"
-                            aria-hidden="true"
-                          >
+                        <Button variant="ghost" size="sm" className="h-10 w-10 p-0" aria-label="More options">
+                          <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 16 16">
                             <circle cx="8" cy="2" r="1.5" />
                             <circle cx="8" cy="8" r="1.5" />
                             <circle cx="8" cy="14" r="1.5" />
@@ -548,11 +623,8 @@ export const ActionsPage = () => {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => openRunDialog(selectedAction)}>
-                          Run action
-                        </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => navigate(`/runs?search=${selectedAction.name}`)}>
-                          View logs
+                          View all runs
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem destructive onClick={() => openDeleteDialog(selectedAction)}>
@@ -563,42 +635,19 @@ export const ActionsPage = () => {
                   </div>
                 </div>
 
-                <div
-                  className={cn(
-                    // Layout & style
-                    'p-6 rounded-md border border-border bg-card shadow-sm',
-                    // Hover effects
-                    'hover:shadow-md hover:border-border/60',
-                    // Animations
-                    'transition-all duration-300',
-                    animationClasses.fadeInWithMotionSafe,
-                  )}
-                  style={{ animationDelay: '100ms' }}
-                >
-                  <h3 className="section-header">
+                {/* Recent Runs */}
+                <div className="p-5 rounded-lg border border-border bg-card">
+                  <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-4">
                     Recent runs
                   </h3>
                   {recentRuns.length === 0 ? (
-                    <p className="mt-3 text-sm text-muted-foreground">
-                      This action has not been executed yet.
-                    </p>
+                    <p className="text-base text-muted-foreground">No runs yet.</p>
                   ) : (
-                    <ul className="mt-3 space-y-2 text-sm">
-                      {recentRuns.map((run, index) => (
+                    <ul className="space-y-2">
+                      {recentRuns.map((run) => (
                         <li
                           key={run.id}
-                          className={cn(
-                            // Layout
-                            'flex items-center justify-between px-3 py-2.5',
-                            // Style
-                            'rounded-md border border-border bg-muted/30 cursor-pointer',
-                            // Hover effects
-                            'hover:bg-muted/50 hover:border-border/60',
-                            // Animations
-                            animationClasses.fadeInWithMotionSafe,
-                            'transition-all duration-200',
-                          )}
-                          style={getStaggerDelay(index + 1, 50)}
+                          className="flex items-center justify-between px-4 py-3 rounded-md border border-border bg-muted/30 cursor-pointer hover:bg-muted/50 transition-colors duration-150"
                           onClick={() => navigate(`/logs/${run.id}`)}
                           role="button"
                           tabIndex={0}
@@ -610,10 +659,10 @@ export const ActionsPage = () => {
                           }}
                         >
                           <div>
-                            <p className="font-medium text-card-foreground">
+                            <p className="text-base font-medium text-card-foreground">
                               {new Date(run.start_time).toLocaleString()}
                             </p>
-                            <p className="text-xs text-muted-foreground font-mono">Run #{run.numbered_id}</p>
+                            <p className="text-sm text-muted-foreground font-mono">#{run.numbered_id}</p>
                           </div>
                           {renderStatusBadge(run.status)}
                         </li>
@@ -622,21 +671,37 @@ export const ActionsPage = () => {
                   )}
                 </div>
 
-                <div
-                  className={cn(
-                    'rounded-md border border-border bg-card p-6 shadow-sm',
-                    'transition-all duration-300',
-                    'hover:shadow-md hover:border-border/60',
-                    'animate-fadeInUp',
-                    'motion-reduce:transform-none motion-reduce:transition-none motion-reduce:animate-none',
-                  )}
-                  style={{ animationDelay: '200ms' }}
-                >
-                  {documentationSection(selectedAction)}
-                </div>
+                {/* Documentation - Collapsible */}
+                <details className="rounded-lg border border-border bg-card group">
+                  <summary className="p-5 cursor-pointer hover:bg-muted/50 transition-colors duration-150 list-none flex items-center justify-between">
+                    <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                      Documentation
+                    </h3>
+                    <svg className="h-5 w-5 text-muted-foreground transition-transform duration-150 group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </summary>
+                  <div className="p-5 pt-0 space-y-4 border-t border-border">
+                    <CodeBlock
+                      title="Description"
+                      value={selectedAction.docs || 'No documentation available.'}
+                      showCopy
+                    />
+                    <CodeBlock
+                      title="Input Schema"
+                      value={prettyPrint(selectedAction.input_schema)}
+                      showCopy
+                    />
+                    <CodeBlock
+                      title="Output Schema"
+                      value={prettyPrint(selectedAction.output_schema)}
+                      showCopy
+                    />
+                  </div>
+                </details>
               </>
             ) : (
-              <div className="flex h-full items-center justify-center rounded-md border border-dashed border-border bg-muted/50 p-12 text-sm text-muted-foreground">
+              <div className="flex h-full items-center justify-center rounded-md border border-dashed border-border bg-muted/50 p-12 text-sm text-muted-foreground min-h-[200px]">
                 Select an action to view details
               </div>
             )}
@@ -644,6 +709,7 @@ export const ActionsPage = () => {
         </div>
       </div>
 
+      {/* Run Action Dialog - Modal First UX */}
       <Dialog open={isRunDialogOpen} onOpenChange={setRunDialogOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -651,8 +717,7 @@ export const ActionsPage = () => {
               {selectedAction ? `Run ${selectedAction.name}` : 'Run action'}
             </DialogTitle>
             <DialogDescription>
-              Update the payload and submit to run the action. The result will display below when
-              available.
+              Update the payload and submit to run the action. The result will display below when available.
             </DialogDescription>
           </DialogHeader>
 
@@ -703,9 +768,8 @@ export const ActionsPage = () => {
                 size="sm"
                 onClick={() => {
                   setUseAdvancedMode(!useAdvancedMode);
-                  if (!useAdvancedMode) {
-                    // Switching to advanced mode - sync form values to JSON
-                    const properties = parseInputSchema(selectedAction!);
+                  if (!useAdvancedMode && selectedAction) {
+                    const properties = parseInputSchema(selectedAction);
                     const payload: Record<string, unknown> = {};
                     properties.forEach((prop) => {
                       const value = formValues[prop.name];
@@ -764,7 +828,7 @@ export const ActionsPage = () => {
                     <div key={param.name} className="grid gap-2">
                       <label htmlFor={`param-${param.name}`} className="text-sm font-medium text-foreground">
                         {param.name}
-                        {param.required && <span className="text-red-500 ml-1">*</span>}
+                        {param.required && <span className="text-destructive ml-1">*</span>}
                       </label>
                       {param.description && (
                         <p className="text-xs text-muted-foreground">{param.description}</p>
@@ -773,11 +837,7 @@ export const ActionsPage = () => {
                         <Textarea
                           id={`param-${param.name}`}
                           value={formValues[param.name] || ''}
-                          placeholder={
-                            param.type === 'array'
-                              ? '["item1", "item2"]'
-                              : '{"key": "value"}'
-                          }
+                          placeholder={param.type === 'array' ? '["item1", "item2"]' : '{"key": "value"}'}
                           required={param.required}
                           onChange={(event) => {
                             setFormValues({
@@ -789,11 +849,7 @@ export const ActionsPage = () => {
                       ) : (
                         <Input
                           id={`param-${param.name}`}
-                          type={
-                            param.type === 'number' || param.type === 'integer'
-                              ? 'number'
-                              : 'text'
-                          }
+                          type={param.type === 'number' || param.type === 'integer' ? 'number' : 'text'}
                           value={formValues[param.name] || ''}
                           placeholder={`Enter ${param.name}`}
                           required={param.required}
@@ -823,37 +879,54 @@ export const ActionsPage = () => {
 
             {isRunning && (
               <div className="rounded-md border border-border bg-muted/50 p-4">
-                <Loading text="Running action…" />
+                <Loading text="Running action..." />
               </div>
             )}
+
             {runResult && (
-              <div className="rounded-md border border-border bg-muted/50 p-4">
-                <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                  Run result
-                </h3>
-                <div className="mt-2 text-sm text-foreground">
-                  <p className="mb-3">
-                    Run ID: {runResult.runId}
-                  </p>
-                  <pre className="max-h-96 overflow-auto rounded-md border border-border bg-card p-3 text-xs text-foreground whitespace-pre-wrap break-words">
-                    {runResult.response}
-                  </pre>
+              <div className="rounded-md border border-border bg-muted/50 p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                    Run result
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    <CopyButton value={runResult.response} label="Copy" size="sm" variant="outline" />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => downloadAsJson(runResult.response, `run-${runResult.runId}`)}
+                      className="gap-1.5"
+                    >
+                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                      </svg>
+                      Export JSON
+                    </Button>
+                  </div>
                 </div>
+                <p className="text-xs text-muted-foreground font-mono">
+                  Run ID: {runResult.runId}
+                </p>
+                <pre className="max-h-96 overflow-auto rounded-md border border-border bg-card p-3 text-xs text-foreground whitespace-pre-wrap break-words font-mono">
+                  {runResult.response}
+                </pre>
               </div>
             )}
 
             <DialogFooter>
-              <Button type="submit" disabled={isRunning || !selectedAction}>
-                {isRunning ? 'Running…' : 'Run action'}
-              </Button>
               <Button type="button" variant="ghost" onClick={() => setRunDialogOpen(false)}>
                 Close
+              </Button>
+              <Button type="submit" disabled={isRunning || !selectedAction}>
+                {isRunning ? 'Running...' : 'Run action'}
               </Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
 
+      {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>

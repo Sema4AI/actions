@@ -46,10 +46,10 @@ class Rcc(object):
         env["PYTHONIOENCODING"] = "utf-8"
         env["PYTHONUNBUFFERED"] = "1"
 
-        # Use RCC_HOME env var for holotree location
+        # Use ROBOCORP_HOME env var for holotree location
         # This enables separate holotrees for actions and robots to avoid lock contention
         if self.rcc_home:
-            env["RCC_HOME"] = str(self.rcc_home)
+            env["ROBOCORP_HOME"] = str(self.rcc_home)
 
         return env
 
@@ -102,7 +102,7 @@ class Rcc(object):
         from sema4ai.action_server._robo_utils.process import check_output_interactive
 
         env = self._compute_env()
-        rcc_home = env.get("RCC_HOME")
+        rcc_home = env.get("ROBOCORP_HOME")
         if not rcc_home:
             rcc_home = "<unset>"
 
@@ -151,7 +151,7 @@ class Rcc(object):
             stderr = as_str(e.stderr)
 
             msg = (
-                f"Error running: {cmdline}.\nRCC_HOME: {rcc_home}\n\n"
+                f"Error running: {cmdline}.\nROBOCORP_HOME: {rcc_home}\n\n"
                 f"Stdout: {stdout}\nStderr: {stderr}"
             )
             if hide_in_log:
@@ -420,7 +420,7 @@ _rcc_robots: Optional["Rcc"] = None
 def initialize_rcc_actions(rcc_location: Path, actions_home: Path) -> Iterator[Rcc]:
     """
     Initialize RCC instance for action executions.
-    Uses ACTIONS_HOME (defaults to ~/.actions) as RCC_HOME.
+    Uses ACTIONS_HOME (defaults to ~/.actions) as ROBOCORP_HOME.
     """
     global _rcc_actions
 
@@ -440,7 +440,7 @@ def initialize_rcc_actions(rcc_location: Path, actions_home: Path) -> Iterator[R
 def initialize_rcc_robots(rcc_location: Path, robots_home: Path) -> Iterator[Rcc]:
     """
     Initialize RCC instance for robot executions.
-    Uses ROBOTS_HOME (defaults to ~/.robots) as RCC_HOME.
+    Uses ROBOTS_HOME (defaults to ~/.robots) as ROBOCORP_HOME.
     """
     global _rcc_robots
 

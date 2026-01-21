@@ -215,8 +215,13 @@
 }
 
 .sidebar-nav-item {
-  @apply relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200;
+  @apply relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150;
   @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar;
+}
+
+/* Larger variant for better touch targets and visibility */
+.sidebar-nav-item-lg {
+  @apply py-3 text-base;
 }
 
 .sidebar-nav-item::before {

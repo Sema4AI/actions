@@ -176,8 +176,8 @@ describe('DropdownMenu', () => {
       await userEvent.click(getByText('Open'));
       const item = getByText('Hover Me');
 
-      // Check that focus classes are defined (hover:bg-gray-100 is equivalent to focus:bg-gray-100 in Radix)
-      expect(item.className).toMatch(/focus:bg-gray-100/);
+      // Check that focus classes are defined (uses semantic color)
+      expect(item.className).toMatch(/focus:bg-accent/);
     });
 
     it('applies destructive item styling when custom className includes red text', async () => {
@@ -435,7 +435,7 @@ describe('DropdownMenu', () => {
       await waitFor(() => {
         const separator = document.querySelector('[role="separator"]');
         expect(separator).toBeTruthy();
-        expect(separator?.className).toMatch(/bg-gray-200/);
+        expect(separator?.className).toMatch(/bg-border/);
       });
     });
   });

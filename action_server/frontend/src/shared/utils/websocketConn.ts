@@ -171,10 +171,10 @@ export class WebsocketConn {
     this.connecting = false;
     this.ws = null;
 
-    // Auto-reconnect in a short time as the connection was
-    // broken for some reason.
+    // Auto-reconnect quickly as the connection was broken for some reason.
+    // Reduced from 5000ms to 1000ms for faster recovery.
     setTimeout(() => {
       this.connect();
-    }, 5000);
+    }, 1000);
   };
 }

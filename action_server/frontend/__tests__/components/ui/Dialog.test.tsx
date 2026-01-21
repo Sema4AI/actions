@@ -463,7 +463,7 @@ describe('Dialog', () => {
       const classes = description.className;
 
       expect(classes).toContain('text-sm');
-      expect(classes).toContain('text-gray-600');
+      expect(classes).toContain('text-muted-foreground');
     });
   });
 

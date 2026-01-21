@@ -13,7 +13,7 @@ import {
 
 describe('Table component — visual and interaction contracts', () => {
   describe('Header styling', () => {
-    it('applies bg-gray-50, border-b, and font-medium to header cells', () => {
+    it('applies bg-muted/50, border-b, and font-medium to header cells', () => {
       const { getByText } = render(
         <Table>
           <TableHeader>
@@ -26,7 +26,7 @@ describe('Table component — visual and interaction contracts', () => {
       );
 
       const nameHead = getByText('Name');
-      expect(nameHead.className).toContain('bg-gray-50');
+      expect(nameHead.className).toContain('bg-muted/50');
       expect(nameHead.className).toContain('border-b');
       expect(nameHead.className).toContain('font-medium');
     });
@@ -47,7 +47,7 @@ describe('Table component — visual and interaction contracts', () => {
       expect(header.className).toContain('tracking-wide');
     });
 
-    it('applies text-gray-500 color to header text', () => {
+    it('applies text-muted-foreground color to header text', () => {
       const { getByText } = render(
         <Table>
           <TableHeader>
@@ -59,12 +59,12 @@ describe('Table component — visual and interaction contracts', () => {
       );
 
       const header = getByText('Column');
-      expect(header.className).toContain('text-gray-500');
+      expect(header.className).toContain('text-muted-foreground');
     });
   });
 
   describe('Row hover states', () => {
-    it('applies hover:bg-gray-50 to table rows', () => {
+    it('applies hover:bg-muted/50 to table rows', () => {
       const { getByText } = render(
         <Table>
           <TableBody>
@@ -77,7 +77,7 @@ describe('Table component — visual and interaction contracts', () => {
 
       const row = getByText('Regular row').closest('tr') as HTMLElement;
       expect(row).toBeTruthy();
-      expect(row.className).toContain('hover:bg-gray-50');
+      expect(row.className).toContain('hover:bg-muted/50');
     });
 
     it('applies transition-colors to table rows for smooth hover effect', () => {
@@ -98,7 +98,7 @@ describe('Table component — visual and interaction contracts', () => {
   });
 
   describe('Selected row state', () => {
-    it('applies bg-blue-50 when selected prop is true', () => {
+    it('applies bg-primary/8 when selected prop is true', () => {
       const { getByText } = render(
         <Table>
           <TableBody>
@@ -111,7 +111,7 @@ describe('Table component — visual and interaction contracts', () => {
 
       const selected = getByText('Selected row').closest('tr') as HTMLElement;
       expect(selected).toBeTruthy();
-      expect(selected.className).toContain('bg-blue-50');
+      expect(selected.className).toContain('bg-primary/8');
     });
 
     it('sets data-state="selected" when selected prop is true', () => {
@@ -159,8 +159,8 @@ describe('Table component — visual and interaction contracts', () => {
 
       const row = getByText('Selected with hover').closest('tr') as HTMLElement;
       expect(row).toBeTruthy();
-      expect(row.className).toContain('bg-blue-50');
-      expect(row.className).toContain('hover:bg-gray-50');
+      expect(row.className).toContain('bg-primary/8');
+      expect(row.className).toContain('hover:bg-muted/50');
     });
   });
 
@@ -211,7 +211,7 @@ describe('Table component — visual and interaction contracts', () => {
       const row = getByText('Selected and clickable').closest('tr') as HTMLElement;
       expect(row).toBeTruthy();
       expect(row.className).toContain('cursor-pointer');
-      expect(row.className).toContain('bg-blue-50');
+      expect(row.className).toContain('bg-primary/8');
     });
   });
 
@@ -402,7 +402,7 @@ describe('Table component — visual and interaction contracts', () => {
   });
 
   describe('Cell styling', () => {
-    it('applies text-gray-700 to table cells', () => {
+    it('applies text-card-foreground to table cells', () => {
       const { getByText } = render(
         <Table>
           <TableBody>
@@ -414,7 +414,7 @@ describe('Table component — visual and interaction contracts', () => {
       );
 
       const cell = getByText('Data');
-      expect(cell.className).toContain('text-gray-700');
+      expect(cell.className).toContain('text-card-foreground');
     });
 
     it('applies proper padding to cells', () => {

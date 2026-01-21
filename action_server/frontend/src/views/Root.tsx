@@ -1,8 +1,7 @@
 import { SideNavigation, Box, Link, Scroll, useSystemTheme } from '@sema4ai/components';
 import { MouseEvent, StrictMode, useCallback, useEffect, useMemo, useState } from 'react';
 import { ThemeOverrides, ThemeProvider, styled } from '~/vendor/sema4ai-theme';
-import { IconBolt, IconGlobe, IconShare, IconUnorderedList } from '@sema4ai/icons';
-import { IconSema4 } from '@sema4ai/icons/logos';
+import { IconBolt, IconGlobe, IconShare, IconUnorderedList, IconGithub } from '@sema4ai/icons';
 import {
   Outlet,
   RouterProvider,
@@ -94,7 +93,7 @@ const ErrorPage = () => {
       <h4>Error: no content found at this url...</h4>
       <p>
         <br />
-        <Link href="/">Navigate back to the Sema4.ai Action Server root url.</Link>
+        <Link href="/">Navigate back to the Action Server home.</Link>
       </p>
     </div>
   );
@@ -214,11 +213,36 @@ const Root = () => {
                 </SideNavigation.Link>
               </ContentScroll>
 
-              <Box display="flex" alignItems="center" ml={24} mt={8} color="content.subtle.light">
-                <IconSema4 size={24} />
-                <Box ml={8} fontSize={12}>
-                  Powered by Sema4.ai
-                </Box>
+              <Box 
+                display="flex" 
+                alignItems="center" 
+                justifyContent="center"
+                ml={24} 
+                mt={8} 
+                mb={16}
+                color="content.subtle.light"
+              >
+                <Link 
+                  href="https://github.com/joshyorko/actions" 
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '8px',
+                    textDecoration: 'none',
+                    color: 'inherit',
+                    opacity: 0.7,
+                    transition: 'opacity 0.15s ease',
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.opacity = '1'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.opacity = '0.7'; }}
+                >
+                  <IconGithub size={18} />
+                  <Box fontSize={11} fontWeight={500}>
+                    Community Edition
+                  </Box>
+                </Link>
               </Box>
             </SideNavigation>
             <section>

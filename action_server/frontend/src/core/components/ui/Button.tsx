@@ -17,8 +17,8 @@ const buttonVariants = cva(
     'focus-visible:ring-offset-2 focus-visible:ring-offset-background',
     // Disabled states
     'disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed',
-    // Animations
-    'transition-all duration-200 active:scale-[0.98]',
+    // Animations - snappy 150ms transitions
+    'transition-all duration-150 active:scale-[0.98]',
     'motion-reduce:transition-none motion-reduce:active:scale-100',
   ].join(' '),
   {
