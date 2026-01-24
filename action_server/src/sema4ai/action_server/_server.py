@@ -555,11 +555,7 @@ def start_server(
             set_scheduler(scheduler)
 
             # Initialize next run times for all schedules
-            from sema4ai.action_server._models import get_db
-
-            db = get_db()
-            with db.connect():
-                initialize_schedule_next_runs(db)
+            await initialize_schedule_next_runs()
 
             # Start the scheduler
             await scheduler.start()
