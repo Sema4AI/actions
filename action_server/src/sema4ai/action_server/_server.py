@@ -551,7 +551,6 @@ def start_server(
             scheduler = SchedulerEngine(
                 check_interval=settings.scheduler_check_interval,
                 max_concurrent_global=settings.scheduler_max_concurrent_global,
-                notification_service=notification_service,
             )
             set_scheduler(scheduler)
 
