@@ -48,3 +48,5 @@ dependencies:
     - -e ./common
     - -e ./work-items
     - -e ./action_server
+    # Redis for control-room-lite mode
+    - redis>=5.0.0
