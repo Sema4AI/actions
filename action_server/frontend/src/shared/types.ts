@@ -119,3 +119,227 @@ export interface RobotRunResponseAPI {
   status: string;
   message?: string;
 }
+
+// ============================================================================
+// Scheduling Types
+// ============================================================================
+
+export type ScheduleType = 'cron' | 'interval' | 'weekday' | 'once';
+export type ExecutionMode = 'run' | 'work_item';
+export type DependencyMode = 'after_success' | 'after_any';
+
+export enum ScheduleExecutionStatus {
+  TRIGGERED = 'triggered',
+  RUNNING = 'running',
+  COMPLETED = 'completed',
+  FAILED = 'failed',
+  SKIPPED = 'skipped',
+  RETRYING = 'retrying',
+}
+
+export interface ScheduleGroup {
+  id: string;
+  name: string;
+  description?: string;
+  parent_id?: string;
+  color?: string;
+  created_at: string;
+}
+
+export interface WeekdayConfig {
+  days: number[]; // 0=Sunday, 1=Monday, ..., 6=Saturday
+  time: string; // HH:MM format
+}
+
+export interface Schedule {
+  id: string;
+  name: string;
+  description?: string;
+
+  // Target
+  action_id?: string;
+  execution_mode: ExecutionMode;
+  work_item_queue?: string;
+  inputs_json: string;
+
+  // Schedule type
+  schedule_type: ScheduleType;
+  cron_expression?: string;
+  interval_seconds?: number;
+  weekday_config_json?: string;
+  once_at?: string;
+  timezone: string;
+
+  // State
+  enabled: boolean;
+  created_at: string;
+  updated_at: string;
+  last_run_at?: string;
+  next_run_at?: string;
+
+  // Execution settings
+  skip_if_running: boolean;
+  max_concurrent: number;
+  timeout_seconds: number;
+
+  // Retry policy
+  retry_enabled: boolean;
+  retry_max_attempts: number;
+  retry_delay_seconds: number;
+  retry_backoff_multiplier: number;
+
+  // Rate limiting
+  rate_limit_enabled: boolean;
+  rate_limit_max_per_hour?: number;
+  rate_limit_max_per_day?: number;
+
+  // Dependencies
+  depends_on_schedule_id?: string;
+  dependency_mode: DependencyMode;
+
+  // Notifications
+  notify_on_failure: boolean;
+  notify_on_success: boolean;
+  notification_webhook_url?: string;
+  notification_email?: string;
+
+  // Organization
+  group_id?: string;
+  tags_json: string;
+  priority: number;
+}
+
+export interface ScheduleExecution {
+  id: string;
+  schedule_id: string;
+  run_id?: string;
+  work_item_id?: string;
+  scheduled_time: string;
+  actual_start_time: string;
+  actual_end_time?: string;
+  duration_ms?: number;
+  status: ScheduleExecutionStatus;
+  attempt_number: number;
+  error_message?: string;
+  error_code?: string;
+  skip_reason?: string;
+  result_json?: string;
+  notification_sent: boolean;
+  notification_error?: string;
+}
+
+export interface ScheduleWithAction extends Schedule {
+  action?: Action;
+  group?: ScheduleGroup;
+}
+
+// Schedule API request/response types
+export interface CreateScheduleRequest {
+  name: string;
+  description?: string;
+  action_id?: string;
+  execution_mode?: ExecutionMode;
+  work_item_queue?: string;
+  inputs?: Record<string, unknown>;
+  schedule_type: ScheduleType;
+  cron_expression?: string;
+  interval_seconds?: number;
+  weekday_config?: WeekdayConfig;
+  once_at?: string;
+  timezone?: string;
+  enabled?: boolean;
+  skip_if_running?: boolean;
+  max_concurrent?: number;
+  timeout_seconds?: number;
+  retry_enabled?: boolean;
+  retry_max_attempts?: number;
+  retry_delay_seconds?: number;
+  retry_backoff_multiplier?: number;
+  rate_limit_enabled?: boolean;
+  rate_limit_max_per_hour?: number;
+  rate_limit_max_per_day?: number;
+  depends_on_schedule_id?: string;
+  dependency_mode?: DependencyMode;
+  notify_on_failure?: boolean;
+  notify_on_success?: boolean;
+  notification_webhook_url?: string;
+  notification_email?: string;
+  group_id?: string;
+  tags?: string[];
+  priority?: number;
+}
+
+export interface UpdateScheduleRequest extends Partial<CreateScheduleRequest> {
+  // All fields optional for partial updates
+}
+
+export interface ScheduleStatsResponse {
+  total: number;
+  enabled: number;
+  disabled: number;
+  running: number;
+  failed_24h: number;
+  success_rate_7d: number;
+  total_executions_7d: number;
+}
+
+export interface CronValidationResponse {
+  valid: boolean;
+  error?: string;
+  description?: string;
+}
+
+export interface PreviewRunsResponse {
+  next_runs: string[];
+  timezone: string;
+}
+
+// ============================================================================
+// Trigger Types
+// ============================================================================
+
+export type TriggerType = 'webhook' | 'email' | 'file_watch';
+
+export enum TriggerInvocationStatus {
+  ACCEPTED = 'accepted',
+  REJECTED = 'rejected',
+  RATE_LIMITED = 'rate_limited',
+  ERROR = 'error',
+}
+
+export interface Trigger {
+  id: string;
+  name: string;
+  description?: string;
+  action_id?: string;
+  execution_mode: ExecutionMode;
+  work_item_queue?: string;
+  inputs_template_json: string;
+  trigger_type: TriggerType;
+  webhook_secret?: string;
+  webhook_method: string;
+  enabled: boolean;
+  created_at: string;
+  updated_at: string;
+  last_triggered_at?: string;
+  trigger_count: number;
+  rate_limit_enabled: boolean;
+  rate_limit_max_per_minute: number;
+}
+
+export interface TriggerInvocation {
+  id: string;
+  trigger_id: string;
+  invoked_at: string;
+  source_ip?: string;
+  payload_json?: string;
+  headers_json?: string;
+  status: TriggerInvocationStatus;
+  run_id?: string;
+  work_item_id?: string;
+  error_message?: string;
+}
+
+export interface TriggerWithAction extends Trigger {
+  action?: Action;
+}

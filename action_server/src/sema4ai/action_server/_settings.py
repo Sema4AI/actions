@@ -271,6 +271,32 @@ class Settings:
     # (so, even if the port is 0, it should map to the actually mapped port).
     base_url: Optional[str] = None
 
+    # Scheduler settings
+    enable_scheduler: bool = True
+    scheduler_check_interval: float = 10.0  # seconds
+    scheduler_max_concurrent_global: int = 10
+
+    # Trigger settings
+    enable_triggers: bool = True
+    trigger_webhook_base_url: Optional[str] = None  # For generating webhook URLs
+
+    # Notification settings
+    smtp_host: Optional[str] = None
+    smtp_port: int = 587
+    smtp_user: Optional[str] = None
+    smtp_password: Optional[str] = None
+    smtp_from: Optional[str] = None
+    smtp_use_tls: bool = True
+
+    # Control Room Lite mode settings
+    control_room_lite: bool = False
+    redis_url: Optional[str] = None
+    redis_password: Optional[str] = None
+
+    # Worker settings (Control Room Lite)
+    worker_concurrency: int = 4
+    worker_poll_timeout: int = 30
+
     @classmethod
     def defaults(cls):
         fields = cls.__dataclass_fields__
@@ -331,6 +357,10 @@ class Settings:
             "ssl_certfile",
             "oauth2_settings",
             "expose_provider",
+            # Control Room Lite mode
+            "control_room_lite",
+            "redis_url",
+            "redis_password",
         ):
             assert hasattr(settings, attr)
             if hasattr(args, attr):
@@ -398,6 +428,27 @@ class Settings:
 
             if not settings.oauth2_settings:
                 settings.oauth2_settings = str(user_path / "oauth2_config.yaml")
+
+            # Validate Control Room Lite mode
+            if settings.control_room_lite:
+                if not settings.redis_url:
+                    raise ActionServerValidationError(
+                        "When --control-room-lite is enabled, --redis-url must be provided. "
+                        "Example: --redis-url redis://localhost:6379"
+                    )
+
+                # Check for redis password from environment if not provided
+                if not settings.redis_password:
+                    settings.redis_password = os.environ.get(
+                        "ACTION_SERVER_REDIS_PASSWORD"
+                    )
+
+                log.info(
+                    colored(
+                        f"Control Room Lite mode enabled with Redis: {settings.redis_url}",
+                        attrs=["bold"],
+                    )
+                )
 
         return settings
 

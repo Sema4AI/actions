@@ -50,7 +50,9 @@ def start_server(
     from ._api_oauth2 import oauth2_api_router
     from ._api_robots import robots_api_router
     from ._api_run import run_api_router
+    from ._api_schedules import schedule_groups_api_router, schedules_api_router
     from ._api_secrets import secrets_api_router
+    from ._api_triggers import triggers_api_router
     from ._api_work_items import work_items_api_router
     from ._app import get_app
     from ._server_websockets import websocket_api_router
@@ -64,6 +66,15 @@ def start_server(
     file_watcher: None | "ActionServerFileWatcher" = None
 
     settings = get_settings()
+
+    # Initialize operating mode
+    from sema4ai.action_server._mode import initialize_mode
+
+    initialize_mode(
+        control_room_lite=settings.control_room_lite,
+        redis_url=settings.redis_url,
+        redis_password=settings.redis_password,
+    )
 
     settings_dict = asdict(settings)
     settings_str = "\n".join(f"    {k} = {v!r}" for k, v in settings_dict.items())
@@ -125,6 +136,16 @@ def start_server(
     app.include_router(websocket_api_router)
     app.include_router(secrets_api_router, include_in_schema=settings.full_openapi_spec)
     app.include_router(oauth2_api_router, include_in_schema=settings.full_openapi_spec)
+    # Scheduling and triggers
+    app.include_router(
+        schedules_api_router, include_in_schema=settings.full_openapi_spec
+    )
+    app.include_router(
+        schedule_groups_api_router, include_in_schema=settings.full_openapi_spec
+    )
+    app.include_router(
+        triggers_api_router, include_in_schema=settings.full_openapi_spec
+    )
 
     @lru_cache
     def get_static_config_data() -> dict[str, Any]:
@@ -489,6 +510,77 @@ def start_server(
                     log.exception("Error killing subprocess: %s", child.pid)
 
     app.custom_lifespan.register(_expose_and_shutdown)
+
+    @asynccontextmanager
+    async def _scheduler_lifespan(app: FastAPI):
+        """
+        Lifespan handler for the scheduler and related services.
+
+        Starts the scheduler engine and notification service on startup,
+        and stops them gracefully on shutdown.
+        """
+        from sema4ai.action_server._notifications import (
+            NotificationService,
+            set_notification_service,
+        )
+        from sema4ai.action_server._scheduler import (
+            SchedulerEngine,
+            initialize_schedule_next_runs,
+            set_scheduler,
+        )
+
+        scheduler = None
+        notification_service = None
+
+        # Initialize notification service if SMTP is configured
+        if settings.smtp_host:
+            log.info("Initializing notification service...")
+            notification_service = NotificationService(
+                smtp_host=settings.smtp_host,
+                smtp_port=settings.smtp_port,
+                smtp_user=settings.smtp_user,
+                smtp_password=settings.smtp_password,
+                smtp_from=settings.smtp_from,
+                smtp_use_tls=settings.smtp_use_tls,
+            )
+            set_notification_service(notification_service)
+
+        # Initialize and start scheduler if enabled
+        if settings.enable_scheduler:
+            log.info("Initializing scheduler engine...")
+            scheduler = SchedulerEngine(
+                check_interval=settings.scheduler_check_interval,
+                max_concurrent_global=settings.scheduler_max_concurrent_global,
+                notification_service=notification_service,
+            )
+            set_scheduler(scheduler)
+
+            # Initialize next run times for all schedules
+            from sema4ai.action_server._models import get_db
+
+            db = get_db()
+            with db.connect():
+                initialize_schedule_next_runs(db)
+
+            # Start the scheduler
+            await scheduler.start()
+            log.info(
+                colored("  ⏰ Scheduler started", "green", attrs=["bold"])
+                + colored(
+                    f" (check interval: {settings.scheduler_check_interval}s)",
+                    attrs=["dark"],
+                )
+            )
+
+        yield
+
+        # Shutdown
+        if scheduler is not None:
+            log.info("Stopping scheduler...")
+            await scheduler.stop()
+
+    if settings.enable_scheduler:
+        app.custom_lifespan.register(_scheduler_lifespan)
 
     with _actions_process_pool.setup_actions_process_pool(
         settings,

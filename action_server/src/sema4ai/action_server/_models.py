@@ -174,6 +174,224 @@ class RunStatus:
     CANCELLED = 4
 
 
+# ============================================================================
+# Scheduling Models
+# ============================================================================
+
+
+@dataclass
+class ScheduleGroup:  # Table name: schedule_group
+    """A group/folder for organizing schedules."""
+
+    id: str  # primary key (uuid)
+    _db_rules.unique_indexes.add("ScheduleGroup.id")
+
+    name: str  # Group name
+    description: Optional[str]  # Group description
+    parent_id: Optional[str]  # Parent group for nesting
+    _db_rules.indexes.add("ScheduleGroup.parent_id")
+
+    color: Optional[str]  # UI color hint
+    created_at: str  # ISO datetime
+
+
+@dataclass
+class Schedule:  # Table name: schedule
+    """A scheduled action execution configuration."""
+
+    id: str  # primary key (uuid)
+    _db_rules.unique_indexes.add("Schedule.id")
+
+    name: str  # Schedule name
+    description: Optional[str]  # Schedule description
+
+    # Target (what to execute)
+    action_id: Optional[str]  # FK to action (nullable for work_item mode)
+    _db_rules.indexes.add("Schedule.action_id")
+
+    execution_mode: str  # 'run' | 'work_item'
+    work_item_queue: Optional[str]  # Queue name for work_item mode
+    inputs_json: str  # JSON input data for the action
+
+    # Schedule type (one of these is set)
+    schedule_type: str  # 'cron' | 'interval' | 'weekday' | 'once'
+    cron_expression: Optional[str]  # Cron expression for 'cron' type
+    interval_seconds: Optional[int]  # Interval for 'interval' type
+    weekday_config_json: Optional[str]  # JSON config for 'weekday' type
+    once_at: Optional[str]  # ISO datetime for 'once' type
+
+    timezone: str  # IANA timezone (e.g., 'UTC', 'America/New_York')
+
+    # State
+    enabled: bool = True
+    created_at: str = ""
+    updated_at: str = ""
+    last_run_at: Optional[str] = None
+    next_run_at: Optional[str] = None
+
+    # Execution settings
+    skip_if_running: bool = False
+    max_concurrent: int = 1
+    timeout_seconds: int = 3600
+
+    # Retry policy
+    retry_enabled: bool = False
+    retry_max_attempts: int = 3
+    retry_delay_seconds: int = 60
+    retry_backoff_multiplier: float = 2.0
+
+    # Rate limiting
+    rate_limit_enabled: bool = False
+    rate_limit_max_per_hour: Optional[int] = None
+    rate_limit_max_per_day: Optional[int] = None
+
+    # Dependencies
+    depends_on_schedule_id: Optional[str] = None  # FK to another schedule
+    _db_rules.indexes.add("Schedule.depends_on_schedule_id")
+
+    dependency_mode: str = "after_success"  # 'after_success' | 'after_any'
+
+    # Notifications
+    notify_on_failure: bool = False
+    notify_on_success: bool = False
+    notification_webhook_url: Optional[str] = None
+    notification_email: Optional[str] = None
+
+    # Organization
+    group_id: Optional[str] = None  # FK to schedule_group
+    _db_rules.indexes.add("Schedule.group_id")
+
+    tags_json: str = "[]"  # JSON array of tags
+    priority: int = 0
+
+
+class ScheduleExecutionStatus:
+    """Status values for schedule executions."""
+
+    TRIGGERED = "triggered"
+    RUNNING = "running"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    SKIPPED = "skipped"
+    RETRYING = "retrying"
+
+
+class ScheduleSkipReason:
+    """Reasons for skipping a schedule execution."""
+
+    PREVIOUS_RUNNING = "previous_running"
+    RATE_LIMITED = "rate_limited"
+    DEPENDENCY_FAILED = "dependency_failed"
+    DISABLED = "disabled"
+
+
+@dataclass
+class ScheduleExecution:  # Table name: schedule_execution
+    """Record of a schedule execution."""
+
+    id: str  # primary key (uuid)
+    _db_rules.unique_indexes.add("ScheduleExecution.id")
+
+    schedule_id: str  # FK to schedule
+    _db_rules.indexes.add("ScheduleExecution.schedule_id")
+
+    # What was created
+    run_id: Optional[str]  # If execution_mode='run'
+    work_item_id: Optional[str]  # If execution_mode='work_item'
+
+    # Timing
+    scheduled_time: str  # When it was scheduled to run (ISO datetime)
+    actual_start_time: str  # When execution actually started
+    actual_end_time: Optional[str]  # When execution completed
+    duration_ms: Optional[int]  # Duration in milliseconds
+
+    # Status
+    status: str  # See ScheduleExecutionStatus
+    _db_rules.indexes.add("ScheduleExecution.status")
+
+    attempt_number: int = 1  # Current retry attempt
+    error_message: Optional[str] = None
+    error_code: Optional[str] = None
+    skip_reason: Optional[str] = None  # See ScheduleSkipReason
+
+    # Result data
+    result_json: Optional[str] = None
+
+    # Notification tracking
+    notification_sent: bool = False
+    notification_error: Optional[str] = None
+
+
+@dataclass
+class Trigger:  # Table name: trigger
+    """A trigger for event-driven action execution (webhook, email, etc.)."""
+
+    id: str  # primary key (uuid)
+    _db_rules.unique_indexes.add("Trigger.id")
+
+    name: str  # Trigger name
+    description: Optional[str]  # Trigger description
+
+    # What to execute
+    action_id: Optional[str]  # FK to action
+    _db_rules.indexes.add("Trigger.action_id")
+
+    execution_mode: str  # 'run' | 'work_item'
+    work_item_queue: Optional[str]  # Queue name for work_item mode
+    inputs_template_json: str  # JSON template with {{payload.field}} vars
+
+    # Trigger type
+    trigger_type: str  # 'webhook' | 'email' | 'file_watch'
+    _db_rules.indexes.add("Trigger.trigger_type")
+
+    # Webhook config
+    webhook_secret: Optional[str]  # Secret for HMAC signature validation
+    webhook_method: str  # HTTP method: 'POST', 'PUT'
+
+    # State
+    enabled: bool = True
+    created_at: str = ""
+    updated_at: str = ""
+    last_triggered_at: Optional[str] = None
+    trigger_count: int = 0
+
+    # Rate limiting
+    rate_limit_enabled: bool = False
+    rate_limit_max_per_minute: int = 60
+
+
+class TriggerInvocationStatus:
+    """Status values for trigger invocations."""
+
+    ACCEPTED = "accepted"
+    REJECTED = "rejected"
+    RATE_LIMITED = "rate_limited"
+    ERROR = "error"
+
+
+@dataclass
+class TriggerInvocation:  # Table name: trigger_invocation
+    """Record of a trigger invocation."""
+
+    id: str  # primary key (uuid)
+    _db_rules.unique_indexes.add("TriggerInvocation.id")
+
+    trigger_id: str  # FK to trigger
+    _db_rules.indexes.add("TriggerInvocation.trigger_id")
+
+    # Invocation details
+    invoked_at: str  # ISO datetime
+    source_ip: Optional[str]  # Client IP address
+    payload_json: Optional[str]  # Request payload
+    headers_json: Optional[str]  # Request headers
+
+    # Result
+    status: str  # See TriggerInvocationStatus
+    run_id: Optional[str]  # Created run ID if any
+    work_item_id: Optional[str]  # Created work item ID if any
+    error_message: Optional[str]  # Error message if status='error'
+
+
 def run_status_to_str(run_status: int) -> str:
     """
     Args:
@@ -208,6 +426,12 @@ def get_all_model_classes():
         UserSession,
         TempUserSessionData,
         OAuth2UserData,
+        # Scheduling models
+        ScheduleGroup,
+        Schedule,
+        ScheduleExecution,
+        Trigger,
+        TriggerInvocation,
     ]
 
 

@@ -229,6 +229,10 @@ class ArgumentsNamespaceStart(ArgumentsNamespaceBaseImportOrStart):
     ssl_certfile: str
     oauth2_settings: str
     auto_reload: bool
+    # Control Room Lite mode
+    control_room_lite: bool
+    redis_url: Optional[str]
+    redis_password: Optional[str]
 
 
 class ArgumentsNamespacePackagePush(ArgumentsNamespace):

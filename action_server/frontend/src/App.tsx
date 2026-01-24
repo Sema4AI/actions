@@ -15,6 +15,7 @@ import { ArtifactsPage } from '@/core/pages/Artifacts';
 import { LogsPage } from '@/core/pages/Logs';
 import { RobotsPage } from '@/core/pages/Robots';
 import { RunHistoryPage } from '@/core/pages/RunHistory';
+import { SchedulesPage } from '@/core/pages/Schedules';
 import { WorkItemsPage } from '@/core/pages/WorkItems';
 import {
   ActionServerContext,
@@ -196,6 +197,13 @@ const ChevronRightIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+const ClockIcon = ({ className }: { className?: string }) => (
+  <svg className={className} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10" />
+    <polyline points="12 6 12 12 16 14" />
+  </svg>
+);
+
 // ============================================================================
 // Navigation Items Configuration
 // ============================================================================
@@ -211,6 +219,7 @@ type NavItem = {
 const NAV_ITEMS: NavItem[] = [
   { label: 'Actions', path: '/actions', tier: 'core', icon: ActionsIcon },
   { label: 'Runs', path: '/runs', tier: 'core', icon: RunsIcon },
+  { label: 'Schedules', path: '/schedules', tier: 'core', icon: ClockIcon },
   { label: 'Robots', path: '/robots', tier: 'core', icon: RobotsIcon },
   { label: 'Work Items', path: '/work-items', tier: 'core', icon: WorkItemsIcon },
   { label: 'Analytics', path: '/analytics', tier: 'core', icon: AnalyticsIcon },
@@ -586,6 +595,7 @@ const AppRoutes = () => {
         <Route path="/" element={<Navigate to="/actions" replace />} />
         <Route path="/actions" element={<ActionsPage />} />
         <Route path="/runs" element={<RunHistoryPage />} />
+        <Route path="/schedules" element={<SchedulesPage />} />
         <Route path="/robots" element={<RobotsPage />} />
         <Route path="/work-items" element={<WorkItemsPage />} />
         <Route path="/logs/:runId" element={<LogsPage />} />
