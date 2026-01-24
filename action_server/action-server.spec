@@ -24,6 +24,12 @@ logger.info("Collecting action_server dependencies...")
 action_server_datas, _action_server_binaries, action_server_hiddenimports = collect_all(
     "sema4ai.action_server"
 )
+
+# Collect redis submodules for control-room-lite mode
+logger.info("Collecting redis submodules...")
+redis_hiddenimports = collect_submodules("redis")
+for h in redis_hiddenimports:
+    logger.info(f"Collected redis hiddenimport: {h}")
 new_datas = []
 for data in action_server_datas:
     if ".mypy_cache" in data[0]:
@@ -67,12 +73,8 @@ a = Analysis(
     ],
     hiddenimports=[
         *action_server_hiddenimports,
+        *redis_hiddenimports,
         "pydantic.deprecated.decorator",
-        # Redis for control-room-lite mode
-        "redis",
-        "redis.asyncio",
-        "redis.asyncio.client",
-        "redis.asyncio.connection",
     ],
     hookspath=[],
     hooksconfig={},
