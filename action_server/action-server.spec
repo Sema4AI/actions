@@ -68,6 +68,11 @@ a = Analysis(
     hiddenimports=[
         *action_server_hiddenimports,
         "pydantic.deprecated.decorator",
+        # Redis for control-room-lite mode
+        "redis",
+        "redis.asyncio",
+        "redis.asyncio.client",
+        "redis.asyncio.connection",
     ],
     hookspath=[],
     hooksconfig={},

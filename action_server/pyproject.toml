@@ -48,11 +48,8 @@ actions-work-items = { path = "../work-items/", develop = true }
 croniter = "^2.0.0"
 pytz = "^2024.1"
 aiosmtplib = "^3.0.0"
-# Redis for control-room-lite mode (optional)
-redis = { version = "^5.0.0", optional = true }
-
-[tool.poetry.extras]
-control-room-lite = ["redis"]
+# Redis for control-room-lite mode (bundled so it just works)
+redis = "^5.0.0"
 
 [tool.poetry.group.dev.dependencies]
 sema4ai-devutils = { path = "../devutils/", develop = true }
