@@ -14,6 +14,7 @@ export type ActionRunPayload = {
   apiKey?: string;
   secretsData?: Map<string, string>;
   requestId?: string;
+  workItemQueue?: string;
 };
 
 export const useActionRunMutation = () => {
@@ -25,6 +26,7 @@ export const useActionRunMutation = () => {
       apiKey,
       secretsData,
       requestId,
+      workItemQueue,
     }: ActionRunPayload) => {
       const headers: Record<string, string> = {
         Authorization: `Bearer ${apiKey}`,
@@ -43,6 +45,11 @@ export const useActionRunMutation = () => {
 
       if (requestId) {
         headers['x-actions-request-id'] = requestId;
+      }
+
+      // Pass work item queue configuration
+      if (workItemQueue) {
+        headers['x-workitem-queue'] = workItemQueue;
       }
 
       const request = await fetch(`/api/actions/${toKebabCase(actionPackageName)}/${toKebabCase(actionName)}/run`, {

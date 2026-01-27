@@ -29,6 +29,7 @@ robots_api_router = APIRouter(prefix="/api/robots")
 class RobotTaskInfoAPI(BaseModel):
     name: str
     docs: str = ""
+    env: Optional[Dict[str, str]] = None  # Environment variables from robot.yaml
 
 
 class RobotPackageDetailAPI(BaseModel):
@@ -110,6 +111,7 @@ def _discover_robots_in_dir(base_dir: Path) -> List[RobotPackageDetailAPI]:
             tasks = []
             for task_name, task_info in tasks_data.items():
                 docs = ""
+                env = None
                 if isinstance(task_info, dict):
                     docs = (
                         task_info.get("documentation")
@@ -117,7 +119,11 @@ def _discover_robots_in_dir(base_dir: Path) -> List[RobotPackageDetailAPI]:
                         or task_info.get("description")
                         or ""
                     )
-                tasks.append(RobotTaskInfoAPI(name=task_name, docs=docs))
+                    # Extract env vars if present
+                    task_env = task_info.get("env")
+                    if task_env and isinstance(task_env, dict):
+                        env = {str(k): str(v) for k, v in task_env.items()}
+                tasks.append(RobotTaskInfoAPI(name=task_name, docs=docs, env=env))
 
             robot = RobotPackageDetailAPI(
                 name=robot_data.get("name", package_dir.name),
@@ -155,9 +161,14 @@ def _discover_robots_in_dir(base_dir: Path) -> List[RobotPackageDetailAPI]:
             tasks = []
             for task_name, task_info in tasks_data.items():
                 docs = ""
+                env = None
                 if isinstance(task_info, dict):
                     docs = task_info.get("docs") or task_info.get("description") or ""
-                tasks.append(RobotTaskInfoAPI(name=task_name, docs=docs))
+                    # Extract env vars if present
+                    task_env = task_info.get("env")
+                    if task_env and isinstance(task_env, dict):
+                        env = {str(k): str(v) for k, v in task_env.items()}
+                tasks.append(RobotTaskInfoAPI(name=task_name, docs=docs, env=env))
 
             robot = RobotPackageDetailAPI(
                 name=pkg_data.get("name", package_dir.name),
@@ -495,6 +506,7 @@ class RobotRunResponseAPI(BaseModel):
 async def run_robot_task(
     request: RobotRunRequestAPI,
     background_tasks: fastapi.BackgroundTasks,
+    http_request: fastapi.Request,
 ):
     """
     Execute a robot task and track its execution.
@@ -518,6 +530,9 @@ async def run_robot_task(
     # Get settings for paths
     settings = get_settings()
     db = get_db()
+
+    # Extract work item queue header if present
+    workitem_queue = http_request.headers.get("x-workitem-queue", "")
 
     run_id = f"run-{uuid.uuid4()}"
     relative_artifacts_path = f"runs/{run_id}"
@@ -671,7 +686,27 @@ async def run_robot_task(
                 str(robot_config_file),
                 "--task",
                 request.task_name,
+                "--silent",  # Reduce verbose RCC output
             ]
+
+            # Create environment JSON file for work items configuration
+            # RCC's -e flag expects a JSON file path, not inline VAR:value syntax
+            env_vars = {}
+
+            # RC_WORKITEM_DB_PATH: path to shared SQLite database for work items
+            workitems_db_path = str(settings.datadir / "workitems.db")
+            env_vars["RC_WORKITEM_DB_PATH"] = workitems_db_path
+
+            # RC_WORKITEM_QUEUE_NAME: the queue to read work items from
+            if workitem_queue:
+                env_vars["RC_WORKITEM_QUEUE_NAME"] = workitem_queue
+
+            # Write env vars to a temp JSON file if we have any
+            env_file = None
+            if env_vars:
+                env_file = artifacts_dir / "env.json"
+                env_file.write_text(json.dumps(env_vars, indent=2))
+                rcc_args.extend(["-e", str(env_file)])
 
             # Only add --space if we have an env hash (for pre-built environments)
             if run.robot_env_hash:

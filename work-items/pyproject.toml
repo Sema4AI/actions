@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "actions-work-items"
-version = "0.2.0"
+version = "0.2.1"
 description = "Drop-in replacement for robocorp-workitems with broader applicability"
 authors = ["Community Contributors"]
 license = "Apache-2.0"

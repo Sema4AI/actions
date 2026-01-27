@@ -171,7 +171,8 @@ class SQLiteAdapter(BaseAdapter):
                 """,
                 (
                     state.value,
-                    exception_type.value if exception_type else None,
+                    # Handle both Enum and string types for exception_type
+                    (exception_type.value if hasattr(exception_type, 'value') else exception_type) if exception_type else None,
                     code,
                     message,
                     now,

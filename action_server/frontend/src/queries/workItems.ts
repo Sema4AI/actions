@@ -168,6 +168,30 @@ export const useDeleteWorkItem = () => {
   });
 };
 
+// Fetch unique queue names from work items
+export const useWorkItemQueues = () => {
+  return useQuery<string[], Error>({
+    queryKey: ['workItemQueues'],
+    queryFn: async () => {
+      const response = await fetch('/api/work-items?limit=1000');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const message = errorData.message || errorData.detail || response.statusText;
+        throw new Error(message);
+      }
+      const data: WorkItemListResponse = await response.json();
+      const queueNames = new Set<string>();
+      data.items.forEach((item) => queueNames.add(item.queue_name));
+      return Array.from(queueNames).sort();
+    },
+    refetchInterval: 10000,
+    retry: (failureCount, error) => {
+      if (error.message.includes('not installed')) return false;
+      return failureCount < 3;
+    },
+  });
+};
+
 // Download file helper
 export const downloadWorkItemFile = async (itemId: string, fileName: string) => {
   const response = await fetch(`/api/work-items/${itemId}/files/${fileName}`);

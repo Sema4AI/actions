@@ -219,6 +219,9 @@ class MessagesHandler:
                     for key, value in headers.items():
                         if key and value and key.upper() == "X_ACTION_TRACE":
                             os.environ[key.upper()] = value
+                        # Support work item queue configuration via header
+                        if key and value and key.lower() == "x-workitem-queue":
+                            os.environ["RC_WORKITEM_QUEUE_NAME"] = value
 
                 # The preloaded actions must be always in place.
                 sys.modules.pop("preload_actions", None)

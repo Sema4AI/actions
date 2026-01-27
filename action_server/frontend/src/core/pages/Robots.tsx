@@ -4,6 +4,9 @@ import { Loading } from '@/core/components/ui/Loading';
 import { ErrorBanner } from '@/core/components/ui/ErrorBanner';
 import { Button } from '@/core/components/ui/Button';
 import { Badge } from '@/core/components/ui/Badge';
+import { Input } from '@/core/components/ui/Input';
+import { Textarea } from '@/core/components/ui/Textarea';
+import { Select, SelectItem } from '@/core/components/ui/Select';
 import {
   Dialog,
   DialogContent,
@@ -14,6 +17,7 @@ import {
 } from '@/core/components/ui/Dialog';
 import { cn } from '@/shared/utils/cn';
 import { useRobotCatalog } from '@/queries/robots';
+import { useWorkItems, useWorkItemStats, useWorkItemQueues, useCreateWorkItem } from '@/queries/workItems';
 import type { RobotPackageDetailAPI, RobotTaskInfoAPI } from '@/shared/types';
 
 // Icon Props type
@@ -181,20 +185,43 @@ interface RunTaskDialogProps {
   robotPath: string;
   taskName: string;
   robotName: string;
+  taskEnv?: Record<string, string>;  // Environment variables from robot.yaml task definition
 }
 
-function RunTaskDialog({ open, onOpenChange, robotPath, taskName, robotName }: RunTaskDialogProps): JSX.Element {
+function RunTaskDialog({ open, onOpenChange, robotPath, taskName, robotName, taskEnv }: RunTaskDialogProps): JSX.Element {
+  // Get preconfigured queue name from task env vars
+  const preconfiguredQueue = taskEnv?.RC_WORKITEM_QUEUE_NAME || '';
+
   const [runId, setRunId] = useState<string | null>(null);
   const [status, setStatus] = useState<'idle' | 'starting' | 'running' | 'completed' | 'failed'>('idle');
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
+  // Work items state - initialize with preconfigured queue if available
+  const [workItemQueue, setWorkItemQueue] = useState<string>(preconfiguredQueue);
+  const [showWorkItemsConfig, setShowWorkItemsConfig] = useState(!!preconfiguredQueue);
+  const [seedPayload, setSeedPayload] = useState<string>('{}');
+  const [seedError, setSeedError] = useState<string | null>(null);
+
+  // Work items hooks
+  const { data: workItemQueues } = useWorkItemQueues();
+  const { data: workItemStats } = useWorkItemStats(workItemQueue || undefined);
+  const { data: pendingWorkItems } = useWorkItems(workItemQueue || undefined, 'PENDING', 10);
+  const createWorkItem = useCreateWorkItem();
+
   const runMutation = useMutation({
     mutationFn: async () => {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+
+      // Pass work item queue configuration
+      if (workItemQueue) {
+        headers['x-workitem-queue'] = workItemQueue;
+      }
+
       const response = await fetch('/api/robots/run', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           robot_package_path: robotPath,
           task_name: taskName,
@@ -291,6 +318,11 @@ function RunTaskDialog({ open, onOpenChange, robotPath, taskName, robotName }: R
     setRunId(null);
     setResult(null);
     setError(null);
+    // Reset work items state to preconfigured values
+    setWorkItemQueue(preconfiguredQueue);
+    setShowWorkItemsConfig(!!preconfiguredQueue);
+    setSeedPayload('{}');
+    setSeedError(null);
     onOpenChange(false);
   };
 
@@ -310,6 +342,157 @@ function RunTaskDialog({ open, onOpenChange, robotPath, taskName, robotName }: R
         </DialogHeader>
 
         <div className="space-y-4 py-4">
+          {/* Work Items Configuration */}
+          <details
+            className="rounded-lg border border-border bg-card group"
+            open={showWorkItemsConfig}
+            onToggle={(e) => setShowWorkItemsConfig((e.target as HTMLDetailsElement).open)}
+          >
+            <summary className="p-4 cursor-pointer hover:bg-muted/50 transition-colors duration-150 list-none flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-foreground">
+                  Work Items Queue
+                </h3>
+                {workItemQueue && workItemStats && (
+                  <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                    {workItemStats.pending} pending
+                  </span>
+                )}
+              </div>
+              <svg className="h-4 w-4 text-muted-foreground transition-transform duration-150 group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </summary>
+            <div className="p-4 pt-0 space-y-4 border-t border-border">
+              <p className="text-xs text-muted-foreground">
+                Configure the work item queue this task will read from. For producer tasks, seed new work items. For consumer tasks, see pending items.
+              </p>
+
+              {preconfiguredQueue && (
+                <div className="flex items-center gap-2 rounded-md bg-primary/10 border border-primary/20 px-3 py-2">
+                  <CheckIcon className="h-4 w-4 text-primary flex-shrink-0" />
+                  <span className="text-xs text-primary">
+                    Preconfigured queue from robot.yaml: <code className="font-mono font-semibold">{preconfiguredQueue}</code>
+                  </span>
+                </div>
+              )}
+
+              <div className="grid gap-2">
+                <label htmlFor="workitem-queue" className="text-sm font-medium text-foreground">
+                  Queue Name
+                </label>
+                <div className="flex gap-2">
+                  <Select
+                    value={workItemQueue}
+                    onValueChange={setWorkItemQueue}
+                    className="flex-1"
+                  >
+                    <SelectItem value="">— Select or enter queue —</SelectItem>
+                    {workItemQueues?.map((q) => (
+                      <SelectItem key={q} value={q}>{q}</SelectItem>
+                    ))}
+                  </Select>
+                  <Input
+                    id="workitem-queue"
+                    type="text"
+                    value={workItemQueue}
+                    placeholder="Or enter new queue name"
+                    className="flex-1"
+                    onChange={(e) => setWorkItemQueue(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {workItemQueue && (
+                <>
+                  {/* Queue Stats */}
+                  {workItemStats && (
+                    <div className="grid grid-cols-4 gap-2 text-center">
+                      <div className="rounded-md border border-border bg-muted/30 p-2">
+                        <p className="text-lg font-semibold text-card-foreground">{workItemStats.pending}</p>
+                        <p className="text-xs text-muted-foreground">Pending</p>
+                      </div>
+                      <div className="rounded-md border border-border bg-muted/30 p-2">
+                        <p className="text-lg font-semibold text-card-foreground">{workItemStats.in_progress}</p>
+                        <p className="text-xs text-muted-foreground">In Progress</p>
+                      </div>
+                      <div className="rounded-md border border-border bg-muted/30 p-2">
+                        <p className="text-lg font-semibold text-success">{workItemStats.done}</p>
+                        <p className="text-xs text-muted-foreground">Done</p>
+                      </div>
+                      <div className="rounded-md border border-border bg-muted/30 p-2">
+                        <p className="text-lg font-semibold text-destructive">{workItemStats.failed}</p>
+                        <p className="text-xs text-muted-foreground">Failed</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Pending Items Preview */}
+                  {pendingWorkItems && pendingWorkItems.items.length > 0 && (
+                    <div>
+                      <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+                        Pending Items ({pendingWorkItems.items.length})
+                      </h4>
+                      <ul className="space-y-1 max-h-32 overflow-y-auto">
+                        {pendingWorkItems.items.slice(0, 5).map((item) => (
+                          <li key={item.id} className="text-xs font-mono text-muted-foreground bg-muted/30 rounded px-2 py-1 truncate">
+                            {JSON.stringify(item.payload || {}).slice(0, 80)}...
+                          </li>
+                        ))}
+                        {pendingWorkItems.items.length > 5 && (
+                          <li className="text-xs text-muted-foreground italic">
+                            ... and {pendingWorkItems.items.length - 5} more
+                          </li>
+                        )}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Seed Work Item */}
+                  <div className="space-y-2 pt-2 border-t border-border">
+                    <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      Seed New Work Item
+                    </h4>
+                    <Textarea
+                      value={seedPayload}
+                      placeholder='{"key": "value"}'
+                      className="font-mono text-xs"
+                      rows={3}
+                      onChange={(e) => {
+                        setSeedPayload(e.target.value);
+                        setSeedError(null);
+                      }}
+                    />
+                    {seedError && (
+                      <p className="text-xs text-destructive">{seedError}</p>
+                    )}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={createWorkItem.isPending}
+                      onClick={async () => {
+                        try {
+                          const payload = JSON.parse(seedPayload);
+                          await createWorkItem.mutateAsync({
+                            queue_name: workItemQueue,
+                            payload,
+                          });
+                          setSeedPayload('{}');
+                          setSeedError(null);
+                        } catch (err) {
+                          setSeedError(err instanceof Error ? err.message : 'Invalid JSON');
+                        }
+                      }}
+                    >
+                      {createWorkItem.isPending ? 'Seeding...' : 'Seed Work Item'}
+                    </Button>
+                  </div>
+                </>
+              )}
+            </div>
+          </details>
+
           {/* Status Display */}
           {status === 'idle' && (
             <div className="rounded-lg border border-border bg-muted/30 p-4 text-center">
@@ -396,10 +579,11 @@ interface RobotPackageCardProps {
 
 function RobotPackageCard({ robot }: RobotPackageCardProps): JSX.Element {
   const [runDialogOpen, setRunDialogOpen] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<string | null>(null);
+  const [selectedTask, setSelectedTask] = useState<RobotTaskInfoAPI | null>(null);
 
   const handleRunTask = (taskName: string) => {
-    setSelectedTask(taskName);
+    const task = robot.tasks?.find(t => t.name === taskName);
+    setSelectedTask(task || { name: taskName, docs: '' });
     setRunDialogOpen(true);
   };
 
@@ -460,8 +644,9 @@ function RobotPackageCard({ robot }: RobotPackageCardProps): JSX.Element {
           open={runDialogOpen}
           onOpenChange={setRunDialogOpen}
           robotPath={robot.path}
-          taskName={selectedTask}
+          taskName={selectedTask.name}
           robotName={robot.name}
+          taskEnv={selectedTask.env}
         />
       )}
     </>

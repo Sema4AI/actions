@@ -92,6 +92,7 @@ export type ServerConfig = {
 export interface RobotTaskInfoAPI {
   name: string;
   docs: string;
+  env?: Record<string, string>;  // Environment variables from robot.yaml
 }
 
 export interface RobotPackageDetailAPI {
