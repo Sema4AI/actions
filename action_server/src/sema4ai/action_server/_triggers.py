@@ -528,20 +528,62 @@ class TriggerEngine:
         trigger: "Trigger",
         inputs: Dict[str, Any],
     ) -> Optional[str]:
-        """Create a work item for a trigger."""
-        # Work item creation depends on the actions-work-items package
-        log.warning(
-            f"Trigger {trigger.id}: work_item mode not yet fully implemented"
-        )
+        """
+        Create a work item for a trigger.
+
+        Uses the actions-work-items package to create work items that can be
+        consumed by producer-consumer workflows.
+
+        Returns the work item ID.
+        """
+        from datetime import datetime, timezone
 
         queue_name = trigger.work_item_queue or "default"
 
         # Add trigger metadata
         inputs["_trigger_id"] = trigger.id
         inputs["_trigger_name"] = trigger.name
+        inputs["_triggered_at"] = datetime.now(timezone.utc).isoformat()
 
-        # TODO: Integrate with work items adapter when available
-        return None
+        try:
+            from actions.work_items import create_adapter, init, seed_input
+
+            # Create adapter targeting the action server's work items storage
+            from sema4ai.action_server._settings import get_settings
+            settings = get_settings()
+
+            # Use action server's data directory for work items
+            db_path = str(settings.datadir / "workitems.db")
+            files_dir = str(settings.datadir / "work_item_files")
+
+            adapter = create_adapter(
+                adapter_type="sqlite",
+                db_path=db_path,
+                queue_name=queue_name,
+                files_dir=files_dir,
+            )
+            init(adapter)
+
+            # Seed the work item
+            work_item_id = seed_input(payload=inputs)
+
+            log.info(
+                f"Trigger {trigger.id}: created work item {work_item_id} "
+                f"in queue '{queue_name}'"
+            )
+            return work_item_id
+
+        except ImportError:
+            log.warning(
+                f"Trigger {trigger.id}: actions-work-items package not installed, "
+                "cannot create work items. Install with: pip install actions-work-items"
+            )
+            return None
+        except Exception as e:
+            log.error(
+                f"Trigger {trigger.id}: failed to create work item: {e}"
+            )
+            return None
 
     def generate_webhook_secret(self, length: int = 32) -> str:
         """Generate a secure random webhook secret."""

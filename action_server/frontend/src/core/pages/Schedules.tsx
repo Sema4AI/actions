@@ -51,13 +51,8 @@ const formatSchedule = (schedule: Schedule): string => {
   if (schedule.schedule_type === 'cron') {
     return schedule.cron_expression || 'Cron';
   }
-  if (schedule.schedule_type === 'weekday' && schedule.weekday_config_json) {
-    try {
-      const config = JSON.parse(schedule.weekday_config_json);
-      return `${config.days.length} days @ ${config.time}`;
-    } catch {
-      return 'Weekday';
-    }
+  if (schedule.schedule_type === 'weekday' && schedule.weekday_config) {
+    return `${schedule.weekday_config.days.length} days @ ${schedule.weekday_config.time}`;
   }
   if (schedule.schedule_type === 'once') {
     return 'One-time';

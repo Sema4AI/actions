@@ -67,11 +67,10 @@ def start_server(
 
     settings = get_settings()
 
-    # Initialize operating mode
+    # Initialize operating mode (auto-detects from Redis URL)
     from sema4ai.action_server._mode import initialize_mode
 
     initialize_mode(
-        control_room_lite=settings.control_room_lite,
         redis_url=settings.redis_url,
         redis_password=settings.redis_password,
     )

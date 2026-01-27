@@ -233,18 +233,13 @@ def _add_start_server_command(command_parser, defaults):
         nargs="?",
     )
 
-    # Control Room Lite mode arguments
-    start_parser.add_argument(
-        "--control-room-lite",
-        action="store_true",
-        help="Enable Control Room Lite mode with Redis for distributed operation. "
-        "This mode supports distributed job queues, worker processes, and horizontal scaling.",
-    )
+    # Distributed mode arguments (Redis)
     start_parser.add_argument(
         "--redis-url",
         metavar="URL",
-        help="Redis URL for Control Room Lite mode. Example: redis://localhost:6379 "
-        "(required when --control-room-lite is enabled).",
+        help="Redis URL for distributed mode. Example: redis://localhost:6379. "
+        "Can also be set via REDIS_URL or ACTION_SERVER_REDIS_URL environment variables. "
+        "When Redis is available, distributed features (job queue, horizontal scaling) are auto-enabled.",
         default=None,
     )
     start_parser.add_argument(

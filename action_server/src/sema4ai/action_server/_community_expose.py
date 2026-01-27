@@ -647,7 +647,7 @@ class CloudflareProvider(BaseTunnelProvider):
             process = subprocess.Popen(
                 [self._cloudflared_path, "tunnel", "run", "--token", tunnel_token],
                 stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
+                stderr=subprocess.PIPE,  # Capture stderr separately
                 text=True,
                 bufsize=1,
             )
@@ -661,7 +661,7 @@ class CloudflareProvider(BaseTunnelProvider):
             process = subprocess.Popen(
                 [self._cloudflared_path, "tunnel", "--url", f"http://localhost:{port}"],
                 stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
+                stderr=subprocess.PIPE,  # Capture stderr separately for error reporting
                 text=True,
                 bufsize=1,
             )
@@ -678,31 +678,84 @@ class CloudflareProvider(BaseTunnelProvider):
         self, process: subprocess.Popen, timeout: float = 60.0
     ) -> str:
         """Wait for cloudflared to output the public URL."""
-        # cloudflared outputs URLs like: https://random-words.trycloudflare.com
-        url_pattern = re.compile(r"https://[a-zA-Z0-9-]+\.trycloudflare\.com")
+        import time
 
-        start_time = asyncio.get_event_loop().time()
+        # Match cloudflared quick tunnel URLs like https://random-words.trycloudflare.com
+        # Exclude www.cloudflare.com which appears in privacy policy messages
+        url_pattern = re.compile(
+            r"https://(?!www\.)[a-zA-Z0-9-]+\.trycloudflare\.com"
+        )
+
+        start_time = time.time()
+        last_progress_log = start_time
+        collected_output: list[str] = []
+        collected_errors: list[str] = []
 
         while True:
+            current_time = time.time()
+            elapsed = current_time - start_time
+
+            # Check if process has exited
             if process.poll() is not None:
+                # Capture any remaining output for debugging
+                try:
+                    stdout_rest, stderr_rest = process.communicate(timeout=1)
+                    if stdout_rest:
+                        collected_output.append(stdout_rest)
+                    if stderr_rest:
+                        collected_errors.append(stderr_rest)
+                except Exception:
+                    pass
+
+                error_output = "\n".join(collected_errors) if collected_errors else "None"
+                stdout_output = "\n".join(collected_output) if collected_output else "None"
+
                 raise RuntimeError(
-                    f"cloudflared process exited with code {process.returncode}"
+                    f"cloudflared exited with code {process.returncode}.\n"
+                    f"stdout: {stdout_output}\n"
+                    f"stderr: {error_output}"
                 )
 
-            if asyncio.get_event_loop().time() - start_time > timeout:
+            # Timeout check
+            if elapsed > timeout:
                 process.terminate()
-                raise TimeoutError("Timed out waiting for Cloudflare URL")
+                raise TimeoutError(
+                    f"Timed out waiting for Cloudflare URL after {timeout}s. "
+                    "Check your network connection or try a different tunnel provider."
+                )
 
-            line = await asyncio.get_event_loop().run_in_executor(
-                None,
-                process.stdout.readline,  # type: ignore[union-attr]
-            )
+            # Log progress every 10 seconds
+            if current_time - last_progress_log > 10:
+                log.info(f"Still waiting for Cloudflare tunnel URL... ({int(elapsed)}s elapsed)")
+                last_progress_log = current_time
 
-            if line:
-                log.debug(f"cloudflared: {line.strip()}")
-                match = url_pattern.search(line)
-                if match:
-                    return match.group(0)
+            # cloudflared outputs the tunnel URL to stderr, not stdout!
+            # Check both streams for the URL pattern
+            import select
+
+            streams_to_check = []
+            if process.stdout:
+                streams_to_check.append((process.stdout, "stdout", collected_output))
+            if process.stderr:
+                streams_to_check.append((process.stderr, "stderr", collected_errors))
+
+            for stream, stream_name, collected in streams_to_check:
+                try:
+                    readable, _, _ = select.select([stream], [], [], 0.1)
+                    if readable:
+                        line = stream.readline()
+                        if line:
+                            line_str = line.strip()
+                            collected.append(line_str)
+                            log.debug(f"cloudflared {stream_name}: {line_str}")
+                            # Check for URL in this line - URL appears in stderr!
+                            match = url_pattern.search(line_str)
+                            if match:
+                                log.info(f"Found tunnel URL in {stream_name}")
+                                return match.group(0)
+                except (ValueError, OSError):
+                    # select may fail on Windows or closed file
+                    pass
 
             await asyncio.sleep(0.1)
 

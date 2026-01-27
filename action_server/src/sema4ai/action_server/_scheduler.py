@@ -560,16 +560,17 @@ class SchedulerEngine:
 
     async def _create_action_run(self, schedule: "Schedule") -> Optional[str]:
         """
-        Create an action run for a schedule.
+        Create and execute an action run for a schedule.
 
         Returns the run ID.
         """
         from sema4ai.action_server._actions_run import (
             _create_run,
             _create_run_artifacts_dir,
+            execute_action_for_scheduler,
         )
         from sema4ai.action_server._gen_ids import gen_uuid
-        from sema4ai.action_server._models import Action, get_db
+        from sema4ai.action_server._models import Action, ActionPackage, get_db
 
         if not schedule.action_id:
             raise ValueError("Schedule has no action_id configured")
@@ -588,6 +589,16 @@ class SchedulerEngine:
             if not action.enabled:
                 raise ValueError(f"Action {action.id} is disabled")
 
+            # Get the action package
+            try:
+                action_package = db.first(
+                    ActionPackage,
+                    "SELECT * FROM action_package WHERE id = ?",
+                    [action.action_package_id],
+                )
+            except KeyError:
+                raise ValueError(f"Action package not found: {action.action_package_id}")
+
         # Parse inputs
         inputs = json.loads(schedule.inputs_json) if schedule.inputs_json else {}
 
@@ -605,12 +616,24 @@ class SchedulerEngine:
             )
 
         log.info(
-            f"Schedule {schedule.id}: created run {run_id} for action {action.name}"
+            f"Schedule {schedule.id}: executing run {run_id} for action {action.name}"
         )
 
-        # Note: The actual action execution happens asynchronously through the
-        # action server's normal execution pipeline. We just create the run here.
-        # For synchronous execution, we'd need to wait for the run to complete.
+        # Actually execute the action
+        try:
+            success, result = await execute_action_for_scheduler(
+                action=action,
+                action_package=action_package,
+                run_id=run_id,
+                inputs=inputs,
+                relative_artifacts_dir=relative_artifacts_dir,
+            )
+            if success:
+                log.info(f"Schedule {schedule.id}: run {run_id} completed successfully")
+            else:
+                log.warning(f"Schedule {schedule.id}: run {run_id} failed: {result}")
+        except Exception as e:
+            log.error(f"Schedule {schedule.id}: run {run_id} execution error: {e}")
 
         return run_id
 
@@ -618,27 +641,58 @@ class SchedulerEngine:
         """
         Create a work item for a schedule.
 
+        Uses the actions-work-items package to create work items that can be
+        consumed by producer-consumer workflows.
+
         Returns the work item ID.
         """
-        # Work item creation depends on the actions-work-items package
-        # This is a placeholder - actual implementation would use the work items API
-        log.warning(
-            f"Schedule {schedule.id}: work_item mode not yet fully implemented"
-        )
-
         inputs = json.loads(schedule.inputs_json) if schedule.inputs_json else {}
         queue_name = schedule.work_item_queue or "default"
 
         # Add schedule metadata
         inputs["_schedule_id"] = schedule.id
         inputs["_schedule_name"] = schedule.name
+        inputs["_scheduled_at"] = datetime.now(timezone.utc).isoformat()
 
-        # TODO: Integrate with work items adapter when available
-        # adapter = _get_work_items_adapter()
-        # if adapter:
-        #     return adapter.seed_input(payload=inputs, queue_name=queue_name)
+        try:
+            from actions.work_items import create_adapter, init, seed_input
 
-        return None
+            # Create adapter targeting the action server's work items storage
+            from sema4ai.action_server._settings import get_settings
+            settings = get_settings()
+
+            # Use action server's data directory for work items
+            db_path = str(settings.datadir / "workitems.db")
+            files_dir = str(settings.datadir / "work_item_files")
+
+            adapter = create_adapter(
+                adapter_type="sqlite",
+                db_path=db_path,
+                queue_name=queue_name,
+                files_dir=files_dir,
+            )
+            init(adapter)
+
+            # Seed the work item
+            work_item_id = seed_input(payload=inputs)
+
+            log.info(
+                f"Schedule {schedule.id}: created work item {work_item_id} "
+                f"in queue '{queue_name}'"
+            )
+            return work_item_id
+
+        except ImportError:
+            log.warning(
+                f"Schedule {schedule.id}: actions-work-items package not installed, "
+                "cannot create work items. Install with: pip install actions-work-items"
+            )
+            return None
+        except Exception as e:
+            log.error(
+                f"Schedule {schedule.id}: failed to create work item: {e}"
+            )
+            return None
 
     async def _send_notifications(
         self,

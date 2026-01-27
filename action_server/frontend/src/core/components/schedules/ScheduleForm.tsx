@@ -36,6 +36,9 @@ export function ScheduleForm({ open, onOpenChange, schedule }: ScheduleFormProps
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [actionId, setActionId] = useState<string>('');
+  const [actionInputs, setActionInputs] = useState<Record<string, unknown>>({});
+  const [inputsJson, setInputsJson] = useState<string>('{}');
+  const [inputsError, setInputsError] = useState<string>('');
   const [scheduleType, setScheduleType] = useState<ScheduleType>('interval');
   const [cronExpression, setCronExpression] = useState<string>();
   const [intervalSeconds, setIntervalSeconds] = useState<number>();
@@ -60,15 +63,16 @@ export function ScheduleForm({ open, onOpenChange, schedule }: ScheduleFormProps
       setName(schedule.name);
       setDescription(schedule.description || '');
       setActionId(schedule.action_id || '');
+      // Load action inputs
+      const inputs = schedule.inputs || {};
+      setActionInputs(inputs);
+      setInputsJson(JSON.stringify(inputs, null, 2));
+      setInputsError('');
       setScheduleType(schedule.schedule_type);
       setCronExpression(schedule.cron_expression);
       setIntervalSeconds(schedule.interval_seconds);
-      if (schedule.weekday_config_json) {
-        try {
-          setWeekdayConfig(JSON.parse(schedule.weekday_config_json));
-        } catch {
-          // ignore
-        }
+      if (schedule.weekday_config) {
+        setWeekdayConfig(schedule.weekday_config);
       }
       setOnceAt(schedule.once_at);
       setTimezone(schedule.timezone);
@@ -90,6 +94,9 @@ export function ScheduleForm({ open, onOpenChange, schedule }: ScheduleFormProps
         setName('');
         setDescription('');
         setActionId('');
+        setActionInputs({});
+        setInputsJson('{}');
+        setInputsError('');
         setScheduleType('interval');
         setCronExpression(undefined);
         setIntervalSeconds(undefined);
@@ -112,10 +119,16 @@ export function ScheduleForm({ open, onOpenChange, schedule }: ScheduleFormProps
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Validate inputs JSON before submitting
+    if (inputsError) {
+      return;
+    }
+
     const data: CreateScheduleRequest = {
       name,
       description,
       action_id: actionId || undefined,
+      inputs: Object.keys(actionInputs).length > 0 ? actionInputs : undefined,
       schedule_type: scheduleType,
       cron_expression: scheduleType === 'cron' ? cronExpression : undefined,
       interval_seconds: scheduleType === 'interval' ? intervalSeconds : undefined,
@@ -147,6 +160,7 @@ export function ScheduleForm({ open, onOpenChange, schedule }: ScheduleFormProps
   const isValid =
     name.trim() &&
     actionId &&
+    !inputsError &&
     ((scheduleType === 'cron' && cronExpression) ||
       (scheduleType === 'interval' && intervalSeconds) ||
       (scheduleType === 'weekday' && weekdayConfig) ||
@@ -154,14 +168,52 @@ export function ScheduleForm({ open, onOpenChange, schedule }: ScheduleFormProps
 
   const isSaving = createSchedule.isPending || updateSchedule.isPending;
 
-  // Get all actions for the dropdown
+  // Get all actions for the dropdown with full action data for schema access
   const actions = loadedActions.data?.flatMap((pkg) =>
     pkg.actions.map((action) => ({
       id: action.id,
       label: `${pkg.name} / ${action.name}`,
       packageName: pkg.name,
+      inputSchema: action.input_schema,
     }))
   ) ?? [];
+
+  // Get the selected action to show its parameter schema
+  const selectedAction = actions.find((a) => a.id === actionId);
+
+  // Parse input schema for the selected action
+  const inputSchemaInfo = (() => {
+    if (!selectedAction?.inputSchema) return null;
+    try {
+      const schema = JSON.parse(selectedAction.inputSchema);
+      const properties = schema.properties || {};
+      const required = schema.required || [];
+      return { properties, required };
+    } catch {
+      return null;
+    }
+  })();
+
+  // Handler for JSON input changes
+  const handleInputsJsonChange = (value: string) => {
+    setInputsJson(value);
+    try {
+      const parsed = JSON.parse(value);
+      setActionInputs(parsed);
+      setInputsError('');
+    } catch (err) {
+      setInputsError('Invalid JSON');
+    }
+  };
+
+  // Reset inputs when action changes (unless editing existing schedule)
+  useEffect(() => {
+    if (!isEdit && actionId) {
+      setActionInputs({});
+      setInputsJson('{}');
+      setInputsError('');
+    }
+  }, [actionId, isEdit]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -216,6 +268,64 @@ export function ScheduleForm({ open, onOpenChange, schedule }: ScheduleFormProps
                 ))}
               </Select>
             </div>
+
+            {/* Action Parameters - shown when action is selected */}
+            {actionId && (
+              <div className="rounded-lg border border-border bg-muted/30 p-4">
+                <label
+                  htmlFor="action-inputs"
+                  className="block text-sm font-medium text-card-foreground mb-2"
+                >
+                  Action Parameters (JSON)
+                </label>
+
+                {/* Show expected parameters if schema available */}
+                {inputSchemaInfo && Object.keys(inputSchemaInfo.properties).length > 0 && (
+                  <div className="mb-3 text-xs text-muted-foreground">
+                    <span className="font-medium">Expected parameters:</span>
+                    <ul className="mt-1 space-y-1 ml-4">
+                      {Object.entries(inputSchemaInfo.properties).map(([key, prop]: [string, any]) => (
+                        <li key={key}>
+                          <code className="bg-muted px-1 rounded">{key}</code>
+                          {inputSchemaInfo.required.includes(key) && (
+                            <span className="text-destructive ml-1">*</span>
+                          )}
+                          {prop.type && (
+                            <span className="text-muted-foreground ml-1">({prop.type})</span>
+                          )}
+                          {prop.description && (
+                            <span className="text-muted-foreground ml-1">- {prop.description}</span>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {inputSchemaInfo && Object.keys(inputSchemaInfo.properties).length === 0 && (
+                  <p className="mb-3 text-xs text-muted-foreground">
+                    This action has no input parameters.
+                  </p>
+                )}
+
+                <textarea
+                  id="action-inputs"
+                  value={inputsJson}
+                  onChange={(e) => handleInputsJsonChange(e.target.value)}
+                  className={cn(
+                    'w-full h-32 px-3 py-2 font-mono text-sm',
+                    'bg-background border rounded-md',
+                    'focus:outline-none focus:ring-2 focus:ring-ring',
+                    inputsError ? 'border-destructive' : 'border-input'
+                  )}
+                  placeholder='{"key": "value"}'
+                  spellCheck={false}
+                />
+                {inputsError && (
+                  <p className="mt-1 text-xs text-destructive">{inputsError}</p>
+                )}
+              </div>
+            )}
 
             <div>
               <label htmlFor="schedule-timezone" className="block text-sm font-medium text-card-foreground mb-2">

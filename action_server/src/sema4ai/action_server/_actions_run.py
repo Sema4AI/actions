@@ -742,3 +742,161 @@ def _get_json_validator(schema: dict):
     cls.check_schema(schema)
     instance = cls(schema)
     return instance.validate
+
+
+async def execute_action_for_scheduler(
+    action: "Action",
+    action_package: "ActionPackage",
+    run_id: str,
+    inputs: dict,
+    relative_artifacts_dir: str,
+) -> Tuple[bool, Any]:
+    """
+    Execute an action for the scheduler.
+
+    This function is designed to be called by the scheduler to execute an action
+    without requiring HTTP request/response handling.
+
+    Args:
+        action: The action to execute
+        action_package: The action package containing the action
+        run_id: The run ID (already created in the database)
+        inputs: The input data for the action
+        relative_artifacts_dir: Path to the artifacts directory (relative to settings.artifacts_dir)
+
+    Returns:
+        Tuple of (success: bool, result: Any)
+        - success is True if the action completed successfully
+        - result is the action result or error message
+    """
+    from concurrent.futures import CancelledError
+
+    from sema4ai.action_server._actions_process_pool import (
+        ActionsProcessPool,
+        ProcessHandle,
+        get_actions_process_pool,
+    )
+    from sema4ai.action_server._runs_state_cache import get_global_runs_state
+    from sema4ai.action_server._settings import get_settings
+
+    from ._models import Run, get_db
+
+    settings = get_settings()
+    global_runs_state = get_global_runs_state()
+    runtime_info = global_runs_state.create_run_runtime_info(run_id)
+
+    db = get_db()
+
+    # Get the run from the database
+    with db.connect():
+        run = db.first(Run, "SELECT * FROM run WHERE id = ?", [run_id])
+
+    def _execute_in_thread():
+        with db.connect():
+            actions_process_pool: ActionsProcessPool = get_actions_process_pool()
+
+            try:
+                initial_time = time.monotonic()
+                process_handle_ctx = actions_process_pool.obtain_process_for_action(
+                    action, runtime_info
+                )
+                with process_handle_ctx as process_handle:
+                    initial_time = time.monotonic()
+                    input_json = (
+                        settings.artifacts_dir
+                        / relative_artifacts_dir
+                        / "__action_server_inputs.json"
+                    )
+                    input_json.write_bytes(json.dumps(inputs).encode("utf-8"))
+
+                    run_artifacts_dir = settings.artifacts_dir / relative_artifacts_dir
+
+                    result_json = (
+                        settings.artifacts_dir
+                        / relative_artifacts_dir
+                        / "__action_server_result.json"
+                    )
+
+                    output_file = (
+                        settings.artifacts_dir
+                        / relative_artifacts_dir
+                        / "__action_server_output.txt"
+                    )
+
+                    _set_run_as_running(run, initial_time)
+
+                    def on_cancel(*args, **kwargs):
+                        log.info(
+                            f"Killing process for scheduled run {run_id} due to cancel (pid: {process_handle.pid})."
+                        )
+                        process_handle.kill()
+
+                    with runtime_info.on_cancel.register(on_cancel):
+                        if runtime_info.is_canceled():
+                            raise CancelledError("Run canceled")
+
+                        reuse_process = settings.reuse_processes
+                        returncode = process_handle.run_action(
+                            run,
+                            action_package,
+                            action,
+                            input_json,
+                            run_artifacts_dir,
+                            output_file,
+                            result_json,
+                            {},  # headers - empty for scheduler
+                            {},  # cookies - empty for scheduler
+                            reuse_process,
+                        )
+
+                    error_msg = None
+                    try:
+                        run_result_str: str = result_json.read_text("utf-8", "replace")
+                    except Exception:
+                        error_msg = "Failed to read action result (json not created)."
+                    else:
+                        try:
+                            result_contents = json.loads(run_result_str)
+                        except Exception:
+                            error_msg = f"Error parsing action result as JSON."
+
+                    if error_msg is not None:
+                        if runtime_info.is_canceled():
+                            raise CancelledError(f"Run cancelled, action: {action.name}")
+                        _set_run_as_finished_failed(run, error_msg, initial_time)
+                        return (False, error_msg)
+
+                    ret = result_contents.get("result")
+                    result_str: str = json.dumps(ret, indent=4)
+
+                    if returncode == 0:
+                        _set_run_as_finished_ok(run, result_str, initial_time)
+                        return (True, ret)
+                    else:
+                        if runtime_info.is_canceled():
+                            raise CancelledError(f"Run cancelled, action: {action.name}")
+
+                        if ret:
+                            _set_run_as_finished_failed_with_response(
+                                run, ret, initial_time
+                            )
+                            return (False, ret)
+
+                        error_msg = result_contents.get("message", f"Action failed with return code {returncode}")
+                        _set_run_as_finished_failed(run, error_msg, initial_time)
+                        return (False, error_msg)
+
+            except CancelledError as e:
+                _set_run_as_cancelled(run, str(e), time.monotonic())
+                return (False, str(e))
+            except Exception as e:
+                log.exception(f"Error executing scheduled action {action.name}")
+                _set_run_as_finished_failed(run, str(e), time.monotonic())
+                return (False, str(e))
+
+    # Run in thread pool to avoid blocking async loop
+    from sema4ai.action_server._robo_utils import run_in_thread
+    from concurrent.futures import Future
+
+    future: Future = run_in_thread.run_in_thread(_execute_in_thread)
+    return future.result()

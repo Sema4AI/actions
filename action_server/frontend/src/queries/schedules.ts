@@ -41,7 +41,9 @@ export const useSchedules = (params?: {
       if (!response.ok) {
         throw new Error('Failed to fetch schedules');
       }
-      return response.json();
+      const data = await response.json();
+      // API returns {schedules: [...], total: N}
+      return data.schedules ?? [];
     },
   });
 };
@@ -68,7 +70,17 @@ export const useScheduleStats = () => {
       if (!response.ok) {
         throw new Error('Failed to fetch schedule stats');
       }
-      return response.json();
+      const data = await response.json();
+      // Map backend field names to frontend field names
+      return {
+        total: data.total ?? 0,
+        enabled: data.active ?? 0,
+        disabled: data.paused ?? 0,
+        running: data.running ?? 0,
+        failed_24h: data.failed_24h ?? 0,
+        success_rate_7d: data.success_rate_7d ?? 100,
+        total_executions_7d: data.executions_24h ?? 0,
+      };
     },
     refetchInterval: 30000, // Refresh every 30 seconds
   });
@@ -253,7 +265,9 @@ export const useScheduleGroups = () => {
       if (!response.ok) {
         throw new Error('Failed to fetch schedule groups');
       }
-      return response.json();
+      const data = await response.json();
+      // API returns {groups: [...], total: N}
+      return data.groups ?? [];
     },
   });
 };
@@ -318,7 +332,13 @@ export const useValidateCron = () => {
       if (!response.ok) {
         throw new Error('Failed to validate cron expression');
       }
-      return response.json();
+      const data = await response.json();
+      // Map backend field names to frontend field names
+      return {
+        valid: data.valid,
+        error: data.error,
+        description: data.human_readable,
+      };
     },
   });
 };
@@ -355,7 +375,9 @@ export const useTimezones = () => {
       if (!response.ok) {
         throw new Error('Failed to fetch timezones');
       }
-      return response.json();
+      const data = await response.json();
+      // API returns {timezones: [...]}
+      return data.timezones ?? ['UTC'];
     },
     staleTime: Infinity, // Timezones don't change
   });

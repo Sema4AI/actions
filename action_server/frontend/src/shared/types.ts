@@ -158,15 +158,17 @@ export interface Schedule {
 
   // Target
   action_id?: string;
+  action_name?: string; // Populated by backend
   execution_mode: ExecutionMode;
   work_item_queue?: string;
-  inputs_json: string;
+  inputs: Record<string, unknown>; // Backend sends as object, not JSON string
 
   // Schedule type
   schedule_type: ScheduleType;
   cron_expression?: string;
   interval_seconds?: number;
-  weekday_config_json?: string;
+  weekday_config?: WeekdayConfig; // Backend sends as object, not JSON string
+  weekday_config_json?: string; // For internal use when parsing
   once_at?: string;
   timezone: string;
 
@@ -195,6 +197,7 @@ export interface Schedule {
 
   // Dependencies
   depends_on_schedule_id?: string;
+  depends_on_schedule_name?: string; // Populated by backend
   dependency_mode: DependencyMode;
 
   // Notifications
@@ -205,7 +208,8 @@ export interface Schedule {
 
   // Organization
   group_id?: string;
-  tags_json: string;
+  group_name?: string; // Populated by backend
+  tags: string[]; // Backend sends as array, not JSON string
   priority: number;
 }
 
