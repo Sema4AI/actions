@@ -7,6 +7,8 @@ logger = getLogger(__name__)
 
 
 def get_request_header(header_name: str) -> str | None:
+    # MCP hosts are expected to bind RequestContexts for each tool request.
+    # Callback headers are always read from that bound request context.
     request_contexts = get_current_requests_contexts()
     if request_contexts is None or request_contexts.request is None:
         return None
@@ -19,6 +21,8 @@ def get_request_header(header_name: str) -> str | None:
 def normalize_callback_base_url(
     callback_base_url: str, required_suffix: str | None = None
 ) -> str:
+    # Callback base URLs may arrive with/without trailing slash and suffix.
+    # Normalize once so callers can safely append endpoint paths.
     normalized = callback_base_url.rstrip("/")
     if not required_suffix:
         return normalized
@@ -30,6 +34,8 @@ def normalize_callback_base_url(
 
 
 def should_propagate_auth_header(target_url: str, base_url: str) -> bool:
+    # Forward callback auth only to same-host Agent Server/Workroom endpoints.
+    # Example: don't forward callback auth to external presigned storage URLs.
     parsed_target = urlparse(target_url)
     parsed_base = urlparse(base_url)
 

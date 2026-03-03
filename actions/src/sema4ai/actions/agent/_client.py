@@ -6,7 +6,6 @@ from copy import copy
 from urllib.parse import urlencode, urljoin, urlparse
 
 import sema4ai_http
-
 from sema4ai.actions._action import get_x_action_invocation_context
 from sema4ai.actions._callback import (
     get_request_header,
@@ -48,6 +47,7 @@ class _AgentAPIClient:
         Raises:
             AgentApiClientException: If no API server is responding
         """
+        # In MCP callback flows, API base URL is request-derived from headers.
         callback_base_url = get_request_header("x-ags-base-url")
         if callback_base_url:
             return normalize_callback_base_url(callback_base_url, "/api/v2")
@@ -172,6 +172,7 @@ class _AgentAPIClient:
         request_headers[
             "x-action-invocation-context"
         ] = get_x_action_invocation_context()
+        # Add callback auth conditionally
         callback_auth = self._get_callback_auth_header()
         if callback_auth and should_propagate_auth_header(url, self.api_url):
             request_headers["Authorization"] = callback_auth

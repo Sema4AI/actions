@@ -23,6 +23,7 @@ class _Client:
         from sema4ai.actions import _uris
 
         if not file_management_url_value:
+            # Prefer request-scoped callback URL from Agent Server when available.
             callback_base_url = get_request_header("x-ags-base-url")
             if callback_base_url:
                 file_management_url_value = normalize_callback_base_url(
@@ -59,6 +60,7 @@ files will be stored to or accessed from."""
         return self._is_local_mode
 
     def _get_file_management_auth_header(self) -> str | None:
+        # Callback token is forwarded by Agent Server on MCP requests.
         return get_request_header("x-ags-callback")
 
     def _maybe_add_auth_header(self, url: str, headers: dict[str, str]) -> None:
@@ -103,6 +105,7 @@ files will be stored to or accessed from."""
                 "Content-Type": "application/json",
                 "x-action-invocation-context": get_x_action_invocation_context(),
             }
+                # Add auth header conditionally
             self._maybe_add_auth_header(url, headers)
 
             # Send the initial request
@@ -194,6 +197,7 @@ files will be stored to or accessed from."""
                 "Content-Type": "application/json",
                 "x-action-invocation-context": get_x_action_invocation_context(),
             }
+            # Add auth header conditionally
             self._maybe_add_auth_header(url, headers)
             data = json.dumps(
                 {"file_name": filename, "file_size": len(content)}
@@ -251,6 +255,7 @@ files will be stored to or accessed from."""
                 "Content-Type": "application/json",
                 "x-action-invocation-context": get_x_action_invocation_context(),
             }
+            # Add auth header conditionally
             self._maybe_add_auth_header(url, headers)
             data = json.dumps({"file_ref": file_ref, "file_id": file_id}).encode(
                 "utf-8"
