@@ -1,6 +1,46 @@
 from logging import getLogger
+from urllib.parse import urlparse
+
+from sema4ai.actions._action import get_current_requests_contexts
 
 logger = getLogger(__name__)
+
+
+def get_request_header(header_name: str) -> str | None:
+    request_contexts = get_current_requests_contexts()
+    if request_contexts is None or request_contexts.request is None:
+        return None
+    value = request_contexts.request.headers.get(header_name)
+    if value:
+        return str(value).strip() or None
+    return None
+
+
+def normalize_callback_base_url(
+    callback_base_url: str, required_suffix: str | None = None
+) -> str:
+    normalized = callback_base_url.rstrip("/")
+    if not required_suffix:
+        return normalized
+
+    required_suffix = required_suffix.rstrip("/")
+    if normalized.endswith(required_suffix):
+        return f"{normalized}/"
+    return f"{normalized}{required_suffix}/"
+
+
+def should_propagate_auth_header(target_url: str, base_url: str) -> bool:
+    parsed_target = urlparse(target_url)
+    parsed_base = urlparse(base_url)
+
+    if (
+        parsed_target.scheme in {"http", "https"}
+        and parsed_base.netloc
+        and parsed_target.netloc
+        and parsed_target.netloc != parsed_base.netloc
+    ):
+        return False
+    return True
 
 
 class OnExitContextManager:

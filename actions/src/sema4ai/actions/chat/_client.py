@@ -1,4 +1,9 @@
 from sema4ai.actions._action import get_x_action_invocation_context
+from sema4ai.actions._callback import (
+    get_request_header,
+    normalize_callback_base_url,
+    should_propagate_auth_header,
+)
 
 FileId = str
 
@@ -16,6 +21,13 @@ class _Client:
         import urllib
 
         from sema4ai.actions import _uris
+
+        if not file_management_url_value:
+            callback_base_url = get_request_header("x-ags-base-url")
+            if callback_base_url:
+                file_management_url_value = normalize_callback_base_url(
+                    callback_base_url
+                )
 
         if not file_management_url_value:
             file_management_url_value = os.environ.get(
@@ -45,6 +57,17 @@ files will be stored to or accessed from."""
 
     def is_local_mode(self) -> bool:
         return self._is_local_mode
+
+    def _get_file_management_auth_header(self) -> str | None:
+        return get_request_header("x-ags-callback")
+
+    def _maybe_add_auth_header(self, url: str, headers: dict[str, str]) -> None:
+        auth_header = self._get_file_management_auth_header()
+        if not auth_header:
+            return
+        if not should_propagate_auth_header(url, self._url):
+            return
+        headers["Authorization"] = auth_header
 
     def get_bytes(self, filename: str, thread_id: str) -> bytes:
         import os.path
@@ -80,6 +103,7 @@ files will be stored to or accessed from."""
                 "Content-Type": "application/json",
                 "x-action-invocation-context": get_x_action_invocation_context(),
             }
+            self._maybe_add_auth_header(url, headers)
 
             # Send the initial request
             response = sema4ai_http.get(
@@ -102,7 +126,9 @@ files will be stored to or accessed from."""
                 p = Path(_uris.to_fs_path(file_url))
                 return p.read_bytes()
             else:
-                response = sema4ai_http.get(file_url)
+                file_headers: dict[str, str] = {}
+                self._maybe_add_auth_header(file_url, file_headers)
+                response = sema4ai_http.get(file_url, headers=file_headers or None)
                 self._raise_for_status(
                     f"Failed to get file {filename} from {file_url}. ",
                     response,
@@ -168,6 +194,7 @@ files will be stored to or accessed from."""
                 "Content-Type": "application/json",
                 "x-action-invocation-context": get_x_action_invocation_context(),
             }
+            self._maybe_add_auth_header(url, headers)
             data = json.dumps(
                 {"file_name": filename, "file_size": len(content)}
             ).encode("utf-8")
@@ -224,6 +251,7 @@ files will be stored to or accessed from."""
                 "Content-Type": "application/json",
                 "x-action-invocation-context": get_x_action_invocation_context(),
             }
+            self._maybe_add_auth_header(url, headers)
             data = json.dumps({"file_ref": file_ref, "file_id": file_id}).encode(
                 "utf-8"
             )
@@ -275,6 +303,7 @@ files will be stored to or accessed from."""
                 "Content-Type": "application/json",
                 "x-action-invocation-context": get_x_action_invocation_context(),
             }
+            self._maybe_add_auth_header(url, headers)
 
             response = sema4ai_http.get(url, headers=headers)
             self._raise_for_status(

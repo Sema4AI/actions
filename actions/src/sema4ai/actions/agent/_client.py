@@ -8,6 +8,11 @@ from urllib.parse import urlencode, urljoin, urlparse
 import sema4ai_http
 
 from sema4ai.actions._action import get_x_action_invocation_context
+from sema4ai.actions._callback import (
+    get_request_header,
+    normalize_callback_base_url,
+    should_propagate_auth_header,
+)
 from sema4ai.actions._response import ActionError
 
 log = logging.getLogger(__name__)
@@ -30,6 +35,9 @@ class _AgentAPIClient:
 
         log.info(f"API URL: {self.api_url}")
 
+    def _get_callback_auth_header(self) -> str | None:
+        return get_request_header("x-ags-callback")
+
     def _get_api_url(self) -> str:
         """Determine the correct API URL by checking environment variable or agent-server.pid file
         and testing API availability.
@@ -40,6 +48,10 @@ class _AgentAPIClient:
         Raises:
             AgentApiClientException: If no API server is responding
         """
+        callback_base_url = get_request_header("x-ags-base-url")
+        if callback_base_url:
+            return normalize_callback_base_url(callback_base_url, "/api/v2")
+
         # Try to get URL from environment variable first
         api_url = self._try_get_url_from_environment()
         if api_url:
@@ -160,6 +172,9 @@ class _AgentAPIClient:
         request_headers[
             "x-action-invocation-context"
         ] = get_x_action_invocation_context()
+        callback_auth = self._get_callback_auth_header()
+        if callback_auth and should_propagate_auth_header(url, self.api_url):
+            request_headers["Authorization"] = callback_auth
 
         if query_params:
             url = f"{url}?{urlencode(query_params)}"
