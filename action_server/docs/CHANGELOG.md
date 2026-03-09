@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Write `server-info.json` to the data directory on startup with runtime details (PID, port, address, URL, data dir, TLS config, version, child PIDs). The file is removed on shutdown.
+
 ## 3.0.0 - 2026-01-08
 
 - Removed support for macos x86_64 (only macos arm64 is supported).
