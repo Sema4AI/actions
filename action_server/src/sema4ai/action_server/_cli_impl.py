@@ -999,6 +999,9 @@ information from this datadir.
                         log.critical("Exiting action server...")
                         return 1
                     finally:
+                        from ._server import _cleanup_server_info_file
+
+                        _cleanup_server_info_file(settings.datadir)
                         kill_subprocesses()
                     return 0
 
