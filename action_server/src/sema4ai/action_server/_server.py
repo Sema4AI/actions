@@ -24,6 +24,71 @@ class _LoopHolder:
     loop: Optional["AbstractEventLoop"] = None
 
 
+SERVER_INFO_FILENAME = "server-info.json"
+
+
+def _write_server_info_file(settings, host: str, port: int, url: str) -> None:
+    """Write runtime info JSON into the data directory.
+
+    Written atomically (temp file + rename) so consumers never see partial
+    content.  Errors are logged but do not prevent the server from running.
+    """
+    import json
+    import tempfile
+
+    import psutil
+
+    from . import __version__
+
+    try:
+        child_pids = [
+            c.pid for c in psutil.Process(os.getpid()).children(recursive=False)
+        ]
+    except Exception:
+        log.exception("Failed to collect child PIDs")
+        child_pids = []
+
+    info = {
+        "pid": os.getpid(),
+        "port": port,
+        "address": host,
+        "url": url,
+        "datadir": str(settings.datadir),
+        "use_https": settings.use_https,
+        "ssl_certfile": settings.ssl_certfile if settings.use_https else None,
+        "ssl_keyfile": settings.ssl_keyfile if settings.use_https else None,
+        "version": __version__,
+        "child_pids": child_pids,
+    }
+
+    target = settings.datadir / SERVER_INFO_FILENAME
+    try:
+        fd, tmp_path = tempfile.mkstemp(dir=str(settings.datadir), suffix=".tmp")
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as f:
+                json.dump(info, f, indent=2)
+            os.replace(tmp_path, str(target))
+        except BaseException:
+            try:
+                os.unlink(tmp_path)
+            except OSError:
+                pass
+            raise
+    except Exception:
+        log.exception("Failed to write server info file: %s", target)
+        return
+
+    log.info("Server info written to: %s", target)
+
+
+def _cleanup_server_info_file(datadir) -> None:
+    """Remove the server info file on shutdown."""
+    try:
+        (datadir / SERVER_INFO_FILENAME).unlink(missing_ok=True)
+    except OSError:
+        pass
+
+
 def start_server(
     start_args: ArgumentsNamespaceStart,
     api_key: str | None,
@@ -352,6 +417,8 @@ def start_server(
         url = f"{protocol}://{host}:{port}"
         settings = get_settings()
         settings.base_url = url
+
+        _write_server_info_file(settings, host, port, url)
 
         log.info(
             colored("\n  ⚡️ Local MCP endpoint: ", "green", attrs=["bold"])
