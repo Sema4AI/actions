@@ -30,6 +30,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: true
+      max-parallel: 1
       matrix:
         os:
         - ubuntu-22.04
