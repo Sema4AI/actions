@@ -1028,6 +1028,7 @@ class ActionServerManylinuxRelease(BaseWorkflow):
             "runs-on": "${{ matrix.os }}",
             "strategy": {
                 "fail-fast": self.fail_fast,
+                "max-parallel": 1,
                 "matrix": self.matrix_cibuildwheel(self.minimum_python_version),
             },
         }

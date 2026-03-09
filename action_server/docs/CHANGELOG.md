@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 3.1.1 - 2026-03-09
+
+- Run manylinux wheel builds sequentially to avoid GitHub rate limiting during virtualenv download.
+
 ## 3.1.0 - 2026-03-09
 
 - Write `server-info.json` to the data directory on startup with runtime details (PID, port, address, URL, data dir, TLS config, version, child PIDs). The file is removed on shutdown.
