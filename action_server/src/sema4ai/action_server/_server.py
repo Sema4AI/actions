@@ -63,9 +63,7 @@ def _write_server_info_file(settings, host: str, port: int, url: str) -> None:
 
     target = settings.datadir / SERVER_INFO_FILENAME
     try:
-        fd, tmp_path = tempfile.mkstemp(
-            dir=str(settings.datadir), suffix=".tmp"
-        )
+        fd, tmp_path = tempfile.mkstemp(dir=str(settings.datadir), suffix=".tmp")
         try:
             with os.fdopen(fd, "w", encoding="utf-8") as f:
                 json.dump(info, f, indent=2)
