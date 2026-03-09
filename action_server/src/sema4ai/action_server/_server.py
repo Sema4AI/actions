@@ -69,7 +69,6 @@ def _write_server_info_file(settings, host: str, port: int, url: str) -> None:
         try:
             with os.fdopen(fd, "w", encoding="utf-8") as f:
                 json.dump(info, f, indent=2)
-                f.write("\n")
             os.replace(tmp_path, str(target))
         except BaseException:
             try:
@@ -421,6 +420,8 @@ def start_server(
         settings = get_settings()
         settings.base_url = url
 
+        _write_server_info_file(settings, host, port, url)
+
         log.info(
             colored("\n  ⚡️ Local MCP endpoint: ", "green", attrs=["bold"])
             + colored(f"{url}/mcp", "light_blue")
@@ -448,8 +449,6 @@ def start_server(
                         colored("  🔑 API Authorization Bearer key: ", attrs=["bold"])
                         + f"{api_key}\n"
                     )
-
-        _write_server_info_file(settings, host, port, url)
 
     @asynccontextmanager
     async def _expose_and_shutdown(app: FastAPI):
