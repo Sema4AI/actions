@@ -2,6 +2,12 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+**All instructions for Claude Code must live in this file (committed to the repo), not in external memory or user-level config.**
+
+## Development Tooling Rules
+
+- **Always use `uv` to invoke Python** for dev tooling (scripts, generators, one-off commands). Never use bare `python` or `python3`. Example: `uv run --python 3.12 --with pyyaml script.py`.
+
 ## Project Overview
 
 Monorepo for the Sema4.ai Actions framework. Provides a system for extending AI agents with custom actions and MCP (Model Context Protocol) tools using Python. The Action Server hosts Python `@action`/`@tool` functions as REST APIs and MCP endpoints.

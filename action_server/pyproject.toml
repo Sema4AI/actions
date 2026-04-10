@@ -13,7 +13,6 @@ packages = [{ include = "sema4ai", from = "src" }]
 include = [
 	"src/sema4ai/action_server/_static_contents.py",
 	"src/sema4ai/action_server/_oauth2_config.py",
-	"src/sema4ai/action_server/bin/rcc*",
 ]
 homepage = "https://github.com/sema4ai/actions/"
 
@@ -68,12 +67,8 @@ skip-magic-trailing-comma = false
 profile = "black"
 
 [build-system]
-requires = ["poetry-core", "setuptools"]
+requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-
-[tool.poetry.build]
-script = "build.py"
-generate-setup-file = true
 
 [tool.pytest.ini_options]
 norecursedirs = "tests/action_server_tests/test_devenv/* dist build build-binary"
