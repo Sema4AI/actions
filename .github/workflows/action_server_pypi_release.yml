@@ -36,7 +36,7 @@ jobs:
         include:
         - name: ubuntu-py3.12
           python: '3.12'
-          os: ubuntu-22.04
+          os: ubuntu-22.04-8core
     steps:
     - name: Checkout repository and submodules
       uses: actions/checkout@v5

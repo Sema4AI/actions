@@ -32,17 +32,17 @@ jobs:
       fail-fast: true
       matrix:
         os:
-        - ubuntu-22.04
+        - ubuntu-22.04-8core
         - windows-2022
-        - macos-15
+        - macos-15-xlarge
         include:
-        - os: ubuntu-22.04
+        - os: ubuntu-22.04-8core
           python: '3.12'
           asset_path: action_server/dist/final/action-server
         - os: windows-2022
           python: '3.12'
           asset_path: action_server/dist/final/action-server.exe
-        - os: macos-15
+        - os: macos-15-xlarge
           python: '3.12'
           asset_path: action_server/dist/final/action-server
     steps:
@@ -100,7 +100,7 @@ jobs:
 
         '
       id: set_version
-      if: ${{ matrix.os == 'ubuntu-22.04' }}
+      if: ${{ matrix.os == 'ubuntu-22.04-8core' }}
     - name: Download RCC
       run: uv run --no-project --python ${{ matrix.python }} poetry run inv download-rcc
     - name: Build binary
@@ -135,7 +135,7 @@ jobs:
       with:
         name: action-server-version
         path: action_server/version.txt
-      if: ${{ matrix.os == 'ubuntu-22.04' }}
+      if: ${{ matrix.os == 'ubuntu-22.04-8core' }}
     outputs:
       version: ${{ steps.set_version.outputs.version }}
   deploy-s3:
@@ -147,7 +147,7 @@ jobs:
     defaults:
       run:
         working-directory: ./action_server
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-22.04-8core
     outputs:
       is_beta: ${{ steps.check_beta.outputs.is_beta }}
     steps:
@@ -169,15 +169,15 @@ jobs:
       with:
         name: action-server-windows-2022
         path: action_server/build/windows64/
-    - name: Download artifact macos-15
+    - name: Download artifact macos-15-xlarge
       uses: actions/download-artifact@v4
       with:
-        name: action-server-macos-15
+        name: action-server-macos-15-xlarge
         path: action_server/build/macos-arm64/
-    - name: Download artifact ubuntu-22.04
+    - name: Download artifact ubuntu-22.04-8core
       uses: actions/download-artifact@v4
       with:
-        name: action-server-ubuntu-22.04
+        name: action-server-ubuntu-22.04-8core
         path: action_server/build/linux64/
     - name: Download artifact version
       uses: actions/download-artifact@v4
@@ -241,7 +241,7 @@ jobs:
       run:
         working-directory: .
     if: ${{ needs.deploy-s3.outputs.is_beta == 'false' }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-22.04-8core
     steps:
     - name: Wait for Downloads S3 Bucket to have the right content
       timeout-minutes: 5
@@ -267,7 +267,7 @@ jobs:
     defaults:
       run:
         working-directory: .
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-22.04-8core
     steps:
     - uses: actions/checkout@v4
     - name: Create GitHub release
@@ -285,11 +285,11 @@ jobs:
         path: windows64/
     - uses: actions/download-artifact@v4
       with:
-        name: action-server-macos-15
+        name: action-server-macos-15-xlarge
         path: macos-arm64/
     - uses: actions/download-artifact@v4
       with:
-        name: action-server-ubuntu-22.04
+        name: action-server-ubuntu-22.04-8core
         path: linux64/
     - name: Print contents
       run: "\n          pwd\n          ls -l\n          echo \"Windows64:\"\n    \

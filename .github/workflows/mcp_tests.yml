@@ -52,12 +52,12 @@ jobs:
         include:
         - name: ubuntu-py3.10-devmode
           python: '3.10'
-          os: ubuntu-22.04
+          os: ubuntu-22.04-8core
         - name: windows-py3.10-devmode
           python: '3.10'
           os: windows-2022
         - name: macos-py3.10-devmode
-          os: macos-15
+          os: macos-15-xlarge
           python: '3.10'
     steps:
     - name: Checkout repository and submodules

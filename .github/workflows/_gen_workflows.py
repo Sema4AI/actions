@@ -43,7 +43,9 @@ AUTO_GEN_HEADER = """# Important!!
 
 # No need to check if it's a beta release
 NOT_BETA_IF_CLAUSE = "${{ !endsWith(github.ref_name, '-beta') }}"
-UBUNTU_VERSION = "ubuntu-22.04"
+UBUNTU_RUNNER = "ubuntu-22.04-8core"
+WINDOWS_RUNNER = "windows-2022"
+MACOS_RUNNER = "macos-15-xlarge"
 
 
 def collect_deps_pyprojects(root_pyproject: Path, found=None) -> Iterator[Path]:
@@ -164,16 +166,16 @@ class BaseWorkflow:
                 {
                     "name": f"ubuntu-py{pyversion}-devmode",
                     "python": pyversion,
-                    "os": UBUNTU_VERSION,
+                    "os": UBUNTU_RUNNER,
                 },
                 {
                     "name": f"windows-py{pyversion}-devmode",
                     "python": pyversion,
-                    "os": "windows-2022",
+                    "os": WINDOWS_RUNNER,
                 },
                 {
                     "name": f"macos-py{pyversion}-devmode",
-                    "os": "macos-15",
+                    "os": MACOS_RUNNER,
                     "python": pyversion,
                 },
             ],
@@ -184,23 +186,23 @@ class BaseWorkflow:
         return {
             # Important: Changing os requires updating the related references in this yml.
             "os": [
-                UBUNTU_VERSION,
-                "windows-2022",
-                "macos-15",  # used for the arm64 binary
+                UBUNTU_RUNNER,
+                WINDOWS_RUNNER,
+                MACOS_RUNNER,
             ],
             "include": [
                 {
-                    "os": UBUNTU_VERSION,
+                    "os": UBUNTU_RUNNER,
                     "python": pyversion,
                     "asset_path": "action_server/dist/final/action-server",
                 },
                 {
-                    "os": "windows-2022",
+                    "os": WINDOWS_RUNNER,
                     "python": pyversion,
                     "asset_path": "action_server/dist/final/action-server.exe",
                 },
                 {
-                    "os": "macos-15",
+                    "os": MACOS_RUNNER,
                     "python": pyversion,
                     "asset_path": "action_server/dist/final/action-server",
                 },
@@ -216,7 +218,7 @@ class BaseWorkflow:
                 {
                     "name": f"ubuntu-py{pyversion}",
                     "python": pyversion,
-                    "os": UBUNTU_VERSION,
+                    "os": UBUNTU_RUNNER,
                 },
             ],
         }
@@ -677,7 +679,7 @@ echo "Version: $VERSION"
 echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 """,
             "id": "set_version",
-            "if": "${{ matrix.os == '" + UBUNTU_VERSION + "' }}",
+            "if": "${{ matrix.os == '" + UBUNTU_RUNNER + "' }}",
         }
 
     def upload_artifact_action_server_version_on_ubuntu(self):
@@ -685,7 +687,7 @@ echo "version=$VERSION" >> "$GITHUB_OUTPUT"
         return self.upload_artifact(
             name="action-server-version",
             path="action_server/version.txt",
-            if_clause="${{ matrix.os == '" + UBUNTU_VERSION + "' }}",
+            if_clause="${{ matrix.os == '" + UBUNTU_RUNNER + "' }}",
         )
 
     def build_steps(self) -> list[dict]:
@@ -727,7 +729,7 @@ echo "version=$VERSION" >> "$GITHUB_OUTPUT"
                 "needs": ["build", "deploy-s3"],
                 "defaults": {"run": {"working-directory": "."}},
                 "if": "${{ needs.deploy-s3.outputs.is_beta == 'false' }}",
-                "runs-on": UBUNTU_VERSION,
+                "runs-on": UBUNTU_RUNNER,
                 "steps": [
                     {
                         "name": "Wait for Downloads S3 Bucket to have the right content",
@@ -769,7 +771,7 @@ while true; do
                 "permissions": {"contents": "write"},
                 "needs": ["deploy-s3", "trigger-brew-workflow"],
                 "defaults": {"run": {"working-directory": "."}},
-                "runs-on": UBUNTU_VERSION,
+                "runs-on": UBUNTU_RUNNER,
                 "steps": [
                     {"uses": "actions/checkout@v4"},
                     {
@@ -785,21 +787,21 @@ while true; do
                     {
                         "uses": "actions/download-artifact@v4",
                         "with": {
-                            "name": "action-server-windows-2022",
+                            "name": f"action-server-{WINDOWS_RUNNER}",
                             "path": "windows64/",
                         },
                     },
                     {
                         "uses": "actions/download-artifact@v4",
                         "with": {
-                            "name": "action-server-macos-15",
+                            "name": f"action-server-{MACOS_RUNNER}",
                             "path": "macos-arm64/",
                         },
                     },
                     {
                         "uses": "actions/download-artifact@v4",
                         "with": {
-                            "name": f"action-server-{UBUNTU_VERSION}",
+                            "name": f"action-server-{UBUNTU_RUNNER}",
                             "path": "linux64/",
                         },
                     },
@@ -870,7 +872,7 @@ while true; do
                     "working-directory": "./action_server",
                 },
             },
-            "runs-on": UBUNTU_VERSION,
+            "runs-on": UBUNTU_RUNNER,
             "outputs": {"is_beta": "${{ steps.check_beta.outputs.is_beta }}"},
             "steps": self.deploy_s3_job_steps(),
         }
@@ -879,14 +881,14 @@ while true; do
         # It'll generate something as (for all the OSes we require):
         #   - uses: actions/download-artifact@v4
         #     with:
-        #       name: action-server-windows-2022
-        #       path: action_server/build/windows64/
+        #       name: action-server-<os>
+        #       path: action_server/build/<platform>/
 
         ret = []
         for os, path in [
-            ("windows-2022", "windows64"),
-            ("macos-15", "macos-arm64"),
-            (UBUNTU_VERSION, "linux64"),
+            (WINDOWS_RUNNER, "windows64"),
+            (MACOS_RUNNER, "macos-arm64"),
+            (UBUNTU_RUNNER, "linux64"),
         ]:
             ret.append(
                 {
