@@ -103,7 +103,7 @@ jobs:
       env:
         GH_TOKEN: ${{ secrets.GH_PAT_GHA_TO_ANOTHER_REPO }}
     - name: Download RCC
-      run: uv run --no-project --python ${{ matrix.python }} inv download-rcc
+      run: uv run --no-project --python ${{ matrix.python }} poetry run inv download-rcc
     - name: Build binary
       env:
         RC_ACTION_SERVER_DO_SELFTEST: 'true'

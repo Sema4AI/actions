@@ -241,14 +241,13 @@ def build_go_wrapper(ctx: Context) -> None:
 
 
 @task
-def download_rcc(ctx: Context, system: Optional[str] = None) -> None:
+def download_rcc(ctx: Context) -> None:
     """
     Downloads RCC in the place where the action server expects it
     """
-    env = os.environ.copy()
-    curr_pythonpath = env.get("PYTHONPATH", "")
-    env["PYTHONPATH"] = curr_pythonpath + os.pathsep + str(CURDIR / "src")
-    run(ctx, "python -m sema4ai.action_server download-rcc", env=env)
+    from sema4ai.action_server._download_rcc import download_rcc as _download_rcc
+
+    _download_rcc(force=True)
 
 
 def _replace_deps(content, new_deps):

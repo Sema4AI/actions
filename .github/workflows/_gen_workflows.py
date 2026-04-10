@@ -412,7 +412,7 @@ echo "::set-output name=is_beta::$is_beta"
     def download_rcc(self):
         return {
             "name": "Download RCC",
-            "run": f"{run_in_env}inv download-rcc",
+            "run": f"{run_in_env}poetry run inv download-rcc",
         }
 
     def build_action_server_binary(self):

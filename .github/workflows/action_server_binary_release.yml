@@ -102,7 +102,7 @@ jobs:
       id: set_version
       if: ${{ matrix.os == 'ubuntu-22.04' }}
     - name: Download RCC
-      run: uv run --no-project --python ${{ matrix.python }} inv download-rcc
+      run: uv run --no-project --python ${{ matrix.python }} poetry run inv download-rcc
     - name: Build binary
       env:
         RC_ACTION_SERVER_DO_SELFTEST: 'true'
