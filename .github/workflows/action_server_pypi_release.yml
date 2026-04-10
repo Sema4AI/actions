@@ -52,13 +52,9 @@ jobs:
     - name: Install project (not dev)
       if: contains(matrix.name, '-devmode') == false
       run: uv run --no-project --python ${{ matrix.python }} inv install
-      env:
-        ACTION_SERVER_SKIP_DOWNLOAD_IN_BUILD: 'true'
     - name: Install project (dev)
       if: contains(matrix.name, '-devmode')
       run: uv run --no-project --python ${{ matrix.python }} inv devinstall
-      env:
-        ACTION_SERVER_SKIP_DOWNLOAD_IN_BUILD: 'true'
     - name: Setup node
       uses: actions/setup-node@v4
       with:
@@ -77,23 +73,16 @@ jobs:
       run: uv run --no-project --python ${{ matrix.python }} inv build-oauth2-config
       env:
         GH_TOKEN: ${{ secrets.GH_PAT_GHA_TO_ANOTHER_REPO }}
-    - name: Build sdist
+    - name: Build package
       run: '
 
-        # Make sure that we have no binaries present when doing the build.
-
-        rm src/sema4ai/bin/rcc* -f
-
-        # Just sdist here, wheels are built in the manylinux job.
-
-        uv run --no-project --python ${{ matrix.python }} poetry build -f sdist
+        uv run --no-project --python ${{ matrix.python }} poetry build
 
         '
       env:
         CI: true
         NODE_AUTH_TOKEN: ${{ secrets.GH_PAT_READ_PACKAGES }}
         GH_TOKEN: ${{ secrets.GH_PAT_GHA_TO_ANOTHER_REPO }}
-        ACTION_SERVER_SKIP_DOWNLOAD_IN_BUILD: true
     - name: 'Upload artifact: action_server/dist/*'
       uses: actions/upload-artifact@v4
       with:
@@ -108,8 +97,6 @@ jobs:
         uv run --no-project --python ${{ matrix.python }} poetry publish
 
         '
-      env:
-        ACTION_SERVER_SKIP_DOWNLOAD_IN_BUILD: true
       if: ${{ !endsWith(github.ref_name, '-beta') }}
 
 

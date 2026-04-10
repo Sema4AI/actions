@@ -7,65 +7,23 @@ This is a contribution guide for the Sema4ai actions and action server projects 
 ### Prerequisites
 
 The tool used for Python dependency management is Poetry (`poetry`), and the commands to manage the project are run
-with Invoke (`invoke` / `inv`).
+with Invoke (`invoke` / `inv`). We use [uv](https://docs.astral.sh/uv/) for Python version management and running
+tools.
 
-These, along the rest of the other required initial dependencies, should be installed from our
-[requirements.txt][requirements] file.
+Install uv first (if not already available):
 
 ```
-pip install -r devutils/requirements.txt
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+Then install the dev dependencies:
+
+```
+uv run --python 3.12 pip install -r devutils/requirements.txt
 ```
 
 > Note that Invoke will automatically call its commands under the Poetry context (`poetry run` prefix), therefore you
 > don't need to usually activate any virtual environment before running such commands.
-
-#### Environment isolation
-
-Sometimes you don't want to end up with development dependencies in your system's Python, or simply, you want to be in
-control of the interpreter version you use without affecting the default Python.
-
-Therefore, you have a couple of flexible options to achieve this top-level isolation:
-
-##### RCC
-
-Leveraging `rcc venv` power on creating ready-for-development virtual environments with a simple script run.
-
-###### Mac / Linux
-
-```bash
-% ./devutils/bin/develop.sh
-% . ./devutils/bin/develop.sh
-```
-
-###### Windows
-
-```bat
-> .\devutils\bin\develop.bat
-```
-
-##### Conda
-
-While `conda` is not always required (if not found, a _.venv_ will be created by Poetry based on the global Python
-found), if it's found, running commands with Invoke, will prefix them with `conda run -n <package-name>`, thus
-`inv install` will create the adjacent environment automatically.
-
-##### Pyenv
-
-After [installing](https://github.com/pyenv/pyenv?tab=readme-ov-file#installation) `pyenv`, you should be able to pick
-and configure your desired interpreter version, isolated from the system.
-
-This step is required once, right from the repository root directory:
-
-```
-pyenv install 3.10.12
-pyenv local 3.10.12
-```
-
-Check with `pyenv versions` your currently active interpreter to be used as default under any package, and with
-`pyenv which <executable>` the absolute path to the resolved executable you want to run.
-
-> When using Conda or Pyenv, Poetry and Invoke should have been installed in the base environment by _pip_ installing
-> the [requirements.txt][requirements] first.
 
 ### Development
 
@@ -75,9 +33,6 @@ navigating to the package's folder and running:
 ```
 inv install
 ```
-
-💡 This will create/set up an environment for that project, either in a new local _.venv_ dir (Pyenv approach), or in the
-currently active virtual environment (RCC/Conda approach).
 
 ### Calling Invoke tasks
 
@@ -138,6 +93,3 @@ To make a new release for a library, ensure the following steps are accomplished
 > To trigger a release, a commit should be tagged with the name and version of the library. The tag can be generated
 > and pushed automatically with `inv make-release`. After the tag has been pushed, a corresponding GitHub Actions 
 > workflow will be triggered that builds the library and publishes it to PyPI.
-
-
-[requirements]: <devutils/requirements.txt>

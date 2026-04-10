@@ -241,14 +241,13 @@ def build_go_wrapper(ctx: Context) -> None:
 
 
 @task
-def download_rcc(ctx: Context, system: Optional[str] = None) -> None:
+def download_rcc(ctx: Context) -> None:
     """
     Downloads RCC in the place where the action server expects it
     """
-    env = os.environ.copy()
-    curr_pythonpath = env.get("PYTHONPATH", "")
-    env["PYTHONPATH"] = curr_pythonpath + os.pathsep + str(CURDIR / "src")
-    run(ctx, "python -m sema4ai.action_server download-rcc", env=env)
+    from sema4ai.action_server._download_rcc import download_rcc as _download_rcc
+
+    _download_rcc(force=True)
 
 
 def _replace_deps(content, new_deps):
@@ -353,36 +352,24 @@ def test_binary(ctx: Context, test: str = "", jobs: str = "auto"):
 
 @task
 def set_rcc_version(ctx: Context, version: str):
-    """Set RCC version in both build.py and _download_rcc.py files."""
+    """Set RCC version in _download_rcc.py."""
     import re
-    
-    # Files to update
-    files_to_update = [
-        CURDIR / "build.py",
-        CURDIR / "src" / "sema4ai" / "action_server" / "_download_rcc.py"
-    ]
-    
-    for file_path in files_to_update:
-        if not file_path.exists():
-            print(f"Warning: {file_path} does not exist, skipping...")
-            continue
-            
-        # Read current content
-        with open(file_path, "r", encoding="utf-8", newline="\n") as f:
-            content = f.read()
-        
-        # Replace RCC_VERSION = "..." with new version
-        pattern = r'RCC_VERSION = "[^"]*"'
-        replacement = f'RCC_VERSION = "{version}"'
-        new_content = re.sub(pattern, replacement, content)
-        
-        if new_content != content:
-            # Write updated content with LF line endings
-            with open(file_path, "w", encoding="utf-8", newline="\n") as f:
-                f.write(new_content)
-            print(f"Updated {file_path} with RCC version {version}")
-        else:
-            print(f"No RCC_VERSION found in {file_path}")
+
+    file_path = CURDIR / "src" / "sema4ai" / "action_server" / "_download_rcc.py"
+
+    with open(file_path, "r", encoding="utf-8", newline="\n") as f:
+        content = f.read()
+
+    pattern = r'RCC_VERSION = "[^"]*"'
+    replacement = f'RCC_VERSION = "{version}"'
+    new_content = re.sub(pattern, replacement, content)
+
+    if new_content != content:
+        with open(file_path, "w", encoding="utf-8", newline="\n") as f:
+            f.write(new_content)
+        print(f"Updated {file_path} with RCC version {version}")
+    else:
+        print(f"No RCC_VERSION found in {file_path}")
 
 
 @task

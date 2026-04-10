@@ -207,30 +207,6 @@ class BaseWorkflow:
             ],
         }
 
-    def matrix_cibuildwheel(self, pyversion: str):
-        return {
-            # Important: Changing os requires updating the related references in this yml.
-            "os": [
-                UBUNTU_VERSION,
-                "windows-2022",
-                "macos-15",  # used for the arm64 binary
-            ],
-            "include": [
-                {
-                    "os": UBUNTU_VERSION,
-                    "python": pyversion,
-                },
-                {
-                    "os": "windows-2022",
-                    "python": pyversion,
-                },
-                {
-                    "os": "macos-15",
-                    "python": pyversion,
-                },
-            ],
-        }
-
     def matrix_ubuntu(self, pyversion: str):
         matrix = {
             "name": [
@@ -433,11 +409,16 @@ echo "::set-output name=is_beta::$is_beta"
             "if": NOT_BETA_IF_CLAUSE,
         }
 
+    def download_rcc(self):
+        return {
+            "name": "Download RCC",
+            "run": f"{run_in_env}poetry run inv download-rcc",
+        }
+
     def build_action_server_binary(self):
         return {
             "name": "Build binary",
             "env": {
-                "RC_ACTION_SERVER_FORCE_DOWNLOAD_RCC": "true",
                 "RC_ACTION_SERVER_DO_SELFTEST": "true",
                 "MACOS_SIGNING_CERT": "${{ secrets.MACOS_SIGNING_CERT_SEMA4AI }}",
                 "MACOS_SIGNING_CERT_PASSWORD": "${{ secrets.MACOS_SIGNING_CERT_PASSWORD_SEMA4AI }}",
@@ -546,10 +527,11 @@ class ActionServerTests(BaseTests):
     @override
     def run_tests(self):
         return [
-            # As we want to run the tests in the binary, we do the following:
-            # 1. Build the binary
-            # 2. Run the unit-tests (not integration) in the current environment
-            # 3. Run the integration-tests in the binary
+            # 1. Download RCC (needed by tests and bundled into the binary)
+            # 2. Build the binary
+            # 3. Run the unit-tests (not integration) in the current environment
+            # 4. Run the integration-tests in the binary
+            self.download_rcc(),
             self.build_action_server_binary(),
             self.upload_artifact(
                 name="action-server-${{ matrix.os }}", path="action_server/dist/final/"
@@ -606,20 +588,16 @@ class ActionServerPyPiRelease(BaseWorkflow):
             },
         }
 
-    def build_sdist(self):
+    def build_package(self):
         return {
-            "name": "Build sdist",
+            "name": "Build package",
             "run": f"""
-# Make sure that we have no binaries present when doing the build.
-rm src/sema4ai/bin/rcc* -f
-# Just sdist here, wheels are built in the manylinux job.
-{run_in_env}poetry build -f sdist
+{run_in_env}poetry build
 """,
             "env": {
                 "CI": True,
                 "NODE_AUTH_TOKEN": "${{ secrets.GH_PAT_READ_PACKAGES }}",
                 "GH_TOKEN": "${{ secrets.GH_PAT_GHA_TO_ANOTHER_REPO }}",
-                "ACTION_SERVER_SKIP_DOWNLOAD_IN_BUILD": True,
             },
         }
 
@@ -635,9 +613,6 @@ rm src/sema4ai/bin/rcc* -f
 {run_in_env}poetry config pypi-token.pypi  ${{{{ secrets.PYPI_TOKEN_SEMA4AI_ACTION_SERVER }}}}
 {run_in_env}poetry publish
 """,
-            "env": {
-                "ACTION_SERVER_SKIP_DOWNLOAD_IN_BUILD": True,
-            },
             "if": NOT_BETA_IF_CLAUSE,
         }
 
@@ -645,14 +620,14 @@ rm src/sema4ai/bin/rcc* -f
     def build_steps(self) -> list[dict]:
         steps = [self.checkout_repo()] + self.setup_python() + [self.install_devutils()]
 
-        steps.extend(self.install(env={"ACTION_SERVER_SKIP_DOWNLOAD_IN_BUILD": "true"}))
+        steps.extend(self.install())
 
         steps.append(self.setup_node())
 
         steps.append(self.check_tag_version())
         steps.append(self.build_frontend())
         steps.append(self.build_oauth2_config())
-        steps.append(self.build_sdist())
+        steps.append(self.build_package())
         steps.append(self.upload_artifact_action_server_dist())
         steps.append(self.upload_to_pypi())
 
@@ -726,6 +701,7 @@ echo "version=$VERSION" >> "$GITHUB_OUTPUT"
         steps.append(self.build_oauth2_config())
 
         steps.append(self.set_version_on_ubuntu())
+        steps.append(self.download_rcc())
         steps.append(self.build_action_server_binary())
         steps.append(self.upload_artifact_with_asset_path())
         steps.append(self.upload_artifact_action_server_version_on_ubuntu())
@@ -1005,85 +981,6 @@ fi
         return ret
 
 
-class ActionServerManylinuxRelease(BaseWorkflow):
-    name = "Action Server MANYLINUX Release"
-    target = "action_server_manylinux_release.yml"
-    project_name = "action_server"
-    fail_fast = True
-
-    @override
-    def on_part(self, dep_paths):
-        return {
-            "on": {
-                "push": {
-                    "tags": ["sema4ai-action_server-*"],
-                    "branches": ["*-beta"],
-                },
-            }
-        }
-
-    @override
-    def runs_on_and_strategy_part(self):
-        return {
-            "runs-on": "${{ matrix.os }}",
-            "strategy": {
-                "fail-fast": self.fail_fast,
-                "max-parallel": 1,
-                "matrix": self.matrix_cibuildwheel(self.minimum_python_version),
-            },
-        }
-
-    def build_manylinux_wheels(self):
-        CIBW_BUILD = "cp312-*macos*arm64 "
-        CIBW_BUILD += "cp313-*macos*arm64 "
-        CIBW_BUILD += "cp312-*manylinux*x86_64 "
-        CIBW_BUILD += "cp313-*manylinux*x86_64 "
-        CIBW_BUILD += "cp312-*win*amd64 "
-        CIBW_BUILD += "cp313-*win*amd64"
-        return {
-            "name": "Build wheels",
-            "run": f"{run_in_env} python -m cibuildwheel --output-dir wheelhouse",
-            "env": {
-                "CIBW_SKIP": "pp*",
-                "CIBW_BUILD": CIBW_BUILD,
-                "CIBW_BUILD_VERBOSITY": 1,
-            },
-        }
-
-    def upload_artifact_manylinux_wheels(self):
-        return self.upload_artifact(
-            name="${{ runner.os }}-wheels", path="action_server/wheelhouse/*"
-        )
-
-    def upload_wheels_to_pypi(self):
-        return {
-            "name": "Upload to PyPI .whl",
-            "run": f"{run_in_env}twine upload wheelhouse/*.whl",
-            "if": NOT_BETA_IF_CLAUSE,
-            "env": {
-                "TWINE_USERNAME": "__token__",
-                "TWINE_PASSWORD": "${{ secrets.PYPI_TOKEN_SEMA4AI_ACTION_SERVER }}",
-            },
-        }
-
-    @override
-    def build_steps(self) -> list[dict]:
-        steps = [self.checkout_repo()]
-        steps.extend(self.setup_python())
-        steps.append(
-            self.install_devutils(additional_packages=["cibuildwheel==2.23.1", "twine"])
-        )
-        steps.extend(self.install(env={"ACTION_SERVER_SKIP_DOWNLOAD_IN_BUILD": "true"}))
-        steps.append(self.check_tag_version())
-        steps.append(self.setup_node())
-        steps.append(self.build_frontend())
-        steps.append(self.build_oauth2_config())
-        steps.append(self.build_manylinux_wheels())
-        steps.append(self.upload_artifact_manylinux_wheels())
-        steps.append(self.upload_wheels_to_pypi())
-        return steps
-
-
 class ActionsTests(BaseTests):
     name = "Actions Tests"
     target = "actions_tests.yml"
@@ -1117,7 +1014,6 @@ TARGETS = [
     MCPTests(),
     ActionServerPyPiRelease(),
     ActionServerBinaryRelease(),
-    ActionServerManylinuxRelease(),
 ]
 
 
