@@ -27,7 +27,7 @@ Monorepo for the Sema4.ai Actions framework. Provides a system for extending AI 
 
 ## Build & Development Commands
 
-**Prerequisites:** Install dev tools with `pip install -r devutils/requirements.txt` (installs Poetry + Invoke).
+**Prerequisites:** Install [uv](https://docs.astral.sh/uv/), then `uv run --python 3.12 pip install -r devutils/requirements.txt` (installs Poetry + Invoke).
 
 All module-level commands are run from within the module directory (e.g., `cd action_server`):
 
