@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 3.2.0 - 2026-04-10
+
+- Upgrade RCC to 21.2.0.
+- Upgrade Go wrapper to Go 1.26.2, fixing 19 stdlib CVEs in crypto/tls, crypto/x509, net/http, net/url, os, os/exec, and encoding/asn1.
+- Drop manylinux wheel publishing.
+
 ## 3.1.1 - 2026-03-09
 
 - Run manylinux wheel builds sequentially to avoid GitHub rate limiting during virtualenv download.
