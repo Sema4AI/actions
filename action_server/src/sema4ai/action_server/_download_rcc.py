@@ -6,7 +6,7 @@ from typing import Optional
 
 log = logging.getLogger(__name__)
 
-RCC_VERSION = "20.3.3"
+RCC_VERSION = "21.2.0"
 
 
 def get_default_rcc_location() -> Path:

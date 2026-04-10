@@ -88,7 +88,7 @@ def sema4ai_home(tmpdir_factory) -> str:
     return str(dirname)
 
 
-RCC_VERSION = "v17.23.2"
+RCC_VERSION = "v21.2.0"
 
 
 def _download_rcc(location: str, force: bool = False) -> None:
