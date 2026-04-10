@@ -6,7 +6,6 @@ from typing import Optional
 
 log = logging.getLogger(__name__)
 
-# Note: also referenced in action_server/build.py
 RCC_VERSION = "20.3.3"
 
 

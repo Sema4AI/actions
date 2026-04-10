@@ -101,9 +101,10 @@ jobs:
         '
       id: set_version
       if: ${{ matrix.os == 'ubuntu-22.04' }}
+    - name: Download RCC
+      run: uv run --no-project --python ${{ matrix.python }} inv download-rcc
     - name: Build binary
       env:
-        RC_ACTION_SERVER_FORCE_DOWNLOAD_RCC: 'true'
         RC_ACTION_SERVER_DO_SELFTEST: 'true'
         MACOS_SIGNING_CERT: ${{ secrets.MACOS_SIGNING_CERT_SEMA4AI }}
         MACOS_SIGNING_CERT_PASSWORD: ${{ secrets.MACOS_SIGNING_CERT_PASSWORD_SEMA4AI

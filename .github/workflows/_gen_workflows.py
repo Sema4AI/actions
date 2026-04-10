@@ -409,11 +409,16 @@ echo "::set-output name=is_beta::$is_beta"
             "if": NOT_BETA_IF_CLAUSE,
         }
 
+    def download_rcc(self):
+        return {
+            "name": "Download RCC",
+            "run": f"{run_in_env}inv download-rcc",
+        }
+
     def build_action_server_binary(self):
         return {
             "name": "Build binary",
             "env": {
-                "RC_ACTION_SERVER_FORCE_DOWNLOAD_RCC": "true",
                 "RC_ACTION_SERVER_DO_SELFTEST": "true",
                 "MACOS_SIGNING_CERT": "${{ secrets.MACOS_SIGNING_CERT_SEMA4AI }}",
                 "MACOS_SIGNING_CERT_PASSWORD": "${{ secrets.MACOS_SIGNING_CERT_PASSWORD_SEMA4AI }}",
@@ -522,10 +527,11 @@ class ActionServerTests(BaseTests):
     @override
     def run_tests(self):
         return [
-            # As we want to run the tests in the binary, we do the following:
-            # 1. Build the binary
-            # 2. Run the unit-tests (not integration) in the current environment
-            # 3. Run the integration-tests in the binary
+            # 1. Download RCC (needed by tests and bundled into the binary)
+            # 2. Build the binary
+            # 3. Run the unit-tests (not integration) in the current environment
+            # 4. Run the integration-tests in the binary
+            self.download_rcc(),
             self.build_action_server_binary(),
             self.upload_artifact(
                 name="action-server-${{ matrix.os }}", path="action_server/dist/final/"
@@ -695,6 +701,7 @@ echo "version=$VERSION" >> "$GITHUB_OUTPUT"
         steps.append(self.build_oauth2_config())
 
         steps.append(self.set_version_on_ubuntu())
+        steps.append(self.download_rcc())
         steps.append(self.build_action_server_binary())
         steps.append(self.upload_artifact_with_asset_path())
         steps.append(self.upload_artifact_action_server_version_on_ubuntu())

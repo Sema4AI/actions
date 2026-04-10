@@ -102,9 +102,10 @@ jobs:
       run: uv run --no-project --python ${{ matrix.python }} inv build-oauth2-config
       env:
         GH_TOKEN: ${{ secrets.GH_PAT_GHA_TO_ANOTHER_REPO }}
+    - name: Download RCC
+      run: uv run --no-project --python ${{ matrix.python }} inv download-rcc
     - name: Build binary
       env:
-        RC_ACTION_SERVER_FORCE_DOWNLOAD_RCC: 'true'
         RC_ACTION_SERVER_DO_SELFTEST: 'true'
         MACOS_SIGNING_CERT: ${{ secrets.MACOS_SIGNING_CERT_SEMA4AI }}
         MACOS_SIGNING_CERT_PASSWORD: ${{ secrets.MACOS_SIGNING_CERT_PASSWORD_SEMA4AI
