@@ -503,6 +503,12 @@ class _PartialDownloader:
 
         try:
             response = self._request_info.make_request()
+            # 416 is handled below for already-complete partial files.
+            if response.status >= 400 and response.status != 416:
+                response.close()
+                raise urllib3.exceptions.HTTPError(
+                    f"Download request failed with HTTP status {response.status}"
+                )
         except Exception as err:
             return self._handle_request_error(err)
 
